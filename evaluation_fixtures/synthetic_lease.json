@@ -1,0 +1,31 @@
+{
+  "id": "synthetic-lease-001",
+  "source_text": "[L1] Residential Lease Agreement\n[L2] The Tenant must pay NGN 1,200,000 annually on 1 January.\n[L3] The Landlord may terminate this Agreement immediately for any breach.\n[L4] The Landlord or its agents may enter the premises at any time without prior notice.\n[L5] This Agreement renews automatically unless the Tenant gives 90 days written notice.",
+  "expected_overall_attention": "High",
+  "expected_risk_phrases": ["immediate termination", "entry without notice", "automatic renewal"],
+  "analysis": {
+    "contract_type": "Residential lease",
+    "title": "Residential Lease Agreement",
+    "parties_involved": ["Landlord", "Tenant"],
+    "governing_law": "Not identified",
+    "executive_summary": "The lease contains one-sided termination, entry, and renewal provisions that deserve attention.",
+    "overall_attention": "High",
+    "key_terms": [
+      {"term": "Annual rent", "description": "NGN 1,200,000 due annually", "citation": "Line 2", "quote": "The Tenant must pay NGN 1,200,000 annually on 1 January.", "confidence": "High"}
+    ],
+    "risk_assessment": [
+      {"title": "Immediate termination", "clause": "Immediate termination for any breach", "risk_level": "High", "explanation": "Minor breaches could trigger termination without time to cure.", "recommendation": "Request written notice and a cure period.", "suggested_language": "", "citation": "Line 3", "quote": "The Landlord may terminate this Agreement immediately for any breach.", "confidence": "High"},
+      {"title": "Entry without notice", "clause": "Entry at any time without prior notice", "risk_level": "High", "explanation": "The provision gives broad access rights.", "recommendation": "Request reasonable prior notice except in emergencies.", "suggested_language": "", "citation": "Line 4", "quote": "The Landlord or its agents may enter the premises at any time without prior notice.", "confidence": "High"},
+      {"title": "Automatic renewal", "clause": "Automatic renewal with 90 days notice", "risk_level": "Medium", "explanation": "The tenant could miss a long cancellation window.", "recommendation": "Request a renewal reminder and shorter notice period.", "suggested_language": "", "citation": "Line 5", "quote": "This Agreement renews automatically unless the Tenant gives 90 days written notice.", "confidence": "High"}
+    ],
+    "missing_protections": [],
+    "jargon_decoder": [],
+    "negotiation_priorities": [],
+    "obligations": [
+      {"party": "Tenant", "obligation": "Pay annual rent", "timing": "1 January", "consequence": "Not stated", "citation": "Line 2", "quote": "The Tenant must pay NGN 1,200,000 annually on 1 January."}
+    ],
+    "deadlines": [],
+    "payments": [],
+    "uncertainties": ["Governing law is not identified."]
+  }
+}

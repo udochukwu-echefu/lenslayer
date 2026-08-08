@@ -1,0 +1,23 @@
+{
+  "brand": "Lenslayer",
+  "system": "The Lens Loop",
+  "version": "1.0.0",
+  "status": "review",
+  "created": "2026-07-14",
+  "assets": [
+    {"id": "ll-mark-primary", "type": "logo-mark", "path": "logos/mark/lenslayer-mark-duotone.svg", "background": "light", "status": "review"},
+    {"id": "ll-mark-coral", "type": "logo-mark", "path": "logos/mark/lenslayer-mark-coral.svg", "background": "light-or-dark", "status": "review"},
+    {"id": "ll-mark-navy", "type": "logo-mark", "path": "logos/mark/lenslayer-mark-navy.svg", "background": "light", "status": "review"},
+    {"id": "ll-mark-cream", "type": "logo-mark", "path": "logos/mark/lenslayer-mark-cream.svg", "background": "dark", "status": "review"},
+    {"id": "ll-app-icon", "type": "app-icon", "path": "logos/mark/lenslayer-app-icon.svg", "background": "self-contained", "status": "review"},
+    {"id": "ll-horizontal-light", "type": "logo-lockup", "path": "logos/lockups/lenslayer-horizontal-light.svg", "background": "light", "status": "review"},
+    {"id": "ll-horizontal-dark", "type": "logo-lockup", "path": "logos/lockups/lenslayer-horizontal-dark.svg", "background": "dark", "status": "review"},
+    {"id": "ll-stacked-light", "type": "logo-lockup", "path": "logos/lockups/lenslayer-stacked-light.svg", "background": "light", "status": "review"},
+    {"id": "ll-construction", "type": "logo-construction", "path": "logos/construction/lenslayer-mark-construction.svg", "background": "paper", "status": "review"},
+    {"id": "ll-brand-board", "type": "brand-board", "path": "lenslayer-brand-board.svg", "background": "paper", "status": "review"},
+    {"id": "ll-preview-board", "type": "raster-preview", "path": "previews/lenslayer-brand-board.png", "background": "paper", "status": "review"},
+    {"id": "ll-app-icon-512", "type": "raster-export", "path": "previews/lenslayer-app-icon-512.png", "background": "self-contained", "status": "review"},
+    {"id": "ll-app-icon-180", "type": "raster-export", "path": "previews/lenslayer-app-icon-180.png", "background": "self-contained", "status": "review"},
+    {"id": "ll-app-icon-64", "type": "raster-export", "path": "previews/lenslayer-app-icon-64.png", "background": "self-contained", "status": "review"}
+  ]
+}

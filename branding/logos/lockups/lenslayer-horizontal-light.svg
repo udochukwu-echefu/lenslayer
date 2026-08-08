@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 280" role="img" aria-labelledby="title desc">
+  <title id="title">Lenslayer horizontal logo for light backgrounds</title>
+  <desc id="desc">Coral Lens Loop mark with a deep navy Lenslayer wordmark and evidence-led document intelligence descriptor.</desc>
+  <g transform="translate(20 12) scale(.5)">
+    <defs>
+      <mask id="clause-loop-cut">
+        <rect width="512" height="512" fill="white" />
+        <circle cx="232" cy="256" r="91" fill="black" />
+        <path d="M232 204H512V284H232Z" fill="black" />
+      </mask>
+    </defs>
+    <circle cx="232" cy="256" r="208" fill="#E84545" mask="url(#clause-loop-cut)" />
+    <path d="M232 278H424L442 350H232Z" fill="#903749" />
+  </g>
+  <text x="318" y="144" fill="#2B2E4A" font-family="Figtree, Arial, sans-serif" font-size="98" font-weight="800" letter-spacing="-4">Lenslayer</text>
+  <text x="324" y="204" fill="#903749" font-family="Figtree, Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="5">EVIDENCE-LED DOCUMENT INTELLIGENCE</text>
+</svg>

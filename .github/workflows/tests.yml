@@ -1,0 +1,76 @@
+name: Lenslayer tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: |
+            dashboard/package-lock.json
+            landing/package-lock.json
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          xargs -a packages.txt sudo apt-get install -y
+
+      - name: Install Python dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Compile backend
+        run: python -m compileall -q analyzer.py evaluation.py export_utils.py kyc.py playbooks.py prompts.py backend tests
+
+      - name: Run Python tests
+        env:
+          PYTHONPATH: .
+        run: python -m unittest discover -s tests -v
+
+      - name: Verify database migrations
+        env:
+          LENSLAYER_PLATFORM_DATABASE_URL: sqlite:////tmp/lenslayer-platform-ci.db
+        run: alembic -c backend/alembic.ini upgrade head
+
+      - name: Run report quality gate
+        run: python -m evaluation evaluation_fixtures
+
+      - name: Install dashboard dependencies
+        working-directory: dashboard
+        run: npm ci
+
+      - name: Lint dashboard
+        working-directory: dashboard
+        run: npm run lint
+
+      - name: Build dashboard
+        working-directory: dashboard
+        run: npm run build
+
+      - name: Install landing dependencies
+        working-directory: landing
+        run: npm ci
+
+      - name: Build landing
+        working-directory: landing
+        run: npm run build

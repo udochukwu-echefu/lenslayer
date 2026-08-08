@@ -1,0 +1,21 @@
+:root {
+  --ll-ink-navy: #2b2e4a;
+  --ll-signal-coral: #e84545;
+  --ll-evidence-wine: #903749;
+  --ll-clause-plum: #53354a;
+  --ll-paper: #f4f1e8;
+  --ll-surface: #fcfaf6;
+
+  --ll-brand-primary: var(--ll-ink-navy);
+  --ll-brand-accent: var(--ll-signal-coral);
+  --ll-brand-depth: var(--ll-evidence-wine);
+  --ll-brand-support: var(--ll-clause-plum);
+  --ll-brand-background: var(--ll-paper);
+  --ll-brand-surface: var(--ll-surface);
+
+  --ll-font-display: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --ll-font-body: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --ll-radius-control: 8px;
+  --ll-radius-panel: 14px;
+  --ll-focus-ring: 0 0 0 3px color-mix(in srgb, var(--ll-signal-coral) 56%, transparent);
+}

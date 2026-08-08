@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1200" role="img" aria-labelledby="title desc">
+  <title id="title">Lenslayer brand identity board</title>
+  <desc id="desc">The Lens Loop logo, wordmark, color palette, typography, and sample applications for Lenslayer.</desc>
+  <defs>
+    <mask id="mark-cut-a">
+      <rect width="512" height="512" fill="white" />
+      <circle cx="232" cy="256" r="91" fill="black" />
+      <path d="M232 204H512V284H232Z" fill="black" />
+    </mask>
+    <mask id="mark-cut-b">
+      <rect width="512" height="512" fill="white" />
+      <circle cx="232" cy="256" r="91" fill="black" />
+      <path d="M232 204H512V284H232Z" fill="black" />
+    </mask>
+  </defs>
+  <rect width="1600" height="1200" fill="#F4F1E8" />
+
+  <g font-family="Figtree, Arial, sans-serif">
+    <text x="90" y="95" fill="#2B2E4A" font-size="24" font-weight="800" letter-spacing="4">LENSLAYER / IDENTITY 01</text>
+    <text x="1510" y="95" text-anchor="end" fill="#903749" font-size="18" font-weight="700" letter-spacing="3">THE LENS LOOP</text>
+
+    <g transform="translate(80 145)">
+      <rect width="880" height="600" rx="38" fill="#2B2E4A" />
+      <g transform="translate(90 58) scale(.72)">
+        <circle cx="232" cy="256" r="208" fill="#E84545" mask="url(#mark-cut-a)" />
+        <path d="M232 278H424L442 350H232Z" fill="#F4F1E8" />
+      </g>
+      <text x="90" y="485" fill="#F4F1E8" font-size="80" font-weight="800" letter-spacing="-4">Lenslayer</text>
+      <text x="96" y="535" fill="#E84545" font-size="18" font-weight="800" letter-spacing="4">EVIDENCE-LED DOCUMENT INTELLIGENCE</text>
+      <text x="96" y="575" fill="#F4F1E8" opacity=".66" font-size="17">Find the clause. Follow the evidence. Decide with context.</text>
+    </g>
+
+    <g transform="translate(1010 145)">
+      <text x="0" y="24" fill="#2B2E4A" font-size="20" font-weight="800" letter-spacing="3">PRIMARY MARK</text>
+      <g transform="translate(0 55) scale(.55)">
+        <circle cx="232" cy="256" r="208" fill="#E84545" mask="url(#mark-cut-b)" />
+        <path d="M232 278H424L442 350H232Z" fill="#903749" />
+      </g>
+      <text x="0" y="390" fill="#2B2E4A" font-size="20" font-weight="800" letter-spacing="3">COLOR SYSTEM</text>
+      <g transform="translate(0 425)">
+        <rect width="215" height="92" rx="12" fill="#2B2E4A" />
+        <rect x="230" width="215" height="92" rx="12" fill="#E84545" />
+        <rect y="107" width="215" height="92" rx="12" fill="#903749" />
+        <rect x="230" y="107" width="215" height="92" rx="12" fill="#53354A" />
+        <text x="18" y="58" fill="#F4F1E8" font-size="17" font-weight="700">#2B2E4A</text>
+        <text x="248" y="58" fill="#2B2E4A" font-size="17" font-weight="700">#E84545</text>
+        <text x="18" y="165" fill="#F4F1E8" font-size="17" font-weight="700">#903749</text>
+        <text x="248" y="165" fill="#F4F1E8" font-size="17" font-weight="700">#53354A</text>
+      </g>
+    </g>
+
+    <line x1="80" y1="805" x2="1520" y2="805" stroke="#2B2E4A" opacity=".2" />
+    <text x="80" y="858" fill="#2B2E4A" font-size="20" font-weight="800" letter-spacing="3">SYSTEM APPLICATIONS</text>
+
+    <g transform="translate(80 900)">
+      <rect width="450" height="210" rx="22" fill="#FCFAF6" stroke="#2B2E4A" stroke-opacity=".16" />
+      <g transform="translate(28 26) scale(.15)">
+        <circle cx="232" cy="256" r="208" fill="#E84545" mask="url(#mark-cut-a)" />
+        <path d="M232 278H424L442 350H232Z" fill="#903749" />
+      </g>
+      <text x="112" y="74" fill="#2B2E4A" font-size="28" font-weight="800" letter-spacing="-1">Lenslayer</text>
+      <text x="30" y="132" fill="#903749" font-size="13" font-weight="800" letter-spacing="2">REVIEW REPORT / LL-2048</text>
+      <text x="30" y="172" fill="#2B2E4A" font-size="25" font-weight="700">Residential Lease Agreement</text>
+    </g>
+
+    <g transform="translate(575 900)">
+      <rect width="450" height="210" rx="22" fill="#2B2E4A" />
+      <circle cx="58" cy="58" r="30" fill="#E84545" />
+      <path d="M58 60H84L89 75H58Z" fill="#F4F1E8" />
+      <text x="108" y="68" fill="#F4F1E8" font-size="26" font-weight="800">Lenslayer Verify</text>
+      <text x="32" y="132" fill="#E84545" font-size="13" font-weight="800" letter-spacing="2">EVIDENCE STATUS</text>
+      <text x="32" y="176" fill="#F4F1E8" font-size="25" font-weight="700">Escalate for human review</text>
+    </g>
+
+    <g transform="translate(1070 900)">
+      <rect width="450" height="210" rx="22" fill="#E84545" />
+      <text x="30" y="52" fill="#2B2E4A" font-size="13" font-weight="800" letter-spacing="2">VOICE PRINCIPLE 01</text>
+      <text x="30" y="105" fill="#2B2E4A" font-size="32" font-weight="800" letter-spacing="-1">Evidence before</text>
+      <text x="30" y="145" fill="#2B2E4A" font-size="32" font-weight="800" letter-spacing="-1">assertion.</text>
+      <text x="30" y="184" fill="#2B2E4A" opacity=".78" font-size="16">Calm · rigorous · direct</text>
+    </g>
+  </g>
+</svg>

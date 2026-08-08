@@ -1,0 +1,10 @@
+NEXTJS_ENV=development
+PLATFORM_API_URL=http://127.0.0.1:8000
+NEXTAUTH_URL=http://127.0.0.1:8787
+NEXTAUTH_SECRET=replace-with-a-long-random-secret
+
+# Configure these before a shared beta.
+# AUTH_OIDC_NAME=ContractGuard Beta
+# AUTH_OIDC_ISSUER=https://identity.example.com
+# AUTH_OIDC_CLIENT_ID=replace-me
+# AUTH_OIDC_CLIENT_SECRET=replace-me

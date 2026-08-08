@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Lenslayer monochrome Lens Loop mark</title>
+  <desc id="desc">A geometric lens loop formed from an open circular shape and a decisive evidence layer.</desc>
+  <defs>
+    <mask id="clause-loop-cut">
+      <rect width="512" height="512" fill="white" />
+      <circle cx="232" cy="256" r="91" fill="black" />
+      <path d="M232 204H512V284H232Z" fill="black" />
+    </mask>
+  </defs>
+  <circle cx="232" cy="256" r="208" fill="#2B2E4A" mask="url(#clause-loop-cut)" />
+  <path d="M232 278H424L442 350H232Z" fill="#2B2E4A" />
+</svg>

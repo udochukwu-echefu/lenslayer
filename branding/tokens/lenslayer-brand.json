@@ -1,0 +1,26 @@
+{
+  "name": "Lenslayer",
+  "version": "1.0.0",
+  "concept": "The Lens Loop",
+  "colors": {
+    "inkNavy": "#2B2E4A",
+    "signalCoral": "#E84545",
+    "evidenceWine": "#903749",
+    "clausePlum": "#53354A",
+    "paper": "#F4F1E8",
+    "surface": "#FCFAF6"
+  },
+  "typography": {
+    "primary": "Figtree",
+    "fallback": "ui-sans-serif, system-ui, sans-serif",
+    "weights": [400, 500, 600, 700, 800]
+  },
+  "logo": {
+    "primary": "../logos/mark/lenslayer-mark-duotone.svg",
+    "horizontalLight": "../logos/lockups/lenslayer-horizontal-light.svg",
+    "horizontalDark": "../logos/lockups/lenslayer-horizontal-dark.svg",
+    "appIcon": "../logos/mark/lenslayer-app-icon.svg",
+    "clearSpace": "One quarter of the mark width on every side",
+    "minimumDigitalSize": "24px mark, 160px horizontal lockup"
+  }
+}

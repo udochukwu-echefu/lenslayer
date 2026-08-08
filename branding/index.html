@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lenslayer Brand System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --navy: #2b2e4a;
+        --coral: #e84545;
+        --wine: #903749;
+        --plum: #53354a;
+        --paper: #f4f1e8;
+        --surface: #fcfaf6;
+        --line: color-mix(in srgb, var(--navy) 18%, transparent);
+      }
+
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--paper); color: var(--navy); font-family: "Figtree", sans-serif; }
+      main { width: min(1440px, calc(100% - 40px)); margin: 0 auto; padding: 32px 0 80px; }
+      .top { display: flex; justify-content: space-between; gap: 24px; padding: 20px 0 30px; border-bottom: 1px solid var(--line); }
+      .eyebrow { color: var(--wine); font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+      .version { color: var(--plum); font-size: 13px; font-weight: 700; }
+      .hero { display: grid; grid-template-columns: 1.2fr .8fr; min-height: 670px; border-bottom: 1px solid var(--line); }
+      .hero-copy { display: flex; flex-direction: column; justify-content: space-between; padding: 80px 7vw 70px 0; }
+      h1 { max-width: 9ch; margin: 25px 0; font-size: clamp(68px, 9vw, 145px); line-height: .84; letter-spacing: -.075em; }
+      .hero-copy p { max-width: 580px; color: var(--plum); font-size: 20px; line-height: 1.55; }
+      .hero-mark { display: grid; place-items: center; background: var(--navy); border-radius: 0 0 28px 28px; }
+      .hero-mark img { width: min(76%, 520px); }
+      .section { padding: 84px 0; border-bottom: 1px solid var(--line); }
+      .section-head { display: grid; grid-template-columns: .45fr 1fr; gap: 40px; margin-bottom: 48px; }
+      h2 { max-width: 14ch; margin: 0; font-size: clamp(42px, 5vw, 74px); line-height: .95; letter-spacing: -.055em; }
+      .section-head p { max-width: 620px; margin: 0; color: var(--plum); font-size: 18px; line-height: 1.6; }
+      .lockup-stage { display: grid; gap: 18px; }
+      .stage-light, .stage-dark { display: grid; min-height: 330px; place-items: center; padding: 44px; border-radius: 22px; }
+      .stage-light { background: var(--surface); border: 1px solid var(--line); }
+      .stage-dark { background: var(--navy); }
+      .stage-light img, .stage-dark img { width: min(100%, 1080px); }
+      .palette { display: grid; grid-template-columns: 1.25fr 1fr 1fr 1fr; min-height: 310px; overflow: hidden; border-radius: 22px; }
+      .swatch { display: flex; flex-direction: column; justify-content: flex-end; padding: 28px; }
+      .swatch strong { font-size: 20px; }
+      .swatch span { margin-top: 4px; font-size: 14px; opacity: .78; }
+      .navy { background: var(--navy); color: var(--paper); }
+      .coral { background: var(--coral); color: var(--navy); }
+      .wine { background: var(--wine); color: var(--paper); }
+      .plum { background: var(--plum); color: var(--paper); }
+      .applications { display: grid; grid-template-columns: 1.2fr .8fr; gap: 18px; }
+      .construction { min-height: 600px; padding: 30px; background: var(--surface); border: 1px solid var(--line); border-radius: 22px; }
+      .construction img { width: 100%; height: 100%; object-fit: contain; }
+      .app-column { display: grid; gap: 18px; }
+      .app-tile { display: flex; min-height: 290px; align-items: center; justify-content: center; padding: 38px; border-radius: 22px; }
+      .app-tile img { max-width: 78%; max-height: 220px; }
+      .app-tile.dark { background: var(--navy); }
+      .app-tile.light { background: var(--surface); border: 1px solid var(--line); }
+      .voice { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; }
+      .voice blockquote { margin: 0; font-size: clamp(44px, 6vw, 82px); font-weight: 800; line-height: .98; letter-spacing: -.055em; }
+      .principles { border-top: 1px solid var(--navy); }
+      .principle { display: grid; grid-template-columns: 36px 1fr; gap: 20px; padding: 22px 0; border-bottom: 1px solid var(--line); }
+      .principle span { color: var(--coral); font-size: 12px; font-weight: 800; }
+      .principle strong { font-size: 19px; }
+      footer { display: flex; justify-content: space-between; gap: 20px; padding-top: 30px; color: var(--plum); font-size: 13px; }
+
+      @media (max-width: 850px) {
+        main { width: min(100% - 24px, 720px); }
+        .hero, .section-head, .applications, .voice { grid-template-columns: 1fr; }
+        .hero-copy { min-height: 570px; padding-right: 0; }
+        .hero-mark { min-height: 480px; border-radius: 22px; }
+        .palette { grid-template-columns: 1fr 1fr; }
+        .section-head { gap: 24px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="top">
+        <span class="eyebrow">Lenslayer visual identity</span>
+        <span class="version">The Lens Loop · v1.0</span>
+      </header>
+
+      <section class="hero">
+        <div class="hero-copy">
+          <div>
+            <span class="eyebrow">Evidence-led document intelligence</span>
+            <h1>Find the clause.</h1>
+          </div>
+          <p>A precise identity for consequential document review: open enough to inspect, structured enough to trust.</p>
+        </div>
+        <div class="hero-mark"><img src="logos/mark/lenslayer-app-icon.svg" alt="Lenslayer Lens Loop app icon" /></div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <span class="eyebrow">01 · Logo system</span>
+          <div><h2>One loop. Two decisions.</h2><p>The coral C stays open to inspection. The wine terminal completes the G and records the outcome.</p></div>
+        </div>
+        <div class="lockup-stage">
+          <div class="stage-light"><img src="logos/lockups/lenslayer-horizontal-light.svg" alt="Lenslayer logo for light backgrounds" /></div>
+          <div class="stage-dark"><img src="logos/lockups/lenslayer-horizontal-dark.svg" alt="Lenslayer logo for dark backgrounds" /></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <span class="eyebrow">02 · Color</span>
+          <div><h2>Signal against evidence.</h2><p>Navy provides authority without legal-tech cliché. Coral calls attention. Wine and plum carry depth, evidence, and consequential states.</p></div>
+        </div>
+        <div class="palette">
+          <div class="swatch navy"><strong>Ink Navy</strong><span>#2B2E4A</span></div>
+          <div class="swatch coral"><strong>Signal Coral</strong><span>#E84545</span></div>
+          <div class="swatch wine"><strong>Evidence Wine</strong><span>#903749</span></div>
+          <div class="swatch plum"><strong>Clause Plum</strong><span>#53354A</span></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <span class="eyebrow">03 · Construction</span>
+          <div><h2>Measured, not mechanical.</h2><p>An eight-unit framework creates repeatable proportions while the open counter keeps the mark human and active.</p></div>
+        </div>
+        <div class="applications">
+          <div class="construction"><img src="logos/construction/lenslayer-mark-construction.svg" alt="Lenslayer logo construction grid" /></div>
+          <div class="app-column">
+            <div class="app-tile light"><img src="logos/mark/lenslayer-mark-duotone.svg" alt="Lenslayer duotone mark" /></div>
+            <div class="app-tile dark"><img src="logos/mark/lenslayer-mark-cream.svg" alt="Lenslayer reversed mark" /></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section voice">
+        <blockquote>Evidence before assertion.</blockquote>
+        <div class="principles">
+          <div class="principle"><span>01</span><strong>Calm under consequence</strong></div>
+          <div class="principle"><span>02</span><strong>Specific about the evidence</strong></div>
+          <div class="principle"><span>03</span><strong>Direct about the next action</strong></div>
+          <div class="principle"><span>04</span><strong>Honest about uncertainty</strong></div>
+        </div>
+      </section>
+
+      <footer><span>Lenslayer Brand System v1.0</span><span>Figtree · SVG masters · WCAG-aware palette</span></footer>
+    </main>
+  </body>
+</html>

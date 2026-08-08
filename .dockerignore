@@ -1,0 +1,13 @@
+.lenslayer/
+.git/
+.next/
+.open-next/
+.pytest_cache/
+.venv/
+__pycache__/
+dashboard/node_modules/
+dashboard/.next/
+dashboard/.open-next/
+dashboard/.wrangler/
+landing/node_modules/
+landing/dist/
