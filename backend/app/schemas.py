@@ -939,6 +939,12 @@ class ReportOverviewResponse(BaseModel):
     contracts_ready: int
     contracts_processing: int
     contracts_failed: int
+    review_completed_count: int
+    average_review_completion_hours: float
+    upcoming_obligations: int
+    material_findings_total: int
+    evidence_backed_findings: int
+    evidence_coverage: int
     tasks_total: int
     tasks_active: int
     tasks_overdue: int

@@ -1,15 +1,15 @@
-# Lenslayer
+# LensLayer
 
-Lenslayer is an evidence-led document intelligence platform for contract operations and onboarding review. It combines a Next.js workspace with a FastAPI service, persistent workflow records, private document storage, and human-owned decisions.
+LensLayer is an evidence-led document intelligence platform for contract operations and onboarding review. It combines a Next.js workspace with a FastAPI service, persistent workflow records, private document storage, and human-owned decisions.
 
-Lenslayer is a separate project from ContractGuard, the original Streamlit contract-review application.
+LensLayer is a separate project from ContractGuard, the original Streamlit contract-review application.
 
 ## Product Workspaces
 
 - **Contract Review** turns agreements into source-linked risks, obligations, negotiation priorities, revised-document comparisons, decisions, approvals, tasks, lifecycle records, and counsel handoffs.
 - **Verify Onboarding** reconciles identity and onboarding evidence, separates extraction confidence from risk, tracks assignments, blocks approval while conflicts remain unresolved, and preserves an attributable audit history.
 
-Lenslayer supports first-pass review and operational decision-making. It does not provide legal advice or replace regulated identity-verification infrastructure.
+LensLayer supports first-pass review and operational decision-making. It does not provide legal advice or replace regulated identity-verification infrastructure.
 
 ## Major Capabilities
 

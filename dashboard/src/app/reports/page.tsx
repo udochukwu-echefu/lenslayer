@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Activity, ArrowRight, BarChart3, CheckCircle2, Clock3, Download, FileCheck2, ShieldCheck, TriangleAlert, UsersRound } from "lucide-react";
+import { Activity, ArrowRight, BarChart3, Clock3, Download, FileCheck2, ShieldCheck, TriangleAlert, UsersRound } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { PageError, PageLoading } from "@/components/page-states";
@@ -46,7 +46,7 @@ function statusTone(value: number, attention = false) {
 }
 
 export default function ReportsPage() {
-  const { activeOrganization, canUpload } = useWorkspace();
+  const { activeOrganization, canUpload, isDemo } = useWorkspace();
   const organizationId = activeOrganization?.id ?? "";
   const [range, setRange] = useState<ReportRange>("30d");
   const query = useQuery({
@@ -72,13 +72,10 @@ export default function ReportsPage() {
   return <div className="page reports-page">
     <div className="page-heading reports-heading">
       <div>
-        <p className="eyebrow">Operations and governance</p>
         <h1 className="page-title">Reports</h1>
-        <p className="page-description">Measure contract flow, human follow-through, and verification decisions from the evidence already retained in this workspace.</p>
+        <p className="page-description">Contract processing, human decisions, evidence coverage, and reviewer workload for the selected period.</p>
       </div>
-      <a className={`button secondary ${!report ? "disabled" : ""}`} href={report ? api.reportExportUrl(organizationId, range) : undefined} aria-disabled={!report}>
-        <Download size={16} />Export CSV
-      </a>
+      {report && hasOperationalData && !isDemo ? <a className="button secondary" href={api.reportExportUrl(organizationId, range)}><Download size={16} />Export CSV</a> : <button className="button secondary" disabled title={isDemo ? "Exports are disabled in the read-only demo." : "No report rows are available for export."}><Download size={16} />Export CSV</button>}
     </div>
 
     <div className="report-toolbar">
@@ -88,19 +85,11 @@ export default function ReportsPage() {
       <p>{report ? <>Snapshot generated <time dateTime={report.generated_at}>{formatDate(report.generated_at, { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}</time></> : "Preparing workspace snapshot"}</p>
     </div>
 
-    {query.isLoading ? <PageLoading rows={9} /> : query.error ? <PageError error={query.error} /> : report && <>
-      {!hasOperationalData && <section className="report-empty panel">
-        <span><BarChart3 size={22} /></span>
-        <div><p className="eyebrow">No operating records yet</p><h2>Your first report starts with real work.</h2><p>Upload a contract, create an action, or open the synthetic Verify queue. Lenslayer will build this view from attributable workspace activity.</p></div>
-        <div>{canUpload && <Link className="button" href="/contracts/new">Upload a contract <ArrowRight size={15} /></Link>}<Link className="button secondary" href="/verify">Open Verify</Link></div>
-      </section>}
-
-      <div className="report-signal-strip" aria-label="Report summary">
-        <div><FileCheck2 size={17} /><span><strong>{report.contracts_total}</strong>Contracts created</span><small>{report.contracts_ready} ready</small></div>
-        <div><CheckCircle2 size={17} /><span><strong>{report.tasks_completed}</strong>Actions completed</span><small>{report.task_completion_rate}% of created actions</small></div>
-        <div><ShieldCheck size={17} /><span><strong>{report.verification_total}</strong>Verify cases</span><small>{report.verification_overrides} recommendation overrides</small></div>
-        <div><Activity size={17} /><span><strong>{report.audit_event_count}</strong>Audit events</span><small>Attributable activity</small></div>
-      </div>
+    {query.isLoading ? <PageLoading rows={9} /> : query.error ? <PageError error={query.error} /> : report && (!hasOperationalData ? <section className="inline-state report-empty">
+        <BarChart3 size={20} />
+        <div><h2>No reportable activity for this period.</h2><p>Choose another period or create a contract review in an authorised workspace.</p></div>
+        <div>{canUpload && <Link className="button" href="/contracts/new">Upload a contract <ArrowRight size={15} /></Link>}{isDemo && <Link className="button secondary" href="/contracts/demo-msa">Explore sample report</Link>}</div>
+      </section> : <>
 
       <section className="report-primary-grid">
         <div className="report-flow">
@@ -124,6 +113,7 @@ export default function ReportsPage() {
               })}
             </div>
           </div>
+          <div className="report-mobile-summary">{report.timeline.map((point) => <p key={point.period_start}><span>{point.label}</span><strong>{point.contracts_created + point.tasks_created + point.tasks_completed + point.verification_submitted + point.decisions_recorded} recorded events</strong></p>)}</div>
         </div>
 
         <aside className="report-attention">
@@ -145,6 +135,11 @@ export default function ReportsPage() {
           <div className="report-distribution">
             <span>Contract types</span>
             {report.contract_types.length ? report.contract_types.slice(0, 5).map((item) => <p key={item.label}><strong>{item.label}</strong><small>{item.count}</small></p>) : <p><strong>No contract types recorded</strong><small>0</small></p>}
+          </div>
+          <div className="report-definitions">
+            <Link href="/contracts"><span>Evidence coverage</span><strong>{report.evidence_coverage}%</strong><small>{report.evidence_backed_findings} of {report.material_findings_total} material findings include a cited source excerpt</small></Link>
+            <Link href="/contracts"><span>Review completion time</span><strong>{report.average_review_completion_hours || "—"}{report.average_review_completion_hours ? "h" : ""}</strong><small>Average across {report.review_completed_count} completed review{report.review_completed_count === 1 ? "" : "s"} in this period</small></Link>
+            <Link href="/calendar"><span>Upcoming obligations</span><strong>{report.upcoming_obligations}</strong><small>Active lifecycle records due in the next 30 days</small></Link>
           </div>
         </div>
         <div>
@@ -187,7 +182,7 @@ export default function ReportsPage() {
         </aside>
       </section>
 
-      <p className="report-footnote"><ShieldCheck size={14} />This is a live snapshot of retained workspace records. Deleted or expired records are intentionally absent. Confidence and risk remain separate signals, and every material decision stays with a person.</p>
-    </>}
+      <p className="report-footnote"><ShieldCheck size={14} />Selected period: {ranges.find((item) => item.value === range)?.label}. Counts use retained synthetic records; deleted or expired records are excluded.</p>
+    </>)}
   </div>;
 }

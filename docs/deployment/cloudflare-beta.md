@@ -1,6 +1,6 @@
 # Cloudflare Beta Deployment
 
-This is the cheapest Cloudflare-first path for user testing Lenslayer without rewriting the Python backend.
+This is the cheapest Cloudflare-first path for user testing LensLayer without rewriting the Python backend.
 
 ## Recommended beta architecture
 

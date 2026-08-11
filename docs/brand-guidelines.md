@@ -1,4 +1,4 @@
-# Lenslayer Brand Guidelines v1.0
+# LensLayer Brand Guidelines v1.0
 
 ## Quick reference
 
@@ -13,7 +13,7 @@
 
 ## 1. Identity idea
 
-The Lens Loop is an open inspection symbol with a layered terminal. The coral loop represents careful review rather than a closed conclusion: Lenslayer leaves evidence visible and conclusions reviewable. The wine layer represents the recorded finding or human decision.
+The Lens Loop is an open inspection symbol with a layered terminal. The coral loop represents careful review rather than a closed conclusion: LensLayer leaves evidence visible and conclusions reviewable. The wine layer represents the recorded finding or human decision.
 
 The geometry is built on an eight-unit grid. It should feel precise without looking institutional, and distinctive without relying on a shield, padlock, check mark, courthouse column, or legal scale.
 
@@ -43,7 +43,7 @@ Keep clear space equal to one quarter of the mark width on all sides. For horizo
 - Horizontal lockup with descriptor: 160px digital, 45mm print
 - App icon: 32px interface use, 180px Apple touch asset
 
-At sizes below 160px, remove the descriptor and use the mark with the Lenslayer wordmark only.
+At sizes below 160px, remove the descriptor and use the mark with the LensLayer wordmark only.
 
 ### Do not
 
@@ -129,7 +129,7 @@ Display tracking may tighten to `-0.05em`. Uppercase labels use `0.08em` to `0.1
 
 - Category: Evidence-led document intelligence
 - Tagline: Find the clause. Follow the evidence. Decide with context.
-- Product sentence: Lenslayer turns consequential documents into traceable review decisions.
+- Product sentence: LensLayer turns consequential documents into traceable review decisions.
 - Contract Review: Understand the clause before it becomes the problem.
 - Verify: Reconcile the evidence before onboarding becomes exposure.
 

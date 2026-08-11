@@ -25,23 +25,23 @@ const SAMPLE_URL = `${APP_URL.replace(/\/$/, "")}/sample`
 
 function Brand() {
   return (
-    <a className="brand" href="#top" aria-label="Lenslayer home">
+    <a className="brand" href="#top" aria-label="LensLayer home">
       <span className="brand-mark" aria-hidden="true">
         <span>L</span>
         <span>L</span>
       </span>
-      <span className="brand-name">Lenslayer</span>
+      <span className="brand-name">LensLayer</span>
     </a>
   )
 }
 
 function ProductFrame() {
   return (
-    <div className="product-frame" role="img" aria-label="Example Lenslayer decision workspace with contract, action, and verification work">
+    <div className="product-frame" role="img" aria-label="Example LensLayer decision workspace with contract, action, and verification work">
       <div className="product-window-bar">
         <div className="product-window-brand">
           <span className="product-window-mark">LL</span>
-          <span>Lenslayer workspace</span>
+          <span>LensLayer workspace</span>
         </div>
         <Badge variant="dark">Human decision layer</Badge>
       </div>
@@ -164,7 +164,7 @@ function App() {
               <span className="hero-line" aria-hidden="true">Move the work.</span>
             </h1>
             <p>
-              Lenslayer turns consequential documents into inspectable findings, accountable decisions, and work your team can carry through.
+              LensLayer turns consequential documents into inspectable findings, accountable decisions, and work your team can carry through.
             </p>
             <div className="hero-action-row">
               <Button asChild size="lg">
@@ -187,9 +187,9 @@ function App() {
             <div className="audience-intro" data-reveal>
               <span className="section-index">One accountable workspace</span>
               <h2 id="audience-title">The document is only the beginning.</h2>
-              <p>Lenslayer connects review to the decisions, people, deadlines, and evidence that follow.</p>
+              <p>LensLayer connects review to the decisions, people, deadlines, and evidence that follow.</p>
             </div>
-            <div className="audience-ledger" aria-label="Lenslayer product workspaces">
+            <div className="audience-ledger" aria-label="LensLayer product workspaces">
               {[
                 ["01", "Contract Review", "Inspect risks, gaps, obligations, and negotiation priorities"],
                 ["02", "Team Decisions", "Assign actions, request approvals, comment, and escalate"],
@@ -263,7 +263,7 @@ function App() {
                 <p className="document-line wide" />
                 <p className="document-line short" />
               </div>
-              <aside className="inspector-panel" aria-label="Lenslayer finding details">
+              <aside className="inspector-panel" aria-label="LensLayer finding details">
                 <div className="inspector-heading">
                   <Badge>Playbook deviation</Badge>
                   <span>92% extraction confidence</span>
@@ -322,7 +322,7 @@ function App() {
               ["Attributable decisions", "Actions, approvals, overrides, and verification outcomes retain reviewer rationale and history."],
               ["Private by policy", "Organization scope, role controls, retention choices, source-text controls, and hard deletion remain visible."],
               ["Conflict-gated", "Unresolved evidence conflicts can block approval instead of being hidden behind a score."],
-              ["Honest limits", "Risk, extraction confidence, and verification status stay separate. Lenslayer does not provide legal advice or identity assurance."],
+              ["Honest limits", "Risk, extraction confidence, and verification status stay separate. LensLayer does not provide legal advice or identity assurance."],
             ].map(([title, copy]) => (
               <div className="trust-row" key={title} data-reveal>
                 <h3>{title}</h3>

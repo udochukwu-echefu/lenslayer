@@ -1,4 +1,4 @@
-"""Offline quality evaluation for Lenslayer reports.
+"""Offline quality evaluation for LensLayer reports.
 
 Fixtures contain synthetic source text plus a saved report. This keeps CI
 deterministic and makes regressions visible without calling a hosted model.
@@ -82,7 +82,7 @@ def load_fixtures(path: Path) -> list[dict[str, Any]]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Evaluate saved Lenslayer reports against synthetic fixtures.")
+    parser = argparse.ArgumentParser(description="Evaluate saved LensLayer reports against synthetic fixtures.")
     parser.add_argument("path", nargs="?", default="evaluation_fixtures")
     parser.add_argument("--output", help="Optional JSON output file")
     args = parser.parse_args()

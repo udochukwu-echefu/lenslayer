@@ -8,7 +8,7 @@ import { PageError, PageLoading } from "./page-states";
 import { useWorkspace } from "./workspace-provider";
 
 export function DealPassport({ contractId }: { contractId: string }) {
-  const { activeOrganization } = useWorkspace();
+  const { activeOrganization, isDemo } = useWorkspace();
   const organizationId = activeOrganization?.id ?? "";
   const query = useQuery({ queryKey: ["deal-passport", organizationId, contractId], queryFn: () => api.dealPassport(organizationId, contractId), enabled: Boolean(organizationId) });
   if (query.isLoading) return <PageLoading rows={7} />;
@@ -17,7 +17,7 @@ export function DealPassport({ contractId }: { contractId: string }) {
   if (!item) return null;
   const ReadyIcon = item.readiness === "ready" ? CheckCircle2 : AlertTriangle;
   return <section className="deal-passport">
-    <header className="passport-head"><div><p className="eyebrow">Decision record</p><h2>Deal Passport</h2><p>A compact view of what is agreed, what is open, and what must happen next.</p></div><div className="passport-actions"><a className="button secondary" href={api.redlineUrl(organizationId, contractId)} download><Download size={15} />Word redline</a><button className="button secondary" type="button" onClick={() => window.print()}><Download size={15} />Print or save PDF</button></div></header>
+    <header className="passport-head"><div><p className="eyebrow">Decision record</p><h2>Deal Passport</h2><p>A compact view of what is agreed, what is open, and what must happen next.</p></div><div className="passport-actions">{!isDemo && <a className="button secondary" href={api.redlineUrl(organizationId, contractId)} download><Download size={15} />Word redline</a>}<button className="button secondary" type="button" onClick={() => window.print()}><Download size={15} />Print or save PDF</button></div></header>
     <div className={`passport-readiness ${item.readiness}`}><ReadyIcon size={21} /><div><span>Signing readiness</span><strong>{titleCase(item.readiness)}</strong>{item.readiness_reasons.map((reason) => <p key={reason}>{reason}</p>)}</div></div>
     <div className="passport-summary"><div><span>Counterparty</span><strong>{item.counterparty || "Not recorded"}</strong></div><div><span>Agreement</span><strong>{item.contract_type}</strong></div><div><span>Versions</span><strong>{item.versions.length}</strong></div><div><span>Attention</span><strong>{item.overall_attention || "Review"}</strong></div></div>
     <section><p className="eyebrow">Executive brief</p><h3>{item.executive_summary || "No executive summary was returned."}</h3></section>

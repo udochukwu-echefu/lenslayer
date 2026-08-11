@@ -1,4 +1,4 @@
-import { AlertTriangle, FilePlus2, Inbox } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
 
 export function PageLoading({ rows = 5 }: { rows?: number }) {
@@ -6,9 +6,9 @@ export function PageLoading({ rows = 5 }: { rows?: number }) {
 }
 
 export function PageError({ error }: { error: Error }) {
-  return <div className="empty panel"><div><span className="empty-icon"><AlertTriangle size={20} /></span><h2>We couldn’t load this view.</h2><p>{error.message || "Check the API connection and try again."}</p><button className="button secondary" onClick={() => window.location.reload()}>Try again</button></div></div>;
+  return <div className="inline-state error-state" role="alert"><AlertTriangle size={18} /><div><h2>This view could not load</h2><p>{error.message || "Check the connection and try again."}</p><button className="button secondary" onClick={() => window.location.reload()}>Try again</button></div></div>;
 }
 
-export function EmptyContracts({ compact = false, canCreate = true }: { compact?: boolean; canCreate?: boolean }) {
-  return <div className={`empty ${compact ? "compact" : "panel"}`}><div><span className="empty-icon">{compact ? <Inbox size={20} /> : <FilePlus2 size={20} />}</span><h2>{compact ? "Nothing needs attention" : "No contracts yet"}</h2><p>{compact ? "Processing issues and completed reviews that need a decision will appear here." : canCreate ? "Upload your first agreement to create an evidence-linked review, risk list, and action record." : "This public workspace is ready to explore. Contract uploads will return with private accounts."}</p>{!compact && canCreate && <Link href="/contracts/new" className="button">Review a contract</Link>}</div></div>;
+export function EmptyContracts({ compact = false, canCreate = true, message }: { compact?: boolean; canCreate?: boolean; message?: string }) {
+  return <div className={`inline-state ${compact ? "compact" : ""}`}><div><h2>{compact ? (message ?? "No reviews need your attention.") : "No contracts in this workspace."}</h2>{!compact && <p>{canCreate ? "Upload a contract to create an evidence-linked review." : "Select an authorised workspace to inspect contract records."}</p>}{!compact && canCreate && <Link href="/contracts/new" className="button">Upload a contract</Link>}</div></div>;
 }

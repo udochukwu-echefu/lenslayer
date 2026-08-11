@@ -1,6 +1,6 @@
-# Lenslayer Platform API
+# LensLayer Platform API
 
-This backend powers the standalone Lenslayer platform and its Next.js workspace.
+This backend powers the standalone LensLayer platform and its Next.js workspace.
 
 ## Included foundation
 
@@ -50,9 +50,9 @@ python -m backend.app.worker
 Local authentication is intentionally explicit. Requests default to `local-user`; tests and development tools can set these headers:
 
 ```text
-X-Lenslayer-User: stable-user-id
-X-Lenslayer-Email: person@example.com
-X-Lenslayer-Name: Person Name
+X-LensLayer-User: stable-user-id
+X-LensLayer-Email: person@example.com
+X-LensLayer-Name: Person Name
 ```
 
 Local mode must never be exposed as a shared production API. Setting `LENSLAYER_PLATFORM_ENVIRONMENT=production` is rejected unless OIDC, PostgreSQL, private S3-compatible storage, ClamAV `clamd`, and Alembic-managed schema settings are configured.

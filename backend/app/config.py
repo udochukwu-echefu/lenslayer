@@ -16,7 +16,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    app_name: str = "Lenslayer Platform API"
+    app_name: str = "LensLayer Platform API"
     environment: str = "local"
     api_prefix: str = "/api/v1"
     database_url: str = "sqlite:///.lenslayer/platform.db"

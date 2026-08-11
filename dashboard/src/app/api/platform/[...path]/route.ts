@@ -23,9 +23,9 @@ async function proxy(request: Request, context: RouteContext<"/api/platform/[...
   const isPublicSecureIntake = path[0] === "api" && path[1] === "v1" && path[2] === "secure-intake" && (request.method === "GET" || request.method === "POST");
 
   if (process.env.NODE_ENV !== "production" && !headers.has("authorization")) {
-    headers.set("X-Lenslayer-User", process.env.LENSLAYER_LOCAL_USER_ID ?? "local-reviewer");
-    headers.set("X-Lenslayer-Email", process.env.LENSLAYER_LOCAL_USER_EMAIL ?? "reviewer@lenslayer.local");
-    headers.set("X-Lenslayer-Name", process.env.LENSLAYER_LOCAL_USER_NAME ?? "Local Reviewer");
+    headers.set("X-LensLayer-User", process.env.LENSLAYER_LOCAL_USER_ID ?? "local-reviewer");
+    headers.set("X-LensLayer-Email", process.env.LENSLAYER_LOCAL_USER_EMAIL ?? "reviewer@lenslayer.local");
+    headers.set("X-LensLayer-Name", process.env.LENSLAYER_LOCAL_USER_NAME ?? "Local Reviewer");
   }
   if (process.env.NODE_ENV === "production" && !headers.has("authorization") && !isPublicInvitationPreview && !isPublicSharedReview && !isPublicSecureIntake) {
     const session = await getServerSession(authOptions);
@@ -46,7 +46,7 @@ async function proxy(request: Request, context: RouteContext<"/api/platform/[...
     return new Response(response.body, { status: response.status, headers: outgoing });
   } catch (error) {
     console.error("Platform API proxy failed", error);
-    return Response.json({ detail: "The Lenslayer API is unavailable. Start the platform API and try again." }, { status: 503 });
+    return Response.json({ detail: "The LensLayer API is unavailable. Start the platform API and try again." }, { status: 503 });
   }
 }
 

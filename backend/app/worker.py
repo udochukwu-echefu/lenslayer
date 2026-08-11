@@ -405,7 +405,7 @@ def run_worker(settings: Settings, once: bool = False) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Process queued Lenslayer platform jobs.")
+    parser = argparse.ArgumentParser(description="Process queued LensLayer platform jobs.")
     parser.add_argument("--once", action="store_true", help="Process at most one queued job, then exit.")
     args = parser.parse_args()
     run_worker(get_settings(), once=args.once)

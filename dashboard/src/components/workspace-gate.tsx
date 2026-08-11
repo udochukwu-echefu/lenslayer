@@ -26,7 +26,7 @@ export function WorkspaceGate({ children }: { children: React.ReactNode }) {
           <AlertTriangle size={24} aria-hidden="true" />
           <p className="eyebrow">Connection needed</p>
           <h1>The workspace could not open.</h1>
-          <p>{unavailable ? "Refresh the page to reopen the public workspace." : "Lenslayer could not load this workspace. Refresh the page and try again."}</p>
+          <p>{unavailable ? "Refresh the page to reopen the demo workspace." : "LensLayer could not load this workspace. Refresh the page and try again."}</p>
           <button className="button" type="button" onClick={() => window.location.reload()}>Refresh workspace<ArrowRight size={16} /></button>
         </div>
       </main>
@@ -47,8 +47,8 @@ export function WorkspaceGate({ children }: { children: React.ReactNode }) {
       <form className="gate-card" onSubmit={submit}>
         <div className="gate-symbol"><Building2 size={20} /></div>
         <p className="eyebrow">Workspace setup</p>
-        <h1>Give contract work a shared home.</h1>
-        <p>Create a workspace for your team or business. You can begin alone and add collaboration in a later milestone.</p>
+        <h1>Create a workspace</h1>
+        <p>Set the shared boundary for agreements, evidence, reviewers, and activity history.</p>
         <div className="field">
           <label htmlFor="workspace-name">Workspace name</label>
           <input id="workspace-name" className="input" value={name} onChange={(event) => setName(event.target.value)} placeholder="e.g. Acme Operations" minLength={2} maxLength={255} required autoFocus />

@@ -6,8 +6,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Lenslayer Workspace",
-    template: "%s · Lenslayer",
+    default: "LensLayer Workspace",
+    template: "%s · LensLayer",
   },
   description: "Evidence-led contract review and decision workspace.",
 };

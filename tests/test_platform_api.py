@@ -30,19 +30,19 @@ class PlatformApiTests(unittest.TestCase):
         self.client_context = TestClient(create_app(self.settings))
         self.client = self.client_context.__enter__()
         self.alice = {
-            "X-Lenslayer-User": "alice",
-            "X-Lenslayer-Email": "alice@example.com",
-            "X-Lenslayer-Name": "Alice",
+            "X-LensLayer-User": "alice",
+            "X-LensLayer-Email": "alice@example.com",
+            "X-LensLayer-Name": "Alice",
         }
         self.bob = {
-            "X-Lenslayer-User": "bob",
-            "X-Lenslayer-Email": "bob@example.com",
-            "X-Lenslayer-Name": "Bob",
+            "X-LensLayer-User": "bob",
+            "X-LensLayer-Email": "bob@example.com",
+            "X-LensLayer-Name": "Bob",
         }
         self.carol = {
-            "X-Lenslayer-User": "carol",
-            "X-Lenslayer-Email": "carol@example.com",
-            "X-Lenslayer-Name": "Carol",
+            "X-LensLayer-User": "carol",
+            "X-LensLayer-Email": "carol@example.com",
+            "X-LensLayer-Name": "Carol",
         }
 
     def tearDown(self):
@@ -365,8 +365,8 @@ class PlatformApiTests(unittest.TestCase):
         rejected = self.client.post(
             f"/api/v1/invitations/{token}/accept",
             headers={
-                "X-Lenslayer-User": "reviewer",
-                "X-Lenslayer-Email": "reviewer@example.com",
+                "X-LensLayer-User": "reviewer",
+                "X-LensLayer-Email": "reviewer@example.com",
             },
         )
         self.assertEqual(rejected.status_code, 410)
@@ -595,6 +595,12 @@ class PlatformApiTests(unittest.TestCase):
         payload = report.json()
         self.assertEqual(payload["organization_id"], organization_id)
         self.assertEqual(payload["contracts_total"], 1)
+        self.assertEqual(payload["review_completed_count"], 0)
+        self.assertEqual(payload["average_review_completion_hours"], 0)
+        self.assertEqual(payload["upcoming_obligations"], 0)
+        self.assertEqual(payload["material_findings_total"], 0)
+        self.assertEqual(payload["evidence_backed_findings"], 0)
+        self.assertEqual(payload["evidence_coverage"], 0)
         self.assertEqual(payload["tasks_total"], 2)
         self.assertEqual(payload["tasks_active"], 1)
         self.assertEqual(payload["tasks_overdue"], 1)
@@ -615,13 +621,14 @@ class PlatformApiTests(unittest.TestCase):
         self.assertIn("text/csv", exported.headers["content-type"])
         self.assertIn("attachment;", exported.headers["content-disposition"])
         self.assertIn("Recommendation overrides", exported.text)
+        self.assertIn("Evidence,Coverage,0%", exported.text)
         self.assertIn("Reviewer,Email,Role", exported.text)
 
         inaccessible = self.client.get(
             f"/api/v1/organizations/{organization_id}/reports/overview",
             headers={
-                "X-Lenslayer-User": "outsider",
-                "X-Lenslayer-Email": "outsider@example.com",
+                "X-LensLayer-User": "outsider",
+                "X-LensLayer-Email": "outsider@example.com",
             },
         )
         self.assertEqual(inaccessible.status_code, 403)
@@ -1129,7 +1136,7 @@ class PlatformApiTests(unittest.TestCase):
 
         public_get = self.client.get(
             f"/api/v1/public/contracts/{contract_id}",
-            headers={"X-Lenslayer-Api-Key": token},
+            headers={"X-LensLayer-Api-Key": token},
         )
         self.assertEqual(public_get.status_code, 200, public_get.text)
         self.assertEqual(public_get.json()["id"], contract_id)

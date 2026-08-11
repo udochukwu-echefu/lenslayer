@@ -1978,7 +1978,7 @@ class PlatformService:
         key_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
         api_key = self.session.scalar(select(PublicApiKey).where(PublicApiKey.key_hash == key_hash))
         if api_key is None or api_key.revoked_at is not None:
-            raise HTTPException(status_code=401, detail="A valid Lenslayer API key is required.")
+            raise HTTPException(status_code=401, detail="A valid LensLayer API key is required.")
         scopes = set(json_load(api_key.scopes_json, []))
         if required_scope not in scopes:
             raise HTTPException(status_code=403, detail="The API key does not allow this operation.")
@@ -3406,7 +3406,7 @@ class PlatformService:
                 action=event.action,
                 detail=json_load(event.detail_json, {}),
                 actor_user_id=event.actor_user_id,
-                actor_name=display_name or email or "Lenslayer system",
+                actor_name=display_name or email or "LensLayer system",
                 created_at=event.created_at,
             )
             for event, display_name, email in rows
@@ -3495,7 +3495,7 @@ class PlatformService:
         analysis = json_load(review.analysis_json, {})
         document = Document()
         document.add_heading(f"Counsel handoff: {contract.title}", 0)
-        document.add_paragraph("Prepared by Lenslayer for qualified professional review. Not legal advice.")
+        document.add_paragraph("Prepared by LensLayer for qualified professional review. Not legal advice.")
         document.add_heading("Executive summary", 1)
         document.add_paragraph(str(analysis.get("executive_summary") or "No executive summary returned."))
         document.add_heading("Open risks and protection gaps", 1)
@@ -3531,12 +3531,12 @@ class PlatformService:
         events: list[tuple[str, str, datetime, str]] = []
         for task in self.list_tasks(organization_id, user):
             if task.due_at and task.status not in {"done", "cancelled"}:
-                events.append((f"task-{task.id}", task.title, task.due_at, task.contract.title if task.contract else "Lenslayer"))
+                events.append((f"task-{task.id}", task.title, task.due_at, task.contract.title if task.contract else "LensLayer"))
         for item in self.list_lifecycle_items(organization_id, user, status="active"):
             events.append((f"lifecycle-{item.id}", item.title, item.due_at, f"{item.kind}: {item.contract.title}"))
         def escape(value: str) -> str:
             return value.replace("\\", "\\\\").replace(",", "\\,").replace(";", "\\;").replace("\n", "\\n")
-        lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Lenslayer//Lifecycle Calendar//EN", "CALSCALE:GREGORIAN"]
+        lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//LensLayer//Lifecycle Calendar//EN", "CALSCALE:GREGORIAN"]
         for uid, title, due_at, description in events:
             stamp = aware(due_at).astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
             lines.extend([
@@ -3700,6 +3700,26 @@ class PlatformService:
                 .order_by(VerificationDecision.created_at.asc())
             ).all()
         )
+        processing_jobs = list(
+            self.session.scalars(
+                select(ProcessingJob)
+                .where(
+                    ProcessingJob.organization_id == organization_id,
+                    ProcessingJob.kind == "contract_review",
+                )
+                .order_by(ProcessingJob.created_at.asc())
+            ).all()
+        )
+        lifecycle_items = list(
+            self.session.scalars(
+                select(LifecycleItem)
+                .where(
+                    LifecycleItem.organization_id == organization_id,
+                    LifecycleItem.status == "active",
+                )
+                .order_by(LifecycleItem.due_at.asc())
+            ).all()
+        )
         audit_events = list(
             self.session.scalars(
                 select(PlatformAuditEvent)
@@ -3741,6 +3761,39 @@ class PlatformService:
         ]
         period_completed_tasks = [item for item in period_tasks if item.status == "done"]
         task_denominator = sum(1 for item in period_tasks if item.status != "cancelled")
+        completed_review_jobs = [
+            item for item in processing_jobs
+            if item.completed_at is not None
+            and item.started_at is not None
+            and in_period(item.completed_at)
+            and item.status == "succeeded"
+        ]
+        average_review_completion_hours = round(
+            sum((aware(item.completed_at) - aware(item.started_at)).total_seconds() for item in completed_review_jobs)
+            / len(completed_review_jobs)
+            / 3600,
+            1,
+        ) if completed_review_jobs else 0
+        obligation_cutoff = generated_at + timedelta(days=30)
+        upcoming_obligations = sum(
+            1 for item in lifecycle_items
+            if generated_at <= aware(item.due_at) <= obligation_cutoff
+        )
+        material_findings: list[dict[str, Any]] = []
+        for contract in period_contracts:
+            if not contract.review:
+                continue
+            findings = json_load(contract.review.analysis_json, {}).get("risk_assessment", [])
+            material_findings.extend(item for item in findings if isinstance(item, dict))
+        evidence_backed_findings = sum(
+            1 for item in material_findings
+            if bool(item.get("quote"))
+            or (
+                isinstance(item.get("evidence"), dict)
+                and bool(item["evidence"].get("quote") or item["evidence"].get("excerpt"))
+            )
+        )
+        evidence_coverage = round((evidence_backed_findings / len(material_findings)) * 100) if material_findings else 0
 
         contract_type_counts: dict[str, int] = {}
         for contract in period_contracts:
@@ -3806,7 +3859,7 @@ class PlatformService:
                 actor_user_id=event.actor_user_id,
                 actor_name=actors[event.actor_user_id].display_name
                 if event.actor_user_id in actors
-                else "Lenslayer system",
+                else "LensLayer system",
                 contract_id=event.contract_id,
                 contract_title=activity_contracts[event.contract_id].title
                 if event.contract_id in activity_contracts
@@ -3828,6 +3881,12 @@ class PlatformService:
                 1 for item in period_contracts if item.status in {"queued", "processing", "running"}
             ),
             contracts_failed=sum(1 for item in period_contracts if item.status == "failed"),
+            review_completed_count=len(completed_review_jobs),
+            average_review_completion_hours=average_review_completion_hours,
+            upcoming_obligations=upcoming_obligations,
+            material_findings_total=len(material_findings),
+            evidence_backed_findings=evidence_backed_findings,
+            evidence_coverage=evidence_coverage,
             tasks_total=len(period_tasks),
             tasks_active=len(active_tasks),
             tasks_overdue=len(overdue_tasks),
@@ -3837,7 +3896,7 @@ class PlatformService:
             if task_denominator
             else 0,
             verification_total=len(period_cases),
-            verification_pending=sum(1 for item in period_cases if item.status == "pending"),
+            verification_pending=sum(1 for item in period_cases if item.status in {"pending", "in_review", "needs_information"}),
             verification_approved=sum(1 for item in period_cases if item.status == "approved"),
             verification_escalated=sum(1 for item in period_cases if item.status == "escalated"),
             verification_rejected=sum(1 for item in period_cases if item.status == "rejected"),
@@ -3871,7 +3930,7 @@ class PlatformService:
     def report_csv(report: ReportOverviewResponse) -> str:
         output = io.StringIO()
         writer = csv.writer(output)
-        writer.writerow(["Lenslayer report", report.range, report.generated_at.isoformat()])
+        writer.writerow(["LensLayer report", report.range, report.generated_at.isoformat()])
         writer.writerow([])
         writer.writerow(["Section", "Metric", "Value"])
         metrics = [
@@ -3879,6 +3938,12 @@ class PlatformService:
             ("Contracts", "Ready", report.contracts_ready),
             ("Contracts", "Processing", report.contracts_processing),
             ("Contracts", "Failed", report.contracts_failed),
+            ("Contracts", "Completed reviews", report.review_completed_count),
+            ("Contracts", "Average review completion hours", report.average_review_completion_hours),
+            ("Contracts", "Upcoming obligations in 30 days", report.upcoming_obligations),
+            ("Evidence", "Material findings", report.material_findings_total),
+            ("Evidence", "Cited findings", report.evidence_backed_findings),
+            ("Evidence", "Coverage", f"{report.evidence_coverage}%"),
             ("Tasks", "Created", report.tasks_total),
             ("Tasks", "Currently active", report.tasks_active),
             ("Tasks", "Currently overdue", report.tasks_overdue),

@@ -10,7 +10,7 @@ def build_markdown_report(analysis, source_name, context, notes=""):
     lines = [
         f"# {_value(analysis.get('title') or analysis.get('contract_type'), 'Contract review')}",
         "",
-        "> Lenslayer provides education and first-pass triage, not legal advice.",
+        "> LensLayer provides education and first-pass triage, not legal advice.",
         "",
         f"- Source: {_value(source_name)}",
         f"- Contract type: {_value(analysis.get('contract_type'))}",
@@ -77,7 +77,7 @@ def build_docx_report(analysis, source_name, context, notes=""):
 
     document = Document()
     document.add_heading(_value(analysis.get("title") or analysis.get("contract_type"), "Contract review"), 0)
-    document.add_paragraph("Lenslayer provides education and first-pass triage, not legal advice.")
+    document.add_paragraph("LensLayer provides education and first-pass triage, not legal advice.")
     for label, value in [
         ("Source", source_name),
         ("Contract type", analysis.get("contract_type")),
@@ -131,7 +131,7 @@ def build_pdf_report(analysis, source_name, context, notes=""):
     styles = getSampleStyleSheet()
     doc = SimpleDocTemplate(output, pagesize=A4, rightMargin=18 * mm, leftMargin=18 * mm, topMargin=16 * mm, bottomMargin=16 * mm)
     story = [Paragraph(_value(analysis.get("title") or analysis.get("contract_type"), "Contract review"), styles["Title"])]
-    story.append(Paragraph("Lenslayer provides education and first-pass triage, not legal advice.", styles["Italic"]))
+    story.append(Paragraph("LensLayer provides education and first-pass triage, not legal advice.", styles["Italic"]))
     story.append(Spacer(1, 8))
     story.append(Paragraph(f"Source: {_value(source_name)}<br/>Reviewing as: {_value(context.get('party_role'))}<br/>Governing law: {_value(analysis.get('governing_law'))}", styles["BodyText"]))
     story.extend([Spacer(1, 10), Paragraph("Executive summary", styles["Heading1"]), Paragraph(_value(analysis.get("executive_summary")), styles["BodyText"])])

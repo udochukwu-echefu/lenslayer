@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createContext, useContext, useMemo, useState } from "react";
-import { api } from "@/lib/api";
+import { api, isDemoWorkspace } from "@/lib/api";
 import type { Organization, Role, User } from "@/lib/types";
 
 type WorkspaceValue = {
@@ -13,6 +13,7 @@ type WorkspaceValue = {
   canUpload: boolean;
   canDelete: boolean;
   canManageTeam: boolean;
+  isDemo: boolean;
   isLoading: boolean;
   error: Error | null;
   selectOrganization: (id: string) => void;
@@ -36,6 +37,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     canUpload: activeRole === "owner" || activeRole === "admin" || activeRole === "reviewer",
     canDelete: activeRole === "owner" || activeRole === "admin",
     canManageTeam: activeRole === "owner" || activeRole === "admin",
+    isDemo: isDemoWorkspace(activeOrganization?.id),
     user: userQuery.data ?? null,
     isLoading: organizationsQuery.isLoading || userQuery.isLoading,
     error: (organizationsQuery.error ?? userQuery.error) as Error | null,

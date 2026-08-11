@@ -73,7 +73,7 @@ function IntegrationAdmin({ organizationId, canManageTeam }: { organizationId: s
 }
 
 export default function SettingsPage() {
-  const { activeOrganization, user, canManageTeam } = useWorkspace();
+  const { activeOrganization, user, canManageTeam, isDemo } = useWorkspace();
   const organizationId = activeOrganization?.id ?? "";
   const queryClient = useQueryClient();
   const settingsQuery = useQuery({
@@ -104,6 +104,23 @@ export default function SettingsPage() {
   if (settingsQuery.error) return <div className="page"><PageError error={settingsQuery.error} /></div>;
   if (!settingsQuery.data) return null;
 
+  if (!canManageTeam) return <div className="page settings-page viewer-settings">
+    <div className="page-heading"><div><h1 className="page-title">Settings</h1><p className="page-description">Read-only workspace policy and access summary.</p></div></div>
+    <section className="viewer-summary" aria-labelledby="viewer-summary-title">
+      <div><ShieldCheck size={19} /><div><h2 id="viewer-summary-title">Viewer access</h2><p>{isDemo ? "This read-only demo is isolated from private customer workspaces." : "Workspace administrators manage these settings."}</p></div></div>
+      <dl>
+        <div><dt>Workspace</dt><dd>{settingsQuery.data.name}</dd></div>
+        <div><dt>Role</dt><dd>{titleCase(activeOrganization?.role ?? "viewer")}</dd></div>
+        <div><dt>Retention policy</dt><dd>{settingsQuery.data.default_retention_days} days</dd></div>
+        <div><dt>Notification behavior</dt><dd>{settingsQuery.data.notification_review_ready && settingsQuery.data.notification_review_failed ? "Review completion and failure alerts" : "Limited alerts"}</dd></div>
+        <div><dt>Connected integrations</dt><dd>{isDemo ? "None in the synthetic demo" : "Managed by administrators"}</dd></div>
+        <div><dt>Security boundary</dt><dd>{isDemo ? "Synthetic records only; no private customer data" : "Private workspace access controls apply"}</dd></div>
+      </dl>
+    </section>
+    <section className="managed-settings"><h2>Managed by workspace administrators</h2><p>Workspace naming, retention defaults, notifications, integrations, API keys, webhooks, and team permissions.</p></section>
+    <section className="viewer-identity"><h2>Demo identity</h2><dl><div><dt>Display name</dt><dd>{user?.display_name}</dd></div><div><dt>Viewer ID</dt><dd className="mono">{user?.id}</dd></div></dl></section>
+  </div>;
+
   const initialDraft: SettingsDraft = {
     name: settingsQuery.data.name,
     default_retention_days: settingsQuery.data.default_retention_days,
@@ -125,7 +142,7 @@ export default function SettingsPage() {
   });
 
   return <div className="page settings-page">
-    <div className="page-heading"><div><p className="eyebrow">Workspace administration</p><h1 className="page-title">Settings</h1><p className="page-description">Set workspace defaults without weakening per-contract privacy choices.</p></div>{canManageTeam && <button className="button" disabled={!changed || saveMutation.isPending || draft.name.trim().length < 2} onClick={() => saveMutation.mutate(draft)}><Save size={15} />{saveMutation.isPending ? "Saving…" : "Save changes"}</button>}</div>
+    <div className="page-heading"><div><h1 className="page-title">Settings</h1><p className="page-description">Workspace defaults, integrations, notifications, and security controls.</p></div>{canManageTeam && <button className="button" disabled={!changed || saveMutation.isPending || draft.name.trim().length < 2} onClick={() => saveMutation.mutate(draft)}><Save size={15} />{saveMutation.isPending ? "Saving…" : "Save changes"}</button>}</div>
     {saveMutation.isSuccess && <p className="form-success" role="status">Workspace settings saved.</p>}
     {saveMutation.error && <p className="form-error" role="alert">{saveMutation.error.message}</p>}
     <div className="settings-layout"><nav aria-label="Settings sections"><a href="#workspace" className="active">Workspace</a><a href="#data">Review defaults</a><a href="#notifications">Notifications</a><a href="#integrations">Integrations</a><a href="#identity">Identity</a><a href="#security">Security</a></nav><div className="settings-content">
@@ -133,8 +150,8 @@ export default function SettingsPage() {
       <section id="data" className="settings-section"><header><span><ShieldCheck size={18} /></span><div><h2>Review defaults</h2><p>Pre-fill new contract uploads. Reviewers can still choose stricter handling per contract.</p></div></header><div className="settings-form-row"><label htmlFor="retention">Default retention</label><div><AppSelect id="retention" value={String(draft.default_retention_days)} disabled={!canManageTeam} onValueChange={(value) => updateDraft({ ...draft, default_retention_days: Number(value) as 7 | 30 | 90 | 365 })} options={[{ value: "7", label: "7 days" }, { value: "30", label: "30 days" }, { value: "90", label: "90 days" }, { value: "365", label: "365 days" }]} /><small>Contracts remain deletable at any time.</small></div></div><label className="settings-toggle"><input type="checkbox" checked={draft.default_retain_document} disabled={!canManageTeam} onChange={(event) => updateDraft({ ...draft, default_retain_document: event.target.checked })} /><span><strong>Retain original document by default</strong><small>Needed for later source downloads and reprocessing.</small></span></label><label className="settings-toggle"><input type="checkbox" checked={draft.default_retain_source_text} disabled={!canManageTeam} onChange={(event) => updateDraft({ ...draft, default_retain_source_text: event.target.checked })} /><span><strong>Retain extracted text by default</strong><small>Required for evidence-linked contract Q&amp;A after processing.</small></span></label></section>
       <section id="notifications" className="settings-section"><header><span><BellRing size={18} /></span><div><h2>Notifications</h2><p>Choose which review events create in-product notifications.</p></div></header><label className="settings-toggle"><input type="checkbox" checked={draft.notification_review_ready} disabled={!canManageTeam} onChange={(event) => updateDraft({ ...draft, notification_review_ready: event.target.checked })} /><span><strong>Review completed</strong><small>Notify workspace members when a contract is ready.</small></span></label><label className="settings-toggle"><input type="checkbox" checked={draft.notification_review_failed} disabled={!canManageTeam} onChange={(event) => updateDraft({ ...draft, notification_review_failed: event.target.checked })} /><span><strong>Review failed</strong><small>Notify workspace members when processing needs attention.</small></span></label></section>
       <section id="integrations" className="settings-section"><header><span><PlugZap size={18} /></span><div><h2>Intake and integrations</h2><p>Connect intake sources, create public API keys, and register webhook subscribers.</p></div></header><IntegrationAdmin organizationId={organizationId} canManageTeam={canManageTeam} /></section>
-      <section id="identity" className="settings-section"><header><span><UserRound size={18} /></span><div><h2>Public access</h2><p>The temporary identity used across the open workspace.</p></div></header><dl><div><dt>Display name</dt><dd>{user?.display_name}</dd></div><div><dt>Email</dt><dd>{user?.email}</dd></div><div><dt>User ID</dt><dd className="mono">{user?.id}</dd></div></dl><p className="settings-note">This public preview is read-only. Account identity and private workspaces will return when authentication is restored.</p></section>
-      <section id="security" className="settings-section"><header><span><KeyRound size={18} /></span><div><h2>Security boundary</h2><p>Private workspace data remains disconnected from this public preview.</p></div></header><p className="settings-note">Public visitors receive an empty, read-only workspace. The dormant authenticated API path remains protected and is not exposed by public access mode.</p></section>
+      <section id="identity" className="settings-section"><header><span><UserRound size={18} /></span><div><h2>Account identity</h2><p>The authenticated identity used for attributable workspace actions.</p></div></header><dl><div><dt>Display name</dt><dd>{user?.display_name}</dd></div><div><dt>Email</dt><dd>{user?.email}</dd></div><div><dt>User ID</dt><dd className="mono">{user?.id}</dd></div></dl></section>
+      <section id="security" className="settings-section"><header><span><KeyRound size={18} /></span><div><h2>Security boundary</h2><p>Workspace data remains scoped to authorised members and configured retention controls.</p></div></header></section>
       <section className="settings-section"><header><span><UsersRound size={18} /></span><div><h2>Team access</h2><p>Membership, invitations, and least-privilege roles.</p></div></header><p className="settings-note">Owners and administrators manage access in Team. Invitation and role changes appear in the audit record.</p><Link className="button secondary settings-team-link" href="/team">Open team management</Link></section>
     </div></div>
   </div>;

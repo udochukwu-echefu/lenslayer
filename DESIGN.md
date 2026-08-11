@@ -1,57 +1,59 @@
-# Lenslayer Design System
+# LensLayer Design System
 
 ## Direction
 
-A bright, precise product workspace inspired by a well-lit review desk and blue annotation ink. Cool white working surfaces keep long documents readable, a deep-blue navigation rail anchors the application, and clear blue actions make the next step easy to find. Semantic risk colors remain independent from the brand palette.
+LensLayer is a focused evidence workspace for legal, procurement, compliance, and operations teams. It should feel calm, rigorous, and operational: restrained blue navigation, readable document surfaces, compact state treatment, and clear links from conclusions to supporting evidence.
 
 ## Color
 
-- Main canvas: `#F8FBFF`
-- Cloud secondary background: `#E3F2FD`
-- Sky border and quiet emphasis: `#90CAF9`
-- Bright blue active signal: `#2196F3`
-- Deep blue navigation and primary action: `#0D47A1`
-- Accessible blue hover and text accent: `#1565C0`
-- Primary text: `#102A43`
-- Muted text: `#486581`
-- High risk: `#A8453C`
-- Medium risk: `#946515`
-- Previous botanical green theme backup: `branding/theme-backups/2026-08-02-botanical-green/`
-- Previous dark coral theme backup: `branding/theme-backups/2026-07-29-dark-coral/`
+- Canvas: `#F4F6F9`
+- Primary surface: `#FAFBFC`
+- Raised surface: `#EBEFF4`
+- Quiet border: `#D5DCE5`
+- Strong border: `#B8C3D0`
+- Primary text: `#18243A`
+- Muted text: `#526174`
+- Sidebar ink blue: `#1D304A`
+- Action and selection cobalt: `#3159B8`
+- Cobalt hover: `#274A9D`
+- Success: `#477458`
+- Warning: `#986D24`
+- Error: `#B4544D`
+
+Use cobalt for primary actions, focus, and the current selection only. Ordinary sections and fields use neutral surface contrast and quiet borders. Do not use gradients, glows, glass effects, or decorative shadows.
 
 ## Typography
 
-Use Figtree for interface and display text with a system sans-serif fallback. Body copy is 0.95 to 1rem at 1.55 line height. Labels use 0.72 to 0.78rem uppercase text with moderate tracking. Long prose is capped near 70 characters.
+Use Figtree with a system sans-serif fallback. Page titles are direct operational labels, not marketing headlines. Letter spacing is zero. Use sentence case for navigation, headings, labels, and actions. Keep descriptions short and avoid repeated eyebrow labels.
 
 ## Layout
 
-- Persistent 248px sidebar on desktop, replaced by a mobile drawer at smaller breakpoints
+- Persistent 248px desktop sidebar, replaced by a grouped mobile drawer
+- Navigation groups: Work, Agreements, Governance, and Administration
 - Main content capped near 1180px
-- New-review setup is a primary main-page workflow: upload, review context, policy, privacy, consent, then action
-- Sidebar is secondary navigation only: account, current review controls, and saved review history
-- Compact report summary strip, not oversized metric cards
-- Sticky report navigation where platform behavior allows
-- Single-column risk and evidence reading flow
-- Responsive breakpoints at 900px and 640px
+- Open sections separated by whitespace and thin dividers
+- Cards reserved for independent records or framed tools
+- Compact contextual empty, error, restricted, and partial-data states
+- Calendar switches to an agenda on small screens
+- Reports reveal sections only when supporting records exist
 
 ## Components
 
-- Buttons: minimum 44px height, subtle full border, clear focus ring
-- Findings: bordered rows with severity, evidence, impact, and action
-- Evidence: quiet tinted block with source label and quoted excerpt
-- Status pills: semantic color plus text, never color alone
-- Empty states: short instructions and one clear next action
-- Loading: staged status text for parsing, analysis, and retrieval setup
-- Workspace switcher: two explicit product modes, Contract Review and Verify Onboarding
-- Verify queue: applicant, risk score, flag count, and suggested action at a glance
-- Reconciliation matrix: submitted and extracted values shown without hiding missing fields
-- Evidence panels: source, exact value, field, location, and extraction confidence
-- Decision history: recommendation, human decision, rationale, reviewer, and timestamp
-- Review policy: playbook, retention period, and source-text choice grouped before upload
-- Review entry: one prominent `Review contract` action, with the sample agreement as a secondary path
-- Playbook result: preferred position, fallback, escalation trigger, owner, matched finding, and evidence
-- Saved review history: owner-scoped records labelled as saved rather than session-only
+- Interactive targets: at least 44 by 44px for important controls
+- Buttons and inputs: 8 to 10px radius
+- Major independent panels: 12 to 14px radius
+- Status indicators: text plus semantic color, never color alone
+- Findings: severity, recommendation label, source excerpt, and verification state
+- Human decisions: reviewer identity, rationale, and timestamp
+- Search: global retrieval is distinct from register filtering
+- Public preview: clearly synthetic, read-only, and isolated from customer workspaces
+- Empty states: one useful sentence and only an action the current role can perform
+- Loading skeletons: approximate the destination layout
+
+## Evidence Behavior
+
+Every material finding and generated answer links to a source excerpt. Unsupported answers are blocked. Automated recommendations never masquerade as decisions, and confidence never replaces verification status. Reports distinguish automated findings from attributable human outcomes.
 
 ## Motion
 
-Use only 150 to 220ms state transitions with ease-out-quart. Respect `prefers-reduced-motion`. Do not animate layout properties.
+Use 150 to 220ms state transitions for feedback only. Respect `prefers-reduced-motion` and do not animate layout properties.

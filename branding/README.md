@@ -1,6 +1,6 @@
-# Lenslayer Brand Package
+# LensLayer Brand Package
 
-This directory contains the Lenslayer v1.0 identity system, The Lens Loop.
+This directory contains the LensLayer v1.0 identity system, The Lens Loop.
 
 ## Start here
 

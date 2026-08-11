@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, CalendarDays, CheckCircle2, Clock3, FileWarning, Upload } from "lucide-react";
+import { ArrowRight, CalendarDays, CircleCheckBig, FileWarning, Upload } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { ContractList } from "@/components/contract-list";
@@ -16,15 +16,17 @@ function needsAttention(contract: Contract) { return ["failed", "ready"].include
 
 export default function TodayPage() {
   const [now] = useState(() => Date.now());
-  const { activeOrganization, user, canUpload } = useWorkspace();
+  const { activeOrganization, canUpload, isDemo, user } = useWorkspace();
   const query = useQuery({ queryKey: ["contracts", activeOrganization?.id], queryFn: () => api.contracts(activeOrganization!.id), enabled: Boolean(activeOrganization) });
   const taskQuery = useQuery({ queryKey: ["tasks", activeOrganization?.id], queryFn: () => api.tasks(activeOrganization!.id), enabled: Boolean(activeOrganization) });
+  const lifecycleQuery = useQuery({ queryKey: ["lifecycle", activeOrganization?.id], queryFn: () => api.lifecycle(activeOrganization!.id, { status: "active" }), enabled: Boolean(activeOrganization) });
   const contracts = query.data ?? [];
   const attention = contracts.filter(needsAttention);
-  const processing = contracts.filter((contract) => ["queued", "processing", "running"].includes(contract.status));
-  const completed = contracts.filter((contract) => contract.status === "ready");
+  const ready = contracts.filter((contract) => contract.status === "ready");
+  const failed = contracts.filter((contract) => contract.status === "failed");
   const activeTasks = (taskQuery.data ?? []).filter((task) => ["open", "in_progress"].includes(task.status));
-  const myTasks = activeTasks.filter((task) => task.assigned_to_user_id === user?.id).slice(0, 5);
+  const myTasks = (isDemo ? activeTasks : activeTasks.filter((task) => task.assigned_to_user_id === user?.id)).slice(0, 5);
+  const noticeDeadlines = (lifecycleQuery.data ?? []).filter((item) => ["notice", "renewal"].includes(item.kind) && new Date(item.due_at).getTime() >= now).slice(0, 3);
   const upcoming = activeTasks.filter((task) => {
     const due = dueAtEndOfDay(task.due_at);
     return due !== null && due >= now;
@@ -33,22 +35,22 @@ export default function TodayPage() {
   return (
     <div className="page today-page">
       <div className="page-heading">
-        <div><p className="eyebrow">Today · {activeOrganization?.name}</p><h1 className="page-title">Welcome back, {user?.display_name?.split(" ")[0] ?? "reviewer"}.</h1><p className="page-description">A focused view of reviews that are moving, blocked, or ready for your decision.</p></div>
+        <div><h1 className="page-title">Workspace overview</h1><p className="page-description">Reviews, processing issues, and verified dates that need a human next step.</p></div>
         {canUpload && <Link href="/contracts/new" className="button"><Upload size={16} />Upload contract</Link>}
       </div>
 
-      <div className="signal-strip" aria-label="Workspace status">
-        <div><Clock3 size={17} /><strong>{processing.length}</strong><span>In review</span></div>
-        <div><FileWarning size={17} /><strong>{contracts.filter((item) => item.status === "failed").length}</strong><span>Blocked</span></div>
-        <div><CheckCircle2 size={17} /><strong>{completed.length}</strong><span>Ready to inspect</span></div>
+      <div className="attention-links" aria-label="Items needing attention">
+        {ready.length > 0 && <Link href="/inbox"><CircleCheckBig size={17} /><div><strong>{ready.length}</strong><span>Reviews need a decision</span></div><ArrowRight size={15} /></Link>}
+        {failed.length > 0 && <Link href="/contracts?status=failed" className="danger"><FileWarning size={17} /><div><strong>{failed.length}</strong><span>Processing failure{failed.length === 1 ? "" : "s"}</span></div><ArrowRight size={15} /></Link>}
+        {noticeDeadlines.length > 0 && <Link href="/calendar"><CalendarDays size={17} /><div><strong>{noticeDeadlines.length}</strong><span>Upcoming notice deadline{noticeDeadlines.length === 1 ? "" : "s"}</span></div><ArrowRight size={15} /></Link>}
       </div>
 
       <section className="section">
         <div className="section-heading"><div><h2>Decision queue</h2><p>Reviews that need a human next step</p></div><Link className="section-link" href="/inbox">Open inbox <ArrowRight size={13} /></Link></div>
-        {query.isLoading ? <PageLoading rows={3} /> : query.error ? <PageError error={query.error} /> : attention.length ? <ContractList contracts={attention} limit={5} /> : <EmptyContracts compact />}
+        {query.isLoading ? <PageLoading rows={3} /> : query.error ? <PageError error={query.error} /> : attention.length ? <ContractList contracts={attention} limit={5} /> : <EmptyContracts compact message="No reviews need your attention." />}
       </section>
 
-      <section className="section"><div className="section-heading"><div><h2>My actions</h2><p>Assigned work that still needs a person</p></div><Link className="section-link" href="/tasks">Open tasks <ArrowRight size={13} /></Link></div>{taskQuery.isLoading ? <PageLoading rows={3} /> : taskQuery.error ? <PageError error={taskQuery.error} /> : <TaskList tasks={myTasks} compact empty="Nothing is assigned to you right now." />}</section>
+      <section className="section"><div className="section-heading"><div><h2>{isDemo ? "Assigned actions" : "My actions"}</h2><p>Human-owned work linked to contract evidence</p></div><Link className="section-link" href="/tasks">Open tasks <ArrowRight size={13} /></Link></div>{taskQuery.isLoading ? <PageLoading rows={3} /> : taskQuery.error ? <PageError error={taskQuery.error} /> : <TaskList tasks={myTasks} compact empty="No active tasks." />}</section>
 
       <section className="section today-grid">
         <div>

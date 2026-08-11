@@ -63,7 +63,7 @@ export function TaskComposer({
   }
 
   return <form className="task-composer" onSubmit={submit}>
-    <div className="task-composer-heading"><span><ClipboardPlus size={18} /></span><div><h2>Create an action</h2><p>Assign a clear human next step. Lenslayer will not create or complete tasks automatically.</p></div></div>
+    <div className="task-composer-heading"><span><ClipboardPlus size={18} /></span><div><h2>Create an action</h2><p>Assign a clear human next step. LensLayer will not create or complete tasks automatically.</p></div></div>
     <div className="task-form-grid">
       <div className="field task-title-field"><label htmlFor="task-title">Task</label><input className="input" id="task-title" name="title" defaultValue={title} placeholder="e.g. Confirm the renewal notice window" minLength={2} maxLength={512} required autoFocus={Boolean(title)} /></div>
       <div className="field"><label htmlFor="task-due">Due date</label><input className="input" id="task-due" name="due_at" type="date" /></div>

@@ -26,7 +26,7 @@ def _tracked_text(paragraph: Any, old_text: str, new_text: str, change_id: int) 
     if old_text:
         deleted = OxmlElement("w:del")
         deleted.set(qn("w:id"), str(change_id))
-        deleted.set(qn("w:author"), "Lenslayer")
+        deleted.set(qn("w:author"), "LensLayer")
         deleted.set(qn("w:date"), timestamp)
         run = OxmlElement("w:r")
         text = OxmlElement("w:delText")
@@ -37,7 +37,7 @@ def _tracked_text(paragraph: Any, old_text: str, new_text: str, change_id: int) 
         paragraph_element.append(deleted)
     inserted = OxmlElement("w:ins")
     inserted.set(qn("w:id"), str(change_id + 1))
-    inserted.set(qn("w:author"), "Lenslayer")
+    inserted.set(qn("w:author"), "LensLayer")
     inserted.set(qn("w:date"), timestamp)
     run = OxmlElement("w:r")
     text = OxmlElement("w:t")
@@ -71,7 +71,7 @@ def build_redline(source: bytes, findings: list[dict[str, Any]]) -> tuple[bytes,
                 document.add_comment(
                     note,
                     text=str(finding.get("recommendation") or finding.get("explanation") or "Review this proposed wording."),
-                    author="Lenslayer",
+                    author="LensLayer",
                     initials="LL",
                 )
                 matched_ids.add(index)
@@ -79,7 +79,7 @@ def build_redline(source: bytes, findings: list[dict[str, Any]]) -> tuple[bytes,
                 break
     unmatched = [(index, finding) for index, finding in enumerate(changes) if index not in matched_ids]
     if unmatched:
-        document.add_heading("Lenslayer proposed changes", level=1)
+        document.add_heading("LensLayer proposed changes", level=1)
         document.add_paragraph(
             "These suggestions could not be anchored to an exact paragraph. Review and place them before accepting."
         )
@@ -90,7 +90,7 @@ def build_redline(source: bytes, findings: list[dict[str, Any]]) -> tuple[bytes,
             document.add_comment(
                 note,
                 text=str(finding.get("recommendation") or finding.get("title") or "Review this proposed wording."),
-                author="Lenslayer",
+                author="LensLayer",
                 initials="LL",
             )
             change_id += 2

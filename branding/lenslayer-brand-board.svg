@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1200" role="img" aria-labelledby="title desc">
-  <title id="title">Lenslayer brand identity board</title>
-  <desc id="desc">The Lens Loop logo, wordmark, color palette, typography, and sample applications for Lenslayer.</desc>
+  <title id="title">LensLayer brand identity board</title>
+  <desc id="desc">The Lens Loop logo, wordmark, color palette, typography, and sample applications for LensLayer.</desc>
   <defs>
     <mask id="mark-cut-a">
       <rect width="512" height="512" fill="white" />
@@ -25,7 +25,7 @@
         <circle cx="232" cy="256" r="208" fill="#E84545" mask="url(#mark-cut-a)" />
         <path d="M232 278H424L442 350H232Z" fill="#F4F1E8" />
       </g>
-      <text x="90" y="485" fill="#F4F1E8" font-size="80" font-weight="800" letter-spacing="-4">Lenslayer</text>
+      <text x="90" y="485" fill="#F4F1E8" font-size="80" font-weight="800" letter-spacing="-4">LensLayer</text>
       <text x="96" y="535" fill="#E84545" font-size="18" font-weight="800" letter-spacing="4">EVIDENCE-LED DOCUMENT INTELLIGENCE</text>
       <text x="96" y="575" fill="#F4F1E8" opacity=".66" font-size="17">Find the clause. Follow the evidence. Decide with context.</text>
     </g>
@@ -58,7 +58,7 @@
         <circle cx="232" cy="256" r="208" fill="#E84545" mask="url(#mark-cut-a)" />
         <path d="M232 278H424L442 350H232Z" fill="#903749" />
       </g>
-      <text x="112" y="74" fill="#2B2E4A" font-size="28" font-weight="800" letter-spacing="-1">Lenslayer</text>
+      <text x="112" y="74" fill="#2B2E4A" font-size="28" font-weight="800" letter-spacing="-1">LensLayer</text>
       <text x="30" y="132" fill="#903749" font-size="13" font-weight="800" letter-spacing="2">REVIEW REPORT / LL-2048</text>
       <text x="30" y="172" fill="#2B2E4A" font-size="25" font-weight="700">Residential Lease Agreement</text>
     </g>
@@ -67,7 +67,7 @@
       <rect width="450" height="210" rx="22" fill="#2B2E4A" />
       <circle cx="58" cy="58" r="30" fill="#E84545" />
       <path d="M58 60H84L89 75H58Z" fill="#F4F1E8" />
-      <text x="108" y="68" fill="#F4F1E8" font-size="26" font-weight="800">Lenslayer Verify</text>
+      <text x="108" y="68" fill="#F4F1E8" font-size="26" font-weight="800">LensLayer Verify</text>
       <text x="32" y="132" fill="#E84545" font-size="13" font-weight="800" letter-spacing="2">EVIDENCE STATUS</text>
       <text x="32" y="176" fill="#F4F1E8" font-size="25" font-weight="700">Escalate for human review</text>
     </g>

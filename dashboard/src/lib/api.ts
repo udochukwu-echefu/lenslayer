@@ -1,86 +1,11 @@
 import type { ApiKey, ApiKeyCreated, ApprovalRequest, ApprovalStatus, AuditEvent, Contract, ContractActivity, ContractComment, ContractCreated, ContractDecision, ContractDecisionName, ContractQuestionAnswer, ContractVersion, CounterpartyResponse, DealPassport, ExternalShare, ExternalShareCreated, IntakeAddress, IntegrationConnection, IntegrationImport, IntegrationProvider, IntegrationProviderDescriptor, Invitation, InvitationAccepted, InvitationCreated, InvitationPreview, Job, LifecycleItem, LifecycleKind, Membership, NegotiationItem, NegotiationItemCategory, NegotiationItemStatus, NegotiationSummary, Notification, Organization, OrganizationSettings, PortfolioAnswer, Recurrence, ReportOverview, ReportRange, Review, Role, SecureIntakeLink, SecureIntakeLinkCreated, SecureIntakePreview, SharedContract, TaskCreate, TaskStatus, TaskUpdate, User, VerificationAction, VerificationAssignment, VerificationCase, VerificationCaseSummary, VerificationDecision, VerificationPriority, VerificationReconciliation, VerificationStatus, VerificationUploadedDocument, WebhookCreated, WebhookDelivery, WebhookSubscription, WorkflowTask } from "./types";
+import { DEMO_WORKSPACE_ID, getDemoResponse } from "./demo-data";
 
 const API_PREFIX = "/api/platform/api/v1";
-const PUBLIC_WORKSPACE_ID = "public-workspace";
 const PUBLIC_ACCESS_ENABLED = process.env.NEXT_PUBLIC_LENSLAYER_PUBLIC_ACCESS !== "false";
 
-const publicUser: User = {
-  id: "public-visitor",
-  email: "public@lenslayer.app",
-  display_name: "Public Visitor",
-};
-
-const publicOrganization: Organization = {
-  id: PUBLIC_WORKSPACE_ID,
-  name: "Lenslayer Public Workspace",
-  slug: "public-workspace",
-  role: "viewer",
-  created_at: "2026-08-02T00:00:00.000Z",
-};
-
-function publicReport(range: ReportRange): ReportOverview {
-  const generatedAt = new Date().toISOString();
-  return {
-    organization_id: PUBLIC_WORKSPACE_ID,
-    range,
-    generated_at: generatedAt,
-    period_start: null,
-    period_end: generatedAt,
-    contracts_total: 0,
-    contracts_ready: 0,
-    contracts_processing: 0,
-    contracts_failed: 0,
-    tasks_total: 0,
-    tasks_active: 0,
-    tasks_overdue: 0,
-    tasks_due_soon: 0,
-    tasks_completed: 0,
-    task_completion_rate: 0,
-    verification_total: 0,
-    verification_pending: 0,
-    verification_approved: 0,
-    verification_escalated: 0,
-    verification_rejected: 0,
-    verification_average_risk: 0,
-    verification_overrides: 0,
-    audit_event_count: 0,
-    contract_types: [],
-    active_task_priorities: [],
-    timeline: [],
-    workload: [],
-    recent_activity: [],
-  };
-}
-
-function publicPreviewResponse<T>(path: string, init?: RequestInit): T | undefined {
-  const method = (init?.method ?? "GET").toUpperCase();
-  const url = new URL(path, "https://lenslayer.local");
-  const pathname = url.pathname;
-  const isWorkspacePath = pathname === "/me" || pathname === "/organizations" || pathname.startsWith(`/organizations/${PUBLIC_WORKSPACE_ID}/`);
-  if (!isWorkspacePath) return undefined;
-  if (method !== "GET") throw new ApiError("The public workspace is read-only. Editing will return when workspace accounts are restored.", 403);
-  if (pathname === "/me") return publicUser as T;
-  if (pathname === "/organizations") return [publicOrganization] as T;
-  if (pathname.endsWith("/settings")) return {
-    organization_id: PUBLIC_WORKSPACE_ID,
-    name: publicOrganization.name,
-    slug: publicOrganization.slug,
-    default_retention_days: 30,
-    default_retain_document: false,
-    default_retain_source_text: false,
-    notification_review_ready: true,
-    notification_review_failed: true,
-    updated_at: publicOrganization.created_at,
-  } as T;
-  if (pathname.endsWith("/reports/overview")) return publicReport((url.searchParams.get("range") ?? "30d") as ReportRange) as T;
-
-  const collectionPaths = [
-    "/contracts", "/tasks", "/verification-cases", "/lifecycle", "/members", "/invitations",
-    "/notifications", "/integrations", "/integrations/imports", "/integrations/providers",
-    "/api-keys", "/webhooks", "/webhook-deliveries", "/secure-intake-links",
-  ];
-  if (collectionPaths.some((suffix) => pathname.endsWith(suffix))) return [] as T;
-  throw new ApiError("This item is not available in the public workspace.", 404);
+export function isDemoWorkspace(organizationId?: string | null) {
+  return organizationId === DEMO_WORKSPACE_ID;
 }
 
 export class ApiError extends Error {
@@ -89,8 +14,9 @@ export class ApiError extends Error {
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   if (PUBLIC_ACCESS_ENABLED) {
-    const preview = publicPreviewResponse<T>(path, init);
-    if (preview !== undefined) return preview;
+    const preview = getDemoResponse(path, init);
+    if (preview.handled && "error" in preview) throw new ApiError(preview.error, preview.status);
+    if (preview.handled) return preview.value as T;
   }
   const response = await fetch(`${API_PREFIX}${path}`, { ...init, cache: "no-store" });
   if (!response.ok) {

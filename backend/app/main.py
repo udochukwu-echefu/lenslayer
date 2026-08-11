@@ -143,7 +143,7 @@ def public_api_token(request: Request) -> str:
     token = request.headers.get("x-lenslayer-api-key", "").strip()
     if token:
         return token
-    raise HTTPException(status_code=401, detail="A Lenslayer API key is required.")
+    raise HTTPException(status_code=401, detail="A LensLayer API key is required.")
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -172,7 +172,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         allow_origins=runtime_settings.cors_origin_list,
         allow_credentials=True,
         allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-        allow_headers=["Authorization", "Content-Type", "X-Lenslayer-User", "X-Lenslayer-Email", "X-Lenslayer-Name"],
+        allow_headers=["Authorization", "Content-Type", "X-LensLayer-User", "X-LensLayer-Email", "X-LensLayer-Name"],
     )
 
     @application.get("/health/live", response_model=HealthResponse, tags=["health"])
@@ -705,7 +705,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         link = service.resolve_secure_intake_link(token, require_active=False)
         organization = service.session.get(Organization, link.organization_id)
         return SecureIntakePreviewResponse(
-            organization_name=organization.name if organization else "Lenslayer workspace",
+            organization_name=organization.name if organization else "LensLayer workspace",
             applicant_name=link.applicant_name,
             message=link.message,
             remaining_uploads=max(link.max_uploads - link.upload_count, 0),

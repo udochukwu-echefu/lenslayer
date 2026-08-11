@@ -3,49 +3,54 @@
 import * as Avatar from "@radix-ui/react-avatar";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BarChart3, Bell, CalendarDays, CheckSquare2, ChevronDown, Files, Inbox, LayoutDashboard, Menu, Plus, Search, Settings, ShieldCheck, Sparkles, UsersRound, X } from "lucide-react";
+import { BarChart3, Bell, CalendarDays, CheckSquare2, ChevronDown, Files, Inbox, LayoutDashboard, Menu, Plus, Search, Settings, ShieldCheck, UsersRound, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { formatRelativeDate, initials } from "@/lib/utils";
 import { BrandMark } from "./brand-mark";
 import { WorkspaceGate } from "./workspace-gate";
 import { useWorkspace } from "./workspace-provider";
 
-const primaryNav = [
-  { href: "/", label: "Today", icon: LayoutDashboard },
-  { href: "/inbox", label: "Inbox", icon: Inbox },
-  { href: "/contracts", label: "Contracts", icon: Files },
-  { href: "/portfolio", label: "Portfolio", icon: Search },
-  { href: "/tasks", label: "Tasks", icon: CheckSquare2 },
-  { href: "/calendar", label: "Calendar", icon: CalendarDays },
-  { href: "/verify", label: "Verify", icon: ShieldCheck },
-  { href: "/reports", label: "Reports", icon: BarChart3 },
-  { href: "/team", label: "Team", icon: UsersRound },
+const navigationGroups = [
+  { label: "Work", items: [
+    { href: "/", label: "Overview", icon: LayoutDashboard },
+    { href: "/inbox", label: "Inbox", icon: Inbox },
+    { href: "/tasks", label: "Tasks", icon: CheckSquare2 },
+    { href: "/calendar", label: "Calendar", icon: CalendarDays },
+  ] },
+  { label: "Agreements", items: [
+    { href: "/contracts", label: "Contracts", icon: Files },
+    { href: "/portfolio", label: "Portfolio", icon: Search },
+  ] },
+  { label: "Governance", items: [
+    { href: "/verify", label: "Identity verification", icon: ShieldCheck },
+    { href: "/reports", label: "Reports", icon: BarChart3 },
+  ] },
+  { label: "Administration", items: [
+    { href: "/team", label: "Team", icon: UsersRound },
+    { href: "/settings", label: "Settings", icon: Settings },
+  ] },
 ];
 
 function Navigation({ close }: { close?: () => void }) {
   const pathname = usePathname();
   return (
     <nav className="side-nav" aria-label="Workspace navigation">
-      <div className="nav-group">
-        {primaryNav.map(({ href, label, icon: Icon }) => {
-          const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
-          return <Link key={href} href={href} className={`nav-link ${active ? "active" : ""}`} aria-current={active ? "page" : undefined} onNavigate={close}><Icon size={17} />{label}</Link>;
-        })}
-      </div>
-      <div className="nav-bottom">
-        <Link href="/settings" className={`nav-link ${pathname.startsWith("/settings") ? "active" : ""}`} onNavigate={close}><Settings size={17} />Settings</Link>
-      </div>
+      {navigationGroups.map((group) => <div className="nav-group" key={group.label}><p>{group.label}</p>{group.items.map(({ href, label, icon: Icon }) => {
+        const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
+        return <Link key={href} href={href} className={`nav-link ${active ? "active" : ""}`} aria-current={active ? "page" : undefined} onNavigate={close}><Icon size={17} />{label}</Link>;
+      })}</div>)}
     </nav>
   );
 }
 
 function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [globalSearch, setGlobalSearch] = useState("");
   const pathname = usePathname();
-  const { activeOrganization, organizations, selectOrganization, user, canUpload } = useWorkspace();
+  const { activeOrganization, organizations, selectOrganization, user, canUpload, isDemo } = useWorkspace();
   const queryClient = useQueryClient();
   const organizationId = activeOrganization?.id ?? "";
   const notificationsQuery = useQuery({
@@ -64,6 +69,16 @@ function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
   });
   const notifications = notificationsQuery.data ?? [];
   const unreadCount = notifications.filter((item) => !item.read_at).length;
+  const contractsQuery = useQuery({ queryKey: ["contracts", organizationId], queryFn: () => api.contracts(organizationId), enabled: Boolean(organizationId) });
+  const tasksQuery = useQuery({ queryKey: ["tasks", organizationId], queryFn: () => api.tasks(organizationId), enabled: Boolean(organizationId) });
+  const searchResults = useMemo(() => {
+    const term = globalSearch.trim().toLowerCase();
+    if (term.length < 2) return [];
+    const contracts = (contractsQuery.data ?? []).filter((item) => `${item.title} ${item.counterparty} ${item.contract_type} ${item.status}`.toLowerCase().includes(term)).slice(0, 4).map((item) => ({ id: item.id, href: `/contracts/${item.id}`, title: item.title, meta: `${item.counterparty} · ${item.status}` }));
+    const tasks = (tasksQuery.data ?? []).filter((item) => `${item.title} ${item.contract_title} ${item.assigned_to_name} ${item.due_at}`.toLowerCase().includes(term)).slice(0, 3).map((item) => ({ id: item.id, href: "/tasks", title: item.title, meta: `${item.contract_title ?? "Workspace action"} · task` }));
+    return [...contracts, ...tasks];
+  }, [contractsQuery.data, globalSearch, tasksQuery.data]);
+  const hasSearchableRecords = Boolean(contractsQuery.data?.length || tasksQuery.data?.length);
   return (
     <WorkspaceGate>
       <a className="skip-link" href="#main-content">Skip to content</a>
@@ -71,7 +86,6 @@ function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
         <aside className="sidebar">
           <div className="sidebar-brand"><BrandMark /></div>
           <Navigation />
-          <div className="sidebar-foot"><Sparkles size={15} /><p><strong>Evidence first.</strong><br />AI findings support — never replace — human judgment.</p></div>
         </aside>
 
         <div className="app-frame">
@@ -88,7 +102,7 @@ function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
                 </DropdownMenu.Content>
               </DropdownMenu.Portal>
             </DropdownMenu.Root>
-            <button className="top-search" aria-label="Search contracts" onClick={() => document.getElementById("contract-search")?.focus()}><Search size={16} /><span>Search contracts</span><kbd>⌘ K</kbd></button>
+            {hasSearchableRecords && <div className="global-search"><label><Search size={16} /><span className="sr-only">Global search</span><input value={globalSearch} onChange={(event) => setGlobalSearch(event.target.value)} placeholder="Search contracts, tasks, parties, or dates" /></label>{globalSearch.trim().length >= 2 && <div className="global-results">{searchResults.length ? searchResults.map((result) => <Link href={result.href} key={`${result.href}-${result.id}`} onClick={() => setGlobalSearch("")}><strong>{result.title}</strong><span>{result.meta}</span></Link>) : <p>No workspace records match this search.</p>}</div>}</div>}
             <div className="top-actions">
               {canUpload && <Link href="/contracts/new" className="button top-new"><Plus size={16} />New contract</Link>}
               <DropdownMenu.Root>
@@ -97,9 +111,9 @@ function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
                 </DropdownMenu.Trigger>
                 <DropdownMenu.Portal>
                   <DropdownMenu.Content className="dropdown notification-menu" align="end" sideOffset={8}>
-                    <div className="notification-head"><div><strong>Notifications</strong><span>{unreadCount ? `${unreadCount} unread` : "You’re caught up"}</span></div>{unreadCount > 0 && <button onClick={() => readAllMutation.mutate()} disabled={readAllMutation.isPending}>Mark all read</button>}</div>
+                    <div className="notification-head"><div><strong>Notifications</strong><span>{unreadCount ? `${unreadCount} unread` : "You’re caught up"}</span></div>{unreadCount > 0 && !isDemo && <button onClick={() => readAllMutation.mutate()} disabled={readAllMutation.isPending}>Mark all read</button>}</div>
                     <DropdownMenu.Separator className="dropdown-separator" />
-                    {notificationsQuery.isLoading ? <p className="notification-empty">Loading updates…</p> : notifications.length ? notifications.slice(0, 8).map((notification) => <DropdownMenu.Item key={notification.id} asChild className="notification-item" onSelect={() => { if (!notification.read_at) readMutation.mutate(notification.id); }}>
+                    {notificationsQuery.isLoading ? <p className="notification-empty">Loading updates…</p> : notifications.length ? notifications.slice(0, 8).map((notification) => <DropdownMenu.Item key={notification.id} asChild className="notification-item" onSelect={() => { if (!notification.read_at && !isDemo) readMutation.mutate(notification.id); }}>
                       <Link href={notification.action_url || "/inbox"}><span className={`notification-dot ${notification.read_at ? "" : "unread"}`} /><span><strong>{notification.title}</strong><small>{notification.message}</small><time>{formatRelativeDate(notification.created_at)}</time></span></Link>
                     </DropdownMenu.Item>) : <p className="notification-empty">Processing updates and review alerts will appear here.</p>}
                   </DropdownMenu.Content>
@@ -107,7 +121,7 @@ function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
               </DropdownMenu.Root>
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger className="profile-trigger" aria-label="Open profile menu">
-                  <Avatar.Root className="avatar"><Avatar.Fallback>{initials(user?.display_name ?? "Reviewer")}</Avatar.Fallback></Avatar.Root>
+                  <Avatar.Root className="avatar"><Avatar.Fallback>{isDemo ? "DV" : initials(user?.display_name ?? "Reviewer")}</Avatar.Fallback></Avatar.Root>
                 </DropdownMenu.Trigger>
                 <DropdownMenu.Portal>
                   <DropdownMenu.Content className="dropdown profile-menu" align="end" sideOffset={8}>
@@ -119,7 +133,7 @@ function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
               </DropdownMenu.Root>
             </div>
           </header>
-          <main id="main-content" className="main-content">{children}</main>
+          <main id="main-content" className="main-content">{isDemo && <div className="demo-banner"><strong>Synthetic demo</strong><span>Read-only sample records, isolated from private customer workspaces.</span></div>}{children}</main>
         </div>
 
         {mobileOpen && <div className="mobile-overlay" role="presentation" onMouseDown={() => setMobileOpen(false)}>

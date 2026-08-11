@@ -22,7 +22,7 @@ export const authOptions: NextAuthOptions = {
     profile(profile) {
       return {
         id: String(profile.sub),
-        name: String(profile.name ?? profile.preferred_username ?? profile.email ?? "Lenslayer user"),
+        name: String(profile.name ?? profile.preferred_username ?? profile.email ?? "LensLayer user"),
         email: String(profile.email ?? ""),
       };
     },

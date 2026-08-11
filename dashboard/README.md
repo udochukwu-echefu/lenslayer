@@ -1,6 +1,6 @@
-# Lenslayer dashboard
+# LensLayer dashboard
 
-The Next.js workspace for the Lenslayer platform. It provides workspace onboarding, authentication state handling, Today and Inbox queues, the contract register, upload and review context, evidence-linked contract detail, revised-document negotiation tracking, intake/integration administration, assigned actions, a due-date calendar, identity-evidence operations, operational reports, processing activity, retention choices, team access, and settings.
+The Next.js workspace for the LensLayer platform. It provides workspace onboarding, authentication state handling, Today and Inbox queues, the contract register, upload and review context, evidence-linked contract detail, revised-document negotiation tracking, intake/integration administration, assigned actions, a due-date calendar, identity-evidence operations, operational reports, processing activity, retention choices, team access, and settings.
 
 ## Run locally
 

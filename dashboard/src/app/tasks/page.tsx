@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, ClipboardList, Clock3, Plus, TriangleAlert, X } from "lucide-react";
+import { Plus, TriangleAlert, X } from "lucide-react";
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { PageError, PageLoading } from "@/components/page-states";
@@ -31,15 +31,13 @@ function TasksContent() {
   const sourceReference = search.get("sourceIndex") ? { finding_index: Number(search.get("sourceIndex")), source: "contract_review" } : {};
 
   return <div className="page tasks-page">
-    <div className="page-heading"><div><p className="eyebrow">Contract operations</p><h1 className="page-title">Tasks</h1><p className="page-description">Turn findings into owned work, keep deadlines visible, and record when the human next step is complete.</p></div>{canUpload && <button className={`button ${composerOpen ? "secondary" : ""}`} type="button" onClick={() => setComposerOpen((value) => !value)}>{composerOpen ? <X size={16} /> : <Plus size={16} />}{composerOpen ? "Close composer" : "New task"}</button>}</div>
+    <div className="page-heading"><div><h1 className="page-title">Tasks</h1><p className="page-description">Assigned work created from contract findings, deadlines, and negotiation decisions.</p></div>{canUpload && <button className={`button ${composerOpen ? "secondary" : ""}`} type="button" onClick={() => setComposerOpen((value) => !value)}>{composerOpen ? <X size={16} /> : <Plus size={16} />}{composerOpen ? "Close composer" : "New task"}</button>}</div>
 
     {composerOpen && <section className="task-composer-wrap panel"><TaskComposer contractId={search.get("contractId") ?? ""} title={search.get("title") ?? ""} description={search.get("description") ?? ""} category={(search.get("category") as TaskCategory | null) ?? "follow_up"} sourceKind={search.get("sourceKind") ?? "manual"} sourceReference={sourceReference} onCreated={() => setComposerOpen(false)} /></section>}
 
-    <div className="task-signal-strip" aria-label="Task status"><div><ClipboardList size={17} /><strong>{active.length}</strong><span>Active</span></div><div className={overdue.length ? "attention" : ""}><TriangleAlert size={17} /><strong>{overdue.length}</strong><span>Overdue</span></div><div><CheckCircle2 size={17} /><strong>{completed.length}</strong><span>Completed</span></div></div>
+    {overdue.length > 0 && <a className="task-attention" href="#task-register"><TriangleAlert size={16} /><strong>{overdue.length} overdue action{overdue.length === 1 ? "" : "s"}</strong><span>Review due dates and ownership</span></a>}
 
-    <section className="tasks-register"><div className="task-tabs" role="tablist" aria-label="Task views">{(["active", "mine", "done", "all"] as Scope[]).map((item) => <button key={item} type="button" role="tab" aria-selected={scope === item} onClick={() => setScope(item)}>{item === "mine" ? "Assigned to me" : item === "done" ? "Completed" : item[0].toUpperCase() + item.slice(1)}</button>)}</div>{query.isLoading ? <PageLoading rows={7} /> : query.error ? <PageError error={query.error} /> : <TaskList tasks={visible} empty={scope === "active" ? "No active actions. Create one when a contract needs a human next step." : "No actions match this view."} />}</section>
-
-    {!query.isLoading && active.length > 0 && <p className="task-register-note"><Clock3 size={14} />Only people complete tasks. Lenslayer surfaces evidence and due dates but never closes work automatically.</p>}
+    <section id="task-register" className="tasks-register"><div className="task-tabs" role="tablist" aria-label="Task views">{(["active", "mine", "done", "all"] as Scope[]).map((item) => <button key={item} type="button" role="tab" aria-selected={scope === item} onClick={() => setScope(item)}>{item === "mine" ? "Assigned to me" : item === "done" ? `Completed (${completed.length})` : item === "active" ? `Active (${active.length})` : item[0].toUpperCase() + item.slice(1)}</button>)}</div>{query.isLoading ? <PageLoading rows={7} /> : query.error ? <PageError error={query.error} /> : <TaskList tasks={visible} empty={scope === "active" ? "No active tasks. Create one from a contract finding or deadline." : "No tasks match this view."} />}</section>
   </div>;
 }
 

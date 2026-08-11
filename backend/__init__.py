@@ -1,1 +1,1 @@
-"""Lenslayer platform backend package."""
+"""LensLayer platform backend package."""

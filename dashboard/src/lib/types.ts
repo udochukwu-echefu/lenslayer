@@ -713,6 +713,12 @@ export type ReportOverview = {
   contracts_ready: number;
   contracts_processing: number;
   contracts_failed: number;
+  review_completed_count: number;
+  average_review_completion_hours: number;
+  upcoming_obligations: number;
+  material_findings_total: number;
+  evidence_backed_findings: number;
+  evidence_coverage: number;
   tasks_total: number;
   tasks_active: number;
   tasks_overdue: number;

@@ -1,1 +1,1 @@
-"""FastAPI application package for the Lenslayer platform."""
+"""FastAPI application package for the LensLayer platform."""
