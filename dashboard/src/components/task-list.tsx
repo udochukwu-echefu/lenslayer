@@ -9,6 +9,7 @@ import type { TaskStatus, WorkflowTask } from "@/lib/types";
 import { dueAtEndOfDay, formatDate, titleCase } from "@/lib/utils";
 import { AppSelect } from "./app-select";
 import { useWorkspace } from "./workspace-provider";
+import { StatusBadge } from "./ui/status-badge";
 
 function dueState(task: WorkflowTask, now: number) {
   if (!task.due_at || ["done", "cancelled"].includes(task.status)) return "";
@@ -36,10 +37,10 @@ export function TaskList({ tasks, empty = "No actions match this view.", compact
   return <div className={`task-list ${compact ? "compact" : ""}`}>{tasks.map((task) => {
     const due = dueState(task, now);
     return <article className={`task-row ${task.status === "done" ? "is-done" : ""}`} key={task.id}>
-      <button type="button" className="task-check" aria-label={task.status === "done" ? `Reopen ${task.title}` : `Complete ${task.title}`} disabled={!canUpload || mutation.isPending} onClick={() => mutation.mutate({ id: task.id, status: task.status === "done" ? "open" : "done" })}>{task.status === "done" ? <Check size={15} /> : <Circle size={15} />}</button>
+      <span className="permission-control" title={!canUpload ? "Only owners, administrators, and reviewers can change task status." : undefined}><button type="button" className="task-check" aria-label={!canUpload ? `${task.title} status is read only` : task.status === "done" ? `Reopen ${task.title}` : `Complete ${task.title}`} disabled={!canUpload || mutation.isPending} onClick={() => mutation.mutate({ id: task.id, status: task.status === "done" ? "open" : "done" })}>{task.status === "done" ? <Check size={15} /> : <Circle size={15} />}</button></span>
       <div className="task-primary"><strong>{task.title}</strong><div className="task-meta">{task.contract_id ? <Link href={`/contracts/${task.contract_id}`}><FileText size={12} />{task.contract_title}</Link> : <span>Workspace action</span>}<span><UserRound size={12} />{task.assigned_to_name || "Unassigned"}</span></div></div>
       <span className={`task-priority ${task.priority}`}>{titleCase(task.priority)}</span>
-      {canUpload ? <AppSelect className="task-status-select" ariaLabel={`Status for ${task.title}`} value={task.status} disabled={mutation.isPending} onValueChange={(status) => mutation.mutate({ id: task.id, status: status as TaskStatus })} options={[{ value: "open", label: "Open" }, { value: "in_progress", label: "In progress" }, { value: "done", label: "Done" }, { value: "cancelled", label: "Cancelled" }]} /> : <span className="task-status-label">{titleCase(task.status)}</span>}
+      {canUpload ? <AppSelect className="task-status-select" ariaLabel={`Status for ${task.title}`} value={task.status} disabled={mutation.isPending} onValueChange={(status) => mutation.mutate({ id: task.id, status: status as TaskStatus })} options={[{ value: "open", label: "Open" }, { value: "in_progress", label: "In progress" }, { value: "done", label: "Done" }, { value: "cancelled", label: "Cancelled" }]} /> : <StatusBadge status={task.status} className="task-status-label" />}
       <time className={`task-due ${due}`} dateTime={task.due_at ?? undefined}>{task.due_at ? <><CalendarDays size={13} />{due === "overdue" ? "Overdue · " : due === "today" ? "Today · " : ""}{formatDate(task.due_at, { day: "numeric", month: "short" })}</> : <><Clock3 size={13} />No due date</>}</time>
     </article>;
   })}{mutation.error && <p className="form-error task-list-error">{mutation.error.message}</p>}</div>;

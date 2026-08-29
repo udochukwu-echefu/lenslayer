@@ -55,7 +55,7 @@ export default function NewContractPage() {
 
   return <div className="page upload-page">
     <Link className="back-link" href="/contracts"><ArrowLeft size={15} />Contracts</Link>
-    <div className="page-heading upload-heading"><div><p className="eyebrow">New review</p><h1 className="page-title">Upload a contract.</h1><p className="page-description">Set the review perspective before analysis. Context changes what LensLayer prioritises — it does not change the source evidence.</p></div></div>
+    <div className="page-heading upload-heading"><div><p className="eyebrow">New review</p><h1 className="page-title">Upload a contract</h1><p className="page-description">Set the review perspective before analysis. Context changes what LensLayer prioritises; it does not change the source evidence.</p></div></div>
     <form className="upload-layout" onSubmit={submit}>
       <div className="upload-main">
         <section className="form-section"><div className="form-section-number">01</div><div className="form-section-body"><div className="form-section-head"><h2>Choose the agreement</h2><p>One original document per review.</p></div>

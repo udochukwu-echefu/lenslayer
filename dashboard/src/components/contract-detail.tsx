@@ -16,9 +16,16 @@ import { ContractCollaboration } from "./contract-collaboration";
 import { ContractLifecycle } from "./contract-lifecycle";
 import { ContractNegotiation } from "./contract-negotiation";
 import { DealPassport } from "./deal-passport";
+import { AppSelect } from "./app-select";
+import { StatusBadge } from "./ui/status-badge";
 
 type Tab = "overview" | "passport" | "risks" | "obligations" | "negotiate" | "ask" | "actions" | "collaboration" | "lifecycle" | "activity";
 const tabs: Tab[] = ["overview", "passport", "risks", "obligations", "negotiate", "ask", "actions", "collaboration", "lifecycle", "activity"];
+const tabOptions = [
+  { value: "overview", label: "Review · Overview" }, { value: "passport", label: "Review · Deal passport" }, { value: "risks", label: "Review · Risks" }, { value: "obligations", label: "Review · Obligations" }, { value: "ask", label: "Review · Ask contract" },
+  { value: "negotiate", label: "Work · Negotiate" }, { value: "actions", label: "Work · Actions" }, { value: "collaboration", label: "Work · Collaboration" }, { value: "lifecycle", label: "Work · Lifecycle" },
+  { value: "activity", label: "History · Activity" },
+];
 
 function Finding({ finding, index, contractId, canCreate }: { finding: RiskFinding; index: number; contractId: string; canCreate: boolean }) {
   const level = severity(finding.risk_level);
@@ -74,14 +81,15 @@ export function ContractDetail({ contractId }: { contractId: string }) {
 
   return <div className="page contract-detail">
     <Link className="back-link" href="/contracts"><ArrowLeft size={15} />Contracts</Link>
-    <header className="review-header"><div><div className="review-kicker"><FileText size={14} /><span>{contract.contract_type || "Contract"}</span><span>·</span><span>{contract.source_name}</span></div><h1>{contract.title || contract.source_name}</h1><p>{contract.counterparty || "Counterparty not identified"} · Added {formatDate(contract.created_at)}</p></div><div className="review-state"><span className={`status ${contract.status}`}>{titleCase(contract.status)}</span>{contract.latest_job?.progress_step && <small>{contract.latest_job.progress_step}</small>}</div></header>
+    <header className="review-header"><div><div className="review-kicker"><FileText size={14} /><span>{contract.contract_type || "Contract"}</span><span>·</span><span>{contract.source_name}</span></div><h1>{contract.title || contract.source_name}</h1><p>{contract.counterparty || "Counterparty not identified"} · Added {formatDate(contract.created_at)}</p></div><div className="review-state"><StatusBadge status={contract.status} />{contract.latest_job?.progress_step && <small>{contract.latest_job.progress_step}</small>}</div></header>
 
     {moving && <div className="processing-banner"><Clock3 size={20} /><div><strong>Review in progress</strong><p>{contract.latest_job?.progress_step || "Preparing the document for analysis"}. This page updates automatically.</p></div><span className="processing-line" /></div>}
     {contract.status === "failed" && <div className="error-banner"><AlertTriangle size={20} /><div><strong>The review could not finish</strong><p>{contract.latest_job?.error_message || "Inspect the activity log, then upload the document again."}</p></div></div>}
 
     {reviewQuery.isLoading && ["ready", "reviewed"].includes(contract.status) ? <PageLoading rows={7} /> : reviewQuery.error ? <PageError error={reviewQuery.error} /> : analysis ? <>
       <div className="review-signals"><div><span>Attention</span><strong>{analysis.overall_attention || (counts.high ? "High" : counts.medium ? "Review" : "Routine")}</strong></div>{counts.high > 0 && <div><span>High risks</span><strong>{counts.high}</strong></div>}{gaps.length > 0 && <div><span>Protection gaps</span><strong>{gaps.length}</strong></div>}<div><span>Obligations</span><strong>{analysis.obligations?.length ?? 0}</strong></div><div><span>Source quality</span><strong>{asText(review.quality.quality, "Parsed")}</strong></div></div>
-      <div className="review-tabs" role="tablist" aria-label="Contract review sections">{tabs.map((item) => <button key={item} role="tab" aria-selected={tab === item} onClick={() => setTab(item)}>{item === "ask" ? "Ask contract" : titleCase(item)}{item === "risks" && <span>{risks.length + gaps.length}</span>}{item === "actions" && (tasksQuery.data?.length ?? 0) > 0 && <span>{tasksQuery.data?.length}</span>}</button>)}</div>
+      <div className="review-section-select"><label htmlFor="contract-section">Contract section</label><AppSelect id="contract-section" ariaLabel="Contract section" value={tab} onValueChange={(value) => setTab(value as Tab)} options={tabOptions} /></div>
+      <div className="review-tabs" role="tablist" aria-label="Contract review sections">{tabs.map((item, index) => <button className={index === 4 || index === 9 ? "tab-group-start" : ""} key={item} role="tab" aria-selected={tab === item} onClick={() => setTab(item)}>{item === "ask" ? "Ask contract" : titleCase(item)}{item === "risks" && <span>{risks.length + gaps.length}</span>}{item === "actions" && (tasksQuery.data?.length ?? 0) > 0 && <span>{tasksQuery.data?.length}</span>}</button>)}</div>
       <div className="review-content">
         {tab === "passport" && <DealPassport contractId={contractId} />}
         {tab === "overview" && <div className="overview-layout"><section><p className="eyebrow">Executive summary</p><h2>{analysis.executive_summary || "The analysis did not return an executive summary."}</h2>{Array.isArray(review.quality.warnings) && review.quality.warnings.length > 0 && <div className="quality-warning"><AlertTriangle size={18} /><div><strong>Extraction needs verification</strong>{review.quality.warnings.map((item, index) => <p key={index}>{asText(item)}</p>)}</div></div>}{analysis.uncertainties?.length ? <div className="uncertainty"><ShieldAlert size={18} /><div><strong>Review uncertainties</strong>{analysis.uncertainties.map((item, index) => <p key={index}>{typeof item === "string" ? item : asText(item.description ?? item.detail ?? item.title)}</p>)}</div></div> : null}</section><aside><dl><div><dt>Governing law</dt><dd>{analysis.governing_law || asText(contract.review_context.jurisdiction)}</dd></div><div><dt>Perspective</dt><dd>{asText(contract.review_context.party_role)}</dd></div><div><dt>Primary goal</dt><dd>{asText(contract.review_context.goal)}</dd></div><div><dt>Source text retained</dt><dd>{review.source_text_retained ? "Yes" : "No"}</dd></div><div><dt>Expires</dt><dd>{contract.expires_at ? formatDate(contract.expires_at) : "Not scheduled"}</dd></div></dl>{!isDemo && <div className="export-block"><span>Export review</span><div>{(["pdf","docx","csv","md","json"] as const).map((format) => <a key={format} href={api.contractExportUrl(organizationId, contractId, format)} download><Download size={13} />{format === "md" ? "Markdown" : format.toUpperCase()}</a>)}</div></div>}</aside></div>}

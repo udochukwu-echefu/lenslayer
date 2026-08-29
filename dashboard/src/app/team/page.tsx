@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Copy, MailPlus, ShieldCheck, Trash2, UserRound, UsersRound, X } from "lucide-react";
+import { Check, Copy, MailPlus, ShieldCheck, Trash2, UsersRound, X } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
 import { AppSelect } from "@/components/app-select";
 import { PageError, PageLoading } from "@/components/page-states";
@@ -9,6 +9,7 @@ import { useWorkspace } from "@/components/workspace-provider";
 import { api } from "@/lib/api";
 import type { InvitationCreated, Membership, Role } from "@/lib/types";
 import { formatDate, titleCase } from "@/lib/utils";
+import { IdentityCell } from "@/components/ui/identity-cell";
 
 const roleNotes: Array<{ role: Role; summary: string }> = [
   { role: "owner", summary: "Controls ownership, administrators, and every workspace action." },
@@ -38,16 +39,14 @@ function MemberRow({ member, actorRole, actorId, organizationId }: { member: Mem
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["members", organizationId] }),
   });
 
-  return <div className="member-row">
-    <span className="member-avatar"><UserRound size={16} /></span>
-    <div className="member-identity"><strong>{member.display_name || member.email}</strong><span>{member.email}{member.user_id === actorId ? " · You" : ""}</span></div>
-    <span className="member-since">Joined {formatDate(member.created_at)}</span>
-    <div className="member-role">
+  return <tr className="member-row">
+    <td className="member-identity"><IdentityCell displayName={member.display_name} email={member.email} suffix={member.user_id === actorId ? "You" : undefined} /></td>
+    <td className="member-role">
       {manageable ? <AppSelect className="compact" value={member.role} ariaLabel={`Role for ${member.email}`} disabled={roleMutation.isPending} onValueChange={(role) => roleMutation.mutate(role as Role)} options={roles.map((role) => ({ value: role, label: titleCase(role) }))} /> : <span className="role-badge">{titleCase(member.role)}</span>}
-    </div>
-    <div className="member-action">{manageable && (confirmRemove ? <div className="inline-confirm"><button type="button" className="icon-button danger-icon" aria-label={`Confirm removal of ${member.email}`} onClick={() => removeMutation.mutate()} disabled={removeMutation.isPending}><Check size={16} /></button><button type="button" className="icon-button" aria-label="Cancel removal" onClick={() => setConfirmRemove(false)}><X size={16} /></button></div> : <button type="button" className="icon-button" aria-label={`Remove ${member.email}`} onClick={() => setConfirmRemove(true)}><Trash2 size={15} /></button>)}</div>
-    {(roleMutation.error || removeMutation.error) && <p className="form-error member-error">{(roleMutation.error ?? removeMutation.error)?.message}</p>}
-  </div>;
+    </td>
+    <td className="member-since"><time dateTime={member.created_at}>{formatDate(member.created_at)}</time></td>
+    <td className="member-action">{manageable && (confirmRemove ? <div className="inline-confirm"><button type="button" className="icon-button danger-icon" aria-label={`Confirm removal of ${member.email}`} onClick={() => removeMutation.mutate()} disabled={removeMutation.isPending}><Check size={16} /></button><button type="button" className="icon-button" aria-label="Cancel removal" onClick={() => setConfirmRemove(false)}><X size={16} /></button></div> : <button type="button" className="icon-button" aria-label={`Remove ${member.email}`} onClick={() => setConfirmRemove(true)}><Trash2 size={15} /></button>)}{(roleMutation.error || removeMutation.error) && <span className="form-error member-error">{(roleMutation.error ?? removeMutation.error)?.message}</span>}</td>
+  </tr>;
 }
 
 export default function TeamPage() {
@@ -93,7 +92,7 @@ export default function TeamPage() {
       <details className="role-policy"><summary>Compare role permissions</summary><div className="role-lines">{roleNotes.map((item) => <div key={item.role}><strong>{titleCase(item.role)}</strong><p>{item.summary}</p>{item.role === activeRole && <span>Your role</span>}</div>)}</div></details>
     </div>
 
-    <section className="team-register"><div className="section-heading"><h2>Workspace members</h2><p>Identity, role, and start date</p></div><div className="member-list">{(membersQuery.data ?? []).map((member) => <MemberRow key={member.id} member={member} actorRole={activeRole} actorId={user?.id} organizationId={organizationId} />)}</div></section>
+    <section className="team-register"><div className="section-heading"><h2>Workspace members</h2><p>Identity, role, and start date</p></div><div className="member-list"><table><caption className="sr-only">Workspace members</caption><thead><tr><th scope="col">Member</th><th scope="col">Role</th><th scope="col">Joined</th><th scope="col"><span className="sr-only">Actions</span></th></tr></thead><tbody>{(membersQuery.data ?? []).map((member) => <MemberRow key={member.id} member={member} actorRole={activeRole} actorId={user?.id} organizationId={organizationId} />)}</tbody></table></div></section>
 
     {canManageTeam && <section className="pending-invites"><div className="section-heading"><h2>Pending invitations</h2><p>{pending.length ? `${pending.length} awaiting acceptance` : "No outstanding invitations"}</p></div>{pending.length ? <div className="pending-list">{pending.map((invitation) => <div key={invitation.id}><div><strong>{invitation.email}</strong><span>{titleCase(invitation.role)} · Expires {formatDate(invitation.expires_at)}</span></div><button type="button" className="button ghost" onClick={() => revokeMutation.mutate(invitation.id)} disabled={revokeMutation.isPending}>Revoke</button></div>)}</div> : <div className="quiet-empty"><Check size={16} />All invitations are accounted for.</div>}{revokeMutation.error && <p className="form-error">{revokeMutation.error.message}</p>}</section>}
   </div>;

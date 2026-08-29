@@ -457,98 +457,24 @@ class PlatformApiTests(unittest.TestCase):
         actions = {item["action"] for item in audit}
         self.assertTrue({"task.created", "task.updated", "task.deleted"}.issubset(actions))
 
-    def test_verification_case_queue_decisions_permissions_and_audit(self):
+    def test_removed_identity_verification_routes_are_not_exposed(self):
         organization = self.create_organization()
-        bootstrapped = self.client.post(
-            f"/api/v1/organizations/{organization['id']}/verification-cases/bootstrap",
-            headers=self.alice,
+        self.assertEqual(
+            self.client.get(
+                f"/api/v1/organizations/{organization['id']}/verification-cases",
+                headers=self.alice,
+            ).status_code,
+            404,
         )
-        self.assertEqual(bootstrapped.status_code, 200, bootstrapped.text)
-        self.assertEqual(len(bootstrapped.json()), 3)
-        self.assertTrue(all(item["synthetic"] for item in bootstrapped.json()))
-
-        repeated = self.client.post(
-            f"/api/v1/organizations/{organization['id']}/verification-cases/bootstrap",
-            headers=self.alice,
-        )
-        self.assertEqual(len(repeated.json()), 3)
-        self.assertEqual(repeated.json()[0]["risk_score"], 100)
-
-        reviewer_invite = self.invite(organization["id"], "bob@example.com", "reviewer").json()
-        self.assertEqual(self.accept(reviewer_invite["token"], self.bob).status_code, 200)
-        viewer_invite = self.invite(organization["id"], "carol@example.com", "viewer").json()
-        self.assertEqual(self.accept(viewer_invite["token"], self.carol).status_code, 200)
-
-        viewer_queue = self.client.get(
-            f"/api/v1/organizations/{organization['id']}/verification-cases",
-            headers=self.carol,
-        )
-        self.assertEqual(viewer_queue.status_code, 200, viewer_queue.text)
-        viewer_bootstrap = self.client.post(
-            f"/api/v1/organizations/{organization['id']}/verification-cases/bootstrap",
-            headers=self.carol,
-        )
-        self.assertEqual(viewer_bootstrap.status_code, 403)
-
-        low_risk = next(item for item in viewer_queue.json() if item["reference"] == "KYC-2026-002")
-        case_detail = self.client.get(
-            f"/api/v1/organizations/{organization['id']}/verification-cases/{low_risk['id']}",
-            headers=self.carol,
-        )
-        self.assertEqual(case_detail.status_code, 200, case_detail.text)
-        self.assertEqual(case_detail.json()["suggested_action"], "Approve")
-        self.assertTrue(case_detail.json()["findings"][0]["evidence"])
-        self.assertEqual(len(case_detail.json()["field_matrix"]), 4)
-
-        viewer_decision = self.client.post(
-            f"/api/v1/organizations/{organization['id']}/verification-cases/{low_risk['id']}/decisions",
-            headers=self.carol,
-            json={"decision": "Approve", "rationale": "The evidence reconciles."},
-        )
-        self.assertEqual(viewer_decision.status_code, 403)
-
-        overridden = self.client.post(
-            f"/api/v1/organizations/{organization['id']}/verification-cases/{low_risk['id']}/decisions",
-            headers=self.bob,
-            json={
-                "decision": "Escalate",
-                "rationale": "Confirm the abbreviated name against an approved identity source before onboarding.",
-            },
-        )
-        self.assertEqual(overridden.status_code, 201, overridden.text)
-        self.assertEqual(overridden.json()["recommended_action"], "Approve")
-        self.assertEqual(overridden.json()["reviewer_email"], "bob@example.com")
-
-        revised = self.client.post(
-            f"/api/v1/organizations/{organization['id']}/verification-cases/{low_risk['id']}/decisions",
-            headers=self.bob,
-            json={
-                "decision": "Approve",
-                "rationale": "The accepted identity source confirms the variation and all material fields reconcile.",
-            },
-        )
-        self.assertEqual(revised.status_code, 201, revised.text)
-        updated_detail = self.client.get(
-            f"/api/v1/organizations/{organization['id']}/verification-cases/{low_risk['id']}",
-            headers=self.alice,
-        ).json()
-        self.assertEqual(updated_detail["status"], "approved")
-        self.assertEqual(len(updated_detail["decision_history"]), 2)
-        self.assertEqual(updated_detail["latest_decision"]["decision"], "Approve")
-
-        audit = self.client.get(
-            f"/api/v1/organizations/{organization['id']}/audit-events",
-            headers=self.alice,
-        ).json()
-        actions = {item["action"] for item in audit}
-        self.assertTrue(
-            {"verification.cases_bootstrapped", "verification.decision_recorded"}.issubset(actions)
-        )
+        self.assertEqual(self.client.get("/api/v1/secure-intake/removed-token").status_code, 404)
 
     def test_reports_aggregate_workspace_activity_and_export_for_read_only_members(self):
+        self.alice["X-LensLayer-Name"] = "=SUM(1+1)"
         organization = self.create_organization()
         organization_id = organization["id"]
-        self.assertEqual(self.upload_contract(organization_id).status_code, 202)
+        uploaded = self.upload_contract(organization_id)
+        self.assertEqual(uploaded.status_code, 202)
+        contract_id = uploaded.json()["contract"]["id"]
 
         viewer_invite = self.invite(organization_id, "carol@example.com", "viewer").json()
         self.assertEqual(self.accept(viewer_invite["token"], self.carol).status_code, 200)
@@ -572,20 +498,16 @@ class PlatformApiTests(unittest.TestCase):
         )
         self.assertEqual(completed.status_code, 201, completed.text)
 
-        cases = self.client.post(
-            f"/api/v1/organizations/{organization_id}/verification-cases/bootstrap",
-            headers=self.alice,
-        ).json()
-        low_risk = next(item for item in cases if item["reference"] == "KYC-2026-002")
-        override = self.client.post(
-            f"/api/v1/organizations/{organization_id}/verification-cases/{low_risk['id']}/decisions",
+        decision = self.client.post(
+            f"/api/v1/organizations/{organization_id}/contracts/{contract_id}/decisions",
             headers=self.bob,
             json={
-                "decision": "Escalate",
-                "rationale": "Confirm the name variation with an approved identity source before onboarding.",
+                "decision": "escalate",
+                "subject": "Renewal notice",
+                "rationale": "The notice window needs reviewer attention before signature.",
             },
         )
-        self.assertEqual(override.status_code, 201, override.text)
+        self.assertEqual(decision.status_code, 201, decision.text)
 
         report = self.client.get(
             f"/api/v1/organizations/{organization_id}/reports/overview?range=all",
@@ -606,10 +528,8 @@ class PlatformApiTests(unittest.TestCase):
         self.assertEqual(payload["tasks_overdue"], 1)
         self.assertEqual(payload["tasks_completed"], 1)
         self.assertEqual(payload["task_completion_rate"], 50)
-        self.assertEqual(payload["verification_total"], 3)
-        self.assertEqual(payload["verification_escalated"], 1)
-        self.assertEqual(payload["verification_overrides"], 1)
         self.assertTrue(payload["timeline"])
+        self.assertEqual(sum(item["decisions_recorded"] for item in payload["timeline"]), 1)
         self.assertTrue(payload["recent_activity"])
         self.assertEqual(len(payload["workload"]), 3)
 
@@ -620,7 +540,8 @@ class PlatformApiTests(unittest.TestCase):
         self.assertEqual(exported.status_code, 200, exported.text)
         self.assertIn("text/csv", exported.headers["content-type"])
         self.assertIn("attachment;", exported.headers["content-disposition"])
-        self.assertIn("Recommendation overrides", exported.text)
+        self.assertIn("Human contract decisions", exported.text)
+        self.assertIn("'=SUM(1+1)", exported.text)
         self.assertIn("Evidence,Coverage,0%", exported.text)
         self.assertIn("Reviewer,Email,Role", exported.text)
 
@@ -1241,160 +1162,6 @@ class PlatformApiTests(unittest.TestCase):
             headers={"Authorization": f"Bearer {token}"},
         )
         self.assertEqual(forbidden.status_code, 401)
-
-    def test_real_verification_case_assignment_reconciliation_decision_and_audit(self):
-        organization = self.create_organization()
-        organization_id = organization["id"]
-        invitation = self.invite(organization_id, "bob@example.com").json()
-        self.assertEqual(self.accept(invitation["token"], self.bob).status_code, 200)
-        bob_id = next(
-            item["user_id"]
-            for item in self.client.get(
-                f"/api/v1/organizations/{organization_id}/members",
-                headers=self.alice,
-            ).json()
-            if item["email"] == "bob@example.com"
-        )
-
-        created = self.client.post(
-            f"/api/v1/organizations/{organization_id}/verification-cases",
-            headers=self.alice,
-            data={
-                "applicant_name": "Ada Example",
-                "applicant_email": "ada@example.test",
-                "priority": "high",
-                "assigned_to_user_id": bob_id,
-                "retention_days": "30",
-                "document_type": "identity_document",
-            },
-            files=[
-                ("files", ("passport.txt", b"Name: Ada Example", "text/plain")),
-                ("files", ("address.txt", b"Address: 1 Example Road", "text/plain")),
-            ],
-        )
-        self.assertEqual(created.status_code, 201, created.text)
-        case = created.json()
-        self.assertFalse(case["synthetic"])
-        self.assertEqual(case["document_count"], 2)
-        self.assertEqual(case["assigned_to_email"], "bob@example.com")
-        self.assertEqual(case["priority"], "high")
-
-        document_id = case["uploaded_documents"][0]["id"]
-        reviewed = self.client.patch(
-            f"/api/v1/organizations/{organization_id}/verification-cases/{case['id']}/documents/{document_id}",
-            headers=self.bob,
-            json={
-                "scan_status": "clean",
-                "extraction_status": "ready",
-                "extracted_fields": {"legal_name": "Ada Example"},
-                "confidence": 96,
-            },
-        )
-        self.assertEqual(reviewed.status_code, 200, reviewed.text)
-        self.assertEqual(reviewed.json()["status"], "ready")
-
-        conflict = self.client.post(
-            f"/api/v1/organizations/{organization_id}/verification-cases/{case['id']}/reconciliations",
-            headers=self.bob,
-            json={
-                "field_name": "legal_name",
-                "canonical_value": "Ada Example",
-                "status": "conflict",
-                "sources": [{"document_id": document_id, "value": "Ada Example"}],
-                "resolution_note": "Second source uses an abbreviated middle name.",
-            },
-        )
-        self.assertEqual(conflict.status_code, 201, conflict.text)
-        blocked = self.client.post(
-            f"/api/v1/organizations/{organization_id}/verification-cases/{case['id']}/decisions",
-            headers=self.bob,
-            json={"decision": "Approve", "rationale": "Identity evidence is otherwise consistent."},
-        )
-        self.assertEqual(blocked.status_code, 409, blocked.text)
-
-        resolved = self.client.post(
-            f"/api/v1/organizations/{organization_id}/verification-cases/{case['id']}/reconciliations",
-            headers=self.bob,
-            json={
-                "field_name": "legal_name",
-                "canonical_value": "Ada Example",
-                "status": "resolved",
-                "sources": [{"document_id": document_id, "value": "Ada Example"}],
-                "resolution_note": "Passport is the authoritative source.",
-            },
-        )
-        self.assertEqual(resolved.status_code, 201, resolved.text)
-        approved = self.client.post(
-            f"/api/v1/organizations/{organization_id}/verification-cases/{case['id']}/decisions",
-            headers=self.bob,
-            json={"decision": "Approve", "rationale": "Authoritative evidence is reconciled and consistent."},
-        )
-        self.assertEqual(approved.status_code, 201, approved.text)
-        self.assertEqual(approved.json()["reviewer_email"], "bob@example.com")
-
-        audit = self.client.get(
-            f"/api/v1/organizations/{organization_id}/verification-cases/{case['id']}/audit-events",
-            headers=self.alice,
-        )
-        self.assertEqual(audit.status_code, 200, audit.text)
-        actions = {item["action"] for item in audit.json()}
-        self.assertTrue(
-            {
-                "verification.case_created",
-                "verification.document_reviewed",
-                "verification.evidence_reconciled",
-                "verification.decision_recorded",
-            }.issubset(actions)
-        )
-        self.assertIn("Bob", {item["actor_name"] for item in audit.json()})
-
-    def test_secure_onboarding_link_creates_private_persistent_case(self):
-        organization = self.create_organization()
-        organization_id = organization["id"]
-        created = self.client.post(
-            f"/api/v1/organizations/{organization_id}/secure-intake-links",
-            headers=self.alice,
-            json={
-                "channel": "whatsapp",
-                "recipient_name": "Kemi Applicant",
-                "recipient_phone_hint": "***1234",
-                "applicant_name": "Kemi Applicant",
-                "message": "Upload the requested onboarding evidence.",
-                "expires_in_days": 7,
-                "max_uploads": 1,
-                "retention_days": 30,
-            },
-        )
-        self.assertEqual(created.status_code, 201, created.text)
-        token = created.json()["token"]
-        preview = self.client.get(f"/api/v1/secure-intake/{token}")
-        self.assertEqual(preview.status_code, 200, preview.text)
-        self.assertEqual(preview.json()["remaining_uploads"], 1)
-
-        uploaded = self.client.post(
-            f"/api/v1/secure-intake/{token}/documents",
-            data={"document_type": "proof_of_address"},
-            files=[("files", ("utility.txt", b"Address: 14 Lagos Road", "text/plain"))],
-        )
-        self.assertEqual(uploaded.status_code, 201, uploaded.text)
-        case = uploaded.json()["verification_case"]
-        self.assertEqual(case["intake_channel"], "whatsapp")
-        self.assertFalse(case["synthetic"])
-        self.assertEqual(uploaded.json()["documents"][0]["scan_status"], "clean")
-        self.assertTrue(list(self.settings.object_storage_root.rglob("utility.txt")) == [])
-        self.assertEqual(len([item for item in self.settings.object_storage_root.rglob("*") if item.is_file()]), 1)
-
-        exhausted = self.client.post(
-            f"/api/v1/secure-intake/{token}/documents",
-            data={"document_type": "identity_document"},
-            files=[("files", ("passport.txt", b"Passport", "text/plain"))],
-        )
-        self.assertEqual(exhausted.status_code, 410, exhausted.text)
-        queue = self.client.get(
-            f"/api/v1/organizations/{organization_id}/verification-cases",
-            headers=self.alice,
-        ).json()
-        self.assertIn(case["id"], {item["id"] for item in queue})
 
     def test_remaining_integration_provider_catalog_and_generic_import(self):
         organization = self.create_organization()

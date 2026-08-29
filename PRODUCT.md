@@ -6,11 +6,11 @@ product
 
 ## Users
 
-People reviewing consequential documents before making or recording a decision. The Contract Review workspace serves people reviewing an agreement before signing, negotiating, or speaking with qualified counsel. The Verify workspace serves onboarding and compliance operations reviewers who need to reconcile submitted identity information across multiple documents.
+People reviewing consequential documents before making or recording a decision. LensLayer serves legal, procurement, compliance, finance, and operations teams reviewing agreements before signing, negotiating, reporting, or speaking with qualified counsel.
 
 ## Product Purpose
 
-LensLayer is an evidence-led document intelligence platform. Contract Review provides first-pass agreement triage, negotiation preparation, playbook-based deviation review, attributable human decisions, and professional-review handoff. LensLayer Verify reconciles onboarding information across identity evidence, flags discrepancies with explainable rules, and records human decisions. It does not provide legal advice or replace regulated identity-verification infrastructure.
+LensLayer is an evidence-led document intelligence platform. It provides first-pass agreement triage, negotiation preparation, playbook-based deviation review, attributable human decisions, portfolio search, financial-document conversion, and professional-review handoff. It does not provide legal advice.
 
 ## Brand Personality
 
@@ -27,11 +27,11 @@ Calm, rigorous, direct. The interface should feel like a focused review desk: hi
 
 1. Evidence before assertion: every material conclusion should point back to the document.
 2. Action after explanation: findings should lead to questions, negotiation steps, or professional review.
-3. Honest uncertainty: say what was not found, what could not be parsed, and what needs verification.
+3. Honest uncertainty: say what was not found, what could not be parsed, and what needs human review.
 4. Privacy in context: explain document handling at the point of upload and provide deletion controls.
 5. Progressive depth: make the first screen scannable, then let users inspect clauses and supporting detail.
 6. Human decision ownership: automation may recommend, but consequential approvals and rejections must remain inspectable and attributable.
-7. Confidence is not risk: extraction reliability, discrepancy severity, and verification status must be displayed as separate signals.
+7. Confidence is not risk: extraction reliability, evidence coverage, and review status must be displayed as separate signals.
 8. Minimise retained data: persist the useful report by default, retain source text only with explicit user choice, and make retention and hard deletion visible.
 
 ## Accessibility & Inclusion

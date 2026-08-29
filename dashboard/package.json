@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "cf:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "cf:upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
@@ -16,14 +18,17 @@
     "@fontsource-variable/figtree": "5.3.0",
     "@opennextjs/cloudflare": "^1.20.2",
     "@radix-ui/react-avatar": "1.2.3",
+    "@radix-ui/react-dialog": "^1.1.23",
     "@radix-ui/react-dropdown-menu": "2.1.21",
     "@radix-ui/react-select": "^2.2.6",
     "@tanstack/react-query": "5.101.4",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
+    "exceljs": "^4.4.0",
     "lucide-react": "1.25.0",
     "next": "16.2.11",
     "next-auth": "4.24.15",
+    "pdfjs-dist": "^6.2.108",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "tailwind-merge": "3.6.0",
@@ -31,17 +36,27 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "axe-core": "^4.13.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.11",
+    "jsdom": "^30.0.1",
     "tailwindcss": "^4",
     "typescript": "^5",
+    "vitest": "^4.1.11",
+    "vitest-axe": "^0.1.0",
     "wrangler": "^4.114.0"
   },
   "overrides": {
-    "postcss": "8.5.10",
+    "exceljs": {
+      "uuid": "^11.1.1"
+    },
+    "postcss": "8.5.23",
     "sharp": "0.35.0"
   }
 }

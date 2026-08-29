@@ -11,10 +11,7 @@ This backend powers the standalone LensLayer platform and its Next.js workspace.
 - Audited invitation, role-change, and membership-removal events
 - Organisation-scoped workflow tasks with contract links, assignees, priorities, due dates, completion timestamps, and source references
 - Audited task creation, status changes, reassignment, and deletion
-- Organisation-scoped synthetic and real verification cases with persistent queue state, priority, assignee, due date, and retention metadata
-- Private onboarding documents with randomized storage keys, SHA-256 integrity hashes, pre-storage malware scans, extraction states, and expiry
-- Append-only assignment, evidence-reconciliation, verification-decision, and case-specific audit history
-- Read-only organization reports for contract throughput, task execution, Verify outcomes, workload, activity, and CSV export
+- Read-only organization reports for contract throughput, task execution, human outcomes, workload, activity, and CSV export
 - Contract, document asset, processing job, review, and audit-event records
 - Local development storage and S3-compatible production storage
 - Database-backed review queue and standalone worker
@@ -69,13 +66,11 @@ Team access uses `/api/v1/organizations/{organization_id}/members` and `/invitat
 
 Contract operations use `/api/v1/organizations/{organization_id}/tasks`. The list endpoint supports status, assignee, contract, and due-date filters. Owners, administrators, and reviewers can create and update actions; viewers are read-only. Owners and administrators can delete any task, while reviewers can delete only tasks they created.
 
-Verification operations use `/api/v1/organizations/{organization_id}/verification-cases`. Owners, administrators, and reviewers can load labelled fictional cases or upload real onboarding evidence, assign reviewers, transition cases, reconcile fields, review document scan/extraction state, and record approve, escalate, or reject decisions. Viewers are read-only. Approvals are blocked while a structured conflict remains unresolved, and decisions, assignments, evidence changes, secure uploads, and workflow changes remain in the case-specific append-only audit history.
-
 Reporting uses `/api/v1/organizations/{organization_id}/reports/overview` and `/reports/export`. The endpoints accept `range=30d`, `90d`, `365d`, or `all`, require organization membership, and derive results from retained source records without creating a second analytics data store.
 
 Negotiation closeout uses `/contracts/{contract_id}/versions`, `/negotiation-items`, `/counterparty-responses`, and `/negotiation-summary`. Owners, administrators, and reviewers can upload revised documents and record negotiation outcomes; viewers can read the version history, checklist state, responses, and final summary.
 
-Intake and integrations use `/integrations/providers`, `/integrations`, `/integrations/{provider}/imports`, `/intake/email-address`, `/intake/email`, `/secure-intake-links`, `/api-keys`, `/webhooks`, `/webhook-deliveries`, and `/public/contracts`. The platform stores connection metadata and import provenance, routes every supported document through the same review pipeline, rejects connector secrets in database settings, and records downstream delivery state. Live OAuth, mailbox routing, Graph, Dropbox, and messaging credentials are deployment secrets and are intentionally not committed.
+Intake and integrations use `/integrations/providers`, `/integrations`, `/integrations/{provider}/imports`, `/intake/email-address`, `/intake/email`, `/api-keys`, `/webhooks`, `/webhook-deliveries`, and `/public/contracts`. The platform stores connection metadata and import provenance, routes every supported document through the same review pipeline, rejects connector secrets in database settings, and records downstream delivery state. Live OAuth, mailbox routing, Graph, Dropbox, and messaging credentials are deployment secrets and are intentionally not committed.
 
 Interactive OpenAPI documentation is available at `http://localhost:8000/docs` outside production.
 

@@ -1,6 +1,6 @@
 # LensLayer dashboard
 
-The Next.js workspace for the LensLayer platform. It provides workspace onboarding, authentication state handling, Today and Inbox queues, the contract register, upload and review context, evidence-linked contract detail, revised-document negotiation tracking, intake/integration administration, assigned actions, a due-date calendar, identity-evidence operations, operational reports, processing activity, retention choices, team access, and settings.
+The Next.js workspace for the LensLayer platform. It provides workspace onboarding, authentication state handling, Today and Inbox queues, the contract register, upload and review context, evidence-linked contract detail, revised-document negotiation tracking, intake/integration administration, assigned actions, a due-date calendar, operational reports, processing activity, retention choices, team access, and settings.
 
 ## Run locally
 
@@ -55,20 +55,10 @@ Invitation links expire after seven days, are bound to the invited email, and ar
 - Contract detail includes a printable Deal Passport and tracked-change Word redline export for retained DOCX reviews.
 - `/sample` is an unauthenticated fictional walkthrough; `/signin` presents the free public beta with no billing or upgrade flow.
 
-## Verify workspace
-
-- `/verify` is the organization-scoped persistent onboarding queue with risk, priority, assignee, recommendation, confidence, and decision status.
-- `/verify/new` supports direct private document intake and expiring secure requests for email, Slack, Telegram, and WhatsApp delivery.
-- `/verify/{caseId}` separates review, private document state, evidence reconciliation, assignment/workflow, human decisions, and compliance audit history.
-- Owners, administrators, and reviewers can create and operate cases or load labelled demonstrations. Viewers are read-only.
-- A reviewer can override the deterministic recommendation only with a written rationale. Each new decision is appended instead of replacing history.
-- Pending verification decisions also appear in Inbox.
-- Real uploads use private object storage, hashed integrity metadata, retention, and pre-storage malware scanning. Production requires ClamAV `clamd`; authenticity, liveness, and biometric matching still require production services.
-
 ## Reports workspace
 
 - `/reports` provides 30-day, 90-day, 12-month, and all-time organization snapshots.
-- Contract throughput, task execution, current attention items, Verify outcomes and recommendation overrides are reported separately.
+- Contract throughput, task execution, current attention items, and human contract decisions are reported separately.
 - Reviewer workload shows current assigned and overdue actions alongside completions in the selected period.
 - Recent activity is drawn from the append-only workspace audit history.
 - Every role can read and export reports. CSV exports pass through the authenticated server proxy.
@@ -78,7 +68,6 @@ Invitation links expire after seven days, are bound to the invited email, and ar
 
 - Settings includes a provider catalog and connection records for forwarding email, Google Drive, OneDrive, SharePoint, Dropbox, Slack, Telegram, WhatsApp, and the public API.
 - The generated forwarding address and recent provider imports are visible to workspace administrators.
-- `/intake/{token}` is an anonymous, constrained, expiring upload surface with no workspace access.
 - Owners and administrators can create and revoke public API keys and webhook subscriptions.
 - Recent imports and webhook delivery logs are visible from Settings.
 - Provider credentials remain deployment secrets. Activating live OAuth, mailbox routing, Graph/Dropbox file fetches, or chat delivery does not require a database redesign.

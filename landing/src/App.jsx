@@ -37,7 +37,7 @@ function Brand() {
 
 function ProductFrame() {
   return (
-    <div className="product-frame" role="img" aria-label="Example LensLayer decision workspace with contract, action, and verification work">
+    <div className="product-frame" role="img" aria-label="Example LensLayer decision workspace with contract, evidence, and action work">
       <div className="product-window-bar">
         <div className="product-window-brand">
           <span className="product-window-mark">LL</span>
@@ -49,20 +49,20 @@ function ProductFrame() {
         <div>
           <span className="product-overline">Today</span>
           <h3>Work that needs a decision.</h3>
-          <p>Contracts, verification cases, actions, and deadlines</p>
+          <p>Contracts, evidence, actions, and deadlines</p>
         </div>
         <span className="attention-pill"><CircleAlert /> 3 need attention</span>
       </div>
       <div className="product-summary" aria-label="Workspace summary">
         <span><strong>6</strong> reviews</span>
         <span><strong>4</strong> actions</span>
-        <span><strong>2</strong> verify</span>
+        <span><strong>2</strong> evidence gaps</span>
         <span><strong>1</strong> overdue</span>
       </div>
       <div className="product-tabs" aria-hidden="true">
         <span className="active">Today</span>
         <span>Contracts</span>
-        <span>Verify</span>
+        <span>Portfolio</span>
         <span>Reports</span>
       </div>
       <div className="work-queue">
@@ -76,13 +76,13 @@ function ProductFrame() {
           <span className="work-status high">Review</span>
         </div>
         <div className="work-row">
-          <span className="work-icon"><ShieldCheck /></span>
+          <span className="work-icon"><ScanSearch /></span>
           <div>
-            <span className="product-overline">Verify onboarding</span>
-            <h4>Case LLV-2048</h4>
-            <p>One evidence conflict requires a reviewer decision.</p>
+            <span className="product-overline">Evidence review</span>
+            <h4>Data processing addendum</h4>
+            <p>One unsupported finding requires a reviewer decision.</p>
           </div>
-          <span className="work-status medium">Escalate</span>
+          <span className="work-status medium">Inspect</span>
         </div>
         <div className="work-row">
           <span className="work-icon"><CalendarClock /></span>
@@ -194,7 +194,7 @@ function App() {
                 ["01", "Contract Review", "Inspect risks, gaps, obligations, and negotiation priorities"],
                 ["02", "Team Decisions", "Assign actions, request approvals, comment, and escalate"],
                 ["03", "Contract Operations", "Track renewals, payments, notice windows, and delivery"],
-                ["04", "Verify Onboarding", "Reconcile identity evidence and record human decisions"],
+                ["04", "Document Conversion", "Turn financial PDFs into reviewed CSV, Excel, or JSON"],
                 ["05", "Governance", "Audit activity, workload, outcomes, retention, and overrides"],
               ].map(([number, role, outcome]) => (
                 <div className="audience-row" key={role} data-reveal>
@@ -244,7 +244,7 @@ function App() {
               <ul className="risk-proof-list">
                 <li><Check /> Verbatim excerpts and extracted values</li>
                 <li><Check /> Page, section, field, and source references</li>
-                <li><Check /> Risk, confidence, and verification kept separate</li>
+                <li><Check /> Findings, evidence coverage, and human decisions kept separate</li>
                 <li><Check /> Playbook position and reviewer action attached</li>
               </ul>
             </div>
@@ -290,10 +290,10 @@ function App() {
               ["02", FileCheck2, "Permanent review workspace", "A searchable contract register, clear processing states, workspace defaults, and durable contract pages."],
               ["03", ScanSearch, "Evidence-linked intelligence", "Risks, protection gaps, grounded Q&A, obligations, payments, deadlines, playbooks, and portable exports."],
               ["04", Handshake, "Collaboration and approvals", "Comments, mentions, assigned actions, conditional approvals, secure external review, and counsel handoff."],
-              ["05", CalendarClock, "Operations and Verify", "Renewals, recurring reminders, portfolio evidence, onboarding queues, reconciliation, and attributable decisions."],
+              ["05", CalendarClock, "Contract operations", "Renewals, recurring reminders, portfolio evidence, assignments, and attributable decisions."],
               ["06", GitCompareArrows, "Negotiation closeout", "Version history, before-and-after comparison, counterparty responses, unresolved points, and final summaries."],
               ["07", CloudDownload, "Connected intake", "Email, cloud providers, secure request links, API keys, webhooks, provenance, and delivery logs."],
-              ["08", Activity, "Reporting and governance", "Throughput, attention queues, Verify outcomes, overrides, reviewer workload, activity history, and CSV reporting."],
+              ["08", Activity, "Reporting and governance", "Throughput, attention queues, human outcomes, overrides, reviewer workload, activity history, and CSV reporting."],
             ].map(([number, Icon, title, copy]) => (
               <article className="capability-row" key={title} data-reveal>
                 <span className="capability-label">{number}</span>
@@ -319,10 +319,10 @@ function App() {
               <Badge variant="neutral"><UserCheck /> Human-owned by design</Badge>
             </div>
             {[
-              ["Attributable decisions", "Actions, approvals, overrides, and verification outcomes retain reviewer rationale and history."],
+              ["Attributable decisions", "Actions, approvals, overrides, and negotiation outcomes retain reviewer rationale and history."],
               ["Private by policy", "Organization scope, role controls, retention choices, source-text controls, and hard deletion remain visible."],
               ["Conflict-gated", "Unresolved evidence conflicts can block approval instead of being hidden behind a score."],
-              ["Honest limits", "Risk, extraction confidence, and verification status stay separate. LensLayer does not provide legal advice or identity assurance."],
+              ["Honest limits", "Risk, extraction confidence, evidence coverage, and human decisions stay separate. LensLayer does not provide legal advice."],
             ].map(([title, copy]) => (
               <div className="trust-row" key={title} data-reveal>
                 <h3>{title}</h3>
@@ -339,7 +339,7 @@ function App() {
               <h2 id="cta-title">Bring the document. Own the decision.</h2>
             </div>
             <div className="closing-action">
-              <p>Review contracts, reconcile onboarding evidence, coordinate the work, and keep the record.</p>
+              <p>Review contracts, inspect supporting evidence, coordinate the work, and keep the record.</p>
               <Button asChild variant="inverse" size="lg">
                 <a href={APP_URL}>Start free beta <ArrowRight /></a>
               </Button>

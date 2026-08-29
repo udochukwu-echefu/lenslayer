@@ -43,7 +43,7 @@ Use Figtree with a system sans-serif fallback. Page titles are direct operationa
 - Buttons and inputs: 8 to 10px radius
 - Major independent panels: 12 to 14px radius
 - Status indicators: text plus semantic color, never color alone
-- Findings: severity, recommendation label, source excerpt, and verification state
+- Findings: severity, recommendation label, source excerpt, and evidence status
 - Human decisions: reviewer identity, rationale, and timestamp
 - Search: global retrieval is distinct from register filtering
 - Public preview: clearly synthetic, read-only, and isolated from customer workspaces
@@ -52,7 +52,7 @@ Use Figtree with a system sans-serif fallback. Page titles are direct operationa
 
 ## Evidence Behavior
 
-Every material finding and generated answer links to a source excerpt. Unsupported answers are blocked. Automated recommendations never masquerade as decisions, and confidence never replaces verification status. Reports distinguish automated findings from attributable human outcomes.
+Every material finding and generated answer links to a source excerpt. Unsupported answers are blocked. Automated recommendations never masquerade as decisions, and confidence never replaces evidence status. Reports distinguish automated findings from attributable human outcomes.
 
 ## Motion
 

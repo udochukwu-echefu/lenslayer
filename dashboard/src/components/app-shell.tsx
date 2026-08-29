@@ -1,17 +1,21 @@
 "use client";
 
 import * as Avatar from "@radix-ui/react-avatar";
+import * as Dialog from "@radix-ui/react-dialog";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BarChart3, Bell, CalendarDays, CheckSquare2, ChevronDown, Files, Inbox, LayoutDashboard, Menu, Plus, Search, Settings, ShieldCheck, UsersRound, X } from "lucide-react";
+import { BarChart3, Bell, CalendarDays, CheckSquare2, ChevronDown, FileOutput, Files, Inbox, LayoutDashboard, Menu, Plus, Search, Settings, UsersRound, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { api } from "@/lib/api";
-import { formatRelativeDate, initials } from "@/lib/utils";
+import { initials } from "@/lib/utils";
 import { BrandMark } from "./brand-mark";
 import { WorkspaceGate } from "./workspace-gate";
 import { useWorkspace } from "./workspace-provider";
+import { NotificationRow } from "./notification-row";
+import { AiAssistant } from "./ai-assistant";
+import { ThemeToggle } from "./theme-toggle";
 
 const navigationGroups = [
   { label: "Work", items: [
@@ -23,9 +27,9 @@ const navigationGroups = [
   { label: "Agreements", items: [
     { href: "/contracts", label: "Contracts", icon: Files },
     { href: "/portfolio", label: "Portfolio", icon: Search },
+    { href: "/convert", label: "Document converter", icon: FileOutput },
   ] },
   { label: "Governance", items: [
-    { href: "/verify", label: "Identity verification", icon: ShieldCheck },
     { href: "/reports", label: "Reports", icon: BarChart3 },
   ] },
   { label: "Administration", items: [
@@ -48,6 +52,8 @@ function Navigation({ close }: { close?: () => void }) {
 
 function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const mobileTriggerRef = useRef<HTMLButtonElement>(null);
   const [globalSearch, setGlobalSearch] = useState("");
   const pathname = usePathname();
   const { activeOrganization, organizations, selectOrganization, user, canUpload, isDemo } = useWorkspace();
@@ -90,7 +96,7 @@ function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
 
         <div className="app-frame">
           <header className="topbar">
-            <button className="icon-button mobile-menu" onClick={() => setMobileOpen(true)} aria-label="Open navigation"><Menu size={20} /></button>
+            <button ref={mobileTriggerRef} className="icon-button mobile-menu" onClick={() => setMobileOpen(true)} aria-label="Open navigation"><Menu size={20} /></button>
             <DropdownMenu.Root>
               <DropdownMenu.Trigger asChild>
                 <button className="workspace-switcher"><span>{activeOrganization?.name ?? "Workspace"}</span><ChevronDown size={15} /></button>
@@ -102,9 +108,11 @@ function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
                 </DropdownMenu.Content>
               </DropdownMenu.Portal>
             </DropdownMenu.Root>
-            {hasSearchableRecords && <div className="global-search"><label><Search size={16} /><span className="sr-only">Global search</span><input value={globalSearch} onChange={(event) => setGlobalSearch(event.target.value)} placeholder="Search contracts, tasks, parties, or dates" /></label>{globalSearch.trim().length >= 2 && <div className="global-results">{searchResults.length ? searchResults.map((result) => <Link href={result.href} key={`${result.href}-${result.id}`} onClick={() => setGlobalSearch("")}><strong>{result.title}</strong><span>{result.meta}</span></Link>) : <p>No workspace records match this search.</p>}</div>}</div>}
+            {hasSearchableRecords && <div className={`global-search ${mobileSearchOpen ? "mobile-search-open" : ""}`}><label><Search size={16} /><span className="sr-only">Global search</span><input autoFocus={mobileSearchOpen} value={globalSearch} onChange={(event) => setGlobalSearch(event.target.value)} placeholder="Search contracts, tasks, parties, or dates" /></label>{mobileSearchOpen && <button className="icon-button mobile-search-close" type="button" aria-label="Close global search" onClick={() => { setMobileSearchOpen(false); setGlobalSearch(""); }}><X size={18} /></button>}{globalSearch.trim().length >= 2 && <div className="global-results">{searchResults.length ? searchResults.map((result) => <Link href={result.href} key={`${result.href}-${result.id}`} onClick={() => { setGlobalSearch(""); setMobileSearchOpen(false); }}><strong>{result.title}</strong><span>{result.meta}</span></Link>) : <p>No workspace records match this search.</p>}</div>}</div>}
             <div className="top-actions">
+              {hasSearchableRecords && <button className="icon-button mobile-search-trigger" type="button" aria-label="Search workspace" onClick={() => setMobileSearchOpen(true)}><Search size={18} /></button>}
               {canUpload && <Link href="/contracts/new" className="button top-new"><Plus size={16} />New contract</Link>}
+              <ThemeToggle />
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger asChild>
                   <button className="icon-button notification-trigger" aria-label={`${unreadCount || "No"} unread notifications`}><Bell size={18} />{unreadCount > 0 && <span>{unreadCount > 9 ? "9+" : unreadCount}</span>}</button>
@@ -113,9 +121,7 @@ function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
                   <DropdownMenu.Content className="dropdown notification-menu" align="end" sideOffset={8}>
                     <div className="notification-head"><div><strong>Notifications</strong><span>{unreadCount ? `${unreadCount} unread` : "You’re caught up"}</span></div>{unreadCount > 0 && !isDemo && <button onClick={() => readAllMutation.mutate()} disabled={readAllMutation.isPending}>Mark all read</button>}</div>
                     <DropdownMenu.Separator className="dropdown-separator" />
-                    {notificationsQuery.isLoading ? <p className="notification-empty">Loading updates…</p> : notifications.length ? notifications.slice(0, 8).map((notification) => <DropdownMenu.Item key={notification.id} asChild className="notification-item" onSelect={() => { if (!notification.read_at && !isDemo) readMutation.mutate(notification.id); }}>
-                      <Link href={notification.action_url || "/inbox"}><span className={`notification-dot ${notification.read_at ? "" : "unread"}`} /><span><strong>{notification.title}</strong><small>{notification.message}</small><time>{formatRelativeDate(notification.created_at)}</time></span></Link>
-                    </DropdownMenu.Item>) : <p className="notification-empty">Processing updates and review alerts will appear here.</p>}
+                    <div className="notification-scroll">{notificationsQuery.isLoading ? <p className="notification-empty">Loading updates…</p> : notifications.length ? notifications.map((notification) => <DropdownMenu.Item key={notification.id} asChild className="notification-item" onSelect={() => { if (!notification.read_at && !isDemo) readMutation.mutate(notification.id); }}><NotificationRow notification={notification} /></DropdownMenu.Item>) : <p className="notification-empty">Processing updates and review alerts will appear here.</p>}</div>
                   </DropdownMenu.Content>
                 </DropdownMenu.Portal>
               </DropdownMenu.Root>
@@ -136,12 +142,16 @@ function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
           <main id="main-content" className="main-content">{isDemo && <div className="demo-banner"><strong>Synthetic demo</strong><span>Read-only sample records, isolated from private customer workspaces.</span></div>}{children}</main>
         </div>
 
-        {mobileOpen && <div className="mobile-overlay" role="presentation" onMouseDown={() => setMobileOpen(false)}>
-          <aside className="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation" onMouseDown={(event) => event.stopPropagation()}>
-            <div className="mobile-drawer-head"><BrandMark /><button className="icon-button" onClick={() => setMobileOpen(false)} aria-label="Close navigation"><X size={19} /></button></div>
-            <Navigation close={() => setMobileOpen(false)} />
-          </aside>
-        </div>}
+        <Dialog.Root open={mobileOpen} onOpenChange={setMobileOpen}>
+          <Dialog.Portal>
+            <Dialog.Overlay className="mobile-overlay" />
+            <Dialog.Content className="mobile-drawer" aria-describedby={undefined} onCloseAutoFocus={(event) => { event.preventDefault(); mobileTriggerRef.current?.focus(); }}>
+              <div className="mobile-drawer-head"><Dialog.Title className="sr-only">Workspace navigation</Dialog.Title><BrandMark /><Dialog.Close asChild><button className="icon-button" aria-label="Close navigation"><X size={19} /></button></Dialog.Close></div>
+              <Navigation close={() => setMobileOpen(false)} />
+            </Dialog.Content>
+          </Dialog.Portal>
+        </Dialog.Root>
+        <AiAssistant />
       </div>
     </WorkspaceGate>
   );
@@ -149,6 +159,6 @@ function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  if (pathname.startsWith("/invite/") || pathname.startsWith("/shared/") || pathname.startsWith("/intake/") || pathname.startsWith("/auth/") || pathname === "/signin" || pathname === "/sample") return <>{children}</>;
+  if (pathname.startsWith("/invite/") || pathname.startsWith("/shared/") || pathname.startsWith("/auth/") || pathname === "/signin" || pathname === "/sample") return <>{children}</>;
   return <WorkspaceAppShell>{children}</WorkspaceAppShell>;
 }

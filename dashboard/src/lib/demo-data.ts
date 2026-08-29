@@ -1,5 +1,4 @@
 import type {
-  AuditEvent,
   Contract,
   ContractActivity,
   ContractComment,
@@ -20,8 +19,6 @@ import type {
   ReportRange,
   Review,
   User,
-  VerificationCase,
-  VerificationCaseSummary,
   WorkflowTask,
 } from "./types";
 
@@ -220,46 +217,6 @@ export const demoNotifications: Notification[] = [
   { id: "note-failed", organization_id: DEMO_WORKSPACE_ID, contract_id: "demo-marketing", kind: "review_failed", title: "Brightfield review needs a new file", message: "The scan was incomplete and could not be parsed.", action_url: "/contracts/demo-marketing", read_at: iso(-1, 12), created_at: iso(-3) },
 ];
 
-const verificationSummaries: VerificationCaseSummary[] = [
-  { id: "verify-ade", organization_id: DEMO_WORKSPACE_ID, reference: "IDV-1042", applicant_name: "Ade Williams", applicant_email: "ade@example.test", status: "in_review", priority: "high", assigned_to_user_id: "demo-tomi", assigned_to_name: "Tomi Adeyemi", assigned_to_email: "tomi@example.test", intake_channel: "secure_link", risk_score: 62, suggested_action: "Escalate", finding_count: 2, document_count: 3, average_confidence: 91, submitted_at: iso(-4), synthetic: true, due_at: iso(2), expires_at: iso(86), closed_at: null, latest_decision: null, created_at: iso(-4), updated_at: iso(-1) },
-  { id: "verify-maya", organization_id: DEMO_WORKSPACE_ID, reference: "IDV-1038", applicant_name: "Maya Chen", applicant_email: "maya@example.test", status: "approved", priority: "normal", assigned_to_user_id: "demo-chidi", assigned_to_name: "Chidi Okafor", assigned_to_email: "chidi@example.test", intake_channel: "email", risk_score: 8, suggested_action: "Approve", finding_count: 0, document_count: 2, average_confidence: 98, submitted_at: iso(-8), synthetic: true, due_at: null, expires_at: iso(82), closed_at: iso(-6), latest_decision: { id: "decision-maya", decision: "Approve", rationale: "Names, dates, and addresses match across the submitted records.", recommended_action: "Approve", reviewer_user_id: "demo-chidi", reviewer_name: "Chidi Okafor", reviewer_email: "chidi@example.test", created_at: iso(-6) }, created_at: iso(-8), updated_at: iso(-6) },
-  { id: "verify-luca", organization_id: DEMO_WORKSPACE_ID, reference: "IDV-1034", applicant_name: "Luca Marin", applicant_email: "luca@example.test", status: "needs_information", priority: "urgent", assigned_to_user_id: "demo-tomi", assigned_to_name: "Tomi Adeyemi", assigned_to_email: "tomi@example.test", intake_channel: "whatsapp", risk_score: 84, suggested_action: "Reject", finding_count: 3, document_count: 2, average_confidence: 87, submitted_at: iso(-11), synthetic: true, due_at: iso(1), expires_at: iso(79), closed_at: null, latest_decision: null, created_at: iso(-11), updated_at: iso(-2) },
-];
-
-export const demoVerificationCases = verificationSummaries;
-
-export function demoVerificationCase(caseId: string): VerificationCase | null {
-  const summary = verificationSummaries.find((item) => item.id === caseId);
-  if (!summary) return null;
-  const hasConflict = summary.risk_score >= 50;
-  const finding = hasConflict ? [{
-    code: "identity_address_conflict",
-    title: "Address differs across evidence",
-    severity: summary.risk_score > 75 ? "High" as const : "Medium" as const,
-    points: summary.risk_score > 75 ? 35 : 20,
-    explanation: "The application address does not match the most recent supporting document.",
-    action: "Request current address evidence and record which source is authoritative.",
-    evidence: [
-      { document: "Application form", reference: "Address", field: "address", value: "14 Market Street", confidence: 1 },
-      { document: "Utility statement", reference: "Service address", field: "address", value: "41 Market Street", confidence: 0.93 },
-    ],
-  }] : [];
-  return {
-    ...summary,
-    application: { full_name: summary.applicant_name, email: summary.applicant_email, address: "14 Market Street", date_of_birth: "1991-05-18" },
-    documents: [{ type: "identity", label: "Passport", reference: "Photo page", confidence: 0.97, fields: { full_name: summary.applicant_name, date_of_birth: "1991-05-18" } }],
-    summary: hasConflict ? "One material discrepancy needs a reviewer to reconcile the submitted address evidence." : "The supplied identity fields align across the synthetic evidence set.",
-    reasoning: hasConflict ? "The mismatch is explainable but cannot be resolved from the current sources alone." : "All required fields matched and extraction confidence remained high.",
-    findings: finding,
-    field_matrix: [{ field: "Full name", application: summary.applicant_name, passport: summary.applicant_name }, { field: "Address", application: "14 Market Street", supporting_document: hasConflict ? "41 Market Street" : "14 Market Street" }],
-    generated_at: summary.updated_at,
-    decision_history: summary.latest_decision ? [summary.latest_decision] : [],
-    uploaded_documents: [{ id: `document-${caseId}`, document_type: "passport", original_name: `${summary.reference.toLowerCase()}-passport.pdf`, content_type: "application/pdf", size_bytes: 248000, sha256: "7b3f90a5bde2f4d03f14ea7eb3d9179bc91490ee14fb12e3fd304af886ec21aa", status: "ready", scan_status: "clean", extraction_status: "ready", extracted_fields: { full_name: summary.applicant_name }, confidence: summary.average_confidence, uploaded_by_user_id: null, uploaded_by_name: "Secure demo intake", expires_at: summary.expires_at, created_at: summary.created_at, updated_at: summary.updated_at }],
-    assignment_history: [{ id: `assignment-${caseId}`, assigned_to_user_id: summary.assigned_to_user_id, assigned_to_name: summary.assigned_to_name, assigned_to_email: summary.assigned_to_email, assigned_by_user_id: "demo-aisha", assigned_by_name: "Aisha Bello", note: "Review the synthetic evidence and record the reason for the outcome.", created_at: summary.created_at }],
-    reconciliations: [{ id: `reconciliation-${caseId}`, field_name: "address", canonical_value: hasConflict ? "" : "14 Market Street", status: hasConflict ? "conflict" : "matched", sources: [], resolution_note: hasConflict ? "Awaiting updated proof of address." : "Matched across retained sources.", resolved_by_user_id: hasConflict ? null : "demo-chidi", resolved_by_name: hasConflict ? "" : "Chidi Okafor", resolved_at: hasConflict ? null : summary.updated_at, created_at: summary.created_at, updated_at: summary.updated_at }],
-  };
-}
-
 export function demoJobs(contractId: string): Job[] {
   const current = demoContracts.find((item) => item.id === contractId)?.latest_job;
   return current ? [current] : [];
@@ -351,15 +308,6 @@ export function demoActivity(contractId: string): ContractActivity[] {
   ];
 }
 
-export function demoVerificationAudit(caseId: string): AuditEvent[] {
-  const item = verificationSummaries.find((entry) => entry.id === caseId);
-  if (!item) return [];
-  return [
-    { id: `audit-${caseId}-assigned`, action: "verification.case_assigned", detail: { assigned_to: item.assigned_to_name }, actor_user_id: "demo-aisha", actor_name: "Aisha Bello", actor_email: "aisha@example.test", contract_id: null, verification_case_id: caseId, created_at: item.created_at },
-    { id: `audit-${caseId}-reconciled`, action: "verification.evidence_reconciled", detail: { fields_checked: 4, unresolved: item.finding_count }, actor_user_id: item.assigned_to_user_id, actor_name: item.assigned_to_name, actor_email: item.assigned_to_email, contract_id: null, verification_case_id: caseId, created_at: item.updated_at },
-  ];
-}
-
 export function demoDealPassport(contractId: string): DealPassport {
   const contract = demoContracts.find((item) => item.id === contractId)!;
   const review = demoReview(contractId);
@@ -408,27 +356,20 @@ export function demoReport(range: ReportRange): ReportOverview {
     tasks_due_soon: 2,
     tasks_completed: 1,
     task_completion_rate: 20,
-    verification_total: 3,
-    verification_pending: 2,
-    verification_approved: 1,
-    verification_escalated: 0,
-    verification_rejected: 0,
-    verification_average_risk: 51,
-    verification_overrides: 0,
     audit_event_count: 24,
     contract_types: [{ label: "Services", count: 2 }, { label: "Supply", count: 1 }, { label: "Lease", count: 1 }, { label: "Data processing", count: 1 }, { label: "Software", count: 1 }],
     active_task_priorities: [{ label: "high", count: 2 }, { label: "normal", count: 2 }],
     timeline: [
-      { label: "Week 1", period_start: iso(-28), period_end: iso(-22), contracts_created: 1, tasks_created: 1, tasks_completed: 0, verification_submitted: 1, decisions_recorded: 0 },
-      { label: "Week 2", period_start: iso(-21), period_end: iso(-15), contracts_created: 2, tasks_created: 1, tasks_completed: 0, verification_submitted: 0, decisions_recorded: 1 },
-      { label: "Week 3", period_start: iso(-14), period_end: iso(-8), contracts_created: 2, tasks_created: 2, tasks_completed: 1, verification_submitted: 2, decisions_recorded: 1 },
-      { label: "Week 4", period_start: iso(-7), period_end: iso(0), contracts_created: 1, tasks_created: 1, tasks_completed: 0, verification_submitted: 0, decisions_recorded: 2 },
+      { label: "Week 1", period_start: iso(-28), period_end: iso(-22), contracts_created: 1, tasks_created: 1, tasks_completed: 0, decisions_recorded: 0 },
+      { label: "Week 2", period_start: iso(-21), period_end: iso(-15), contracts_created: 2, tasks_created: 1, tasks_completed: 0, decisions_recorded: 1 },
+      { label: "Week 3", period_start: iso(-14), period_end: iso(-8), contracts_created: 2, tasks_created: 2, tasks_completed: 1, decisions_recorded: 1 },
+      { label: "Week 4", period_start: iso(-7), period_end: iso(0), contracts_created: 1, tasks_created: 1, tasks_completed: 0, decisions_recorded: 2 },
     ],
     workload: demoMembers.map((member, index) => ({ user_id: member.user_id, display_name: member.display_name, email: member.email, role: member.role, active_tasks: [1, 1, 1, 1][index], overdue_tasks: index === 1 ? 1 : 0, completed_in_period: index === 1 ? 1 : 0 })),
     recent_activity: [
       { id: "report-review", action: "contract.review_ready", detail: { title: "Harborline Supply Agreement" }, actor_user_id: null, actor_name: "LensLayer processing", contract_id: "demo-supplier", contract_title: "Harborline Supply Agreement", created_at: iso(-1) },
       { id: "report-task", action: "task.updated", detail: { title: "Confirm liability cap position" }, actor_user_id: "demo-chidi", actor_name: "Chidi Okafor", contract_id: "demo-msa", contract_title: "Northstar Services MSA", created_at: iso(-2) },
-      { id: "report-decision", action: "verification.decision_recorded", detail: { reference: "IDV-1038" }, actor_user_id: "demo-chidi", actor_name: "Chidi Okafor", contract_id: null, contract_title: null, created_at: iso(-6) },
+      { id: "report-decision", action: "contract.decision_recorded", detail: { title: "LedgerPeak Software Subscription" }, actor_user_id: "demo-chidi", actor_name: "Chidi Okafor", contract_id: "demo-software", contract_title: "LedgerPeak Software Subscription", created_at: iso(-6) },
     ],
   };
 }
@@ -477,15 +418,7 @@ export function getDemoResponse(path: string, init?: RequestInit): DemoResponse 
   if (pathname === `${workspacePrefix}/members`) return { handled: true, value: demoMembers };
   if (pathname === `${workspacePrefix}/invitations`) return { handled: true, value: [] };
   if (pathname === `${workspacePrefix}/notifications`) return { handled: true, value: demoNotifications };
-  if (pathname === `${workspacePrefix}/verification-cases`) return { handled: true, value: demoVerificationCases };
   if (pathname === `${workspacePrefix}/reports/overview`) return { handled: true, value: demoReport((url.searchParams.get("range") ?? "30d") as ReportRange) };
-
-  const verificationMatch = pathname.match(new RegExp(`^${workspacePrefix}/verification-cases/([^/]+)(?:/(.*))?$`));
-  if (verificationMatch) {
-    if (verificationMatch[2] === "audit-events") return { handled: true, value: demoVerificationAudit(verificationMatch[1]) };
-    const item = demoVerificationCase(verificationMatch[1]);
-    return item ? { handled: true, value: item } : { handled: true, error: "This synthetic verification case does not exist.", status: 404 };
-  }
 
   if (contractMatch) {
     const [, contractId, resource] = contractMatch;
@@ -508,7 +441,7 @@ export function getDemoResponse(path: string, init?: RequestInit): DemoResponse 
     if (resource === "activity") return { handled: true, value: demoActivity(contractId) };
   }
 
-  const emptyCollections = ["/integrations", "/integrations/imports", "/integrations/providers", "/api-keys", "/webhooks", "/webhook-deliveries", "/secure-intake-links"];
+  const emptyCollections = ["/integrations", "/integrations/imports", "/integrations/providers", "/api-keys", "/webhooks", "/webhook-deliveries"];
   if (emptyCollections.some((suffix) => pathname.endsWith(suffix))) return { handled: true, value: [] };
   return { handled: true, error: "This item is not part of the synthetic demo workspace.", status: 404 };
 }

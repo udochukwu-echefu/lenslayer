@@ -55,18 +55,6 @@ InviteRoleName = Literal["admin", "reviewer", "viewer"]
 TaskStatusName = Literal["open", "in_progress", "done", "cancelled"]
 TaskPriorityName = Literal["low", "normal", "high"]
 TaskCategoryName = Literal["follow_up", "risk", "obligation", "deadline", "negotiation", "professional_review"]
-VerificationActionName = Literal["Approve", "Escalate", "Reject"]
-VerificationStatusName = Literal[
-    "pending",
-    "in_review",
-    "needs_information",
-    "approved",
-    "escalated",
-    "rejected",
-    "closed",
-]
-VerificationPriorityName = Literal["low", "normal", "high", "urgent"]
-ReconciliationStatusName = Literal["matched", "conflict", "needs_review", "resolved"]
 ReportRangeName = Literal["30d", "90d", "365d", "all"]
 IntegrationProviderName = Literal[
     "email",
@@ -174,187 +162,6 @@ class TaskResponse(BaseModel):
     completed_at: datetime | None
     created_at: datetime
     updated_at: datetime
-
-
-class VerificationDecisionCreate(BaseModel):
-    decision: VerificationActionName
-    rationale: str = Field(min_length=10, max_length=4000)
-
-
-class VerificationCaseUpdate(BaseModel):
-    status: VerificationStatusName | None = None
-    priority: VerificationPriorityName | None = None
-    due_at: datetime | None = None
-
-
-class VerificationAssignmentCreate(BaseModel):
-    assigned_to_user_id: str | None = None
-    note: str = Field(default="", max_length=2000)
-
-
-class VerificationAssignmentResponse(BaseModel):
-    id: str
-    assigned_to_user_id: str | None
-    assigned_to_name: str
-    assigned_to_email: str
-    assigned_by_user_id: str
-    assigned_by_name: str
-    note: str
-    created_at: datetime
-
-
-class VerificationReconciliationUpsert(BaseModel):
-    field_name: str = Field(min_length=1, max_length=128)
-    canonical_value: str = Field(default="", max_length=4000)
-    status: ReconciliationStatusName = "needs_review"
-    sources: list[dict[str, Any]] = Field(default_factory=list, max_length=50)
-    resolution_note: str = Field(default="", max_length=4000)
-
-
-class VerificationReconciliationResponse(BaseModel):
-    id: str
-    field_name: str
-    canonical_value: str
-    status: ReconciliationStatusName
-    sources: list[dict[str, Any]]
-    resolution_note: str
-    resolved_by_user_id: str | None
-    resolved_by_name: str
-    resolved_at: datetime | None
-    created_at: datetime
-    updated_at: datetime
-
-
-class VerificationDocumentResponse(BaseModel):
-    id: str
-    document_type: str
-    original_name: str
-    content_type: str
-    size_bytes: int
-    sha256: str
-    status: str
-    scan_status: str
-    extraction_status: str
-    extracted_fields: dict[str, Any]
-    confidence: int
-    uploaded_by_user_id: str | None
-    uploaded_by_name: str
-    expires_at: datetime | None
-    created_at: datetime
-    updated_at: datetime
-
-
-class VerificationDocumentReview(BaseModel):
-    scan_status: Literal["pending", "clean", "rejected"]
-    extraction_status: Literal["pending", "processing", "ready", "failed"]
-    extracted_fields: dict[str, Any] = Field(default_factory=dict)
-    confidence: int = Field(default=0, ge=0, le=100)
-
-
-class VerificationDecisionResponse(BaseModel):
-    id: str
-    decision: VerificationActionName
-    rationale: str
-    recommended_action: VerificationActionName
-    reviewer_user_id: str
-    reviewer_name: str
-    reviewer_email: str
-    created_at: datetime
-
-
-class VerificationCaseSummaryResponse(BaseModel):
-    id: str
-    organization_id: str
-    reference: str
-    applicant_name: str
-    applicant_email: str
-    status: VerificationStatusName
-    priority: VerificationPriorityName
-    assigned_to_user_id: str | None
-    assigned_to_name: str
-    assigned_to_email: str
-    intake_channel: str
-    risk_score: int
-    suggested_action: VerificationActionName
-    finding_count: int
-    document_count: int
-    average_confidence: int
-    submitted_at: datetime
-    synthetic: bool
-    due_at: datetime | None
-    expires_at: datetime | None
-    closed_at: datetime | None
-    latest_decision: VerificationDecisionResponse | None
-    created_at: datetime
-    updated_at: datetime
-
-
-class VerificationCaseResponse(VerificationCaseSummaryResponse):
-    application: dict[str, Any]
-    documents: list[dict[str, Any]]
-    summary: str
-    reasoning: str
-    findings: list[dict[str, Any]]
-    field_matrix: list[dict[str, Any]]
-    generated_at: str
-    decision_history: list[VerificationDecisionResponse]
-    uploaded_documents: list[VerificationDocumentResponse]
-    assignment_history: list[VerificationAssignmentResponse]
-    reconciliations: list[VerificationReconciliationResponse]
-
-
-class SecureIntakeLinkCreate(BaseModel):
-    channel: Literal["secure_link", "email", "slack", "telegram", "whatsapp"] = "secure_link"
-    recipient_name: str = Field(default="", max_length=255)
-    recipient_email: str = Field(default="", max_length=320)
-    recipient_phone_hint: str = Field(default="", max_length=64)
-    applicant_name: str = Field(min_length=2, max_length=255)
-    message: str = Field(default="", max_length=2000)
-    expires_in_days: Literal[1, 3, 7, 14, 30] = 7
-    max_uploads: int = Field(default=5, ge=1, le=20)
-    retention_days: Literal[7, 30, 90, 365] = 30
-
-
-class SecureIntakeLinkResponse(BaseModel):
-    id: str
-    organization_id: str
-    verification_case_id: str | None
-    token_prefix: str
-    channel: str
-    recipient_name: str
-    recipient_email: str
-    recipient_phone_hint: str
-    applicant_name: str
-    message: str
-    max_uploads: int
-    upload_count: int
-    retention_days: int
-    status: Literal["active", "expired", "revoked", "complete"]
-    expires_at: datetime
-    revoked_at: datetime | None
-    last_used_at: datetime | None
-    created_by_user_id: str
-    created_by_name: str
-    created_at: datetime
-
-
-class SecureIntakeLinkCreatedResponse(BaseModel):
-    intake_link: SecureIntakeLinkResponse
-    token: str
-
-
-class SecureIntakePreviewResponse(BaseModel):
-    organization_name: str
-    applicant_name: str
-    message: str
-    remaining_uploads: int
-    status: Literal["active", "expired", "revoked", "complete"]
-    expires_at: datetime
-
-
-class SecureIntakeUploadResponse(BaseModel):
-    verification_case: VerificationCaseSummaryResponse
-    documents: list[VerificationDocumentResponse]
 
 
 class IntakeAddressResponse(BaseModel):
@@ -888,7 +695,6 @@ class AuditEventResponse(BaseModel):
     actor_name: str = ""
     actor_email: str = ""
     contract_id: str | None
-    verification_case_id: str | None = None
     created_at: datetime
 
 
@@ -904,7 +710,6 @@ class ReportTimelinePoint(BaseModel):
     contracts_created: int
     tasks_created: int
     tasks_completed: int
-    verification_submitted: int
     decisions_recorded: int
 
 
@@ -951,13 +756,6 @@ class ReportOverviewResponse(BaseModel):
     tasks_due_soon: int
     tasks_completed: int
     task_completion_rate: int
-    verification_total: int
-    verification_pending: int
-    verification_approved: int
-    verification_escalated: int
-    verification_rejected: int
-    verification_average_risk: int
-    verification_overrides: int
     audit_event_count: int
     contract_types: list[ReportDistributionItem]
     active_task_priorities: list[ReportDistributionItem]

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The landing page is a public brand surface, not a copy of the dark product workspace. It presents LensLayer as an evidence-led document intelligence platform spanning Contract Review, Verify Onboarding, team decisions, post-signature operations, connected intake, and governance. It should communicate the same product principles with more editorial space: evidence before assertion, actionability, honest uncertainty, privacy in context, and human decision ownership.
+The landing page is a public brand surface, not a copy of the product workspace. It presents LensLayer as an evidence-led contract intelligence platform spanning contract review, financial-document conversion, team decisions, post-signature operations, connected intake, and governance. It should communicate the same product principles with more editorial space: evidence before assertion, actionability, honest uncertainty, privacy in context, and human decision ownership.
 
 ## Visual direction
 

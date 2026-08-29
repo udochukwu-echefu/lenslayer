@@ -6,6 +6,13 @@ def _value(value, fallback="Not identified"):
     return fallback if value in (None, "", []) else str(value)
 
 
+def csv_safe_cell(value):
+    """Neutralize strings that spreadsheet programs may execute as formulas."""
+    if isinstance(value, str) and value.startswith(("=", "+", "-", "@", "\t", "\r")):
+        return f"'{value}"
+    return value
+
+
 def build_markdown_report(analysis, source_name, context, notes=""):
     lines = [
         f"# {_value(analysis.get('title') or analysis.get('contract_type'), 'Contract review')}",
@@ -155,9 +162,10 @@ def build_csv(items):
     if not rows:
         return ""
     fields = list(dict.fromkeys(key for row in rows for key in row.keys()))
-    writer = csv.DictWriter(output, fieldnames=fields)
-    writer.writeheader()
-    writer.writerows(rows)
+    writer = csv.writer(output)
+    writer.writerow([csv_safe_cell(field) for field in fields])
+    for row in rows:
+        writer.writerow([csv_safe_cell(row.get(field)) for field in fields])
     return output.getvalue()
 
 

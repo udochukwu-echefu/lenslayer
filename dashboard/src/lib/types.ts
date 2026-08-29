@@ -423,7 +423,6 @@ export type AuditEvent = {
   actor_name: string;
   actor_email: string;
   contract_id: string | null;
-  verification_case_id: string | null;
   created_at: string;
 };
 
@@ -504,166 +503,6 @@ export type TaskCreate = {
 
 export type TaskUpdate = Partial<Omit<TaskCreate, "source_kind" | "source_reference">>;
 
-export type VerificationAction = "Approve" | "Escalate" | "Reject";
-export type VerificationStatus = "pending" | "in_review" | "needs_information" | "approved" | "escalated" | "rejected" | "closed";
-export type VerificationPriority = "low" | "normal" | "high" | "urgent";
-export type ReconciliationStatus = "matched" | "conflict" | "needs_review" | "resolved";
-
-export type VerificationEvidence = {
-  document: string;
-  reference: string;
-  field: string;
-  value: string | number;
-  confidence: number;
-};
-
-export type VerificationFinding = {
-  code: string;
-  title: string;
-  severity: "High" | "Medium" | "Low";
-  points: number;
-  explanation: string;
-  action: string;
-  evidence: VerificationEvidence[];
-};
-
-export type VerificationDocument = {
-  type: string;
-  label: string;
-  reference: string;
-  confidence: number;
-  fields: Record<string, string | number>;
-};
-
-export type VerificationDecision = {
-  id: string;
-  decision: VerificationAction;
-  rationale: string;
-  recommended_action: VerificationAction;
-  reviewer_user_id: string;
-  reviewer_name: string;
-  reviewer_email: string;
-  created_at: string;
-};
-
-export type VerificationUploadedDocument = {
-  id: string;
-  document_type: string;
-  original_name: string;
-  content_type: string;
-  size_bytes: number;
-  sha256: string;
-  status: string;
-  scan_status: "pending" | "clean" | "rejected";
-  extraction_status: "pending" | "processing" | "ready" | "failed";
-  extracted_fields: Record<string, string | number>;
-  confidence: number;
-  uploaded_by_user_id: string | null;
-  uploaded_by_name: string;
-  expires_at: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
-export type VerificationAssignment = {
-  id: string;
-  assigned_to_user_id: string | null;
-  assigned_to_name: string;
-  assigned_to_email: string;
-  assigned_by_user_id: string;
-  assigned_by_name: string;
-  note: string;
-  created_at: string;
-};
-
-export type VerificationReconciliation = {
-  id: string;
-  field_name: string;
-  canonical_value: string;
-  status: ReconciliationStatus;
-  sources: Array<Record<string, unknown>>;
-  resolution_note: string;
-  resolved_by_user_id: string | null;
-  resolved_by_name: string;
-  resolved_at: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
-export type VerificationCaseSummary = {
-  id: string;
-  organization_id: string;
-  reference: string;
-  applicant_name: string;
-  applicant_email: string;
-  status: VerificationStatus;
-  priority: VerificationPriority;
-  assigned_to_user_id: string | null;
-  assigned_to_name: string;
-  assigned_to_email: string;
-  intake_channel: string;
-  risk_score: number;
-  suggested_action: VerificationAction;
-  finding_count: number;
-  document_count: number;
-  average_confidence: number;
-  submitted_at: string;
-  synthetic: boolean;
-  due_at: string | null;
-  expires_at: string | null;
-  closed_at: string | null;
-  latest_decision: VerificationDecision | null;
-  created_at: string;
-  updated_at: string;
-};
-
-export type VerificationCase = VerificationCaseSummary & {
-  application: Record<string, string | number>;
-  documents: VerificationDocument[];
-  summary: string;
-  reasoning: string;
-  findings: VerificationFinding[];
-  field_matrix: Array<Record<string, string | number>>;
-  generated_at: string;
-  decision_history: VerificationDecision[];
-  uploaded_documents: VerificationUploadedDocument[];
-  assignment_history: VerificationAssignment[];
-  reconciliations: VerificationReconciliation[];
-};
-
-export type SecureIntakeLink = {
-  id: string;
-  organization_id: string;
-  verification_case_id: string | null;
-  token_prefix: string;
-  channel: "secure_link" | "email" | "slack" | "telegram" | "whatsapp";
-  recipient_name: string;
-  recipient_email: string;
-  recipient_phone_hint: string;
-  applicant_name: string;
-  message: string;
-  max_uploads: number;
-  upload_count: number;
-  retention_days: number;
-  status: "active" | "expired" | "revoked" | "complete";
-  expires_at: string;
-  revoked_at: string | null;
-  last_used_at: string | null;
-  created_by_user_id: string;
-  created_by_name: string;
-  created_at: string;
-};
-
-export type SecureIntakeLinkCreated = { intake_link: SecureIntakeLink; token: string };
-export type SecureIntakePreview = {
-  organization_name: string;
-  applicant_name: string;
-  message: string;
-  remaining_uploads: number;
-  status: "active" | "expired" | "revoked" | "complete";
-  expires_at: string;
-};
-
 export type ReportRange = "30d" | "90d" | "365d" | "all";
 
 export type ReportDistributionItem = {
@@ -678,7 +517,6 @@ export type ReportTimelinePoint = {
   contracts_created: number;
   tasks_created: number;
   tasks_completed: number;
-  verification_submitted: number;
   decisions_recorded: number;
 };
 
@@ -725,13 +563,6 @@ export type ReportOverview = {
   tasks_due_soon: number;
   tasks_completed: number;
   task_completion_rate: number;
-  verification_total: number;
-  verification_pending: number;
-  verification_approved: number;
-  verification_escalated: number;
-  verification_rejected: number;
-  verification_average_risk: number;
-  verification_overrides: number;
   audit_event_count: number;
   contract_types: ReportDistributionItem[];
   active_task_priorities: ReportDistributionItem[];

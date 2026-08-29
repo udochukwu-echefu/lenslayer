@@ -44,13 +44,7 @@ from .models import (
     PlatformAuditEvent,
     ProcessingJob,
     PublicApiKey,
-    SecureIntakeLink,
     User,
-    VerificationAssignment,
-    VerificationCase,
-    VerificationDecision,
-    VerificationDocument,
-    VerificationReconciliation,
     WebhookDelivery,
     WebhookSubscription,
     WorkflowTask,
@@ -94,13 +88,6 @@ from .schemas import (
     ReportWorkloadItem,
     ReviewResponse,
     TaskResponse,
-    SecureIntakeLinkResponse,
-    VerificationAssignmentResponse,
-    VerificationCaseResponse,
-    VerificationCaseSummaryResponse,
-    VerificationDecisionResponse,
-    VerificationDocumentResponse,
-    VerificationReconciliationResponse,
     WebhookDeliveryResponse,
     WebhookSubscriptionResponse,
 )
@@ -132,27 +119,6 @@ TASK_STATUSES = {"open", "in_progress", "done", "cancelled"}
 TASK_PRIORITIES = {"low", "normal", "high"}
 TASK_CATEGORIES = {"follow_up", "risk", "obligation", "deadline", "negotiation", "professional_review"}
 TASK_SOURCE_KINDS = {"manual", "finding", "obligation", "deadline", "payment", "negotiation"}
-VERIFICATION_STATUSES = {
-    "pending",
-    "in_review",
-    "needs_information",
-    "approved",
-    "escalated",
-    "rejected",
-    "closed",
-}
-VERIFICATION_ACTIONS = {"Approve", "Escalate", "Reject"}
-VERIFICATION_PRIORITIES = {"low", "normal", "high", "urgent"}
-RECONCILIATION_STATUSES = {"matched", "conflict", "needs_review", "resolved"}
-VERIFICATION_TRANSITIONS = {
-    "pending": {"in_review", "needs_information", "escalated", "closed"},
-    "in_review": {"needs_information", "approved", "escalated", "rejected", "closed"},
-    "needs_information": {"in_review", "escalated", "closed"},
-    "approved": {"in_review", "closed"},
-    "escalated": {"in_review", "needs_information", "approved", "rejected", "closed"},
-    "rejected": {"in_review", "closed"},
-    "closed": {"in_review"},
-}
 CONTRACT_DECISIONS = {"accept", "change", "escalate", "resolve"}
 APPROVAL_STATUSES = {"pending", "approved", "conditionally_approved", "changes_requested", "rejected", "cancelled"}
 LIFECYCLE_KINDS = {"renewal", "notice", "obligation", "payment", "post_signature"}
@@ -791,736 +757,6 @@ class PlatformService:
         if membership is None:
             raise HTTPException(status_code=422, detail="Choose a member of this workspace.")
         return membership.user
-
-    def list_verification_cases(
-        self,
-        organization_id: str,
-        user: User,
-        *,
-        status: str | None = None,
-        suggested_action: str | None = None,
-        priority: str | None = None,
-        assigned_to_user_id: str | None = None,
-        search: str | None = None,
-    ) -> list[VerificationCase]:
-        self.membership(organization_id, user)
-        query = select(VerificationCase).where(VerificationCase.organization_id == organization_id)
-        if status:
-            if status not in VERIFICATION_STATUSES:
-                raise HTTPException(status_code=422, detail="Unknown verification status.")
-            query = query.where(VerificationCase.status == status)
-        if suggested_action:
-            if suggested_action not in VERIFICATION_ACTIONS:
-                raise HTTPException(status_code=422, detail="Unknown verification recommendation.")
-            query = query.where(VerificationCase.suggested_action == suggested_action)
-        if priority:
-            if priority not in VERIFICATION_PRIORITIES:
-                raise HTTPException(status_code=422, detail="Unknown verification priority.")
-            query = query.where(VerificationCase.priority == priority)
-        if assigned_to_user_id:
-            query = query.where(VerificationCase.assigned_to_user_id == assigned_to_user_id)
-        if search and search.strip():
-            term = f"%{search.strip().lower()}%"
-            query = query.where(
-                func.lower(VerificationCase.applicant_name).like(term)
-                | func.lower(VerificationCase.reference).like(term)
-                | func.lower(VerificationCase.applicant_email).like(term)
-            )
-        return list(
-            self.session.scalars(
-                query.order_by(
-                    (VerificationCase.status != "pending").asc(),
-                    (VerificationCase.priority == "urgent").desc(),
-                    (VerificationCase.priority == "high").desc(),
-                    VerificationCase.risk_score.desc(),
-                    VerificationCase.submitted_at.asc(),
-                )
-            ).all()
-        )
-
-    def _verification_document_uploads(
-        self,
-        case: VerificationCase,
-        uploaded_by_user_id: str | None,
-        uploads: list[dict[str, Any]],
-    ) -> list[VerificationDocument]:
-        documents: list[VerificationDocument] = []
-        stored_keys: list[str] = []
-        try:
-            for upload in uploads:
-                filename = safe_filename(str(upload.get("original_name") or "onboarding-document"))
-                suffix = Path(filename).suffix.lower()
-                if suffix not in self.settings.allowed_extension_set:
-                    raise HTTPException(status_code=415, detail="Supported file types are PDF, DOCX, and TXT.")
-                data = upload.get("data") or b""
-                if not data:
-                    raise HTTPException(status_code=400, detail=f"{filename} is empty.")
-                if len(data) > self.settings.max_upload_bytes:
-                    raise HTTPException(status_code=413, detail=f"{filename} exceeds the 25 MB limit.")
-                scan_upload(self.settings, filename, data)
-                document_id = str(uuid4())
-                storage_key = f"{case.organization_id}/verification/{case.id}/{document_id}{suffix}"
-                content_type = str(upload.get("content_type") or "application/octet-stream")
-                self.object_store.put(storage_key, data, content_type)
-                stored_keys.append(storage_key)
-                document = VerificationDocument(
-                    id=document_id,
-                    organization_id=case.organization_id,
-                    verification_case_id=case.id,
-                    uploaded_by_user_id=uploaded_by_user_id,
-                    document_type=str(upload.get("document_type") or "supporting_document")[:64],
-                    original_name=filename,
-                    storage_key=storage_key,
-                    content_type=content_type[:255],
-                    size_bytes=len(data),
-                    sha256=hashlib.sha256(data).hexdigest(),
-                    status="received",
-                    scan_status="clean",
-                    extraction_status="pending",
-                    expires_at=case.expires_at,
-                )
-                self.session.add(document)
-                documents.append(document)
-            self.session.flush()
-            return documents
-        except Exception:
-            for storage_key in stored_keys:
-                self.object_store.delete(storage_key)
-            raise
-
-    def create_verification_case(
-        self,
-        organization_id: str,
-        user: User,
-        *,
-        applicant_name: str,
-        applicant_email: str,
-        reference: str,
-        priority: str,
-        assigned_to_user_id: str | None,
-        due_at: datetime | None,
-        retention_days: int,
-        intake_channel: str,
-        uploads: list[dict[str, Any]],
-    ) -> VerificationCase:
-        self.require_roles(
-            organization_id,
-            user,
-            {"owner", "admin", "reviewer"},
-            "Viewers have read-only access and cannot create verification cases.",
-        )
-        name = applicant_name.strip()
-        if len(name) < 2:
-            raise HTTPException(status_code=422, detail="Enter the applicant name.")
-        if applicant_email.strip():
-            normalized_email(applicant_email)
-        if priority not in VERIFICATION_PRIORITIES:
-            raise HTTPException(status_code=422, detail="Choose a valid priority.")
-        if retention_days not in {7, 30, 90, 365}:
-            raise HTTPException(status_code=422, detail="Retention must be 7, 30, 90, or 365 days.")
-        assignee = self._task_assignee(organization_id, assigned_to_user_id)
-        case_reference = (reference.strip() or f"VC-{utcnow():%Y%m%d}-{uuid4().hex[:8].upper()}")[:128]
-        if self.session.scalar(
-            select(VerificationCase.id).where(
-                VerificationCase.organization_id == organization_id,
-                VerificationCase.reference == case_reference,
-            )
-        ):
-            raise HTTPException(status_code=409, detail="A verification case already uses this reference.")
-        now = utcnow()
-        case = VerificationCase(
-            organization_id=organization_id,
-            seeded_by_user_id=user.id,
-            reference=case_reference,
-            applicant_name=name[:255],
-            applicant_email=applicant_email.strip().lower()[:320],
-            status="pending",
-            priority=priority,
-            assigned_to_user_id=assignee.id if assignee else None,
-            intake_channel=intake_channel[:64],
-            risk_score=0,
-            suggested_action="Escalate",
-            finding_count=0,
-            document_count=0,
-            average_confidence=0,
-            submitted_at=now,
-            source_json=json_dump({"application": {"name": name, "email": applicant_email.strip().lower()}, "documents": []}),
-            evaluation_json=json_dump(
-                {
-                    "summary": "Documents received. Evidence reconciliation is awaiting reviewer input.",
-                    "reasoning": "No automated verification decision has been made.",
-                    "findings": [],
-                    "field_matrix": [],
-                    "generated_at": now.isoformat(),
-                }
-            ),
-            synthetic=False,
-            retention_days=retention_days,
-            due_at=due_at,
-            expires_at=now + timedelta(days=retention_days),
-        )
-        self.session.add(case)
-        self.session.flush()
-        documents = self._verification_document_uploads(case, user.id, uploads)
-        case.document_count = len(documents)
-        if assignee:
-            self.session.add(
-                VerificationAssignment(
-                    organization_id=organization_id,
-                    verification_case_id=case.id,
-                    assigned_to_user_id=assignee.id,
-                    assigned_by_user_id=user.id,
-                    note="Assigned during case creation.",
-                )
-            )
-        self._audit(
-            organization_id,
-            user.id,
-            "verification.case_created",
-            detail={"reference": case.reference, "document_count": len(documents), "intake_channel": intake_channel},
-            verification_case_id=case.id,
-        )
-        self.session.commit()
-        self.session.refresh(case)
-        return case
-
-    def update_verification_case(
-        self,
-        organization_id: str,
-        case_id: str,
-        user: User,
-        payload: dict[str, Any],
-    ) -> VerificationCase:
-        self.require_roles(
-            organization_id,
-            user,
-            {"owner", "admin", "reviewer"},
-            "Viewers cannot update verification cases.",
-        )
-        case = self.get_verification_case(organization_id, case_id, user)
-        changed: dict[str, Any] = {}
-        if payload.get("priority") is not None:
-            priority = payload["priority"]
-            if priority not in VERIFICATION_PRIORITIES:
-                raise HTTPException(status_code=422, detail="Choose a valid priority.")
-            case.priority = priority
-            changed["priority"] = priority
-        if "due_at" in payload:
-            case.due_at = payload["due_at"]
-            changed["due_at"] = payload["due_at"]
-        if payload.get("status") is not None and payload["status"] != case.status:
-            next_status = payload["status"]
-            if next_status not in VERIFICATION_TRANSITIONS.get(case.status, set()):
-                raise HTTPException(
-                    status_code=409,
-                    detail=f"A case cannot move from {case.status} to {next_status}.",
-                )
-            changed["status"] = {"from": case.status, "to": next_status}
-            case.status = next_status
-            case.closed_at = utcnow() if next_status == "closed" else None
-        if not changed:
-            return case
-        self._audit(
-            organization_id,
-            user.id,
-            "verification.case_updated",
-            detail={"reference": case.reference, "changes": changed},
-            verification_case_id=case.id,
-        )
-        self.session.commit()
-        self.session.refresh(case)
-        return case
-
-    def assign_verification_case(
-        self,
-        organization_id: str,
-        case_id: str,
-        user: User,
-        *,
-        assigned_to_user_id: str | None,
-        note: str,
-    ) -> VerificationAssignment:
-        self.require_roles(
-            organization_id,
-            user,
-            {"owner", "admin", "reviewer"},
-            "Viewers cannot assign verification cases.",
-        )
-        case = self.get_verification_case(organization_id, case_id, user)
-        assignee = self._task_assignee(organization_id, assigned_to_user_id)
-        assignment = VerificationAssignment(
-            organization_id=organization_id,
-            verification_case_id=case.id,
-            assigned_to_user_id=assignee.id if assignee else None,
-            assigned_by_user_id=user.id,
-            note=note.strip()[:2000],
-        )
-        case.assigned_to_user_id = assignee.id if assignee else None
-        if assignee and case.status == "pending":
-            case.status = "in_review"
-        self.session.add(assignment)
-        self.session.flush()
-        self._audit(
-            organization_id,
-            user.id,
-            "verification.case_assigned" if assignee else "verification.case_unassigned",
-            detail={
-                "reference": case.reference,
-                "assigned_to_user_id": assignee.id if assignee else None,
-                "note": assignment.note,
-            },
-            verification_case_id=case.id,
-        )
-        self.session.commit()
-        self.session.refresh(assignment)
-        return assignment
-
-    def upsert_verification_reconciliation(
-        self,
-        organization_id: str,
-        case_id: str,
-        user: User,
-        payload: dict[str, Any],
-    ) -> VerificationReconciliation:
-        self.require_roles(
-            organization_id,
-            user,
-            {"owner", "admin", "reviewer"},
-            "Viewers cannot reconcile verification evidence.",
-        )
-        case = self.get_verification_case(organization_id, case_id, user)
-        field_name = payload["field_name"].strip().lower().replace(" ", "_")
-        status = payload["status"]
-        if status not in RECONCILIATION_STATUSES:
-            raise HTTPException(status_code=422, detail="Choose a valid reconciliation status.")
-        record = self.session.scalar(
-            select(VerificationReconciliation).where(
-                VerificationReconciliation.verification_case_id == case.id,
-                VerificationReconciliation.field_name == field_name,
-            )
-        )
-        if record is None:
-            record = VerificationReconciliation(
-                organization_id=organization_id,
-                verification_case_id=case.id,
-                field_name=field_name,
-            )
-            self.session.add(record)
-        record.canonical_value = payload.get("canonical_value", "").strip()
-        record.status = status
-        record.sources_json = json_dump(payload.get("sources", []))
-        record.resolution_note = payload.get("resolution_note", "").strip()
-        if status in {"matched", "resolved"}:
-            record.resolved_by_user_id = user.id
-            record.resolved_at = utcnow()
-        else:
-            record.resolved_by_user_id = None
-            record.resolved_at = None
-        self.session.flush()
-        case.finding_count = self.session.scalar(
-            select(func.count(VerificationReconciliation.id)).where(
-                VerificationReconciliation.verification_case_id == case.id,
-                VerificationReconciliation.status.in_({"conflict", "needs_review"}),
-            )
-        ) or 0
-        self._audit(
-            organization_id,
-            user.id,
-            "verification.evidence_reconciled",
-            detail={"field_name": field_name, "status": status, "reference": case.reference},
-            verification_case_id=case.id,
-        )
-        self.session.commit()
-        self.session.refresh(record)
-        return record
-
-    def review_verification_document(
-        self,
-        organization_id: str,
-        case_id: str,
-        document_id: str,
-        user: User,
-        *,
-        scan_status: str,
-        extraction_status: str,
-        extracted_fields: dict[str, Any],
-        confidence: int,
-    ) -> VerificationDocument:
-        self.require_roles(
-            organization_id,
-            user,
-            {"owner", "admin", "reviewer"},
-            "Viewers cannot update onboarding documents.",
-        )
-        case = self.get_verification_case(organization_id, case_id, user)
-        document = self.session.scalar(
-            select(VerificationDocument).where(
-                VerificationDocument.id == document_id,
-                VerificationDocument.verification_case_id == case.id,
-            )
-        )
-        if document is None:
-            raise HTTPException(status_code=404, detail="Verification document not found.")
-        if scan_status not in {"pending", "clean", "rejected"}:
-            raise HTTPException(status_code=422, detail="Choose pending, clean, or rejected scan status.")
-        if extraction_status not in {"pending", "processing", "ready", "failed"}:
-            raise HTTPException(status_code=422, detail="Choose a valid extraction status.")
-        document.scan_status = scan_status
-        document.extraction_status = extraction_status
-        document.extracted_fields_json = json_dump(extracted_fields)
-        document.confidence = min(max(confidence, 0), 100)
-        document.status = "rejected" if scan_status == "rejected" else "ready" if scan_status == "clean" and extraction_status == "ready" else "received"
-        ready_confidences = [
-            item.confidence
-            for item in case.documents
-            if item.id == document.id or item.status == "ready"
-        ]
-        if document.status == "ready" and document.confidence not in ready_confidences:
-            ready_confidences.append(document.confidence)
-        case.average_confidence = round(sum(ready_confidences) / len(ready_confidences)) if ready_confidences else 0
-        self._audit(
-            organization_id,
-            user.id,
-            "verification.document_reviewed",
-            detail={
-                "document_id": document.id,
-                "scan_status": scan_status,
-                "extraction_status": extraction_status,
-                "confidence": document.confidence,
-            },
-            verification_case_id=case.id,
-        )
-        self.session.commit()
-        self.session.refresh(document)
-        return document
-
-    @staticmethod
-    def secure_intake_status(link: SecureIntakeLink) -> str:
-        if link.revoked_at is not None:
-            return "revoked"
-        if aware(link.expires_at) <= utcnow():
-            return "expired"
-        if link.upload_count >= link.max_uploads:
-            return "complete"
-        return "active"
-
-    def create_secure_intake_link(
-        self,
-        organization_id: str,
-        user: User,
-        payload: dict[str, Any],
-    ) -> tuple[SecureIntakeLink, str]:
-        self.require_roles(
-            organization_id,
-            user,
-            {"owner", "admin", "reviewer"},
-            "Viewers cannot create secure intake links.",
-        )
-        token = f"ll_intake_{secrets.token_urlsafe(32)}"
-        link = SecureIntakeLink(
-            organization_id=organization_id,
-            created_by_user_id=user.id,
-            token_hash=hashlib.sha256(token.encode("utf-8")).hexdigest(),
-            token_prefix=token[:14],
-            channel=payload["channel"],
-            recipient_name=payload.get("recipient_name", "").strip(),
-            recipient_email=payload.get("recipient_email", "").strip().lower(),
-            recipient_phone_hint=payload.get("recipient_phone_hint", "").strip(),
-            applicant_name=payload["applicant_name"].strip(),
-            message=payload.get("message", "").strip(),
-            max_uploads=payload["max_uploads"],
-            retention_days=payload["retention_days"],
-            expires_at=utcnow() + timedelta(days=payload["expires_in_days"]),
-        )
-        self.session.add(link)
-        self.session.flush()
-        self._audit(
-            organization_id,
-            user.id,
-            "verification.intake_link_created",
-            detail={"intake_link_id": link.id, "channel": link.channel, "expires_at": link.expires_at},
-        )
-        self.session.commit()
-        self.session.refresh(link)
-        return link, token
-
-    def list_secure_intake_links(self, organization_id: str, user: User) -> list[SecureIntakeLink]:
-        self.membership(organization_id, user)
-        return list(
-            self.session.scalars(
-                select(SecureIntakeLink)
-                .where(SecureIntakeLink.organization_id == organization_id)
-                .order_by(SecureIntakeLink.created_at.desc())
-            ).all()
-        )
-
-    def revoke_secure_intake_link(
-        self,
-        organization_id: str,
-        link_id: str,
-        user: User,
-    ) -> None:
-        self.require_roles(organization_id, user, {"owner", "admin", "reviewer"}, "Viewers cannot revoke intake links.")
-        link = self.session.scalar(
-            select(SecureIntakeLink).where(
-                SecureIntakeLink.id == link_id,
-                SecureIntakeLink.organization_id == organization_id,
-            )
-        )
-        if link is None:
-            raise HTTPException(status_code=404, detail="Secure intake link not found.")
-        link.revoked_at = utcnow()
-        self._audit(
-            organization_id,
-            user.id,
-            "verification.intake_link_revoked",
-            detail={"intake_link_id": link.id},
-            verification_case_id=link.verification_case_id,
-        )
-        self.session.commit()
-
-    def resolve_secure_intake_link(self, token: str, *, require_active: bool = True) -> SecureIntakeLink:
-        link = self.session.scalar(
-            select(SecureIntakeLink).where(
-                SecureIntakeLink.token_hash == hashlib.sha256(token.encode("utf-8")).hexdigest()
-            )
-        )
-        if link is None:
-            raise HTTPException(status_code=404, detail="Secure intake link not found.")
-        if require_active and self.secure_intake_status(link) != "active":
-            raise HTTPException(status_code=410, detail="This secure intake link is no longer active.")
-        return link
-
-    def upload_secure_intake_documents(
-        self,
-        token: str,
-        uploads: list[dict[str, Any]],
-    ) -> tuple[VerificationCase, list[VerificationDocument]]:
-        link = self.resolve_secure_intake_link(token)
-        if not uploads:
-            raise HTTPException(status_code=400, detail="Attach at least one onboarding document.")
-        if link.upload_count + len(uploads) > link.max_uploads:
-            raise HTTPException(status_code=409, detail="This upload exceeds the link's remaining document allowance.")
-        case = self.session.get(VerificationCase, link.verification_case_id) if link.verification_case_id else None
-        if case is None:
-            organization = self.session.get(Organization, link.organization_id)
-            case = VerificationCase(
-                organization_id=link.organization_id,
-                seeded_by_user_id=link.created_by_user_id,
-                reference=f"VC-{utcnow():%Y%m%d}-{uuid4().hex[:8].upper()}",
-                applicant_name=link.applicant_name,
-                applicant_email=link.recipient_email,
-                status="pending",
-                priority="normal",
-                intake_channel=link.channel,
-                risk_score=0,
-                suggested_action="Escalate",
-                finding_count=0,
-                document_count=0,
-                average_confidence=0,
-                submitted_at=utcnow(),
-                source_json=json_dump(
-                    {"application": {"name": link.applicant_name, "email": link.recipient_email}, "documents": []}
-                ),
-                evaluation_json=json_dump(
-                    {
-                        "summary": "Secure onboarding documents received.",
-                        "reasoning": "Evidence reconciliation and a human decision are required.",
-                        "findings": [],
-                        "field_matrix": [],
-                        "generated_at": utcnow().isoformat(),
-                        "organization": organization.name if organization else "",
-                    }
-                ),
-                synthetic=False,
-                retention_days=link.retention_days,
-                expires_at=utcnow() + timedelta(days=link.retention_days),
-            )
-            self.session.add(case)
-            self.session.flush()
-            link.verification_case_id = case.id
-        documents = self._verification_document_uploads(case, None, uploads)
-        link.upload_count += len(documents)
-        link.last_used_at = utcnow()
-        case.document_count = len(case.documents)
-        self._audit(
-            link.organization_id,
-            None,
-            "verification.secure_documents_received",
-            detail={"intake_link_id": link.id, "document_ids": [item.id for item in documents]},
-            verification_case_id=case.id,
-        )
-        self.session.commit()
-        self.session.refresh(case)
-        return case, documents
-
-    def get_verification_case(
-        self,
-        organization_id: str,
-        case_id: str,
-        user: User,
-    ) -> VerificationCase:
-        self.membership(organization_id, user)
-        case = self.session.scalar(
-            select(VerificationCase).where(
-                VerificationCase.id == case_id,
-                VerificationCase.organization_id == organization_id,
-            )
-        )
-        if case is None:
-            raise HTTPException(status_code=404, detail="Verification case not found.")
-        return case
-
-    def list_verification_audit_events(
-        self,
-        organization_id: str,
-        case_id: str,
-        user: User,
-    ) -> list[AuditEventResponse]:
-        case = self.get_verification_case(organization_id, case_id, user)
-        rows = self.session.execute(
-            select(PlatformAuditEvent, User.display_name, User.email)
-            .outerjoin(User, User.id == PlatformAuditEvent.actor_user_id)
-            .where(
-                PlatformAuditEvent.organization_id == organization_id,
-                PlatformAuditEvent.verification_case_id == case.id,
-            )
-            .order_by(PlatformAuditEvent.created_at.desc())
-        ).all()
-        return [
-            AuditEventResponse(
-                id=event.id,
-                action=event.action,
-                detail=json_load(event.detail_json, {}),
-                actor_user_id=event.actor_user_id,
-                actor_name=actor_name or "Secure intake",
-                actor_email=actor_email or "",
-                contract_id=event.contract_id,
-                verification_case_id=event.verification_case_id,
-                created_at=event.created_at,
-            )
-            for event, actor_name, actor_email in rows
-        ]
-
-    def bootstrap_verification_cases(
-        self,
-        organization_id: str,
-        user: User,
-    ) -> list[VerificationCase]:
-        self.require_roles(
-            organization_id,
-            user,
-            {"owner", "admin", "reviewer"},
-            "Viewers have read-only access and cannot add demonstration cases.",
-        )
-        from kyc import evaluate_case, get_cases
-
-        existing_references = set(
-            self.session.scalars(
-                select(VerificationCase.reference).where(
-                    VerificationCase.organization_id == organization_id
-                )
-            ).all()
-        )
-        created: list[VerificationCase] = []
-        for source in get_cases():
-            if source["id"] in existing_references:
-                continue
-            evaluation_date = date.fromisoformat(source["submitted_at"][:10])
-            evaluation = evaluate_case(source, today=evaluation_date)
-            submitted_at = datetime.fromisoformat(source["submitted_at"])
-            if submitted_at.tzinfo is None:
-                submitted_at = submitted_at.replace(tzinfo=timezone.utc)
-            case = VerificationCase(
-                organization_id=organization_id,
-                seeded_by_user_id=user.id,
-                reference=source["id"],
-                applicant_name=source["applicant"],
-                status="pending",
-                risk_score=evaluation["score"],
-                suggested_action=evaluation["suggested_action"],
-                finding_count=len(evaluation["findings"]),
-                document_count=evaluation["document_count"],
-                average_confidence=round(evaluation["average_confidence"] * 100),
-                submitted_at=submitted_at,
-                source_json=json_dump(source),
-                evaluation_json=json_dump(evaluation),
-                synthetic=True,
-            )
-            self.session.add(case)
-            created.append(case)
-        if created:
-            self.session.flush()
-            self._audit(
-                organization_id,
-                user.id,
-                "verification.cases_bootstrapped",
-                detail={"case_ids": [item.id for item in created], "count": len(created), "synthetic": True},
-            )
-            self.session.commit()
-        return self.list_verification_cases(organization_id, user)
-
-    def record_verification_decision(
-        self,
-        organization_id: str,
-        case_id: str,
-        user: User,
-        *,
-        decision: str,
-        rationale: str,
-    ) -> VerificationDecision:
-        self.require_roles(
-            organization_id,
-            user,
-            {"owner", "admin", "reviewer"},
-            "Viewers have read-only access and cannot record verification decisions.",
-        )
-        case = self.get_verification_case(organization_id, case_id, user)
-        membership = self.membership(organization_id, user)
-        if (
-            case.assigned_to_user_id
-            and case.assigned_to_user_id != user.id
-            and normalized_role(membership.role) not in {"owner", "admin"}
-        ):
-            raise HTTPException(status_code=403, detail="This case is assigned to another reviewer.")
-        cleaned_rationale = rationale.strip()
-        if len(cleaned_rationale) < 10:
-            raise HTTPException(status_code=422, detail="Explain the evidence supporting this decision.")
-        if decision not in VERIFICATION_ACTIONS:
-            raise HTTPException(status_code=422, detail="Choose approve, escalate, or reject.")
-        if decision == "Approve" and any(
-            item.status in {"conflict", "needs_review"} for item in case.reconciliations
-        ):
-            raise HTTPException(status_code=409, detail="Resolve every evidence conflict before approving this case.")
-        event = VerificationDecision(
-            organization_id=organization_id,
-            verification_case_id=case.id,
-            reviewer_user_id=user.id,
-            decision=decision,
-            rationale=cleaned_rationale,
-            recommended_action=case.suggested_action,
-        )
-        case.status = {"Approve": "approved", "Escalate": "escalated", "Reject": "rejected"}[decision]
-        case.closed_at = None
-        self.session.add(event)
-        self.session.flush()
-        self._audit(
-            organization_id,
-            user.id,
-            "verification.decision_recorded",
-            detail={
-                "verification_case_id": case.id,
-                "reference": case.reference,
-                "decision_id": event.id,
-                "decision": decision,
-                "recommended_action": case.suggested_action,
-                "overrode_recommendation": decision != case.suggested_action,
-            },
-            verification_case_id=case.id,
-        )
-        self.session.commit()
-        self.session.refresh(event)
-        return event
 
     def create_contract(
         self,
@@ -3686,18 +2922,11 @@ class PlatformService:
                 .order_by(WorkflowTask.created_at.asc())
             ).all()
         )
-        verification_cases = list(
-            self.session.scalars(
-                select(VerificationCase)
-                .where(VerificationCase.organization_id == organization_id)
-                .order_by(VerificationCase.submitted_at.asc())
-            ).all()
-        )
         decisions = list(
             self.session.scalars(
-                select(VerificationDecision)
-                .where(VerificationDecision.organization_id == organization_id)
-                .order_by(VerificationDecision.created_at.asc())
+                select(ContractDecision)
+                .where(ContractDecision.organization_id == organization_id)
+                .order_by(ContractDecision.created_at.asc())
             ).all()
         )
         processing_jobs = list(
@@ -3741,8 +2970,6 @@ class PlatformService:
 
         period_contracts = [item for item in contracts if in_period(item.created_at)]
         period_tasks = [item for item in tasks if in_period(item.created_at)]
-        period_cases = [item for item in verification_cases if in_period(item.submitted_at)]
-        period_decisions = [item for item in decisions if in_period(item.created_at)]
         period_events = [item for item in audit_events if in_period(item.created_at)]
 
         active_tasks = [item for item in tasks if item.status in {"open", "in_progress"}]
@@ -3809,7 +3036,6 @@ class PlatformService:
             generated_at,
             contracts,
             tasks,
-            verification_cases,
             decisions,
         )
         timeline = self._report_timeline(
@@ -3817,7 +3043,6 @@ class PlatformService:
             generated_at,
             contracts,
             tasks,
-            verification_cases,
             decisions,
             range_name,
         )
@@ -3895,17 +3120,6 @@ class PlatformService:
             task_completion_rate=round((len(period_completed_tasks) / task_denominator) * 100)
             if task_denominator
             else 0,
-            verification_total=len(period_cases),
-            verification_pending=sum(1 for item in period_cases if item.status in {"pending", "in_review", "needs_information"}),
-            verification_approved=sum(1 for item in period_cases if item.status == "approved"),
-            verification_escalated=sum(1 for item in period_cases if item.status == "escalated"),
-            verification_rejected=sum(1 for item in period_cases if item.status == "rejected"),
-            verification_average_risk=round(
-                sum(item.risk_score for item in period_cases) / len(period_cases)
-            ) if period_cases else 0,
-            verification_overrides=sum(
-                1 for item in period_decisions if item.decision != item.recommended_action
-            ),
             audit_event_count=len(period_events),
             contract_types=[
                 ReportDistributionItem(label=label, count=count)
@@ -3928,11 +3142,17 @@ class PlatformService:
 
     @staticmethod
     def report_csv(report: ReportOverviewResponse) -> str:
+        from export_utils import csv_safe_cell
+
         output = io.StringIO()
         writer = csv.writer(output)
-        writer.writerow(["LensLayer report", report.range, report.generated_at.isoformat()])
-        writer.writerow([])
-        writer.writerow(["Section", "Metric", "Value"])
+
+        def write_row(values: list[Any] | tuple[Any, ...]) -> None:
+            writer.writerow([csv_safe_cell(value) for value in values])
+
+        write_row(["LensLayer report", report.range, report.generated_at.isoformat()])
+        write_row([])
+        write_row(["Section", "Metric", "Value"])
         metrics = [
             ("Contracts", "Created", report.contracts_total),
             ("Contracts", "Ready", report.contracts_ready),
@@ -3950,20 +3170,14 @@ class PlatformService:
             ("Tasks", "Due in seven days", report.tasks_due_soon),
             ("Tasks", "Completed in period", report.tasks_completed),
             ("Tasks", "Completion rate", f"{report.task_completion_rate}%"),
-            ("Verify", "Cases submitted", report.verification_total),
-            ("Verify", "Pending", report.verification_pending),
-            ("Verify", "Approved", report.verification_approved),
-            ("Verify", "Escalated", report.verification_escalated),
-            ("Verify", "Rejected", report.verification_rejected),
-            ("Verify", "Average risk score", report.verification_average_risk),
-            ("Verify", "Recommendation overrides", report.verification_overrides),
             ("Governance", "Audit events", report.audit_event_count),
         ]
-        writer.writerows(metrics)
-        writer.writerow([])
-        writer.writerow(["Reviewer", "Email", "Role", "Active tasks", "Overdue tasks", "Completed in period"])
+        for metric in metrics:
+            write_row(metric)
+        write_row([])
+        write_row(["Reviewer", "Email", "Role", "Active tasks", "Overdue tasks", "Completed in period"])
         for item in report.workload:
-            writer.writerow([
+            write_row([
                 item.display_name,
                 item.email,
                 item.role,
@@ -3971,22 +3185,20 @@ class PlatformService:
                 item.overdue_tasks,
                 item.completed_in_period,
             ])
-        writer.writerow([])
-        writer.writerow([
+        write_row([])
+        write_row([
             "Period",
             "Contracts created",
             "Tasks created",
             "Tasks completed",
-            "Verification cases",
-            "Decisions",
+            "Human contract decisions",
         ])
         for point in report.timeline:
-            writer.writerow([
+            write_row([
                 point.label,
                 point.contracts_created,
                 point.tasks_created,
                 point.tasks_completed,
-                point.verification_submitted,
                 point.decisions_recorded,
             ])
         return output.getvalue()
@@ -3996,13 +3208,11 @@ class PlatformService:
         fallback: datetime,
         contracts: list[Contract],
         tasks: list[WorkflowTask],
-        verification_cases: list[VerificationCase],
-        decisions: list[VerificationDecision],
+        decisions: list[ContractDecision],
     ) -> datetime:
         values = (
             [aware(item.created_at) for item in contracts]
             + [aware(item.created_at) for item in tasks]
-            + [aware(item.submitted_at) for item in verification_cases]
             + [aware(item.created_at) for item in decisions]
         )
         return min(values) if values else fallback - timedelta(days=30)
@@ -4013,8 +3223,7 @@ class PlatformService:
         period_end: datetime,
         contracts: list[Contract],
         tasks: list[WorkflowTask],
-        verification_cases: list[VerificationCase],
-        decisions: list[VerificationDecision],
+        decisions: list[ContractDecision],
         range_name: str,
     ) -> list[ReportTimelinePoint]:
         configured_days = {"30d": 5, "90d": 15, "365d": 31}
@@ -4039,9 +3248,6 @@ class PlatformService:
                     contracts_created=sum(1 for item in contracts if inside(item.created_at)),
                     tasks_created=sum(1 for item in tasks if inside(item.created_at)),
                     tasks_completed=sum(1 for item in tasks if inside(item.completed_at)),
-                    verification_submitted=sum(
-                        1 for item in verification_cases if inside(item.submitted_at)
-                    ),
                     decisions_recorded=sum(1 for item in decisions if inside(item.created_at)),
                 )
             )
@@ -4237,148 +3443,6 @@ class PlatformService:
         )
 
     @staticmethod
-    def verification_decision_response(decision: VerificationDecision) -> VerificationDecisionResponse:
-        return VerificationDecisionResponse(
-            id=decision.id,
-            decision=decision.decision,
-            rationale=decision.rationale,
-            recommended_action=decision.recommended_action,
-            reviewer_user_id=decision.reviewer_user_id,
-            reviewer_name=decision.reviewer.display_name,
-            reviewer_email=decision.reviewer.email,
-            created_at=decision.created_at,
-        )
-
-    @staticmethod
-    def verification_document_response(document: VerificationDocument) -> VerificationDocumentResponse:
-        return VerificationDocumentResponse(
-            id=document.id,
-            document_type=document.document_type,
-            original_name=document.original_name,
-            content_type=document.content_type,
-            size_bytes=document.size_bytes,
-            sha256=document.sha256,
-            status=document.status,
-            scan_status=document.scan_status,
-            extraction_status=document.extraction_status,
-            extracted_fields=json_load(document.extracted_fields_json, {}),
-            confidence=document.confidence,
-            uploaded_by_user_id=document.uploaded_by_user_id,
-            uploaded_by_name=document.uploaded_by.display_name if document.uploaded_by else "Secure intake",
-            expires_at=document.expires_at,
-            created_at=document.created_at,
-            updated_at=document.updated_at,
-        )
-
-    @staticmethod
-    def verification_assignment_response(assignment: VerificationAssignment) -> VerificationAssignmentResponse:
-        return VerificationAssignmentResponse(
-            id=assignment.id,
-            assigned_to_user_id=assignment.assigned_to_user_id,
-            assigned_to_name=assignment.assigned_to.display_name if assignment.assigned_to else "Unassigned",
-            assigned_to_email=assignment.assigned_to.email if assignment.assigned_to else "",
-            assigned_by_user_id=assignment.assigned_by_user_id,
-            assigned_by_name=assignment.assigned_by.display_name,
-            note=assignment.note,
-            created_at=assignment.created_at,
-        )
-
-    @staticmethod
-    def verification_reconciliation_response(
-        record: VerificationReconciliation,
-    ) -> VerificationReconciliationResponse:
-        return VerificationReconciliationResponse(
-            id=record.id,
-            field_name=record.field_name,
-            canonical_value=record.canonical_value,
-            status=record.status,
-            sources=json_load(record.sources_json, []),
-            resolution_note=record.resolution_note,
-            resolved_by_user_id=record.resolved_by_user_id,
-            resolved_by_name=record.resolved_by.display_name if record.resolved_by else "",
-            resolved_at=record.resolved_at,
-            created_at=record.created_at,
-            updated_at=record.updated_at,
-        )
-
-    def verification_case_summary_response(
-        self,
-        case: VerificationCase,
-    ) -> VerificationCaseSummaryResponse:
-        latest = case.decisions[-1] if case.decisions else None
-        return VerificationCaseSummaryResponse(
-            id=case.id,
-            organization_id=case.organization_id,
-            reference=case.reference,
-            applicant_name=case.applicant_name,
-            applicant_email=case.applicant_email,
-            status=case.status,
-            priority=case.priority,
-            assigned_to_user_id=case.assigned_to_user_id,
-            assigned_to_name=case.assigned_to.display_name if case.assigned_to else "",
-            assigned_to_email=case.assigned_to.email if case.assigned_to else "",
-            intake_channel=case.intake_channel,
-            risk_score=case.risk_score,
-            suggested_action=case.suggested_action,
-            finding_count=case.finding_count,
-            document_count=case.document_count,
-            average_confidence=case.average_confidence,
-            submitted_at=case.submitted_at,
-            synthetic=case.synthetic,
-            due_at=case.due_at,
-            expires_at=case.expires_at,
-            closed_at=case.closed_at,
-            latest_decision=self.verification_decision_response(latest) if latest else None,
-            created_at=case.created_at,
-            updated_at=case.updated_at,
-        )
-
-    def verification_case_response(self, case: VerificationCase) -> VerificationCaseResponse:
-        source = json_load(case.source_json, {})
-        evaluation = json_load(case.evaluation_json, {})
-        summary = self.verification_case_summary_response(case)
-        return VerificationCaseResponse(
-            **summary.model_dump(),
-            application=source.get("application", {}),
-            documents=source.get("documents", []),
-            summary=evaluation.get("summary", ""),
-            reasoning=evaluation.get("reasoning", ""),
-            findings=evaluation.get("findings", []),
-            field_matrix=evaluation.get("field_matrix", []),
-            generated_at=evaluation.get("generated_at", ""),
-            decision_history=[self.verification_decision_response(item) for item in case.decisions],
-            uploaded_documents=[self.verification_document_response(item) for item in case.documents],
-            assignment_history=[self.verification_assignment_response(item) for item in case.assignments],
-            reconciliations=[
-                self.verification_reconciliation_response(item) for item in case.reconciliations
-            ],
-        )
-
-    def secure_intake_link_response(self, link: SecureIntakeLink) -> SecureIntakeLinkResponse:
-        return SecureIntakeLinkResponse(
-            id=link.id,
-            organization_id=link.organization_id,
-            verification_case_id=link.verification_case_id,
-            token_prefix=link.token_prefix,
-            channel=link.channel,
-            recipient_name=link.recipient_name,
-            recipient_email=link.recipient_email,
-            recipient_phone_hint=link.recipient_phone_hint,
-            applicant_name=link.applicant_name,
-            message=link.message,
-            max_uploads=link.max_uploads,
-            upload_count=link.upload_count,
-            retention_days=link.retention_days,
-            status=self.secure_intake_status(link),
-            expires_at=link.expires_at,
-            revoked_at=link.revoked_at,
-            last_used_at=link.last_used_at,
-            created_by_user_id=link.created_by_user_id,
-            created_by_name=link.created_by.display_name,
-            created_at=link.created_at,
-        )
-
-    @staticmethod
     def review_response(review: ContractReview) -> ReviewResponse:
         return ReviewResponse(
             id=review.id,
@@ -4396,14 +3460,12 @@ class PlatformService:
         action: str,
         contract_id: str | None = None,
         detail: dict[str, Any] | None = None,
-        verification_case_id: str | None = None,
     ) -> None:
         self.session.add(
             PlatformAuditEvent(
                 organization_id=organization_id,
                 actor_user_id=actor_user_id,
                 contract_id=contract_id,
-                verification_case_id=verification_case_id,
                 action=action,
                 detail_json=json_dump(detail or {}),
             )
