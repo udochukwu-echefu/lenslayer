@@ -5,16 +5,15 @@ import json
 import os
 import tempfile
 import time
+from collections.abc import Callable
 from datetime import timedelta
 from pathlib import Path
 
 from sqlalchemy import select
 
-from analyzer import analyze_contract, parse_document
-from playbooks import DEFAULT_PLAYBOOK, evaluate_report
-
 from .config import Settings, get_settings
 from .database import Database
+from .document_intelligence import ReviewWorkflow, build_review_workflow
 from .models import (
     Contract,
     ContractReview,
@@ -192,7 +191,13 @@ def process_lifecycle_reminders(database: Database) -> int:
     return created
 
 
-def process_job(database: Database, object_store: ObjectStore, job_id: str) -> None:
+def process_job(
+    database: Database,
+    object_store: ObjectStore,
+    job_id: str,
+    review_workflow: ReviewWorkflow | None = None,
+) -> None:
+    workflow = review_workflow or build_review_workflow()
     temp_path: str | None = None
     storage_key = ""
     retain_document = True
@@ -214,9 +219,9 @@ def process_job(database: Database, object_store: ObjectStore, job_id: str) -> N
             handle.write(data)
             temp_path = handle.name
 
-        full_text, _, quality = parse_document(temp_path)
-        if not full_text.strip():
-            raise ValueError("No readable text was found in the document.")
+        extraction = workflow.extract_document(temp_path)
+        full_text = extraction.text
+        quality = extraction.quality
 
         with database.session_factory() as session:
             job = session.get(ProcessingJob, job_id)
@@ -232,8 +237,7 @@ def process_job(database: Database, object_store: ObjectStore, job_id: str) -> N
                 return
             context = json.loads(contract.review_context_json or "{}")
 
-        report = analyze_contract(full_text, context)
-        report["playbook_evaluation"] = evaluate_report(report, DEFAULT_PLAYBOOK)
+        report = workflow.analyze_contract(full_text, context)
 
         if not retain_document:
             object_store.delete(storage_key)
@@ -384,18 +388,23 @@ def process_job(database: Database, object_store: ObjectStore, job_id: str) -> N
             os.remove(temp_path)
 
 
-def run_worker(settings: Settings, once: bool = False) -> None:
+def run_worker(
+    settings: Settings,
+    once: bool = False,
+    review_workflow_factory: Callable[[], ReviewWorkflow] = build_review_workflow,
+) -> None:
     database = Database(settings)
     if settings.auto_create_schema:
         database.create_schema()
     object_store = build_object_store(settings)
+    review_workflow = review_workflow_factory()
     try:
         while True:
             purge_expired_contracts(database, object_store)
             process_lifecycle_reminders(database)
             job_id = claim_next_job(database)
             if job_id:
-                process_job(database, object_store, job_id)
+                process_job(database, object_store, job_id, review_workflow)
             elif once:
                 return
             else:

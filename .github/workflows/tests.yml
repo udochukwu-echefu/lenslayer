@@ -75,6 +75,19 @@ jobs:
         working-directory: landing
         run: npm ci
 
+      - name: Lint landing
+        working-directory: landing
+        run: npm run check
+
       - name: Build landing
         working-directory: landing
+        env:
+          VITE_APP_URL: https://lenslayer-dashboard.udboy361.workers.dev
         run: npm run build
+
+      - name: Reject local URLs in landing artifact
+        run: |
+          if grep -R "http://localhost" landing/dist; then
+            echo "The landing production artifact contains a localhost URL."
+            exit 1
+          fi

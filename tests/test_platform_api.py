@@ -10,6 +10,7 @@ from fastapi.testclient import TestClient
 from docx import Document
 
 from backend.app.config import Settings
+from backend.app.document_intelligence import build_review_workflow
 from backend.app.main import create_app
 from backend.app.models import Contract, utcnow
 from backend.app.worker import run_worker
@@ -45,6 +46,14 @@ class PlatformApiTests(unittest.TestCase):
             "X-LensLayer-Name": "Carol",
         }
 
+    def run_worker_with_report(self, report):
+        run_worker(
+            self.settings,
+            once=True,
+            review_workflow_factory=lambda: build_review_workflow(
+                contract_analyzer=lambda _text, _context: report,
+            ),
+        )
     def tearDown(self):
         self.client_context.__exit__(None, None, None)
         self.tempdir.cleanup()
@@ -92,6 +101,18 @@ class PlatformApiTests(unittest.TestCase):
         self.assertEqual(listed[0]["id"], organization["id"])
         self.assertEqual(listed[0]["role"], "owner")
 
+    def test_app_composition_root_accepts_review_workflow_factory(self):
+        calls = []
+
+        def factory():
+            calls.append(True)
+            return build_review_workflow(contract_analyzer=lambda _text, _context: {})
+
+        with TestClient(create_app(self.settings, review_workflow_factory=factory)) as client:
+            self.assertEqual(client.get("/health/live").status_code, 200)
+
+        self.assertEqual(calls, [True])
+
     def test_contract_upload_is_queued_and_scoped_to_the_organization(self):
         organization = self.create_organization()
         response = self.upload_contract(organization["id"])
@@ -118,8 +139,7 @@ class PlatformApiTests(unittest.TestCase):
             "overall_attention": "Medium",
             "risk_assessment": [],
         }
-        with patch("backend.app.worker.analyze_contract", return_value=report):
-            run_worker(self.settings, once=True)
+        self.run_worker_with_report(report)
         contract_id = created["contract"]["id"]
         contract = self.client.get(
             f"/api/v1/organizations/{organization['id']}/contracts/{contract_id}",
@@ -216,8 +236,7 @@ class PlatformApiTests(unittest.TestCase):
                 "citation": "Section 4.2",
             }],
         }
-        with patch("backend.app.worker.analyze_contract", return_value=report):
-            run_worker(self.settings, once=True)
+        self.run_worker_with_report(report)
         passport = self.client.get(
             f"/api/v1/organizations/{organization['id']}/contracts/{contract_id}/deal-passport",
             headers=self.alice,
@@ -606,8 +625,7 @@ class PlatformApiTests(unittest.TestCase):
             "deadlines": [],
             "payments": [],
         }
-        with patch("backend.app.worker.analyze_contract", return_value=report):
-            run_worker(self.settings, once=True)
+        self.run_worker_with_report(report)
 
         notifications = self.client.get(
             f"/api/v1/organizations/{organization_id}/notifications",
@@ -685,8 +703,7 @@ class PlatformApiTests(unittest.TestCase):
             "deadlines": [],
             "payments": [],
         }
-        with patch("backend.app.worker.analyze_contract", return_value=report):
-            run_worker(self.settings, once=True)
+        self.run_worker_with_report(report)
         ready = self.client.get(
             f"/api/v1/organizations/{organization_id}/contracts/{contract_id}",
             headers=self.alice,
@@ -805,8 +822,7 @@ class PlatformApiTests(unittest.TestCase):
             "deadlines": [],
             "payments": [],
         }
-        with patch("backend.app.worker.analyze_contract", return_value=report):
-            run_worker(self.settings, once=True)
+        self.run_worker_with_report(report)
 
         original_versions = self.client.get(
             f"/api/v1/organizations/{organization_id}/contracts/{contract_id}/versions",
@@ -949,8 +965,7 @@ class PlatformApiTests(unittest.TestCase):
             "deadlines": [],
             "payments": [],
         }
-        with patch("backend.app.worker.analyze_contract", return_value=report):
-            run_worker(self.settings, once=True)
+        self.run_worker_with_report(report)
 
         lifecycle = self.client.post(
             f"/api/v1/organizations/{organization_id}/contracts/{contract_id}/lifecycle",
@@ -1005,6 +1020,22 @@ class PlatformApiTests(unittest.TestCase):
         self.assertEqual(answer.json()["generated_by"], "extractive")
         self.assertTrue(answer.json()["sources"])
         self.assertEqual(answer.json()["sources"][0]["contract_id"], contract_id)
+        audit_before = self.client.get(
+            f"/api/v1/organizations/{organization_id}/audit-events",
+            headers=self.alice,
+        ).json()
+        unmatched = self.client.post(
+            f"/api/v1/organizations/{organization_id}/portfolio/questions",
+            headers=self.alice,
+            json={"question": "Which agreements mention xenon thrusters?"},
+        )
+        audit_after = self.client.get(
+            f"/api/v1/organizations/{organization_id}/audit-events",
+            headers=self.alice,
+        ).json()
+        self.assertEqual(unmatched.status_code, 200, unmatched.text)
+        self.assertEqual(unmatched.json()["sources"], [])
+        self.assertEqual(len(audit_after), len(audit_before))
 
     def test_intake_integrations_public_api_and_webhook_delivery_logs(self):
         organization = self.create_organization()
@@ -1074,8 +1105,7 @@ class PlatformApiTests(unittest.TestCase):
             "deadlines": [],
             "payments": [],
         }
-        with patch("backend.app.worker.analyze_contract", return_value=report):
-            run_worker(self.settings, once=True)
+        self.run_worker_with_report(report)
 
         deliveries = self.client.get(
             f"/api/v1/organizations/{organization_id}/webhook-deliveries",

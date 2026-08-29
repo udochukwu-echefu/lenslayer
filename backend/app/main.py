@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 from datetime import datetime
+from collections.abc import Callable
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile, status
@@ -11,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from .config import Settings, get_settings
 from .database import Database
+from .document_intelligence import ReviewWorkflow, build_review_workflow
 from .models import Organization
 from .object_storage import ObjectStore, build_object_store
 from .schemas import (
@@ -99,7 +101,12 @@ def get_platform_service(
     session: Annotated[Session, Depends(get_session)],
     object_store: Annotated[ObjectStore, Depends(get_store)],
 ) -> PlatformService:
-    return PlatformService(session, request.app.state.settings, object_store)
+    return PlatformService(
+        session,
+        request.app.state.settings,
+        object_store,
+        request.app.state.review_workflow,
+    )
 
 
 async def read_upload(upload: UploadFile, maximum: int) -> bytes:
@@ -127,7 +134,10 @@ def public_api_token(request: Request) -> str:
     raise HTTPException(status_code=401, detail="A LensLayer API key is required.")
 
 
-def create_app(settings: Settings | None = None) -> FastAPI:
+def create_app(
+    settings: Settings | None = None,
+    review_workflow_factory: Callable[[], ReviewWorkflow] = build_review_workflow,
+) -> FastAPI:
     runtime_settings = settings or get_settings()
 
     @asynccontextmanager
@@ -138,6 +148,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.settings = runtime_settings
         app.state.database = database
         app.state.object_store = build_object_store(runtime_settings)
+        app.state.review_workflow = review_workflow_factory()
         yield
         database.dispose()
 

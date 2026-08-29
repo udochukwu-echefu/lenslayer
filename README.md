@@ -82,3 +82,7 @@ npm run build
 The dashboard is prepared for Cloudflare Workers through OpenNext, and private document storage can use Cloudflare R2. The Python API and worker run as separate services behind TLS. See `docs/deployment/cloudflare-beta.md` and `backend/README.md` for environment and production-boundary details.
 
 Production requires PostgreSQL, OIDC verification, private object storage, malware scanning, secret rotation, backups, observability, and documented retention procedures.
+
+## Architecture
+
+The backend is composed from focused product-domain services, while document extraction, analysis, comparison, and evidence Q&A run through injectable ports and a side-effect-free review workflow. See [`docs/architecture/backend-domains.md`](docs/architecture/backend-domains.md).

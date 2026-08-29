@@ -1,98 +1,153 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import {
-  Activity,
   ArrowRight,
-  CalendarClock,
   Check,
   ChevronRight,
-  CircleAlert,
-  CloudDownload,
-  FileCheck2,
-  FileSearch,
   GitCompareArrows,
-  Handshake,
-  Network,
+  Link2,
+  LockKeyhole,
+  MessageSquareText,
   ScanSearch,
   ShieldCheck,
-  UserCheck,
 } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
 
 const APP_URL = import.meta.env.VITE_APP_URL ?? "http://localhost:3000"
 const SAMPLE_URL = `${APP_URL.replace(/\/$/, "")}/sample`
 
+const layers = {
+  evidence: {
+    code: "EVD-02",
+    title: "Entry without notice",
+    detail: "The agreement permits entry at any time without prior notice.",
+    status: "Source verified",
+    tone: "verified",
+  },
+  recommendation: {
+    code: "REC-07",
+    title: "Request revision",
+    detail: "Require reasonable written notice, except in a genuine emergency.",
+    status: "Automated recommendation",
+    tone: "attention",
+  },
+  decision: {
+    code: "DEC-14",
+    title: "Changes requested",
+    detail: "Reviewer rationale and the requested position are retained with the clause.",
+    status: "Human decision recorded",
+    tone: "recorded",
+  },
+}
+
+const capabilities = [
+  {
+    id: "01",
+    icon: ScanSearch,
+    title: "Inspect the evidence",
+    copy: "Extract terms, ask grounded questions, and keep every material finding linked to its source excerpt.",
+    meta: "PDF · DOCX · TXT",
+  },
+  {
+    id: "02",
+    icon: GitCompareArrows,
+    title: "Prepare the negotiation",
+    copy: "Compare revisions, track playbook deviations, build checklists, and produce Word redlines.",
+    meta: "Compare · Redline · Playbook",
+  },
+  {
+    id: "03",
+    icon: MessageSquareText,
+    title: "Record the decision",
+    copy: "Assign reviewers, capture rationale, coordinate approvals, and preserve an attributable history.",
+    meta: "Comment · Approve · Assign",
+  },
+  {
+    id: "04",
+    icon: ShieldCheck,
+    title: "Carry work through",
+    copy: "Track obligations, renewals, notice periods, payments, reminders, and delivery records after signature.",
+    meta: "Obligations · Calendar · Webhooks",
+  },
+]
+
+function LensMark({ className = "" }) {
+  return (
+    <svg className={className} viewBox="0 0 512 512" aria-hidden="true">
+      <defs>
+        <mask id="lens-loop-cut">
+          <rect width="512" height="512" fill="white" />
+          <circle cx="232" cy="256" r="91" fill="black" />
+          <path d="M232 204H512V284H232Z" fill="black" />
+        </mask>
+      </defs>
+      <circle cx="232" cy="256" r="208" fill="#e84545" mask="url(#lens-loop-cut)" />
+      <path d="M232 278H424L442 350H232Z" fill="#903749" />
+    </svg>
+  )
+}
+
 function Brand() {
   return (
     <a className="brand" href="#top" aria-label="LensLayer home">
-      <span className="brand-mark" aria-hidden="true">
-        <span>L</span>
-        <span>L</span>
-      </span>
-      <span className="brand-name">LensLayer</span>
+      <LensMark />
+      <span>LENSLAYER</span>
     </a>
   )
 }
 
-function ProductFrame() {
+function ReviewConsole() {
+  const [activeLayer, setActiveLayer] = useState("evidence")
+  const layer = layers[activeLayer]
+
   return (
-    <div className="product-frame" role="img" aria-label="Example LensLayer decision workspace with contract, evidence, and action work">
-      <div className="product-window-bar">
-        <div className="product-window-brand">
-          <span className="product-window-mark">LL</span>
-          <span>LensLayer workspace</span>
-        </div>
-        <Badge variant="dark">Human decision layer</Badge>
+    <div className="console" aria-label="Illustrative LensLayer review">
+      <div className="console-bar">
+        <span className="window-controls" aria-hidden="true"><i /><i /><i /></span>
+        <span>RESIDENTIAL_LEASE.PDF</span>
+        <span className="console-mode">READ ONLY</span>
       </div>
-      <div className="product-report-heading">
-        <div>
-          <span className="product-overline">Today</span>
-          <h3>Work that needs a decision.</h3>
-          <p>Contracts, evidence, actions, and deadlines</p>
-        </div>
-        <span className="attention-pill"><CircleAlert /> 3 need attention</span>
+      <div className="console-tabs" role="tablist" aria-label="Review layers">
+        {Object.entries(layers).map(([key, item]) => (
+          <button
+            type="button"
+            role="tab"
+            aria-selected={key === activeLayer}
+            className={key === activeLayer ? "active" : ""}
+            key={key}
+            onClick={() => setActiveLayer(key)}
+          >
+            {item.code}
+          </button>
+        ))}
       </div>
-      <div className="product-summary" aria-label="Workspace summary">
-        <span><strong>6</strong> reviews</span>
-        <span><strong>4</strong> actions</span>
-        <span><strong>2</strong> evidence gaps</span>
-        <span><strong>1</strong> overdue</span>
-      </div>
-      <div className="product-tabs" aria-hidden="true">
-        <span className="active">Today</span>
-        <span>Contracts</span>
-        <span>Portfolio</span>
-        <span>Reports</span>
-      </div>
-      <div className="work-queue">
-        <div className="work-row">
-          <span className="work-icon"><FileSearch /></span>
-          <div>
-            <span className="product-overline">Contract review</span>
-            <h4>Supplier Services Agreement</h4>
-            <p>Liability cap falls outside the procurement playbook.</p>
+      <div className="console-body">
+        <div className="document-pane">
+          <div className="document-heading">
+            <span>SECTION 07 / ACCESS</span>
+            <span>PAGE 6 OF 12</span>
           </div>
-          <span className="work-status high">Review</span>
-        </div>
-        <div className="work-row">
-          <span className="work-icon"><ScanSearch /></span>
-          <div>
-            <span className="product-overline">Evidence review</span>
-            <h4>Data processing addendum</h4>
-            <p>One unsupported finding requires a reviewer decision.</p>
+          <div className="document-lines" aria-hidden="true">
+            <i className="long" /><i /><i className="medium" />
           </div>
-          <span className="work-status medium">Inspect</span>
+          <p className="clause">
+            The Landlord or their agents may enter the Premises at any time of day or night to inspect the property or perform repairs, <mark>without requiring prior notice.</mark>
+          </p>
+          <div className="source-ref"><Link2 aria-hidden="true" /> SOURCE 2 · §7</div>
         </div>
-        <div className="work-row">
-          <span className="work-icon"><CalendarClock /></span>
-          <div>
-            <span className="product-overline">Post-signature</span>
-            <h4>Renewal notice window</h4>
-            <p>Owner assigned. Due in four days.</p>
+        <aside className="finding-pane" key={activeLayer}>
+          <div className={`state ${layer.tone}`}><span />{layer.status}</div>
+          <span className="finding-code">{layer.code}</span>
+          <h2>{layer.title}</h2>
+          <p>{layer.detail}</p>
+          <div className="finding-data">
+            <div><span>EVIDENCE</span><strong>Attached</strong></div>
+            <div><span>CONFIDENCE</span><strong>High</strong></div>
           </div>
-          <span className="work-status">Assigned</span>
-        </div>
+          <a href={SAMPLE_URL}>Inspect record <ChevronRight aria-hidden="true" /></a>
+        </aside>
+      </div>
+      <div className="console-footer">
+        <span><span className="status-dot" /> ANALYSIS COMPLETE</span>
+        <span>ILLUSTRATIVE DATA · 09:44:12</span>
       </div>
     </div>
   )
@@ -100,263 +155,131 @@ function ProductFrame() {
 
 function App() {
   useEffect(() => {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
     const elements = document.querySelectorAll("[data-reveal]")
+
+    if (reducedMotion || !("IntersectionObserver" in window)) {
+      elements.forEach((element) => element.setAttribute("data-visible", "true"))
+      return undefined
+    }
+
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.setAttribute("data-visible", "true")
-            observer.unobserve(entry.target)
-          }
-        })
-      },
-      { threshold: 0.12 },
+      (entries) => entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.setAttribute("data-visible", "true")
+          observer.unobserve(entry.target)
+        }
+      }),
+      { rootMargin: "0px 0px -8%", threshold: 0.08 },
     )
+
     elements.forEach((element) => observer.observe(element))
-
-    let progressFrame
-    const updateScrollProgress = () => {
-      const scrollable = document.documentElement.scrollHeight - window.innerHeight
-      const progress = scrollable > 0 ? window.scrollY / scrollable : 0
-      document.documentElement.style.setProperty("--scroll-progress", Math.min(Math.max(progress, 0), 1))
-      progressFrame = undefined
-    }
-    const handleScroll = () => {
-      if (!progressFrame) progressFrame = window.requestAnimationFrame(updateScrollProgress)
-    }
-    updateScrollProgress()
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    window.addEventListener("resize", handleScroll)
-
-    return () => {
-      observer.disconnect()
-      window.removeEventListener("scroll", handleScroll)
-      window.removeEventListener("resize", handleScroll)
-      if (progressFrame) window.cancelAnimationFrame(progressFrame)
-      document.documentElement.style.removeProperty("--scroll-progress")
-    }
+    return () => observer.disconnect()
   }, [])
 
   return (
-    <div className="site-shell" id="top">
-      <div className="scroll-progress" aria-hidden="true" />
-      <a className="skip-link" href="#main-content">Skip to content</a>
-      <header className="site-header">
-        <div className="nav-shell">
+    <div className="site" id="top">
+      <a className="skip-link" href="#main">Skip to content</a>
+
+      <header className="header">
+        <div className="shell header-inner">
           <Brand />
-          <nav className="nav-links" aria-label="Primary navigation">
-            <a href="#platform">Platform</a>
-            <a href="#evidence">Evidence</a>
-            <a href="#governance">Governance</a>
+          <nav aria-label="Primary navigation">
+            <a href="#system">System</a>
+            <a href="#workflow">Workflow</a>
+            <a href="#control">Control</a>
           </nav>
-          <Button asChild size="sm">
-            <a href={APP_URL}>Open workspace <ArrowRight /></a>
-          </Button>
+          <a className="button button-small" href={APP_URL}>Open workspace <ArrowRight aria-hidden="true" /></a>
         </div>
       </header>
 
-      <main id="main-content">
-        <section className="hero section-shell" aria-labelledby="hero-title">
+      <main id="main">
+        <section className="hero shell" aria-labelledby="hero-title">
           <div className="hero-copy" data-reveal>
-            <Badge className="hero-badge"><ScanSearch /> Evidence-led document intelligence</Badge>
-            <h1 id="hero-title" aria-label="See the evidence. Move the work.">
-              <span className="hero-line" aria-hidden="true">See the evidence.</span>
-              <span className="hero-line" aria-hidden="true">Move the work.</span>
-            </h1>
-            <p>
-              LensLayer turns consequential documents into inspectable findings, accountable decisions, and work your team can carry through.
-            </p>
-            <div className="hero-action-row">
-              <Button asChild size="lg">
-                <a href={APP_URL}>Start free beta <ArrowRight /></a>
-              </Button>
-              <a className="hero-sample-link" href={SAMPLE_URL}>Explore a sample review</a>
+            <div className="eyebrow"><span>CONTRACT INTELLIGENCE</span><span>SYS / 01</span></div>
+            <h1 id="hero-title">See the evidence.<br /><span>Own the decision.</span></h1>
+            <p>LensLayer turns consequential agreements into source-linked findings, accountable decisions, and operational work your team can carry through.</p>
+            <div className="hero-actions">
+              <a className="button" href={APP_URL}>Open LensLayer <ArrowRight aria-hidden="true" /></a>
+              <a className="button button-quiet" href={SAMPLE_URL}>View sample review</a>
+            </div>
+            <div className="hero-footnote">
+              <span><Check aria-hidden="true" /> First-pass review</span>
+              <span><Check aria-hidden="true" /> Human-owned decisions</span>
+              <span><Check aria-hidden="true" /> Not legal advice</span>
             </div>
           </div>
-          <div className="hero-product" data-reveal>
-            <div className="hero-product-note">
-              <span>Evidence, decisions, and follow-through stay connected.</span>
-              <ChevronRight aria-hidden="true" />
-            </div>
-            <ProductFrame />
+          <div className="hero-index" aria-hidden="true" data-reveal>
+            <span>01</span>
+            <div><i /><i /><i /><i /></div>
+            <strong>EVIDENCE<br />DECISION<br />ACTION</strong>
           </div>
         </section>
 
-        <section className="audience" id="platform" aria-labelledby="audience-title">
-          <div className="section-shell audience-grid">
-            <div className="audience-intro" data-reveal>
-              <span className="section-index">One accountable workspace</span>
-              <h2 id="audience-title">The document is only the beginning.</h2>
-              <p>LensLayer connects review to the decisions, people, deadlines, and evidence that follow.</p>
-            </div>
-            <div className="audience-ledger" aria-label="LensLayer product workspaces">
-              {[
-                ["01", "Contract Review", "Inspect risks, gaps, obligations, and negotiation priorities"],
-                ["02", "Team Decisions", "Assign actions, request approvals, comment, and escalate"],
-                ["03", "Contract Operations", "Track renewals, payments, notice windows, and delivery"],
-                ["04", "Document Conversion", "Turn financial PDFs into reviewed CSV, Excel, or JSON"],
-                ["05", "Governance", "Audit activity, workload, outcomes, retention, and overrides"],
-              ].map(([number, role, outcome]) => (
-                <div className="audience-row" key={role} data-reveal>
-                  <span className="audience-number">{number}</span>
-                  <h3>{role}</h3>
-                  <p>{outcome}</p>
-                  <ChevronRight aria-hidden="true" />
-                </div>
-              ))}
-            </div>
+        <section className="system-section" id="system" aria-labelledby="system-title">
+          <div className="shell section-head" data-reveal>
+            <div><span className="section-code">SYS / REVIEW LAYERS</span><h2 id="system-title">One continuous line from clause to action.</h2></div>
+            <p>Recommendations stay distinct from evidence and human outcomes. Select a layer to inspect the same review from three accountable viewpoints.</p>
           </div>
+          <div className="shell" data-reveal><ReviewConsole /></div>
         </section>
 
-        <section className="workflow section-shell" id="workflow" aria-labelledby="workflow-title">
+        <section className="workflow-section shell" id="workflow" aria-labelledby="workflow-title">
           <div className="workflow-intro" data-reveal>
-            <span className="section-index">01 / Workflow</span>
-            <h2 id="workflow-title">From intake to accountable action.</h2>
-            <p>A continuous workflow keeps the source, the recommendation, and the person responsible in view.</p>
+            <span className="section-code">SYS / OPERATING MODEL</span>
+            <h2 id="workflow-title">Review that remains useful after signature.</h2>
           </div>
-          <div className="workflow-steps">
-            {[
-              ["01", "Bring work in", "Upload directly or receive documents through email, connected providers, secure links, or API."],
-              ["02", "Build the evidence layer", "Extract terms and fields, preserve source locations, surface uncertainty, and reconcile conflicts."],
-              ["03", "Make a human decision", "Accept, change, escalate, approve, or reject with rationale and attributable history."],
-              ["04", "Carry it through", "Assign actions, close negotiations, monitor obligations, hand off to counsel, and report outcomes."],
-            ].map(([number, title, copy]) => (
-              <article className="workflow-step" key={number} data-reveal>
-                <span>{number}</span>
-                <div>
-                  <h3>{title}</h3>
-                  <p>{copy}</p>
-                </div>
-                <ArrowRight aria-hidden="true" />
-              </article>
-            ))}
+          <div className="capability-ledger" data-reveal>
+            {capabilities.map((item) => {
+              const Icon = item.icon
+              return (
+                <article key={item.id}>
+                  <span className="capability-id">{item.id}</span>
+                  <Icon aria-hidden="true" />
+                  <div><h3>{item.title}</h3><p>{item.copy}</p></div>
+                  <span className="capability-meta">{item.meta}</span>
+                </article>
+              )
+            })}
           </div>
         </section>
 
-        <section className="risk-showcase" id="evidence" aria-labelledby="risk-title">
-          <div className="section-shell risk-showcase-grid">
-            <div className="risk-copy" data-reveal>
-              <span className="section-index section-index-dark">02 / Evidence layer</span>
-              <h2 id="risk-title">A recommendation is only useful when you can inspect its source.</h2>
-              <p>
-                Findings stay attached to the clause or field, its location, the relevant rule, uncertainty, and a concrete next step. The system can recommend. A person decides.
-              </p>
-              <ul className="risk-proof-list">
-                <li><Check /> Verbatim excerpts and extracted values</li>
-                <li><Check /> Page, section, field, and source references</li>
-                <li><Check /> Findings, evidence coverage, and human decisions kept separate</li>
-                <li><Check /> Playbook position and reviewer action attached</li>
-              </ul>
+        <section className="control-section" id="control" aria-labelledby="control-title">
+          <div className="shell control-grid">
+            <div className="control-copy" data-reveal>
+              <span className="section-code">SYS / GOVERNANCE</span>
+              <h2 id="control-title">The system recommends.<br />A person decides.</h2>
+              <p>Consequential work needs visible limits, clear authority, and an inspectable record of who decided what.</p>
+              <a className="text-link" href={APP_URL}>Explore the workspace <ArrowRight aria-hidden="true" /></a>
             </div>
-            <div className="document-inspector" data-reveal>
-              <div className="document-page">
-                <div className="document-page-head">
-                  <span>Residential Lease Agreement</span>
-                  <span>Page 6 / 12</span>
-                </div>
-                <p className="document-line wide" />
-                <p className="document-line" />
-                <div className="document-highlight">
-                  <span>7. Access to premises</span>
-                  <p>The Landlord or their agents may enter the Premises at any time of day or night to inspect the property or perform repairs, without requiring prior notice.</p>
-                </div>
-                <p className="document-line wide" />
-                <p className="document-line short" />
+            <div className="decision-log" data-reveal>
+              <div className="log-header"><span>DECISION_RECORD.LOG</span><span>LIVE</span></div>
+              <div className="log-event current">
+                <span>09:42</span><i /><div><strong>Changes requested</strong><p>Reviewer rationale attached to Section 7.</p></div><span>DEC-14</span>
               </div>
-              <aside className="inspector-panel" aria-label="LensLayer finding details">
-                <div className="inspector-heading">
-                  <Badge>Playbook deviation</Badge>
-                  <span>92% extraction confidence</span>
-                </div>
-                <h3>Entry without notice</h3>
-                <p>The clause falls outside the preferred position and needs a reviewer decision before approval.</p>
-                <Separator className="inspector-separator" />
-                <span className="inspector-label">Preferred position</span>
-                <p>Require reasonable written notice except in a genuine emergency.</p>
-                <div className="source-chip"><FileSearch /> Source 2 · Section 7</div>
-              </aside>
-            </div>
-          </div>
-        </section>
-
-        <section className="capabilities section-shell" aria-labelledby="capabilities-title">
-          <div className="capabilities-heading" data-reveal>
-            <span className="section-index">03 / Platform layers</span>
-            <h2 id="capabilities-title">Built beyond the first review.</h2>
-          </div>
-          <div className="capability-ledger">
-            {[
-              ["01", Network, "Secure platform foundation", "Organization workspaces, role-aware access, private storage, background processing, notifications, and audit events."],
-              ["02", FileCheck2, "Permanent review workspace", "A searchable contract register, clear processing states, workspace defaults, and durable contract pages."],
-              ["03", ScanSearch, "Evidence-linked intelligence", "Risks, protection gaps, grounded Q&A, obligations, payments, deadlines, playbooks, and portable exports."],
-              ["04", Handshake, "Collaboration and approvals", "Comments, mentions, assigned actions, conditional approvals, secure external review, and counsel handoff."],
-              ["05", CalendarClock, "Contract operations", "Renewals, recurring reminders, portfolio evidence, assignments, and attributable decisions."],
-              ["06", GitCompareArrows, "Negotiation closeout", "Version history, before-and-after comparison, counterparty responses, unresolved points, and final summaries."],
-              ["07", CloudDownload, "Connected intake", "Email, cloud providers, secure request links, API keys, webhooks, provenance, and delivery logs."],
-              ["08", Activity, "Reporting and governance", "Throughput, attention queues, human outcomes, overrides, reviewer workload, activity history, and CSV reporting."],
-            ].map(([number, Icon, title, copy]) => (
-              <article className="capability-row" key={title} data-reveal>
-                <span className="capability-label">{number}</span>
-                <div className="capability-title"><Icon aria-hidden="true" /><h3>{title}</h3></div>
-                <p>{copy}</p>
-                <ChevronRight aria-hidden="true" />
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="trust section-shell" id="governance" aria-labelledby="trust-title">
-          <div className="trust-heading" data-reveal>
-            <ShieldCheck aria-hidden="true" />
-            <div>
-              <span className="section-index">04 / Governance</span>
-              <h2 id="trust-title">Automation can recommend. It cannot own the decision.</h2>
-            </div>
-          </div>
-          <div className="trust-ledger">
-            <div className="trust-lead" data-reveal>
-              <p>Consequential document work needs evidence, clear authority, and a record of who decided what.</p>
-              <Badge variant="neutral"><UserCheck /> Human-owned by design</Badge>
-            </div>
-            {[
-              ["Attributable decisions", "Actions, approvals, overrides, and negotiation outcomes retain reviewer rationale and history."],
-              ["Private by policy", "Organization scope, role controls, retention choices, source-text controls, and hard deletion remain visible."],
-              ["Conflict-gated", "Unresolved evidence conflicts can block approval instead of being hidden behind a score."],
-              ["Honest limits", "Risk, extraction confidence, evidence coverage, and human decisions stay separate. LensLayer does not provide legal advice."],
-            ].map(([title, copy]) => (
-              <div className="trust-row" key={title} data-reveal>
-                <h3>{title}</h3>
-                <p>{copy}</p>
+              <div className="log-event">
+                <span>09:44</span><i /><div><strong>Task assigned</strong><p>Contract owner asked to revise notice language.</p></div><span>TSK-08</span>
               </div>
-            ))}
+              <div className="log-event">
+                <span>09:44</span><i /><div><strong>Source retained</strong><p>Evidence and playbook position preserved.</p></div><span>EVD-02</span>
+              </div>
+              <div className="log-footer"><LockKeyhole aria-hidden="true" /> Role-aware · attributable · retained by policy</div>
+            </div>
           </div>
         </section>
 
-        <section className="closing-cta" aria-labelledby="cta-title">
-          <div className="section-shell closing-cta-inner" data-reveal>
-            <div>
-              <span>Evidence into action</span>
-              <h2 id="cta-title">Bring the document. Own the decision.</h2>
-            </div>
-            <div className="closing-action">
-              <p>Review contracts, inspect supporting evidence, coordinate the work, and keep the record.</p>
-              <Button asChild variant="inverse" size="lg">
-                <a href={APP_URL}>Start free beta <ArrowRight /></a>
-              </Button>
-            </div>
-          </div>
+        <section className="closing shell" aria-labelledby="closing-title" data-reveal>
+          <div className="closing-index"><span>READY</span><i /></div>
+          <div><span className="section-code">START / PUBLIC PREVIEW</span><h2 id="closing-title">Bring the document.<br />Keep the context.</h2></div>
+          <div className="closing-action"><p>Inspect a synthetic, read-only sample before uploading anything.</p><a className="button" href={SAMPLE_URL}>Open sample review <ArrowRight aria-hidden="true" /></a></div>
         </section>
       </main>
 
-      <footer className="site-footer">
-        <div className="section-shell footer-inner">
+      <footer className="footer">
+        <div className="shell footer-inner">
           <Brand />
-          <p>Evidence-led document intelligence.</p>
-          <div className="footer-links">
-            <a href={APP_URL}>Live app</a>
-            <a href={SAMPLE_URL}>Sample review</a>
-            <a href="https://github.com/udochukwu-echefu">GitHub</a>
-          </div>
+          <p>Evidence-led document intelligence.<br />LensLayer supports first-pass review and does not provide legal advice.</p>
+          <div><a href={APP_URL}>Workspace</a><a href={SAMPLE_URL}>Sample</a><a href="https://github.com/udochukwu-echefu">GitHub</a></div>
         </div>
       </footer>
     </div>
