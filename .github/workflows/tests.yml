@@ -31,6 +31,9 @@ jobs:
             dashboard/package-lock.json
             landing/package-lock.json
 
+      - name: Use lockfile-compatible npm
+        run: npm install --global npm@11.12.1
+
       - name: Install system packages
         run: |
           sudo apt-get update
