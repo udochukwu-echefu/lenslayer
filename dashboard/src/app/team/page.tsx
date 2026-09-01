@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Copy, MailPlus, ShieldCheck, Trash2, UsersRound, X } from "lucide-react";
+import { Check, Copy, MailPlus, Search, ShieldCheck, Trash2, UsersRound, X } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
 import { AppSelect } from "@/components/app-select";
 import { PageError, PageLoading } from "@/components/page-states";
@@ -10,6 +10,7 @@ import { api } from "@/lib/api";
 import type { InvitationCreated, Membership, Role } from "@/lib/types";
 import { formatDate, titleCase } from "@/lib/utils";
 import { IdentityCell } from "@/components/ui/identity-cell";
+import { TableCard } from "@/components/ui/table-card";
 
 const roleNotes: Array<{ role: Role; summary: string }> = [
   { role: "owner", summary: "Controls ownership, administrators, and every workspace action." },
@@ -55,9 +56,14 @@ export default function TeamPage() {
   const queryClient = useQueryClient();
   const [created, setCreated] = useState<InvitationCreated | null>(null);
   const [copied, setCopied] = useState(false);
+  const [memberSearch, setMemberSearch] = useState("");
   const membersQuery = useQuery({ queryKey: ["members", organizationId], queryFn: () => api.members(organizationId), enabled: Boolean(organizationId) });
   const invitationsQuery = useQuery({ queryKey: ["invitations", organizationId], queryFn: () => api.invitations(organizationId), enabled: Boolean(organizationId && canManageTeam) });
   const pending = useMemo(() => (invitationsQuery.data ?? []).filter((item) => item.status === "pending"), [invitationsQuery.data]);
+  const members = useMemo(() => {
+    const search = memberSearch.trim().toLowerCase();
+    return (membersQuery.data ?? []).filter((member) => !search || `${member.display_name} ${member.email} ${member.role}`.toLowerCase().includes(search));
+  }, [memberSearch, membersQuery.data]);
   const inviteMutation = useMutation({
     mutationFn: ({ email, role }: { email: string; role: Exclude<Role, "owner"> }) => api.createInvitation(organizationId, { email, role }),
     onSuccess: async (result) => { setCreated(result); setCopied(false); await queryClient.invalidateQueries({ queryKey: ["invitations", organizationId] }); },
@@ -92,7 +98,7 @@ export default function TeamPage() {
       <details className="role-policy"><summary>Compare role permissions</summary><div className="role-lines">{roleNotes.map((item) => <div key={item.role}><strong>{titleCase(item.role)}</strong><p>{item.summary}</p>{item.role === activeRole && <span>Your role</span>}</div>)}</div></details>
     </div>
 
-    <section className="team-register"><div className="section-heading"><h2>Workspace members</h2><p>Identity, role, and start date</p></div><div className="member-list"><table><caption className="sr-only">Workspace members</caption><thead><tr><th scope="col">Member</th><th scope="col">Role</th><th scope="col">Joined</th><th scope="col"><span className="sr-only">Actions</span></th></tr></thead><tbody>{(membersQuery.data ?? []).map((member) => <MemberRow key={member.id} member={member} actorRole={activeRole} actorId={user?.id} organizationId={organizationId} />)}</tbody></table></div></section>
+    <TableCard className="team-register" title="Workspace members" description={`${members.length} of ${membersQuery.data?.length ?? 0} members`} actions={<label className="table-card-search"><Search size={16} /><input value={memberSearch} onChange={(event) => setMemberSearch(event.target.value)} placeholder="Search members" aria-label="Search workspace members" /></label>}><div className="member-list"><table><caption className="sr-only">Workspace members</caption><thead><tr><th scope="col">Member</th><th scope="col">Role</th><th scope="col">Joined</th><th scope="col">Action</th></tr></thead><tbody>{members.map((member) => <MemberRow key={member.id} member={member} actorRole={activeRole} actorId={user?.id} organizationId={organizationId} />)}</tbody></table>{!members.length && <p className="table-empty-row">No members match this search.</p>}</div><div className="table-static-footer">Showing {members.length ? 1 : 0} to {members.length} of {members.length} entries</div></TableCard>
 
     {canManageTeam && <section className="pending-invites"><div className="section-heading"><h2>Pending invitations</h2><p>{pending.length ? `${pending.length} awaiting acceptance` : "No outstanding invitations"}</p></div>{pending.length ? <div className="pending-list">{pending.map((invitation) => <div key={invitation.id}><div><strong>{invitation.email}</strong><span>{titleCase(invitation.role)} · Expires {formatDate(invitation.expires_at)}</span></div><button type="button" className="button ghost" onClick={() => revokeMutation.mutate(invitation.id)} disabled={revokeMutation.isPending}>Revoke</button></div>)}</div> : <div className="quiet-empty"><Check size={16} />All invitations are accounted for.</div>}{revokeMutation.error && <p className="form-error">{revokeMutation.error.message}</p>}</section>}
   </div>;

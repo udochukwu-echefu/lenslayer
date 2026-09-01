@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     oidc_issuer: str = ""
     oidc_audience: str = ""
     oidc_jwks_url: str = ""
+    oidc_email_claim: str = "email"
+    oidc_name_claim: str = "name"
+    oidc_email_verified_claim: str = "email_verified"
+    oidc_require_verified_email: bool = False
 
     object_storage_backend: str = "local"
     object_storage_root: Path = Path(".lenslayer/platform-files")

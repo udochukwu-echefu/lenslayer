@@ -1,9 +1,11 @@
 "use client";
 
 import { AlertTriangle, ArrowRight, Building2, LoaderCircle } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { useSession } from "next-auth/react";
+import { usePathname, useRouter } from "next/navigation";
+import { FormEvent, useEffect, useState } from "react";
 import { useCreateWorkspace, useWorkspace } from "./workspace-provider";
-import { ApiError } from "@/lib/api";
+import { ApiError, isPublicAccessEnabled } from "@/lib/api";
 
 function slugify(value: string) {
   return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 120);
@@ -11,10 +13,22 @@ function slugify(value: string) {
 
 export function WorkspaceGate({ children }: { children: React.ReactNode }) {
   const { organizations, isLoading, error } = useWorkspace();
+  const { data: session, status: sessionStatus } = useSession();
+  const pathname = usePathname();
+  const router = useRouter();
   const createWorkspace = useCreateWorkspace();
   const [name, setName] = useState("");
+  const authRequired = !isPublicAccessEnabled();
+  const unauthorized = error instanceof ApiError && error.status === 401;
+  const privateSessionExpired = session?.error === "RefreshAccessTokenError" || (sessionStatus === "authenticated" && unauthorized);
 
-  if (isLoading) {
+  useEffect(() => {
+    const callbackUrl = encodeURIComponent(pathname || "/");
+    if (privateSessionExpired) router.replace(`/auth/session-expired?callbackUrl=${callbackUrl}`);
+    else if (authRequired && sessionStatus === "unauthenticated") router.replace(`/signin?callbackUrl=${callbackUrl}`);
+  }, [authRequired, pathname, privateSessionExpired, router, sessionStatus]);
+
+  if (isLoading || privateSessionExpired || (authRequired && sessionStatus !== "authenticated")) {
     return <main className="gate"><LoaderCircle className="gate-spinner" aria-label="Loading workspace" /><p>Opening your workspace…</p></main>;
   }
 

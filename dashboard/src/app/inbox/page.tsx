@@ -6,6 +6,7 @@ import { useState } from "react";
 import { ContractList } from "@/components/contract-list";
 import { EmptyContracts, PageError, PageLoading } from "@/components/page-states";
 import { TaskList } from "@/components/task-list";
+import { TableCard } from "@/components/ui/table-card";
 import { useWorkspace } from "@/components/workspace-provider";
 import { api } from "@/lib/api";
 import { dueAtEndOfDay, isOverdue } from "@/lib/utils";
@@ -36,9 +37,9 @@ export default function InboxPage() {
     {(query.isLoading || taskQuery.isLoading) ? <PageLoading rows={7} /> : query.error ? <PageError error={query.error} /> : taskQuery.error ? <PageError error={taskQuery.error} /> : (!work.length && !overdue.length && !dueSoon.length) ? <EmptyContracts compact message="No reviews need your attention." /> : <div className="inbox-sections">
       {(scope === "all" || scope === "overdue") && overdue.length > 0 && <section><div className="section-heading"><h2>Overdue actions <span className="count danger-count">{overdue.length}</span></h2><p><TriangleAlert size={15} />Needs a human update</p></div><TaskList tasks={overdue} /></section>}
       {(scope === "all" || scope === "due_soon") && dueSoon.length > 0 && <section><div className="section-heading"><h2>Due in the next 7 days <span className="count">{dueSoon.length}</span></h2></div><TaskList tasks={dueSoon} /></section>}
-      {(scope === "all" || scope === "decisions") && <section><div className="section-heading"><h2>Ready for a decision <span className="count">{ready.length}</span></h2></div>{ready.length ? <ContractList contracts={ready} /> : <div className="quiet-empty"><Inbox size={16} />No contract decisions are waiting</div>}</section>}
-      {(scope === "all" || scope === "processing") && <section><div className="section-heading"><h2>Processing <span className="count">{moving.length}</span></h2><p>Updates automatically</p></div>{moving.length ? <ContractList contracts={moving} /> : <div className="quiet-empty"><Inbox size={16} />No active processing jobs</div>}</section>}
-      {(scope === "all" || scope === "blocked") && blocked.length > 0 && <section><div className="section-heading"><h2>Blocked <span className="count danger-count">{blocked.length}</span></h2></div><ContractList contracts={blocked} /></section>}
+      {(scope === "all" || scope === "decisions") && <TableCard title="Ready for a decision" description={`${ready.length} ${ready.length === 1 ? "contract" : "contracts"}`}>{ready.length ? <ContractList contracts={ready} showFooter /> : <div className="quiet-empty"><Inbox size={16} />No contract decisions are waiting</div>}</TableCard>}
+      {(scope === "all" || scope === "processing") && <TableCard title="Processing" description={`${moving.length} active, updates automatically`}>{moving.length ? <ContractList contracts={moving} showFooter /> : <div className="quiet-empty"><Inbox size={16} />No active processing jobs</div>}</TableCard>}
+      {(scope === "all" || scope === "blocked") && blocked.length > 0 && <TableCard title="Blocked" description={`${blocked.length} ${blocked.length === 1 ? "contract" : "contracts"}`}><ContractList contracts={blocked} showFooter /></TableCard>}
       {scope !== "all" && ((scope === "overdue" && !overdue.length) || (scope === "due_soon" && !dueSoon.length) || (scope === "blocked" && !blocked.length)) && <div className="quiet-empty"><Inbox size={16} />No items match this inbox filter</div>}
     </div>}
   </div>;

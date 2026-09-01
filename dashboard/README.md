@@ -31,7 +31,9 @@ Open [http://localhost:3000](http://localhost:3000).
 
 `PLATFORM_API_URL` is server-only. Browser requests go through `/api/platform/*`, so the FastAPI location and local development identity headers are not included in client bundles.
 
-Local identity variables are used only when `NODE_ENV` is not `production`. Production signs users in through the configured OpenID Connect provider, keeps the token in an encrypted server session, and forwards the bearer token to the API. Configure `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, and the `AUTH_OIDC_*` values in `.env.example`; the provider callback is `/api/auth/callback/oidc`.
+Local identity variables are used only when `NODE_ENV` is not `production`. Production signs users in through Auth0, keeps access and rotating refresh tokens in an encrypted server session, and forwards the bearer access token to the API. Configure `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `AUTH_OIDC_ISSUER`, `AUTH_OIDC_AUDIENCE`, `AUTH_OIDC_CLIENT_ID`, and `AUTH_OIDC_CLIENT_SECRET`; the provider callback is `/api/auth/callback/oidc`.
+
+`NEXT_PUBLIC_LENSLAYER_PUBLIC_ACCESS=true` enables the synthetic public workspace. Set it to `false` at dashboard build time for a real Auth0-backed deployment. Real mode exposes `/signin`, `/login`, `/signup`, invitation authentication, sign-out, auth-error, and session-expiry recovery pages.
 
 ## Team roles
 
@@ -53,7 +55,7 @@ Invitation links expire after seven days, are bound to the invited email, and ar
 - Contract review findings, obligations, and deadlines offer an explicit “Create action” handoff. Nothing is created from model output without a person choosing to do so.
 - Contract detail negotiation includes revised-document uploads, version history, before-and-after comparison, checklist outcomes, counterparty responses, unresolved points, and a final closeout summary.
 - Contract detail includes a printable Deal Passport and tracked-change Word redline export for retained DOCX reviews.
-- `/sample` is an unauthenticated fictional walkthrough; `/signin` presents the free public beta with no billing or upgrade flow.
+- `/sample` is an unauthenticated fictional walkthrough. `/signin` and `/signup` start the Auth0 Universal Login flow for private workspaces.
 
 ## Reports workspace
 

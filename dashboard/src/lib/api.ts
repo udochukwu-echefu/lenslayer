@@ -1,8 +1,19 @@
 import type { ApiKey, ApiKeyCreated, ApprovalRequest, ApprovalStatus, AuditEvent, Contract, ContractActivity, ContractComment, ContractCreated, ContractDecision, ContractDecisionName, ContractQuestionAnswer, ContractVersion, CounterpartyResponse, DealPassport, ExternalShare, ExternalShareCreated, IntakeAddress, IntegrationConnection, IntegrationImport, IntegrationProvider, IntegrationProviderDescriptor, Invitation, InvitationAccepted, InvitationCreated, InvitationPreview, Job, LifecycleItem, LifecycleKind, Membership, NegotiationItem, NegotiationItemCategory, NegotiationItemStatus, NegotiationSummary, Notification, Organization, OrganizationSettings, PortfolioAnswer, Recurrence, ReportOverview, ReportRange, Review, Role, SharedContract, TaskCreate, TaskStatus, TaskUpdate, User, WebhookCreated, WebhookDelivery, WebhookSubscription, WorkflowTask } from "./types";
 import { DEMO_WORKSPACE_ID, getDemoResponse } from "./demo-data";
+import { getSession } from "next-auth/react";
 
 const API_PREFIX = "/api/platform/api/v1";
-const PUBLIC_ACCESS_ENABLED = process.env.NEXT_PUBLIC_LENSLAYER_PUBLIC_ACCESS !== "false";
+const PUBLIC_ACCESS_ENABLED = process.env.NEXT_PUBLIC_LENSLAYER_PUBLIC_ACCESS === "true";
+let sessionRequest: ReturnType<typeof getSession> | null = null;
+
+function authenticatedSession() {
+  if (!sessionRequest) sessionRequest = getSession().finally(() => { sessionRequest = null; });
+  return sessionRequest;
+}
+
+export function isPublicAccessEnabled() {
+  return PUBLIC_ACCESS_ENABLED;
+}
 
 export function isDemoWorkspace(organizationId?: string | null) {
   return organizationId === DEMO_WORKSPACE_ID;
@@ -12,13 +23,16 @@ export class ApiError extends Error {
   constructor(message: string, public status: number, public detail?: unknown) { super(message); }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  if (PUBLIC_ACCESS_ENABLED) {
+async function request<T>(path: string, init?: RequestInit, usePublicAccess = PUBLIC_ACCESS_ENABLED): Promise<T> {
+  if (usePublicAccess) {
     const preview = getDemoResponse(path, init);
     if (preview.handled && "error" in preview) throw new ApiError(preview.error, preview.status);
     if (preview.handled) return preview.value as T;
   }
-  const response = await fetch(`${API_PREFIX}${path}`, { ...init, cache: "no-store" });
+  const headers = new Headers(init?.headers);
+  const session = await authenticatedSession();
+  if (session?.accessToken) headers.set("Authorization", `Bearer ${session.accessToken}`);
+  const response = await fetch(`${API_PREFIX}${path}`, { ...init, headers, cache: "no-store" });
   if (!response.ok) {
     let detail: unknown;
     try { detail = await response.json(); } catch { detail = await response.text(); }
@@ -29,10 +43,25 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+async function download(path: string, filename: string) {
+  const session = await authenticatedSession();
+  if (!session?.accessToken) throw new ApiError("Sign in to download this file.", 401);
+  const response = await fetch(path, { headers: { Authorization: `Bearer ${session.accessToken}` }, cache: "no-store" });
+  if (!response.ok) throw new ApiError(`Download failed (${response.status})`, response.status);
+  const url = URL.createObjectURL(await response.blob());
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
+
 export const api = {
-  me: () => request<User>("/me"),
-  organizations: () => request<Organization[]>("/organizations"),
-  createOrganization: (payload: { name: string; slug: string }) => request<Organization>("/organizations", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }),
+  me: (usePublicAccess = PUBLIC_ACCESS_ENABLED) => request<User>("/me", undefined, usePublicAccess),
+  organizations: (usePublicAccess = PUBLIC_ACCESS_ENABLED) => request<Organization[]>("/organizations", undefined, usePublicAccess),
+  createOrganization: (payload: { name: string; slug: string }) => request<Organization>("/organizations", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }, false),
   organizationSettings: (organizationId: string) => request<OrganizationSettings>(`/organizations/${organizationId}/settings`),
   updateOrganizationSettings: (organizationId: string, payload: Partial<Pick<OrganizationSettings, "name" | "default_retention_days" | "default_retain_document" | "default_retain_source_text" | "notification_review_ready" | "notification_review_failed">>) => request<OrganizationSettings>(`/organizations/${organizationId}/settings`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }),
   members: (organizationId: string) => request<Membership[]>(`/organizations/${organizationId}/members`),
@@ -85,7 +114,7 @@ export const api = {
   createCounterpartyResponse: (organizationId: string, contractId: string, payload: { responder_name?: string; channel?: string; body: string; contract_version_id?: string | null; related_item_ids?: string[] }) => request<CounterpartyResponse>(`/organizations/${organizationId}/contracts/${contractId}/counterparty-responses`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }),
   negotiationSummary: (organizationId: string, contractId: string) => request<NegotiationSummary>(`/organizations/${organizationId}/contracts/${contractId}/negotiation-summary`),
   dealPassport: (organizationId: string, contractId: string) => request<DealPassport>(`/organizations/${organizationId}/contracts/${contractId}/deal-passport`),
-  redlineUrl: (organizationId: string, contractId: string) => `${API_PREFIX}/organizations/${organizationId}/contracts/${contractId}/redline.docx`,
+  downloadRedline: (organizationId: string, contractId: string) => download(`${API_PREFIX}/organizations/${organizationId}/contracts/${contractId}/redline.docx`, `${contractId}-redline.docx`),
   comments: (organizationId: string, contractId: string) => request<ContractComment[]>(`/organizations/${organizationId}/contracts/${contractId}/comments`),
   createComment: (organizationId: string, contractId: string, payload: { body: string; mentioned_user_ids: string[] }) => request<ContractComment>(`/organizations/${organizationId}/contracts/${contractId}/comments`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }),
   decisions: (organizationId: string, contractId: string) => request<ContractDecision[]>(`/organizations/${organizationId}/contracts/${contractId}/decisions`),
@@ -98,7 +127,7 @@ export const api = {
   revokeShare: (organizationId: string, contractId: string, shareId: string) => request<void>(`/organizations/${organizationId}/contracts/${contractId}/shares/${shareId}`, { method: "DELETE" }),
   sharedContract: (token: string) => request<SharedContract>(`/shared/${encodeURIComponent(token)}`),
   contractActivity: (organizationId: string, contractId: string) => request<ContractActivity[]>(`/organizations/${organizationId}/contracts/${contractId}/activity`),
-  counselHandoffUrl: (organizationId: string, contractId: string) => `${API_PREFIX}/organizations/${organizationId}/contracts/${contractId}/counsel-handoff`,
+  downloadCounselHandoff: (organizationId: string, contractId: string) => download(`${API_PREFIX}/organizations/${organizationId}/contracts/${contractId}/counsel-handoff`, `${contractId}-counsel-handoff.docx`),
   lifecycle: (organizationId: string, filters?: { contractId?: string; status?: string }) => {
     const params = new URLSearchParams();
     if (filters?.contractId) params.set("contract_id", filters.contractId);
@@ -107,14 +136,14 @@ export const api = {
   },
   createLifecycle: (organizationId: string, contractId: string, payload: { kind: LifecycleKind; title: string; description?: string; amount?: string; due_at: string; owner_user_id?: string | null; reminder_days?: number; recurrence?: Recurrence }) => request<LifecycleItem>(`/organizations/${organizationId}/contracts/${contractId}/lifecycle`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }),
   updateLifecycle: (organizationId: string, itemId: string, payload: Partial<{ title: string; description: string; amount: string; due_at: string; owner_user_id: string | null; reminder_days: number; recurrence: Recurrence; status: "active" | "completed" | "cancelled" }>) => request<LifecycleItem>(`/organizations/${organizationId}/lifecycle/${itemId}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }),
-  calendarExportUrl: (organizationId: string) => `${API_PREFIX}/organizations/${organizationId}/calendar.ics`,
+  downloadCalendarExport: (organizationId: string) => download(`${API_PREFIX}/organizations/${organizationId}/calendar.ics`, "lenslayer-calendar.ics"),
   askPortfolio: (organizationId: string, question: string) => request<PortfolioAnswer>(`/organizations/${organizationId}/portfolio/questions`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question }) }),
   askContract: (organizationId: string, contractId: string, question: string) => request<ContractQuestionAnswer>(`/organizations/${organizationId}/contracts/${contractId}/questions`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question }) }),
-  contractExportUrl: (organizationId: string, contractId: string, format: "pdf" | "docx" | "csv" | "md" | "json") => `${API_PREFIX}/organizations/${organizationId}/contracts/${contractId}/exports/${format}`,
+  downloadContractExport: (organizationId: string, contractId: string, format: "pdf" | "docx" | "csv" | "md" | "json") => download(`${API_PREFIX}/organizations/${organizationId}/contracts/${contractId}/exports/${format}`, `${contractId}-review.${format}`),
   notifications: (organizationId: string) => request<Notification[]>(`/organizations/${organizationId}/notifications`),
   markNotificationRead: (organizationId: string, notificationId: string) => request<Notification>(`/organizations/${organizationId}/notifications/${notificationId}/read`, { method: "PATCH" }),
   markAllNotificationsRead: (organizationId: string) => request<void>(`/organizations/${organizationId}/notifications/read-all`, { method: "POST" }),
   auditEvents: (organizationId: string) => request<AuditEvent[]>(`/organizations/${organizationId}/audit-events`),
   reportOverview: (organizationId: string, range: ReportRange) => request<ReportOverview>(`/organizations/${organizationId}/reports/overview?range=${range}`),
-  reportExportUrl: (organizationId: string, range: ReportRange) => `${API_PREFIX}/organizations/${organizationId}/reports/export?range=${range}`,
+  downloadReportExport: (organizationId: string, range: ReportRange) => download(`${API_PREFIX}/organizations/${organizationId}/reports/export?range=${range}`, `lenslayer-report-${range}.csv`),
 };

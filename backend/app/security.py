@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import ssl
 from dataclasses import dataclass
+from functools import lru_cache
 
+import certifi
 from fastapi import HTTPException, Request, status
 
 from .config import Settings
@@ -12,6 +15,16 @@ class Principal:
     subject: str
     email: str
     display_name: str
+
+
+@lru_cache(maxsize=8)
+def _jwks_client(url: str):
+    try:
+        from jwt import PyJWKClient
+    except ImportError as exc:
+        raise RuntimeError("Install PyJWT[crypto] to use OIDC authentication.") from exc
+    ssl_context = ssl.create_default_context(cafile=certifi.where())
+    return PyJWKClient(url, cache_keys=True, lifespan=3600, ssl_context=ssl_context)
 
 
 def _bearer_token(request: Request) -> str:
@@ -29,13 +42,12 @@ def _bearer_token(request: Request) -> str:
 def _oidc_principal(request: Request, settings: Settings) -> Principal:
     try:
         import jwt
-        from jwt import PyJWKClient
     except ImportError as exc:
         raise RuntimeError("Install PyJWT[crypto] to use OIDC authentication.") from exc
 
     token = _bearer_token(request)
     try:
-        key = PyJWKClient(settings.oidc_jwks_url).get_signing_key_from_jwt(token).key
+        key = _jwks_client(settings.oidc_jwks_url).get_signing_key_from_jwt(token).key
         claims = jwt.decode(
             token,
             key,
@@ -52,8 +64,12 @@ def _oidc_principal(request: Request, settings: Settings) -> Principal:
     subject = str(claims.get("sub") or "").strip()
     if not subject:
         raise HTTPException(status_code=401, detail="The access token has no stable subject claim.")
-    email = str(claims.get("email") or "")
-    display_name = str(claims.get("name") or email or "User")
+    email = str(claims.get(settings.oidc_email_claim) or "").strip().lower()
+    if not email:
+        raise HTTPException(status_code=401, detail="The access token has no email claim.")
+    if settings.oidc_require_verified_email and claims.get(settings.oidc_email_verified_claim) is not True:
+        raise HTTPException(status_code=403, detail="Verify your email address before using LensLayer.")
+    display_name = str(claims.get(settings.oidc_name_claim) or email or "User")
     return Principal(subject=subject, email=email, display_name=display_name)
 
 

@@ -10,5 +10,5 @@ export function PageError({ error }: { error: Error }) {
 }
 
 export function EmptyContracts({ compact = false, canCreate = true, message }: { compact?: boolean; canCreate?: boolean; message?: string }) {
-  return <div className={`inline-state ${compact ? "compact" : ""}`}><div><h2>{compact ? (message ?? "No reviews need your attention.") : "No contracts in this workspace."}</h2>{!compact && <p>{canCreate ? "Upload a contract to create an evidence-linked review." : "Select an authorised workspace to inspect contract records."}</p>}{!compact && canCreate && <Link href="/contracts/new" className="button">Upload a contract</Link>}</div></div>;
+  return <div className={`inline-state empty-contracts ${compact ? "compact" : ""}`}><div><h2>{compact ? (message ?? "No reviews need your attention.") : "No contracts in this workspace."}</h2>{!compact && <p>{canCreate ? "Upload a contract to create an evidence-linked review." : "Select an authorised workspace to inspect contract records."}</p>}{!compact && canCreate && <Link href="/contracts/new" className="button">Upload a contract</Link>}</div></div>;
 }

@@ -7,6 +7,7 @@ import { FormEvent, useMemo, useState } from "react";
 import { AppSelect } from "@/components/app-select";
 import { ContractList } from "@/components/contract-list";
 import { PageError, PageLoading } from "@/components/page-states";
+import { TableCard } from "@/components/ui/table-card";
 import { useWorkspace } from "@/components/workspace-provider";
 import { api } from "@/lib/api";
 
@@ -39,9 +40,8 @@ export default function PortfolioPage() {
       {questionMutation.data && <div className="portfolio-answer"><div><span>{questionMutation.data.generated_by === "model" ? "Evidence-grounded answer" : "Retrieved evidence"}</span><p>{questionMutation.data.answer}</p></div><div className="portfolio-sources">{questionMutation.data.sources.map((source, index) => <Link href={`/contracts/${source.contract_id}?tab=ask`} key={`${source.contract_id}-${index}`}><span>{source.contract_title}<ArrowUpRight size={13} /></span><small>{source.location}</small><p>{source.excerpt}</p></Link>)}</div></div>}
     </section>
 
-    <section className="portfolio-register">
-      <div className="section-heading"><div><h2>Contract register</h2><p>{contracts.length} visible sources</p></div><div className="portfolio-register-tools"><label className="portfolio-search"><Search size={16} /><input id="portfolio-contract-filter" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Filter source contracts" /></label><AppSelect className="portfolio-source-select" value={sourceFilter} ariaLabel="Filter portfolio sources by status" onValueChange={setSourceFilter} options={[{ value: "all", label: "All source states" }, { value: "reviewed", label: "Reviewed" }, { value: "ready", label: "Ready" }, { value: "processing", label: "Processing" }, { value: "failed", label: "Failed" }]} /></div></div>
-      {contractsQuery.isLoading ? <PageLoading rows={6} /> : contractsQuery.error ? <PageError error={contractsQuery.error} /> : <ContractList contracts={contracts} />}
-    </section>
+    <TableCard className="portfolio-register" title="Contract register" description={`${contracts.length} visible sources`} actions={<div className="portfolio-register-tools"><label className="portfolio-search"><Search size={16} /><input id="portfolio-contract-filter" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search contracts" /></label><AppSelect className="portfolio-source-select" value={sourceFilter} ariaLabel="Filter portfolio sources by status" onValueChange={setSourceFilter} options={[{ value: "all", label: "All source states" }, { value: "reviewed", label: "Reviewed" }, { value: "ready", label: "Ready" }, { value: "processing", label: "Processing" }, { value: "failed", label: "Failed" }]} /></div>}>
+      {contractsQuery.isLoading ? <PageLoading rows={6} /> : contractsQuery.error ? <PageError error={contractsQuery.error} /> : <ContractList contracts={contracts} showFooter />}
+    </TableCard>
   </div>;
 }

@@ -1,6 +1,3 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-
 const FORWARDED_HEADERS = ["authorization", "content-type"];
 
 function upstreamUrl(request: Request, path: string[]) {
@@ -20,16 +17,14 @@ async function proxy(request: Request, context: RouteContext<"/api/platform/[...
 
   const isPublicInvitationPreview = request.method === "GET" && path[0] === "api" && path[1] === "v1" && path[2] === "invitations" && path.length === 4;
   const isPublicSharedReview = request.method === "GET" && path[0] === "api" && path[1] === "v1" && path[2] === "shared" && path.length === 4;
+  const isPublicRequest = isPublicInvitationPreview || isPublicSharedReview;
 
-  if (process.env.NODE_ENV !== "production" && !headers.has("authorization")) {
-    headers.set("X-LensLayer-User", process.env.LENSLAYER_LOCAL_USER_ID ?? "local-reviewer");
-    headers.set("X-LensLayer-Email", process.env.LENSLAYER_LOCAL_USER_EMAIL ?? "reviewer@lenslayer.local");
-    headers.set("X-LensLayer-Name", process.env.LENSLAYER_LOCAL_USER_NAME ?? "Local Reviewer");
-  }
-  if (process.env.NODE_ENV === "production" && !headers.has("authorization") && !isPublicInvitationPreview && !isPublicSharedReview) {
-    const session = await getServerSession(authOptions);
-    if (!session?.accessToken) return Response.json({ detail: "Sign in to continue." }, { status: 401 });
-    headers.set("authorization", `Bearer ${session.accessToken}`);
+  if (!headers.has("authorization") && !isPublicRequest) {
+    if (process.env.NODE_ENV !== "production") {
+      headers.set("X-LensLayer-User", process.env.LENSLAYER_LOCAL_USER_ID ?? "local-reviewer");
+      headers.set("X-LensLayer-Email", process.env.LENSLAYER_LOCAL_USER_EMAIL ?? "reviewer@lenslayer.local");
+      headers.set("X-LensLayer-Name", process.env.LENSLAYER_LOCAL_USER_NAME ?? "Local Reviewer");
+    } else return Response.json({ detail: "Sign in to continue." }, { status: 401 });
   }
 
   const method = request.method.toUpperCase();

@@ -10,6 +10,13 @@ function NotificationIcon({ kind }: { kind: string }) {
   return <Clock3 aria-hidden="true" size={17} />;
 }
 
-export function NotificationRow({ notification }: { notification: Notification }) {
-  return <Link className="notification-row" href={notification.action_url || "/inbox"}><span className={`notification-icon ${notification.read_at ? "" : "unread"}`}><NotificationIcon kind={notification.kind} /></span><span><strong>{notification.title}</strong><small>{notification.message}</small><time dateTime={notification.created_at}>{formatRelativeDate(notification.created_at)}{!notification.read_at && <span className="sr-only">, unread</span>}</time></span></Link>;
+function notificationTone(kind: string) {
+  if (kind.includes("failed") || kind.includes("overdue")) return "danger";
+  if (kind.includes("ready") || kind.includes("contract")) return "info";
+  if (kind.includes("completed")) return "success";
+  return "warning";
+}
+
+export function NotificationRow({ notification, onOpen }: { notification: Notification; onOpen?: () => void }) {
+  return <Link className="notification-row" href={notification.action_url || "/inbox"} onClick={onOpen}><span className={`notification-icon ${notificationTone(notification.kind)}`}><NotificationIcon kind={notification.kind} /></span><span className="notification-copy"><span className="notification-title-line"><strong>{notification.title}</strong><time dateTime={notification.created_at}>{formatRelativeDate(notification.created_at)}{!notification.read_at && <span className="sr-only">, unread</span>}</time></span><small>{notification.message}</small></span></Link>;
 }

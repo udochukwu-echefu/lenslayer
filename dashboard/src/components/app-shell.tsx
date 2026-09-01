@@ -4,7 +4,7 @@ import * as Avatar from "@radix-ui/react-avatar";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BarChart3, Bell, CalendarDays, CheckSquare2, ChevronDown, FileOutput, Files, Inbox, LayoutDashboard, Menu, Plus, Search, Settings, UsersRound, X } from "lucide-react";
+import { BarChart3, Bell, CalendarDays, CheckSquare2, ChevronDown, FileOutput, Files, Inbox, LayoutDashboard, LogIn, Menu, Plus, Search, Settings, UsersRound, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
@@ -69,10 +69,6 @@ function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
     mutationFn: (notificationId: string) => api.markNotificationRead(organizationId, notificationId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications", organizationId] }),
   });
-  const readAllMutation = useMutation({
-    mutationFn: () => api.markAllNotificationsRead(organizationId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications", organizationId] }),
-  });
   const notifications = notificationsQuery.data ?? [];
   const unreadCount = notifications.filter((item) => !item.read_at).length;
   const contractsQuery = useQuery({ queryKey: ["contracts", organizationId], queryFn: () => api.contracts(organizationId), enabled: Boolean(organizationId) });
@@ -105,6 +101,7 @@ function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
                 <DropdownMenu.Content className="dropdown" align="start" sideOffset={8}>
                   <DropdownMenu.Label className="dropdown-label">Switch workspace</DropdownMenu.Label>
                   {organizations.map((organization) => <DropdownMenu.Item key={organization.id} className="dropdown-item" onSelect={() => selectOrganization(organization.id)}>{organization.name}{organization.id === activeOrganization?.id && <span>Current</span>}</DropdownMenu.Item>)}
+                  {isDemo && <><DropdownMenu.Separator className="dropdown-separator" /><DropdownMenu.Item asChild className="dropdown-item"><Link href="/signin"><LogIn size={16} />Sign in to a workspace</Link></DropdownMenu.Item></>}
                 </DropdownMenu.Content>
               </DropdownMenu.Portal>
             </DropdownMenu.Root>
@@ -119,9 +116,9 @@ function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
                 </DropdownMenu.Trigger>
                 <DropdownMenu.Portal>
                   <DropdownMenu.Content className="dropdown notification-menu" align="end" sideOffset={8}>
-                    <div className="notification-head"><div><strong>Notifications</strong><span>{unreadCount ? `${unreadCount} unread` : "You’re caught up"}</span></div>{unreadCount > 0 && !isDemo && <button onClick={() => readAllMutation.mutate()} disabled={readAllMutation.isPending}>Mark all read</button>}</div>
-                    <DropdownMenu.Separator className="dropdown-separator" />
-                    <div className="notification-scroll">{notificationsQuery.isLoading ? <p className="notification-empty">Loading updates…</p> : notifications.length ? notifications.map((notification) => <DropdownMenu.Item key={notification.id} asChild className="notification-item" onSelect={() => { if (!notification.read_at && !isDemo) readMutation.mutate(notification.id); }}><NotificationRow notification={notification} /></DropdownMenu.Item>) : <p className="notification-empty">Processing updates and review alerts will appear here.</p>}</div>
+                    <div className="notification-head"><strong>Notifications</strong><span>{unreadCount} New</span></div>
+                    <div className="notification-scroll">{notificationsQuery.isLoading ? <p className="notification-empty">Loading updates…</p> : notifications.length ? notifications.slice(0, 5).map((notification) => <DropdownMenu.Item key={notification.id} asChild className="notification-item" onSelect={() => { if (!notification.read_at && !isDemo) readMutation.mutate(notification.id); }}><NotificationRow notification={notification} /></DropdownMenu.Item>) : <p className="notification-empty">Processing updates and review alerts will appear here.</p>}</div>
+                    <DropdownMenu.Item asChild className="notification-footer-item"><Link href="/notifications">See All Notifications</Link></DropdownMenu.Item>
                   </DropdownMenu.Content>
                 </DropdownMenu.Portal>
               </DropdownMenu.Root>
@@ -134,6 +131,7 @@ function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
                     <DropdownMenu.Label className="profile-label"><strong>{user?.display_name ?? "Reviewer"}</strong><span>{user?.email}</span></DropdownMenu.Label>
                     <DropdownMenu.Separator className="dropdown-separator" />
                     <DropdownMenu.Item asChild className="dropdown-item"><Link href="/settings">Workspace settings</Link></DropdownMenu.Item>
+                    {!isDemo && <DropdownMenu.Item asChild className="dropdown-item"><Link href="/auth/signout">Sign out</Link></DropdownMenu.Item>}
                   </DropdownMenu.Content>
                 </DropdownMenu.Portal>
               </DropdownMenu.Root>
@@ -159,6 +157,6 @@ function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  if (pathname.startsWith("/invite/") || pathname.startsWith("/shared/") || pathname.startsWith("/auth/") || pathname === "/signin" || pathname === "/sample") return <>{children}</>;
+  if (pathname.startsWith("/invite/") || pathname.startsWith("/shared/") || pathname.startsWith("/auth/") || pathname === "/signin" || pathname === "/login" || pathname === "/signup" || pathname === "/sample") return <>{children}</>;
   return <WorkspaceAppShell>{children}</WorkspaceAppShell>;
 }

@@ -1,8 +1,9 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
 import { createContext, useContext, useMemo, useState } from "react";
-import { api, isDemoWorkspace } from "@/lib/api";
+import { api, isDemoWorkspace, isPublicAccessEnabled } from "@/lib/api";
 import type { Organization, Role, User } from "@/lib/types";
 
 type WorkspaceValue = {
@@ -23,9 +24,14 @@ const WorkspaceContext = createContext<WorkspaceValue | null>(null);
 const storageKey = "lenslayer.activeOrganization";
 
 export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
+  const { status: sessionStatus } = useSession();
   const [activeId, setActiveId] = useState<string | null>(() => typeof window === "undefined" ? null : window.localStorage.getItem(storageKey));
-  const organizationsQuery = useQuery({ queryKey: ["organizations"], queryFn: api.organizations });
-  const userQuery = useQuery({ queryKey: ["me"], queryFn: api.me });
+  const publicAccess = isPublicAccessEnabled();
+  const useDemoWorkspace = publicAccess && sessionStatus !== "authenticated";
+  const workspaceMode = useDemoWorkspace ? "demo" : "private";
+  const canLoadWorkspace = sessionStatus !== "loading" && (publicAccess || sessionStatus === "authenticated");
+  const organizationsQuery = useQuery({ queryKey: ["organizations", workspaceMode], queryFn: () => api.organizations(useDemoWorkspace), enabled: canLoadWorkspace });
+  const userQuery = useQuery({ queryKey: ["me", workspaceMode], queryFn: () => api.me(useDemoWorkspace), enabled: canLoadWorkspace });
 
   const activeOrganization = organizationsQuery.data?.find((item) => item.id === activeId) ?? organizationsQuery.data?.[0] ?? null;
   const activeRole = activeOrganization?.role ?? null;
@@ -39,10 +45,10 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     canManageTeam: activeRole === "owner" || activeRole === "admin",
     isDemo: isDemoWorkspace(activeOrganization?.id),
     user: userQuery.data ?? null,
-    isLoading: organizationsQuery.isLoading || userQuery.isLoading,
+    isLoading: sessionStatus === "loading" || organizationsQuery.isLoading || userQuery.isLoading,
     error: (organizationsQuery.error ?? userQuery.error) as Error | null,
     selectOrganization: (id) => { setActiveId(id); window.localStorage.setItem(storageKey, id); },
-  }), [activeOrganization, activeRole, organizationsQuery.data, organizationsQuery.error, organizationsQuery.isLoading, userQuery.data, userQuery.error, userQuery.isLoading]);
+  }), [activeOrganization, activeRole, organizationsQuery.data, organizationsQuery.error, organizationsQuery.isLoading, sessionStatus, userQuery.data, userQuery.error, userQuery.isLoading]);
 
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;
 }
