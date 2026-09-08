@@ -85,7 +85,7 @@ export function DocumentConverter() {
     ];
     result.transactions.forEach((row) => sheet.addRow(row));
     sheet.getRow(1).font = { bold: true, color: { argb: "FFFFFFFF" } };
-    sheet.getRow(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF3159B8" } };
+    sheet.getRow(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF657958" } };
     [4, 5, 6].forEach((column) => { sheet.getColumn(column).numFmt = "#,##0.00;[Red]-#,##0.00"; });
     const buffer = await workbook.xlsx.writeBuffer();
     download(buffer, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "lenslayer-transactions.xlsx");

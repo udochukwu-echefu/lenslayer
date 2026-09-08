@@ -12,3 +12,4 @@ dashboard/.dev.vars
 dashboard/.open-next/
 dashboard/.wrangler/
 dashboard/cloudflare-env.d.ts
+.codex-previews/

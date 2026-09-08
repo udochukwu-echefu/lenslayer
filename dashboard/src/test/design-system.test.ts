@@ -18,7 +18,7 @@ describe("LensLayer design-system policies", () => {
     expect(contrast("#18243A", surface)).toBeGreaterThanOrEqual(4.5);
     expect(contrast("#4A596C", surface)).toBeGreaterThanOrEqual(4.5);
     expect(contrast("#A3413B", surface)).toBeGreaterThanOrEqual(4.5);
-    expect(contrast("#3159B8", surface)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast("#657958", surface)).toBeGreaterThanOrEqual(4.5);
   });
 
   it("does not reintroduce unreadable 8-11px text", () => {

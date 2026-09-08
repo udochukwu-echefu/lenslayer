@@ -1,289 +1,116 @@
-import { useEffect, useState } from "react"
-import {
-  ArrowRight,
-  Check,
-  ChevronRight,
-  GitCompareArrows,
-  Link2,
-  LockKeyhole,
-  MessageSquareText,
-  ScanSearch,
-  ShieldCheck,
-} from "lucide-react"
+import { useEffect, useRef, useState } from "react"
+import { ArrowDown, ArrowRight, Check, FileText, Layers2, Link2, LockKeyhole, Menu, ShieldCheck, UsersRound, X } from "lucide-react"
+import { Brand, LensMark } from "./components/landing/brand"
+import WorkflowDemo from "./components/landing/workflow-demo"
+import PortfolioDemo from "./components/landing/portfolio-demo"
+import FaqSection from "./components/landing/faq-section"
+import { RoundLink, HeroEvidence } from "./components/landing/hero-components"
 
-const APP_URL = import.meta.env.VITE_APP_URL ?? "http://localhost:3000"
-const SAMPLE_URL = `${APP_URL.replace(/\/$/, "")}/sample`
-
-const layers = {
-  evidence: {
-    code: "EVD-02",
-    title: "Entry without notice",
-    detail: "The agreement permits entry at any time without prior notice.",
-    status: "Source verified",
-    tone: "verified",
-  },
-  recommendation: {
-    code: "REC-07",
-    title: "Request revision",
-    detail: "Require reasonable written notice, except in a genuine emergency.",
-    status: "Automated recommendation",
-    tone: "attention",
-  },
-  decision: {
-    code: "DEC-14",
-    title: "Changes requested",
-    detail: "Reviewer rationale and the requested position are retained with the clause.",
-    status: "Human decision recorded",
-    tone: "recorded",
-  },
-}
-
-const capabilities = [
-  {
-    id: "01",
-    icon: ScanSearch,
-    title: "Inspect the evidence",
-    copy: "Extract terms, ask grounded questions, and keep every material finding linked to its source excerpt.",
-    meta: "PDF · DOCX · TXT",
-  },
-  {
-    id: "02",
-    icon: GitCompareArrows,
-    title: "Prepare the negotiation",
-    copy: "Compare revisions, track playbook deviations, build checklists, and produce Word redlines.",
-    meta: "Compare · Redline · Playbook",
-  },
-  {
-    id: "03",
-    icon: MessageSquareText,
-    title: "Record the decision",
-    copy: "Assign reviewers, capture rationale, coordinate approvals, and preserve an attributable history.",
-    meta: "Comment · Approve · Assign",
-  },
-  {
-    id: "04",
-    icon: ShieldCheck,
-    title: "Carry work through",
-    copy: "Track obligations, renewals, notice periods, payments, reminders, and delivery records after signature.",
-    meta: "Obligations · Calendar · Webhooks",
-  },
-]
-
-function LensMark({ className = "" }) {
-  return (
-    <svg className={className} viewBox="0 0 512 512" aria-hidden="true">
-      <defs>
-        <mask id="lens-loop-cut">
-          <rect width="512" height="512" fill="white" />
-          <circle cx="232" cy="256" r="91" fill="black" />
-          <path d="M232 204H512V284H232Z" fill="black" />
-        </mask>
-      </defs>
-      <circle cx="232" cy="256" r="208" fill="#e84545" mask="url(#lens-loop-cut)" />
-      <path d="M232 278H424L442 350H232Z" fill="#903749" />
-    </svg>
-  )
-}
-
-function Brand() {
-  return (
-    <a className="brand" href="#top" aria-label="LensLayer home">
-      <LensMark />
-      <span>LENSLAYER</span>
-    </a>
-  )
-}
-
-function ReviewConsole() {
-  const [activeLayer, setActiveLayer] = useState("evidence")
-  const layer = layers[activeLayer]
-
-  return (
-    <div className="console" aria-label="Illustrative LensLayer review">
-      <div className="console-bar">
-        <span className="window-controls" aria-hidden="true"><i /><i /><i /></span>
-        <span>RESIDENTIAL_LEASE.PDF</span>
-        <span className="console-mode">READ ONLY</span>
-      </div>
-      <div className="console-tabs" role="tablist" aria-label="Review layers">
-        {Object.entries(layers).map(([key, item]) => (
-          <button
-            type="button"
-            role="tab"
-            aria-selected={key === activeLayer}
-            className={key === activeLayer ? "active" : ""}
-            key={key}
-            onClick={() => setActiveLayer(key)}
-          >
-            {item.code}
-          </button>
-        ))}
-      </div>
-      <div className="console-body">
-        <div className="document-pane">
-          <div className="document-heading">
-            <span>SECTION 07 / ACCESS</span>
-            <span>PAGE 6 OF 12</span>
-          </div>
-          <div className="document-lines" aria-hidden="true">
-            <i className="long" /><i /><i className="medium" />
-          </div>
-          <p className="clause">
-            The Landlord or their agents may enter the Premises at any time of day or night to inspect the property or perform repairs, <mark>without requiring prior notice.</mark>
-          </p>
-          <div className="source-ref"><Link2 aria-hidden="true" /> SOURCE 2 · §7</div>
-        </div>
-        <aside className="finding-pane" key={activeLayer}>
-          <div className={`state ${layer.tone}`}><span />{layer.status}</div>
-          <span className="finding-code">{layer.code}</span>
-          <h2>{layer.title}</h2>
-          <p>{layer.detail}</p>
-          <div className="finding-data">
-            <div><span>EVIDENCE</span><strong>Attached</strong></div>
-            <div><span>CONFIDENCE</span><strong>High</strong></div>
-          </div>
-          <a href={SAMPLE_URL}>Inspect record <ChevronRight aria-hidden="true" /></a>
-        </aside>
-      </div>
-      <div className="console-footer">
-        <span><span className="status-dot" /> ANALYSIS COMPLETE</span>
-        <span>ILLUSTRATIVE DATA · 09:44:12</span>
-      </div>
-    </div>
-  )
-}
+const APP_URL = (import.meta.env.VITE_APP_URL ?? "http://localhost:3000").replace(/\/$/, "")
+const SAMPLE_URL = `${APP_URL}/sample`
+const navigation = [{ label: "The product", href: "#product" }, { label: "How it works", href: "#workflow" }, { label: "Your data", href: "#control" }]
 
 function App() {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuButton = useRef(null)
   useEffect(() => {
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    const elements = document.querySelectorAll("[data-reveal]")
-
-    if (reducedMotion || !("IntersectionObserver" in window)) {
-      elements.forEach((element) => element.setAttribute("data-visible", "true"))
-      return undefined
+    function onEscape(event) {
+      if (event.key === "Escape" && menuOpen) { setMenuOpen(false); menuButton.current?.focus() }
     }
+    document.addEventListener("keydown", onEscape)
+    return () => document.removeEventListener("keydown", onEscape)
+  }, [menuOpen])
+  useEffect(() => {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    if (reduceMotion || !window.IntersectionObserver) return
 
-    const observer = new IntersectionObserver(
-      (entries) => entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.setAttribute("data-visible", "true")
-          observer.unobserve(entry.target)
-        }
-      }),
-      { rootMargin: "0px 0px -8%", threshold: 0.08 },
-    )
-
-    elements.forEach((element) => observer.observe(element))
-    return () => observer.disconnect()
+    const ease = "cubic-bezier(.16,1,.3,1)"
+    const recipes = {
+      "hero-copy": [{ opacity: 0, transform: "translate3d(0,24px,0)", clipPath: "inset(0 0 18% 0)" }, { opacity: 1, transform: "none", clipPath: "inset(0 0 0 0)" }],
+      "card-left": [{ opacity: 0, transform: "translate3d(-30px,18px,0) rotate(-11deg) scale(.96)" }, { opacity: 1, transform: "translate3d(0,0,0) rotate(-8deg) scale(1)" }],
+      "card-right": [{ opacity: 0, transform: "translate3d(30px,20px,0) rotate(10deg) scale(.96)" }, { opacity: 1, transform: "translate3d(0,0,0) rotate(7deg) scale(1)" }],
+      stage: [{ opacity: 0, transform: "translate3d(0,34px,0) scale(.985)", clipPath: "inset(7% 0 0 0 round 18px)" }, { opacity: 1, transform: "none", clipPath: "inset(0 0 0 0 round 0)" }],
+      "copy-left": [{ opacity: 0, transform: "translate3d(-24px,0,0)" }, { opacity: 1, transform: "none" }],
+      "visual-right": [{ opacity: 0, transform: "translate3d(32px,0,0) scale(.985)" }, { opacity: 1, transform: "none" }],
+      line: [{ opacity: 0, transform: "translate3d(0,12px,0)", clipPath: "inset(0 100% 0 0)" }, { opacity: 1, transform: "none", clipPath: "inset(0 0 0 0)" }],
+      closing: [{ opacity: 0, transform: "translate3d(0,20px,0)" }, { opacity: 1, transform: "none" }],
+    }
+    const durations = { "hero-copy": 820, "card-left": 900, "card-right": 900, stage: 920, "copy-left": 720, "visual-right": 820, line: 760, closing: 760 }
+    const observer = new IntersectionObserver((entries) => entries.forEach(({ isIntersecting, target }) => {
+      if (!isIntersecting) return
+      const motion = target.dataset.motion
+      const delay = Number(target.dataset.motionDelay || 0)
+      target.animate(recipes[motion] || recipes.closing, { duration: durations[motion] || 720, delay, easing: ease, fill: "both" })
+      observer.unobserve(target)
+    }), { threshold: 0.14, rootMargin: "0px 0px -7%" })
+    document.querySelectorAll("[data-motion]").forEach((element) => observer.observe(element))
+    return () => {
+      observer.disconnect()
+    }
   }, [])
 
-  return (
-    <div className="site" id="top">
-      <a className="skip-link" href="#main">Skip to content</a>
-
-      <header className="header">
-        <div className="shell header-inner">
-          <Brand />
-          <nav aria-label="Primary navigation">
-            <a href="#system">System</a>
-            <a href="#workflow">Workflow</a>
-            <a href="#control">Control</a>
-          </nav>
-          <a className="button button-small" href={APP_URL}>Open workspace <ArrowRight aria-hidden="true" /></a>
+  return <div className="site" id="top">
+    <a className="skip-link" href="#main">Skip to content</a>
+    <header className="header">
+      <div className="shell header-inner"><Brand /><nav className="desktop-nav" aria-label="Primary navigation">{navigation.map((item) => <a href={item.href} key={item.href}>{item.label}</a>)}</nav><div className="header-actions"><a className="sign-in" href={APP_URL}>Sign in</a><RoundLink compact href={SAMPLE_URL}>Explore sample</RoundLink><button type="button" className="menu-button" ref={menuButton} aria-label={menuOpen ? "Close navigation" : "Open navigation"} aria-expanded={menuOpen} aria-controls="mobile-navigation" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}</button></div></div>
+      <nav id="mobile-navigation" className="mobile-nav" aria-label="Mobile navigation" hidden={!menuOpen}>{navigation.map((item) => <a href={item.href} key={item.href} onClick={() => setMenuOpen(false)}>{item.label}<ArrowRight aria-hidden="true" /></a>)}<a href={APP_URL}>Sign in <ArrowRight aria-hidden="true" /></a></nav>
+    </header>
+    <main id="main">
+      <section className="hero" aria-labelledby="hero-title">
+        <div className="hero-composition shell">
+          <div className="hero-intro" data-motion="hero-copy">
+            <div className="hero-medallion" aria-hidden="true"><LensMark /></div>
+            <h1 id="hero-title">The fine print.<br /><span>The bigger picture.</span></h1>
+            <div className="hero-copy"><p>Know what’s in your agreement.<br className="desktop-break" /> See what matters, why it matters, and what to do next.</p><div className="hero-ctas"><RoundLink href={SAMPLE_URL}>Explore a sample agreement</RoundLink><a className="hero-secondary" href="#product">Take a closer look <ArrowDown aria-hidden="true" /></a></div><span className="hero-reassurance">No sign-up. No upload. Just a little more clarity.</span></div>
+          </div>
+          <HeroEvidence />
         </div>
-      </header>
+        <div className="hero-stage" id="product" data-motion="stage"><div className="shell"><div className="stage-caption"><span><Layers2 aria-hidden="true" /> One workspace for every next move.</span><a href="#workflow">Follow the workflow <ArrowDown aria-hidden="true" /></a></div><div className="hero-preview"><img className="dashboard-capture" src="/lenslayer-dashboard.png" alt="LensLayer workspace overview with contract statistics and a decision queue" /></div><div className="hero-stage-foot"><p>Live LensLayer workspace. Synthetic demo data.</p><span><FileText aria-hidden="true" /> PDF <span>·</span> DOCX <span>·</span> TXT</span></div></div></div>
+        <div className="shell audience-strip" data-motion="line"><p>For the people behind the decision.</p><div><span>Legal</span><span>Procurement</span><span>Finance</span><span>Operations</span></div></div>
+      </section>
 
-      <main id="main">
-        <section className="hero shell" aria-labelledby="hero-title">
-          <div className="hero-copy" data-reveal>
-            <div className="eyebrow"><span>CONTRACT INTELLIGENCE</span><span>SYS / 01</span></div>
-            <h1 id="hero-title">See the evidence.<br /><span>Own the decision.</span></h1>
-            <p>LensLayer turns consequential agreements into source-linked findings, accountable decisions, and operational work your team can carry through.</p>
-            <div className="hero-actions">
-              <a className="button" href={APP_URL}>Open LensLayer <ArrowRight aria-hidden="true" /></a>
-              <a className="button button-quiet" href={SAMPLE_URL}>View sample review</a>
-            </div>
-            <div className="hero-footnote">
-              <span><Check aria-hidden="true" /> First-pass review</span>
-              <span><Check aria-hidden="true" /> Human-owned decisions</span>
-              <span><Check aria-hidden="true" /> Not legal advice</span>
-            </div>
-          </div>
-          <div className="hero-index" aria-hidden="true" data-reveal>
-            <span>01</span>
-            <div><i /><i /><i /><i /></div>
-            <strong>EVIDENCE<br />DECISION<br />ACTION</strong>
-          </div>
-        </section>
+      <section className="workflow-section shell" id="workflow" aria-labelledby="workflow-title">
+        <div data-motion="copy-left"><p className="section-kicker">ONE CONNECTED WORKFLOW</p><div className="section-heading"><h2 id="workflow-title">A contract has a lifecycle.<br /><span>Your review should, too.</span></h2><p>From the first question to the next renewal, keep the evidence and the work in one connected record.</p></div></div>
+        <div data-motion="stage"><WorkflowDemo sampleUrl={SAMPLE_URL} /></div>
+      </section>
 
-        <section className="system-section" id="system" aria-labelledby="system-title">
-          <div className="shell section-head" data-reveal>
-            <div><span className="section-code">SYS / REVIEW LAYERS</span><h2 id="system-title">One continuous line from clause to action.</h2></div>
-            <p>Recommendations stay distinct from evidence and human outcomes. Select a layer to inspect the same review from three accountable viewpoints.</p>
-          </div>
-          <div className="shell" data-reveal><ReviewConsole /></div>
-        </section>
+      <section className="portfolio-section" aria-labelledby="portfolio-title"><div className="shell portfolio-grid"><div className="portfolio-copy" data-motion="copy-left"><div className="source-illustration" aria-hidden="true"><div className="source-sheet sheet-back"><FileText aria-hidden="true" /><span /><span /><span /></div><div className="source-sheet sheet-front"><FileText aria-hidden="true" /><span /><span /><span /><span className="sheet-highlight" /></div><div className="source-node"><Link2 aria-hidden="true" /></div></div><p className="section-kicker">ANSWERS YOU CAN TRACE</p><h2 id="portfolio-title">An answer is only as good as its source.</h2><p>Ask across your agreements. Inspect the exact excerpts behind an answer, and see when the evidence is incomplete.</p><ul className="check-list"><li><Check aria-hidden="true" /> Contract and portfolio questions</li><li><Check aria-hidden="true" /> Traceable source excerpts</li><li><Check aria-hidden="true" /> Uncertainty made visible</li></ul><a className="text-link" href={SAMPLE_URL}>See evidence in context <ArrowRight aria-hidden="true" /></a></div><div data-motion="visual-right"><PortfolioDemo sampleUrl={SAMPLE_URL} /></div></div></section>
 
-        <section className="workflow-section shell" id="workflow" aria-labelledby="workflow-title">
-          <div className="workflow-intro" data-reveal>
-            <span className="section-code">SYS / OPERATING MODEL</span>
-            <h2 id="workflow-title">Review that remains useful after signature.</h2>
-          </div>
-          <div className="capability-ledger" data-reveal>
-            {capabilities.map((item) => {
-              const Icon = item.icon
-              return (
-                <article key={item.id}>
-                  <span className="capability-id">{item.id}</span>
-                  <Icon aria-hidden="true" />
-                  <div><h3>{item.title}</h3><p>{item.copy}</p></div>
-                  <span className="capability-meta">{item.meta}</span>
-                </article>
-              )
-            })}
-          </div>
-        </section>
-
-        <section className="control-section" id="control" aria-labelledby="control-title">
-          <div className="shell control-grid">
-            <div className="control-copy" data-reveal>
-              <span className="section-code">SYS / GOVERNANCE</span>
-              <h2 id="control-title">The system recommends.<br />A person decides.</h2>
-              <p>Consequential work needs visible limits, clear authority, and an inspectable record of who decided what.</p>
-              <a className="text-link" href={APP_URL}>Explore the workspace <ArrowRight aria-hidden="true" /></a>
-            </div>
-            <div className="decision-log" data-reveal>
-              <div className="log-header"><span>DECISION_RECORD.LOG</span><span>LIVE</span></div>
-              <div className="log-event current">
-                <span>09:42</span><i /><div><strong>Changes requested</strong><p>Reviewer rationale attached to Section 7.</p></div><span>DEC-14</span>
-              </div>
-              <div className="log-event">
-                <span>09:44</span><i /><div><strong>Task assigned</strong><p>Contract owner asked to revise notice language.</p></div><span>TSK-08</span>
-              </div>
-              <div className="log-event">
-                <span>09:44</span><i /><div><strong>Source retained</strong><p>Evidence and playbook position preserved.</p></div><span>EVD-02</span>
-              </div>
-              <div className="log-footer"><LockKeyhole aria-hidden="true" /> Role-aware · attributable · retained by policy</div>
-            </div>
-          </div>
-        </section>
-
-        <section className="closing shell" aria-labelledby="closing-title" data-reveal>
-          <div className="closing-index"><span>READY</span><i /></div>
-          <div><span className="section-code">START / PUBLIC PREVIEW</span><h2 id="closing-title">Bring the document.<br />Keep the context.</h2></div>
-          <div className="closing-action"><p>Inspect a synthetic, read-only sample before uploading anything.</p><a className="button" href={SAMPLE_URL}>Open sample review <ArrowRight aria-hidden="true" /></a></div>
-        </section>
-      </main>
-
-      <footer className="footer">
-        <div className="shell footer-inner">
-          <Brand />
-          <p>Evidence-led document intelligence.<br />LensLayer supports first-pass review and does not provide legal advice.</p>
-          <div><a href={APP_URL}>Workspace</a><a href={SAMPLE_URL}>Sample</a><a href="https://github.com/udochukwu-echefu">GitHub</a></div>
+      <section className="control-section shell" id="control" aria-labelledby="control-title">
+        <div className="control-heading" data-motion="copy-left">
+          <h2 id="control-title">Your documents.<br />Your decisions. Your control.</h2>
+          <p>Useful intelligence should come with clear boundaries. Choose what stays, who can act, and what happens next.</p>
         </div>
-      </footer>
-    </div>
-  )
+        <div className="control-card-grid" data-motion="stage">
+          <article className="control-card control-card-retention">
+            <div className="control-card-icon" aria-hidden="true"><LockKeyhole /></div>
+            <div><h3>Keep only what you need</h3><p>Set retention by review, apply workspace defaults, and remove records when they’re no longer needed.</p></div>
+            <ul className="control-card-points"><li>Per-review settings</li><li>Workspace defaults</li><li>Deletion controls</li></ul>
+          </article>
+          <article className="control-card">
+            <div className="control-card-icon" aria-hidden="true"><UsersRound /></div>
+            <div><h3>Give access with intention</h3><p>Use workspace roles for reviews, uploads, and approvals, with secure sharing and attributable activity.</p></div>
+            <div className="access-visual" aria-hidden="true"><span>RV</span><span>UP</span><span>AP</span><small>Role-based access</small></div>
+          </article>
+          <article className="control-card control-card-sage">
+            <div className="control-card-icon" aria-hidden="true"><ShieldCheck /></div>
+            <div><h3>Keep people in charge</h3><p>Separate automated findings from human decisions, with a clear owner and rationale for every next step.</p></div>
+            <div className="decision-visual" aria-hidden="true"><span>Finding</span><i /><span>Owner</span><i /><span>Decision</span></div>
+          </article>
+        </div>
+      </section>
+
+      <aside className="converter-card shell" data-motion="stage" aria-labelledby="converter-title">
+        <div className="converter-art" aria-hidden="true"><span>PDF</span><ArrowRight /><span className="data-file"><i /><i /><i /><i /><i /><i /></span></div>
+        <div className="converter-card-copy"><h3 id="converter-title">Working with financial PDFs, too?</h3><p>Review transaction rows and export CSV, Excel, or JSON. Processing stays in your browser.</p></div>
+        <RoundLink compact href={`${APP_URL}/convert`}>Open document converter</RoundLink>
+      </aside>
+
+      <FaqSection />
+
+      <section className="closing" data-motion="closing" aria-labelledby="closing-title"><div className="shell closing-inner"><LensMark className="closing-mark" /><div><h2 id="closing-title">Your next agreement.<br />A clearer starting point.</h2><p>Start with our sample. See what’s in the fine print.</p></div><div className="closing-actions"><RoundLink href={SAMPLE_URL} light>Explore sample</RoundLink><a className="closing-signin" href={APP_URL}>Or open your workspace <ArrowRight aria-hidden="true" /></a></div></div></section>
+    </main>
+    <footer className="footer shell"><div className="footer-top"><Brand /></div><div className="footer-bottom"><span>© {new Date().getFullYear()} LensLayer</span><a href="#top">Back to top <ArrowRight aria-hidden="true" /></a></div></footer>
+  </div>
 }
-
 export default App
