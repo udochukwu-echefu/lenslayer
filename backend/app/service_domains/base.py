@@ -53,6 +53,7 @@ from ..models import (
 )
 from ..object_storage import ObjectStore
 from ..malware import scan_upload
+from ..email_delivery import queue_email
 from ..schemas import (
     ApprovalRequestResponse,
     ApiKeyCreatedResponse,
@@ -216,16 +217,27 @@ class ServiceBase:
         message: str,
         action_url: str,
     ) -> None:
-        self.session.add(
-            Notification(
-                organization_id=organization_id,
-                user_id=user_id,
-                contract_id=contract_id,
-                kind=kind,
-                title=title,
-                message=message,
-                action_url=action_url,
-            )
+        notification = Notification(
+            organization_id=organization_id,
+            user_id=user_id,
+            contract_id=contract_id,
+            kind=kind,
+            title=title,
+            message=message,
+            action_url=action_url,
+        )
+        self.session.add(notification)
+        recipient = self.session.get(User, user_id)
+        queue_email(
+            self.session,
+            self.settings,
+            organization_id=organization_id,
+            user_id=user_id,
+            recipient=recipient.email if recipient else "",
+            kind=kind,
+            subject=title,
+            message=message,
+            action_url=action_url,
         )
 
     def _audit(

@@ -52,7 +52,7 @@ X-LensLayer-Email: person@example.com
 X-LensLayer-Name: Person Name
 ```
 
-Local mode must never be exposed as a shared production API. Setting `LENSLAYER_PLATFORM_ENVIRONMENT=production` is rejected unless OIDC, PostgreSQL, private S3-compatible storage, ClamAV `clamd`, and Alembic-managed schema settings are configured.
+Local mode must never be exposed as a shared production API. Setting `LENSLAYER_PLATFORM_ENVIRONMENT=production` is rejected unless OIDC, PostgreSQL, private S3-compatible storage, Cloudmersive scanning, Resend email, and Alembic-managed schema settings are configured.
 
 ## API workflow
 

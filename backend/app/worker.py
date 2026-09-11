@@ -9,16 +9,18 @@ from collections.abc import Callable
 from datetime import timedelta
 from pathlib import Path
 
-from sqlalchemy import select
+from sqlalchemy import and_, or_, select
 
 from .config import Settings, get_settings
 from .database import Database
 from .document_intelligence import ReviewWorkflow, build_review_workflow
+from .email_delivery import ResendEmailSender, queue_email
 from .models import (
     Contract,
     ContractReview,
     ContractVersion,
     DocumentAsset,
+    EmailDelivery,
     IntegrationImport,
     LifecycleItem,
     Membership,
@@ -26,12 +28,99 @@ from .models import (
     OrganizationSettings,
     PlatformAuditEvent,
     ProcessingJob,
+    User,
     WebhookDelivery,
     WebhookSubscription,
     utcnow,
 )
 from .object_storage import ObjectStore, build_object_store
 from .services import json_dump, json_load
+
+
+def enqueue_notification(
+    session,
+    settings: Settings,
+    *,
+    organization_id: str,
+    user_id: str,
+    contract_id: str | None,
+    kind: str,
+    title: str,
+    message: str,
+    action_url: str,
+) -> None:
+    session.add(
+        Notification(
+            organization_id=organization_id,
+            user_id=user_id,
+            contract_id=contract_id,
+            kind=kind,
+            title=title,
+            message=message,
+            action_url=action_url,
+        )
+    )
+    user = session.get(User, user_id)
+    queue_email(
+        session,
+        settings,
+        organization_id=organization_id,
+        user_id=user_id,
+        recipient=user.email if user else "",
+        kind=kind,
+        subject=title,
+        message=message,
+        action_url=action_url,
+    )
+
+
+def claim_next_email(database: Database, settings: Settings) -> str | None:
+    if settings.email_backend.lower() == "disabled":
+        return None
+    with database.session_factory() as session:
+        stale_before = utcnow() - timedelta(seconds=settings.email_lease_seconds)
+        query = (
+            select(EmailDelivery)
+            .where(
+                or_(
+                    EmailDelivery.status.in_(["pending", "failed"]),
+                    and_(EmailDelivery.status == "sending", EmailDelivery.updated_at < stale_before),
+                ),
+                EmailDelivery.attempts < settings.email_max_attempts,
+            )
+            .order_by(EmailDelivery.created_at.asc())
+            .limit(1)
+        )
+        if database.engine.dialect.name == "postgresql":
+            query = query.with_for_update(skip_locked=True)
+        delivery = session.scalar(query)
+        if delivery is None:
+            return None
+        delivery.status = "sending"
+        delivery.attempts += 1
+        session.commit()
+        return delivery.id
+
+
+def process_email(database: Database, settings: Settings, delivery_id: str) -> None:
+    try:
+        with database.session_factory() as session:
+            delivery = session.get(EmailDelivery, delivery_id)
+            if delivery is None:
+                return
+            message_id = ResendEmailSender(settings).send(delivery)
+            delivery.status = "sent"
+            delivery.provider_message_id = message_id
+            delivery.last_error = ""
+            delivery.sent_at = utcnow()
+            session.commit()
+    except Exception as exc:
+        with database.session_factory() as session:
+            delivery = session.get(EmailDelivery, delivery_id)
+            if delivery is not None:
+                delivery.status = "failed"
+                delivery.last_error = str(exc)[:2000]
+                session.commit()
 
 
 def enqueue_webhook_deliveries(session, organization_id: str, event_type: str, contract_id: str | None, payload: dict) -> None:
@@ -56,11 +145,18 @@ def enqueue_webhook_deliveries(session, organization_id: str, event_type: str, c
         )
 
 
-def claim_next_job(database: Database) -> str | None:
+def claim_next_job(database: Database, settings: Settings) -> str | None:
     with database.session_factory() as session:
+        stale_before = utcnow() - timedelta(seconds=settings.worker_lease_seconds)
         query = (
             select(ProcessingJob)
-            .where(ProcessingJob.status == "queued")
+            .where(
+                or_(
+                    ProcessingJob.status == "queued",
+                    and_(ProcessingJob.status == "running", ProcessingJob.started_at < stale_before),
+                ),
+                ProcessingJob.attempts < settings.worker_max_attempts,
+            )
             .order_by(ProcessingJob.created_at.asc())
             .limit(1)
         )
@@ -106,7 +202,7 @@ def purge_expired_contracts(database: Database, object_store: ObjectStore) -> in
     return len(contracts)
 
 
-def process_lifecycle_reminders(database: Database) -> int:
+def process_lifecycle_reminders(database: Database, settings: Settings) -> int:
     now = utcnow()
     created = 0
     with database.session_factory() as session:
@@ -133,16 +229,16 @@ def process_lifecycle_reminders(database: Database) -> int:
             if now >= reminder_at and not notified_today:
                 overdue = now > due_at
                 for user_id in {value for value in recipients if value}:
-                    session.add(
-                        Notification(
-                            organization_id=item.organization_id,
-                            user_id=user_id,
-                            contract_id=item.contract_id,
-                            kind="lifecycle_overdue" if overdue else "lifecycle_reminder",
-                            title=f"{item.kind.replace('_', ' ').title()} {'overdue' if overdue else 'due soon'}",
-                            message=item.title,
-                            action_url=f"/calendar?item={item.id}",
-                        )
+                    enqueue_notification(
+                        session,
+                        settings,
+                        organization_id=item.organization_id,
+                        user_id=user_id,
+                        contract_id=item.contract_id,
+                        kind="lifecycle_overdue" if overdue else "lifecycle_reminder",
+                        title=f"{item.kind.replace('_', ' ').title()} {'overdue' if overdue else 'due soon'}",
+                        message=item.title,
+                        action_url=f"/calendar?item={item.id}",
                     )
                     created += 1
                 item.last_notified_at = now
@@ -166,16 +262,16 @@ def process_lifecycle_reminders(database: Database) -> int:
                 for user_id in set(admin_ids):
                     if user_id in recipients:
                         continue
-                    session.add(
-                        Notification(
-                            organization_id=item.organization_id,
-                            user_id=user_id,
-                            contract_id=item.contract_id,
-                            kind="lifecycle_escalated",
-                            title="Overdue lifecycle item escalated",
-                            message=item.title,
-                            action_url=f"/calendar?item={item.id}",
-                        )
+                    enqueue_notification(
+                        session,
+                        settings,
+                        organization_id=item.organization_id,
+                        user_id=user_id,
+                        contract_id=item.contract_id,
+                        kind="lifecycle_escalated",
+                        title="Overdue lifecycle item escalated",
+                        message=item.title,
+                        action_url=f"/calendar?item={item.id}",
                     )
                     created += 1
                 session.add(
@@ -195,6 +291,7 @@ def process_job(
     database: Database,
     object_store: ObjectStore,
     job_id: str,
+    settings: Settings,
     review_workflow: ReviewWorkflow | None = None,
 ) -> None:
     workflow = review_workflow or build_review_workflow()
@@ -304,8 +401,10 @@ def process_job(
                         Membership.organization_id == contract.organization_id
                     )
                 ).all()
-                session.add_all(
-                    Notification(
+                for user_id in member_ids:
+                    enqueue_notification(
+                        session,
+                        settings,
                         organization_id=contract.organization_id,
                         user_id=user_id,
                         contract_id=contract.id,
@@ -314,8 +413,6 @@ def process_job(
                         message=f"{contract.title} is ready to inspect.",
                         action_url=f"/contracts/{contract.id}",
                     )
-                    for user_id in member_ids
-                )
             if not contract.retain_document:
                 asset.status = "deleted"
             session.commit()
@@ -370,8 +467,10 @@ def process_job(
                             Membership.organization_id == contract.organization_id
                         )
                     ).all()
-                    session.add_all(
-                        Notification(
+                    for user_id in member_ids:
+                        enqueue_notification(
+                            session,
+                            settings,
                             organization_id=contract.organization_id,
                             user_id=user_id,
                             contract_id=contract.id,
@@ -380,8 +479,6 @@ def process_job(
                             message=f"{contract.title} could not be processed. Open it to see the error.",
                             action_url=f"/contracts/{contract.id}",
                         )
-                        for user_id in member_ids
-                    )
             session.commit()
     finally:
         if temp_path and os.path.exists(temp_path):
@@ -391,6 +488,7 @@ def process_job(
 def run_worker(
     settings: Settings,
     once: bool = False,
+    drain: bool = False,
     review_workflow_factory: Callable[[], ReviewWorkflow] = build_review_workflow,
 ) -> None:
     database = Database(settings)
@@ -401,13 +499,20 @@ def run_worker(
     try:
         while True:
             purge_expired_contracts(database, object_store)
-            process_lifecycle_reminders(database)
-            job_id = claim_next_job(database)
+            process_lifecycle_reminders(database, settings)
+            job_id = claim_next_job(database, settings)
             if job_id:
-                process_job(database, object_store, job_id, review_workflow)
-            elif once:
+                process_job(database, object_store, job_id, settings, review_workflow)
+            email_id = claim_next_email(database, settings)
+            if email_id:
+                process_email(database, settings, email_id)
+            if once:
                 return
-            else:
+            if drain and not job_id and not email_id:
+                return
+            if drain:
+                continue
+            if not job_id and not email_id:
                 time.sleep(settings.worker_poll_seconds)
     finally:
         database.dispose()
@@ -416,8 +521,11 @@ def run_worker(
 def main() -> int:
     parser = argparse.ArgumentParser(description="Process queued LensLayer platform jobs.")
     parser.add_argument("--once", action="store_true", help="Process at most one queued job, then exit.")
+    parser.add_argument("--drain", action="store_true", help="Process queued jobs and emails until the queue is empty.")
     args = parser.parse_args()
-    run_worker(get_settings(), once=args.once)
+    if args.once and args.drain:
+        parser.error("--once and --drain cannot be combined")
+    run_worker(get_settings(), once=args.once, drain=args.drain)
     return 0
 
 

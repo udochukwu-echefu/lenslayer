@@ -1,114 +1,78 @@
-# Cloudflare Beta Deployment
+# Production deployment: Cloudflare + Google Cloud Run
 
-This is the cheapest Cloudflare-first path for user testing LensLayer without rewriting the Python backend.
+LensLayer's low-traffic production layout is:
 
-## Recommended beta architecture
+- Cloudflare Workers serves the Next.js dashboard.
+- A private Cloudflare R2 bucket stores uploaded source documents. The browser and dashboard Worker have no bucket credentials.
+- Google Cloud Run serves the FastAPI API and scales to zero.
+- A separate Cloud Run Job drains review and transactional-email queues. Cloud Scheduler starts it once per minute.
+- Neon PostgreSQL stores application state. Runtime services use the pooled URL; the migration job uses the direct URL.
+- Cloudmersive scans every upload before the API writes it to R2.
+- Resend sends invitations and existing notification events from the database-backed email outbox.
 
-- Dashboard: Cloudflare Workers running the Next.js app through OpenNext.
-- Domain, TLS, caching, and security headers: Cloudflare.
-- Document storage: Cloudflare R2 through the existing S3-compatible backend adapter.
-- Database: Neon Free Postgres.
-- API and worker: a free container host such as Koyeb, proxied behind a Cloudflare DNS record.
+This setup is designed to stay inside free allowances at low volume; it is not a guarantee of a permanently zero bill. Configure provider budget alerts and quotas before launch.
 
-Cloudflare Python Workers support FastAPI in beta, but this backend currently depends on SQLAlchemy, psycopg, boto3, OCR tooling, and a long-running worker process. Running it as a normal container is the safer beta path. Cloudflare Containers can run the API later, but that currently requires the paid Workers plan rather than the free plan.
+## 1. Provision accounts and resources
 
-## 1. Create Cloudflare resources
+Create:
 
-Create an R2 bucket:
+1. A private R2 bucket named `lenslayer-documents` and an R2 API token restricted to object read/write for that bucket.
+2. A Neon project. Save both its pooled and direct connection strings in SQLAlchemy's `postgresql+psycopg://` form with TLS enabled.
+3. A Cloudmersive API key.
+4. A Resend API key and verified sending domain.
+5. A Google Cloud project with Cloud Run, Cloud Build, Artifact Registry, Secret Manager, and Cloud Scheduler enabled.
 
-```bash
-lenslayer-documents
-```
+Do not make the R2 bucket public and do not bind it to the dashboard Worker. Only the Cloud Run API and review job receive its S3-compatible credentials.
 
-Create an R2 API token with object read/write access for that bucket. Keep the account id, access key id, and secret access key for the API environment.
+## 2. Store production secrets
 
-Optional: create a second R2 bucket for OpenNext incremental cache later. The dashboard config does not require it for the first beta.
+Create these Google Secret Manager secrets. Their values must never be committed or passed as ordinary Cloud Run environment variables.
 
-## 2. Create Neon Postgres
+| Secret | Value |
+| --- | --- |
+| `lenslayer-neon-pooled-url` | Neon pooled runtime URL |
+| `lenslayer-neon-direct-url` | Neon direct migration URL |
+| `lenslayer-r2-access-key-id` | R2 access key ID |
+| `lenslayer-r2-secret-access-key` | R2 secret access key |
+| `lenslayer-cloudmersive-api-key` | Cloudmersive API key |
+| `lenslayer-resend-api-key` | Resend API key |
+| `lenslayer-groq-api-key` | Groq API key used by document analysis |
 
-Create a Neon Free project and copy the pooled Postgres connection string. Use the `postgresql+psycopg://` SQLAlchemy form if needed.
+Create a runtime service account named `lenslayer-runtime` and grant it `roles/secretmanager.secretAccessor` only for those secrets. The Cloud Build service account also needs Cloud Run Admin, Artifact Registry Writer, Service Account User, and permission to execute the migration job.
 
-Run migrations before opening the beta:
+## 3. Deploy API, migration job, and review job
 
-```bash
-alembic -c backend/alembic.ini upgrade head
-```
+Edit the non-secret substitutions at the top of [`deploy/gcp/cloudbuild.yaml`](../../deploy/gcp/cloudbuild.yaml), especially region, Auth0 URLs, dashboard URL, R2 endpoint, and verified Resend sender.
 
-## 3. Configure Auth0
-
-Create an Auth0 **Regular Web Application** and an Auth0 API whose identifier matches the LensLayer API audience, for example `https://api.lenslayer.example`.
-
-Configure the application:
-
-- Allowed callback URL: `https://app.lenslayer.example/api/auth/callback/oidc`
-- Allowed logout URL: `https://app.lenslayer.example/auth/signed-out`
-- Allowed web origin: `https://app.lenslayer.example`
-- Grant types: Authorization Code and Refresh Token
-- Database connection: enable public signup if self-service accounts are allowed
-- Google social connection: configure a Google OAuth web client with `https://YOUR_TENANT.auth0.com/login/callback`, add its client ID and secret to the Auth0 Google connection, and enable that connection for the LensLayer application
-
-Enable **Allow Offline Access** for the Auth0 API and refresh-token rotation for the application. Add a post-login Auth0 Action so the custom API access token carries the identity claims required by LensLayer:
-
-```js
-exports.onExecutePostLogin = async (event, api) => {
-  const namespace = "https://lenslayer.app";
-  if (!event.user.email_verified) {
-    api.access.deny("Verify your email address before using LensLayer.");
-    return;
-  }
-  api.accessToken.setCustomClaim(`${namespace}/email`, event.user.email);
-  api.accessToken.setCustomClaim(`${namespace}/email_verified`, event.user.email_verified);
-  api.accessToken.setCustomClaim(`${namespace}/name`, event.user.name || event.user.email);
-};
-```
-
-Attach the Action to the Login flow. Signup remains hosted by Auth0 Universal Login; LensLayer's `/signup` route starts that flow with Auth0's signup hint.
-
-## 4. Deploy the API container
-
-Use `backend/Dockerfile` for the FastAPI service and `backend/Dockerfile.worker` for the background worker. Both Dockerfiles expect the repository root as the build context.
-
-API command:
+Create the Artifact Registry repository once, then submit from the repository root:
 
 ```bash
-uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
+gcloud artifacts repositories create lenslayer --repository-format=docker --location=europe-west1
+gcloud builds submit --config deploy/gcp/cloudbuild.yaml
 ```
 
-Worker command:
+Every build builds one immutable image, executes Alembic against Neon's direct endpoint, deploys FastAPI with the pooled endpoint, then updates the separate review job. If migrations fail, the API deployment does not proceed.
+
+Cloud Run transport is unauthenticated so the Cloudflare server-side proxy can reach it, but application endpoints still require and validate the Auth0 bearer token. Restrict CORS to the production dashboard origin.
+
+## 4. Schedule the review job
+
+Use a dedicated scheduler service account with permission to run only `lenslayer-review-worker`:
 
 ```bash
-python -m backend.app.worker
+gcloud scheduler jobs create http lenslayer-review-worker-every-minute \
+  --location=europe-west1 \
+  --schedule="* * * * *" \
+  --uri="https://run.googleapis.com/v2/projects/PROJECT_ID/locations/europe-west1/jobs/lenslayer-review-worker:run" \
+  --http-method=POST \
+  --oauth-service-account-email=lenslayer-scheduler@PROJECT_ID.iam.gserviceaccount.com
 ```
 
-Set these API and worker environment variables:
+The job uses PostgreSQL row locking, drains all queued document reviews and email deliveries, and exits. Resend requests use the delivery row ID as an idempotency key.
 
-```env
-GROQ_API_KEY=replace-me
-LENSLAYER_PLATFORM_ENVIRONMENT=production
-LENSLAYER_PLATFORM_AUTO_CREATE_SCHEMA=false
-LENSLAYER_PLATFORM_DATABASE_URL=postgresql+psycopg://user:password@host/db?sslmode=require
-LENSLAYER_PLATFORM_AUTH_MODE=oidc
-LENSLAYER_PLATFORM_OIDC_ISSUER=https://YOUR_TENANT.auth0.com/
-LENSLAYER_PLATFORM_OIDC_AUDIENCE=https://api.lenslayer.example
-LENSLAYER_PLATFORM_OIDC_JWKS_URL=https://YOUR_TENANT.auth0.com/.well-known/jwks.json
-LENSLAYER_PLATFORM_OIDC_EMAIL_CLAIM=https://lenslayer.app/email
-LENSLAYER_PLATFORM_OIDC_NAME_CLAIM=https://lenslayer.app/name
-LENSLAYER_PLATFORM_OIDC_EMAIL_VERIFIED_CLAIM=https://lenslayer.app/email_verified
-LENSLAYER_PLATFORM_OIDC_REQUIRE_VERIFIED_EMAIL=true
-LENSLAYER_PLATFORM_CORS_ORIGINS=https://app.lenslayer.example
-LENSLAYER_PLATFORM_OBJECT_STORAGE_BACKEND=s3
-LENSLAYER_PLATFORM_S3_BUCKET=lenslayer-documents
-LENSLAYER_PLATFORM_S3_ENDPOINT_URL=https://ACCOUNT_ID.r2.cloudflarestorage.com
-LENSLAYER_PLATFORM_S3_REGION=auto
-LENSLAYER_PLATFORM_S3_ACCESS_KEY_ID=replace-me
-LENSLAYER_PLATFORM_S3_SECRET_ACCESS_KEY=replace-me
-```
+## 5. Deploy the Cloudflare dashboard
 
-Point a Cloudflare proxied DNS record such as `api.lenslayer.example` at the API host.
-
-## 5. Deploy the dashboard to Cloudflare Workers
-
-From `dashboard/`, set Worker secrets:
+Set dashboard Worker secrets from `dashboard/`:
 
 ```bash
 npx wrangler secret put PLATFORM_API_URL
@@ -120,39 +84,16 @@ npx wrangler secret put AUTH_OIDC_CLIENT_ID
 npx wrangler secret put AUTH_OIDC_CLIENT_SECRET
 ```
 
-Recommended values:
+Use the Cloud Run API URL for `PLATFORM_API_URL` and the final Cloudflare domain for `NEXTAUTH_URL`. Set `NEXT_PUBLIC_LENSLAYER_PUBLIC_ACCESS=false` during the production build, then run `npm run cf:deploy`. The Auth0 callback remains `https://YOUR_DASHBOARD_DOMAIN/api/auth/callback/oidc`.
 
-```env
-PLATFORM_API_URL=https://api.lenslayer.example
-NEXTAUTH_URL=https://app.lenslayer.example
-AUTH_OIDC_ISSUER=https://YOUR_TENANT.auth0.com
-AUTH_OIDC_AUDIENCE=https://api.lenslayer.example
-```
+## 6. Release verification
 
-Disable synthetic public access in the environment that runs the dashboard build. This is a public build-time variable, not a secret:
-
-```env
-NEXT_PUBLIC_LENSLAYER_PUBLIC_ACCESS=false
-```
-
-Deploy:
+Before directing users to the deployment:
 
 ```bash
-cd dashboard
-npm run cf:deploy
+python -m unittest discover -s tests -v
+alembic -c backend/alembic.ini upgrade head
+cd dashboard && npm ci && npm run lint && npm test && npm run build
 ```
 
-Then attach the custom domain in Cloudflare Workers. The Auth0 callback URL is:
-
-```text
-https://app.lenslayer.example/api/auth/callback/oidc
-```
-
-## 6. Beta guardrails
-
-- Keep beta invite-only.
-- Use OIDC from day one; do not expose local auth.
-- Keep source document retention off by default unless users explicitly opt in.
-- Start with a 10-20 user beta and a small upload-size limit.
-- Review R2 object access and Neon usage weekly.
-- Add Sentry before increasing the tester pool.
+Then verify `/health/live`, `/health/ready`, Auth0 login, one clean upload, one EICAR rejection, review completion, R2 deletion for a non-retained document, and an invitation email. Set budget alerts in every provider console.

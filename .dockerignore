@@ -1,4 +1,8 @@
 .lenslayer/
+.env
+.env.*
+**/.env
+**/.env.*
 .git/
 .next/
 .open-next/

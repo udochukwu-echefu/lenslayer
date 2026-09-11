@@ -43,11 +43,20 @@ class Settings(BaseSettings):
     max_upload_bytes: int = 25 * 1024 * 1024
     allowed_extensions: str = ".pdf,.docx,.txt"
     malware_scan_backend: str = "signature"
-    clamd_host: str = "127.0.0.1"
-    clamd_port: int = 3310
+    cloudmersive_api_key: str = ""
+    cloudmersive_api_url: str = "https://api.cloudmersive.com"
     malware_scan_timeout_seconds: float = 10.0
+    email_backend: str = "disabled"
+    resend_api_key: str = ""
+    resend_api_url: str = "https://api.resend.com"
+    resend_from_email: str = ""
+    dashboard_url: str = "http://localhost:3000"
+    email_max_attempts: int = Field(default=5, ge=1, le=20)
+    email_lease_seconds: int = Field(default=900, ge=60, le=3600)
     intake_email_domain: str = "intake.lenslayer.local"
     worker_poll_seconds: float = Field(default=2.0, ge=0.2, le=60.0)
+    worker_max_attempts: int = Field(default=3, ge=1, le=10)
+    worker_lease_seconds: int = Field(default=2100, ge=300, le=7200)
 
     @property
     def allowed_extension_set(self) -> set[str]:
@@ -76,12 +85,26 @@ class Settings(BaseSettings):
             raise ValueError("Production requires PostgreSQL")
         if environment == "production" and storage_backend != "s3":
             raise ValueError("Production requires private S3-compatible object storage")
-        if environment == "production" and self.malware_scan_backend.lower() != "clamd":
-            raise ValueError("Production requires malware scanning through clamd")
+        malware_backend = self.malware_scan_backend.lower()
+        email_backend = self.email_backend.lower()
+        if malware_backend not in {"cloudmersive", "signature", "disabled"}:
+            raise ValueError("malware_scan_backend must be cloudmersive, signature, or disabled")
+        if email_backend not in {"resend", "disabled"}:
+            raise ValueError("email_backend must be resend or disabled")
+        if environment == "production" and malware_backend != "cloudmersive":
+            raise ValueError("Production requires malware scanning through Cloudmersive")
+        if environment == "production" and email_backend != "resend":
+            raise ValueError("Production requires transactional email through Resend")
+        if malware_backend == "cloudmersive" and not self.cloudmersive_api_key:
+            raise ValueError("Cloudmersive scanning requires an API key")
+        if email_backend == "resend" and not all((self.resend_api_key, self.resend_from_email)):
+            raise ValueError("Resend email requires an API key and verified sender")
         if auth_mode == "oidc" and not all((self.oidc_issuer, self.oidc_audience, self.oidc_jwks_url)):
             raise ValueError("OIDC mode requires issuer, audience, and JWKS URL")
         if storage_backend == "s3" and not self.s3_bucket:
             raise ValueError("S3-compatible storage requires a bucket")
+        if storage_backend == "s3" and not all((self.s3_endpoint_url, self.s3_access_key_id, self.s3_secret_access_key)):
+            raise ValueError("S3-compatible storage requires an endpoint and credentials")
         return self
 
 

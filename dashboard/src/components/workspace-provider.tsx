@@ -23,13 +23,19 @@ type WorkspaceValue = {
 const WorkspaceContext = createContext<WorkspaceValue | null>(null);
 const storageKey = "lenslayer.activeOrganization";
 
+export function resolveWorkspaceAccess(publicAccess: boolean, sessionStatus: "authenticated" | "loading" | "unauthenticated") {
+  return {
+    useDemoWorkspace: publicAccess,
+    canLoadWorkspace: sessionStatus !== "loading" && (publicAccess || sessionStatus === "authenticated"),
+  };
+}
+
 export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const { status: sessionStatus } = useSession();
   const [activeId, setActiveId] = useState<string | null>(() => typeof window === "undefined" ? null : window.localStorage.getItem(storageKey));
   const publicAccess = isPublicAccessEnabled();
-  const useDemoWorkspace = publicAccess && sessionStatus !== "authenticated";
+  const { useDemoWorkspace, canLoadWorkspace } = resolveWorkspaceAccess(publicAccess, sessionStatus);
   const workspaceMode = useDemoWorkspace ? "demo" : "private";
-  const canLoadWorkspace = sessionStatus !== "loading" && (publicAccess || sessionStatus === "authenticated");
   const organizationsQuery = useQuery({ queryKey: ["organizations", workspaceMode], queryFn: () => api.organizations(useDemoWorkspace), enabled: canLoadWorkspace });
   const userQuery = useQuery({ queryKey: ["me", workspaceMode], queryFn: () => api.me(useDemoWorkspace), enabled: canLoadWorkspace });
 

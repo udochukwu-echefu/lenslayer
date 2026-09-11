@@ -5,7 +5,7 @@ from .base import (
     InvitationResponse, Membership, MembershipResponse, Organization, OrganizationInvitation,
     OrganizationSettings, OrganizationSettingsResponse, Principal, User, VALID_ROLES,
     email_hint, func, hashlib, invitation_status, normalized_email, normalized_role,
-    secrets, select, timedelta, utcnow,
+    queue_email, secrets, select, timedelta, utcnow,
 )
 
 
@@ -236,6 +236,16 @@ class WorkspaceServiceMixin:
             user.id,
             "invitation.created",
             detail={"invitation_id": invitation.id, "email": invite_email, "role": role},
+        )
+        queue_email(
+            self.session,
+            self.settings,
+            organization_id=organization_id,
+            recipient=invite_email,
+            kind="invitation_created",
+            subject="You have been invited to LensLayer",
+            message=f"You have been invited to join a LensLayer workspace as {role}.",
+            action_url=f"/invite/{token}",
         )
         self.session.commit()
         self.session.refresh(invitation)

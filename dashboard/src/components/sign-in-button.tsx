@@ -13,6 +13,7 @@ function GoogleMark() {
 
 export function SignInButton({ callbackUrl, configured, mode = "signin", method = "auth0" }: { callbackUrl: string; configured: boolean; mode?: "signin" | "signup"; method?: SignInMethod }) {
   const [pending, setPending] = useState(false);
+  const [signInError, setSignInError] = useState("");
   if (!configured && isPublicAccessEnabled()) return <a className="button secondary" href={callbackUrl}>Open the demo workspace<ArrowRight size={16} /></a>;
   if (!configured) return <div className="auth-config-error" role="alert"><strong>Authentication is unavailable</strong><span>This deployment is missing its Auth0 configuration. Contact the workspace administrator.</span></div>;
   const isGoogle = method === "google";
@@ -20,5 +21,18 @@ export function SignInButton({ callbackUrl, configured, mode = "signin", method 
   const label = isGoogle ? "Continue with Google" : isEmail ? (mode === "signup" ? "Sign up with email" : "Continue with email") : (mode === "signup" ? "Create account with Auth0" : "Continue with Auth0");
   const pendingLabel = isGoogle ? "Opening Google..." : "Opening secure sign-in...";
   const authorizationParams = { ...(mode === "signup" ? { screen_hint: "signup" } : {}), ...(isGoogle ? { connection: "google-oauth2" } : {}) };
-  return <button className={`button signin-button${isGoogle ? " auth-google-button" : isEmail ? " auth-email-button" : ""}`} type="button" disabled={pending} onClick={() => { setPending(true); void signIn("oidc", { callbackUrl }, Object.keys(authorizationParams).length ? authorizationParams : undefined); }}>{isGoogle ? <GoogleMark /> : isEmail ? <Mail size={17} /> : <KeyRound size={16} />}{pending ? pendingLabel : label}{!isGoogle && <ArrowRight size={16} />}</button>;
+  async function startSignIn() {
+    setPending(true);
+    setSignInError("");
+    try {
+      const result = await signIn("oidc", { callbackUrl }, Object.keys(authorizationParams).length ? authorizationParams : undefined);
+      if (result?.error) setSignInError("Secure sign-in could not be opened. Please try again.");
+    } catch {
+      setSignInError("Secure sign-in could not be opened. Please try again.");
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return <div className="auth-signin-action"><button className={`button signin-button${isGoogle ? " auth-google-button" : isEmail ? " auth-email-button" : ""}`} type="button" disabled={pending} onClick={() => void startSignIn()}>{isGoogle ? <GoogleMark /> : isEmail ? <Mail size={17} /> : <KeyRound size={16} />}{pending ? pendingLabel : label}{!isGoogle && <ArrowRight size={16} />}</button>{signInError && <p className="auth-signin-error" role="alert">{signInError}</p>}</div>;
 }
