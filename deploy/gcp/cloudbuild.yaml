@@ -5,13 +5,13 @@ substitutions:
   _WORKER_JOB: lenslayer-review-worker
   _MIGRATION_JOB: lenslayer-migrate
   _RUNTIME_SERVICE_ACCOUNT: lenslayer-runtime
-  _DASHBOARD_URL: https://app.lenslayer.example
-  _OIDC_ISSUER: https://YOUR_TENANT.auth0.com/
-  _OIDC_AUDIENCE: https://api.lenslayer.example
-  _OIDC_JWKS_URL: https://YOUR_TENANT.auth0.com/.well-known/jwks.json
+  _DASHBOARD_URL: https://lenslayer-dashboard.udboy361.workers.dev
+  _OIDC_ISSUER: https://deveze.uk.auth0.com/
+  _OIDC_AUDIENCE: https://api.lenslayer.local
+  _OIDC_JWKS_URL: https://deveze.uk.auth0.com/.well-known/jwks.json
   _R2_BUCKET: lenslayer-documents
-  _R2_ENDPOINT: https://ACCOUNT_ID.r2.cloudflarestorage.com
-  _RESEND_FROM_EMAIL: LensLayer <notifications@lenslayer.example>
+  _R2_ENDPOINT: https://9d03f4c51b061a0160b4e10c9765527b.r2.cloudflarestorage.com
+  _RESEND_FROM_EMAIL: LensLayer <onboarding@resend.dev>
 
 options:
   logging: CLOUD_LOGGING_ONLY
@@ -81,7 +81,7 @@ steps:
       - --concurrency=20
       - --timeout=300
       - --set-env-vars=LENSLAYER_PLATFORM_ENVIRONMENT=production,LENSLAYER_PLATFORM_AUTO_CREATE_SCHEMA=false,LENSLAYER_PLATFORM_AUTH_MODE=oidc,LENSLAYER_PLATFORM_OIDC_ISSUER=${_OIDC_ISSUER},LENSLAYER_PLATFORM_OIDC_AUDIENCE=${_OIDC_AUDIENCE},LENSLAYER_PLATFORM_OIDC_JWKS_URL=${_OIDC_JWKS_URL},LENSLAYER_PLATFORM_OIDC_EMAIL_CLAIM=https://lenslayer.app/email,LENSLAYER_PLATFORM_OIDC_NAME_CLAIM=https://lenslayer.app/name,LENSLAYER_PLATFORM_OIDC_EMAIL_VERIFIED_CLAIM=https://lenslayer.app/email_verified,LENSLAYER_PLATFORM_OIDC_REQUIRE_VERIFIED_EMAIL=true,LENSLAYER_PLATFORM_CORS_ORIGINS=${_DASHBOARD_URL},LENSLAYER_PLATFORM_DASHBOARD_URL=${_DASHBOARD_URL},LENSLAYER_PLATFORM_OBJECT_STORAGE_BACKEND=s3,LENSLAYER_PLATFORM_S3_BUCKET=${_R2_BUCKET},LENSLAYER_PLATFORM_S3_ENDPOINT_URL=${_R2_ENDPOINT},LENSLAYER_PLATFORM_S3_REGION=auto,LENSLAYER_PLATFORM_MALWARE_SCAN_BACKEND=cloudmersive,LENSLAYER_PLATFORM_EMAIL_BACKEND=resend,LENSLAYER_PLATFORM_RESEND_FROM_EMAIL=${_RESEND_FROM_EMAIL}
-      - --set-secrets=LENSLAYER_PLATFORM_DATABASE_URL=lenslayer-neon-pooled-url:latest,LENSLAYER_PLATFORM_S3_ACCESS_KEY_ID=lenslayer-r2-access-key-id:latest,LENSLAYER_PLATFORM_S3_SECRET_ACCESS_KEY=lenslayer-r2-secret-access-key:latest,LENSLAYER_PLATFORM_CLOUDMERSIVE_API_KEY=lenslayer-cloudmersive-api-key:latest,LENSLAYER_PLATFORM_RESEND_API_KEY=lenslayer-resend-api-key:latest,GROQ_API_KEY=lenslayer-groq-api-key:latest
+      - --set-secrets=LENSLAYER_PLATFORM_DATABASE_URL=lenslayer-neon-pooled-url:latest,LENSLAYER_PLATFORM_S3_ACCESS_KEY_ID=lenslayer-r2-access-key-id:latest,LENSLAYER_PLATFORM_S3_SECRET_ACCESS_KEY=lenslayer-r2-secret-access-key:latest,LENSLAYER_PLATFORM_CLOUDMERSIVE_API_KEY=lenslayer-cloudmersive-api-key:latest,LENSLAYER_PLATFORM_RESEND_API_KEY=lenslayer-resend-api-key:latest
 
   - id: deploy-review-job
     name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
@@ -103,7 +103,7 @@ steps:
       - --cpu=1
       - --memory=2Gi
       - --set-env-vars=LENSLAYER_PLATFORM_ENVIRONMENT=production,LENSLAYER_PLATFORM_AUTO_CREATE_SCHEMA=false,LENSLAYER_PLATFORM_AUTH_MODE=oidc,LENSLAYER_PLATFORM_OIDC_ISSUER=${_OIDC_ISSUER},LENSLAYER_PLATFORM_OIDC_AUDIENCE=${_OIDC_AUDIENCE},LENSLAYER_PLATFORM_OIDC_JWKS_URL=${_OIDC_JWKS_URL},LENSLAYER_PLATFORM_OIDC_EMAIL_CLAIM=https://lenslayer.app/email,LENSLAYER_PLATFORM_OIDC_NAME_CLAIM=https://lenslayer.app/name,LENSLAYER_PLATFORM_OIDC_EMAIL_VERIFIED_CLAIM=https://lenslayer.app/email_verified,LENSLAYER_PLATFORM_OIDC_REQUIRE_VERIFIED_EMAIL=true,LENSLAYER_PLATFORM_CORS_ORIGINS=${_DASHBOARD_URL},LENSLAYER_PLATFORM_DASHBOARD_URL=${_DASHBOARD_URL},LENSLAYER_PLATFORM_OBJECT_STORAGE_BACKEND=s3,LENSLAYER_PLATFORM_S3_BUCKET=${_R2_BUCKET},LENSLAYER_PLATFORM_S3_ENDPOINT_URL=${_R2_ENDPOINT},LENSLAYER_PLATFORM_S3_REGION=auto,LENSLAYER_PLATFORM_MALWARE_SCAN_BACKEND=cloudmersive,LENSLAYER_PLATFORM_EMAIL_BACKEND=resend,LENSLAYER_PLATFORM_RESEND_FROM_EMAIL=${_RESEND_FROM_EMAIL}
-      - --set-secrets=LENSLAYER_PLATFORM_DATABASE_URL=lenslayer-neon-pooled-url:latest,LENSLAYER_PLATFORM_S3_ACCESS_KEY_ID=lenslayer-r2-access-key-id:latest,LENSLAYER_PLATFORM_S3_SECRET_ACCESS_KEY=lenslayer-r2-secret-access-key:latest,LENSLAYER_PLATFORM_CLOUDMERSIVE_API_KEY=lenslayer-cloudmersive-api-key:latest,LENSLAYER_PLATFORM_RESEND_API_KEY=lenslayer-resend-api-key:latest,GROQ_API_KEY=lenslayer-groq-api-key:latest
+      - --set-secrets=LENSLAYER_PLATFORM_DATABASE_URL=lenslayer-neon-pooled-url:latest,LENSLAYER_PLATFORM_S3_ACCESS_KEY_ID=lenslayer-r2-access-key-id:latest,LENSLAYER_PLATFORM_S3_SECRET_ACCESS_KEY=lenslayer-r2-secret-access-key:latest,LENSLAYER_PLATFORM_CLOUDMERSIVE_API_KEY=lenslayer-cloudmersive-api-key:latest,LENSLAYER_PLATFORM_RESEND_API_KEY=lenslayer-resend-api-key:latest
 
 images:
   - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/platform:$BUILD_ID
