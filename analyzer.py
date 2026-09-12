@@ -75,10 +75,11 @@ def get_llm():
     if not api_key:
         raise ValueError("GROQ_API_KEY is missing. Add it to the server environment or local .env file.")
     return ChatOpenAI(
-        model="llama-3.3-70b-versatile",
+        model=os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b"),
         api_key=api_key,
         base_url="https://api.groq.com/openai/v1",
         temperature=0.1,
+        max_tokens=int(os.environ.get("GROQ_MAX_TOKENS", "8192")),
         timeout=90,
         max_retries=2,
     )

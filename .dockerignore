@@ -15,3 +15,4 @@ dashboard/.open-next/
 dashboard/.wrangler/
 landing/node_modules/
 landing/dist/
+output/

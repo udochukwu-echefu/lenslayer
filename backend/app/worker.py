@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import os
 import tempfile
 import time
@@ -35,6 +36,21 @@ from .models import (
 )
 from .object_storage import ObjectStore, build_object_store
 from .services import json_dump, json_load
+
+
+logger = logging.getLogger(__name__)
+
+
+def public_review_error(exc: Exception) -> str:
+    """Return a stable user-facing message without leaking provider internals."""
+    message = str(exc).lower()
+    if "model_not_found" in message or ("model" in message and "does not exist" in message):
+        return "The document analysis service is temporarily unavailable. Please retry shortly."
+    if "rate_limit" in message or "rate limit" in message or "429" in message:
+        return "The document analysis service is busy. Please retry shortly."
+    if "timeout" in message or "timed out" in message:
+        return "The review timed out while analysing the document. Please retry."
+    return "The review could not be completed. Please retry or contact support."
 
 
 def enqueue_notification(
@@ -418,6 +434,8 @@ def process_job(
             session.commit()
 
     except Exception as exc:
+        logger.exception("Review job %s failed", job_id)
+        public_error = public_review_error(exc)
         with database.session_factory() as session:
             job = session.get(ProcessingJob, job_id)
             contract = session.get(Contract, job.contract_id) if job else None
@@ -425,7 +443,7 @@ def process_job(
                 job.status = "failed"
                 job.progress_step = "Review failed"
                 job.error_code = exc.__class__.__name__
-                job.error_message = str(exc)[:2000]
+                job.error_message = public_error
                 job.completed_at = utcnow()
             if contract:
                 contract.status = "failed"
@@ -433,7 +451,7 @@ def process_job(
                 import_record = session.scalar(select(IntegrationImport).where(IntegrationImport.contract_id == contract.id))
                 if import_record is not None:
                     import_record.status = "failed"
-                    import_record.error_message = str(exc)[:2000]
+                    import_record.error_message = public_error
                     import_record.updated_at = utcnow()
                 session.add(
                     PlatformAuditEvent(

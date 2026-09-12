@@ -30,6 +30,8 @@ All backend variables use the `LENSLAYER_PLATFORM_` prefix. Values marked **secr
 | `WORKER_MAX_ATTEMPTS` | No | Caps review attempts at three. |
 | `WORKER_LEASE_SECONDS` | No | Reclaims review work interrupted for 35 minutes. |
 | `GROQ_API_KEY` | **Yes** | Existing document-analysis credential; it has no platform prefix. |
+| `GROQ_MODEL` | No | Groq model ID; defaults to `openai/gpt-oss-120b`. It has no platform prefix. |
+| `GROQ_MAX_TOKENS` | No | Structured-report completion budget; defaults to `8192`. It has no platform prefix. |
 
 Production startup fails closed if PostgreSQL, private S3-compatible storage, Cloudmersive, Resend, or OIDC is missing. Never expose any secret as a `NEXT_PUBLIC_` variable.
 

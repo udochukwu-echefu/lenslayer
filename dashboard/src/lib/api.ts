@@ -11,6 +11,21 @@ function authenticatedSession() {
   return sessionRequest;
 }
 
+const waitForSessionHydration = () => new Promise<void>((resolve) => setTimeout(resolve, 250));
+
+export async function resolveAuthenticatedSession(
+  getCurrentSession = authenticatedSession,
+  pause = waitForSessionHydration,
+) {
+  const session = await getCurrentSession();
+  if (session?.accessToken) return session;
+
+  // NextAuth can report an authenticated UI one tick before the access token is
+  // readable through getSession(). Give mutating requests one short grace retry.
+  await pause();
+  return getCurrentSession();
+}
+
 export function isPublicAccessEnabled() {
   return PUBLIC_ACCESS_ENABLED;
 }
@@ -30,7 +45,10 @@ async function request<T>(path: string, init?: RequestInit, usePublicAccess = PU
     if (preview.handled) return preview.value as T;
   }
   const headers = new Headers(init?.headers);
-  const session = await authenticatedSession();
+  const method = init?.method?.toUpperCase() ?? "GET";
+  const session = method === "GET"
+    ? await authenticatedSession()
+    : await resolveAuthenticatedSession();
   if (session?.accessToken) headers.set("Authorization", `Bearer ${session.accessToken}`);
   const response = await fetch(`${API_PREFIX}${path}`, { ...init, headers, cache: "no-store" });
   if (!response.ok) {
@@ -44,7 +62,7 @@ async function request<T>(path: string, init?: RequestInit, usePublicAccess = PU
 }
 
 async function download(path: string, filename: string) {
-  const session = await authenticatedSession();
+  const session = await resolveAuthenticatedSession();
   if (!session?.accessToken) throw new ApiError("Sign in to download this file.", 401);
   const response = await fetch(path, { headers: { Authorization: `Bearer ${session.accessToken}` }, cache: "no-store" });
   if (!response.ok) throw new ApiError(`Download failed (${response.status})`, response.status);
