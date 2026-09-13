@@ -2,12 +2,33 @@ import type { ApiKey, ApiKeyCreated, ApprovalRequest, ApprovalStatus, AuditEvent
 import { DEMO_WORKSPACE_ID, getDemoResponse } from "./demo-data";
 import { getSession } from "next-auth/react";
 
-const API_PREFIX = "/api/platform/api/v1";
+export function resolvePlatformApiPrefix(platformApiUrl?: string) {
+  const origin = platformApiUrl?.replace(/\/$/, "");
+  return origin ? `${origin}/api/v1` : "/api/platform/api/v1";
+}
+
+const API_PREFIX = resolvePlatformApiPrefix(process.env.NEXT_PUBLIC_PLATFORM_API_URL);
 const PUBLIC_ACCESS_ENABLED = process.env.NEXT_PUBLIC_LENSLAYER_PUBLIC_ACCESS === "true";
 let sessionRequest: ReturnType<typeof getSession> | null = null;
+let cachedSession: Awaited<ReturnType<typeof getSession>> = null;
+let sessionCachedAt = 0;
+const SESSION_CACHE_MS = 30_000;
 
 function authenticatedSession() {
-  if (!sessionRequest) sessionRequest = getSession().finally(() => { sessionRequest = null; });
+  if (cachedSession?.accessToken && Date.now() - sessionCachedAt < SESSION_CACHE_MS) {
+    return Promise.resolve(cachedSession);
+  }
+  if (!sessionRequest) {
+    sessionRequest = getSession()
+      .then((session) => {
+        if (session?.accessToken) {
+          cachedSession = session;
+          sessionCachedAt = Date.now();
+        }
+        return session;
+      })
+      .finally(() => { sessionRequest = null; });
+  }
   return sessionRequest;
 }
 

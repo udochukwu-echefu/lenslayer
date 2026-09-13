@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { ContractDetail } from "@/components/contract-detail";
+import { ContractDetailLoader } from "@/components/contract-detail-loader";
 
 export const metadata: Metadata = { title: "Contract review" };
 
 export default async function ContractPage({ params }: { params: Promise<{ contractId: string }> }) {
   const { contractId } = await params;
-  return <ContractDetail contractId={contractId} />;
+  return <ContractDetailLoader contractId={contractId} />;
 }

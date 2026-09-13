@@ -1,6 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { resolveAuthenticatedSession } from "./api";
+import { resolveAuthenticatedSession, resolvePlatformApiPrefix } from "./api";
+
+describe("resolvePlatformApiPrefix", () => {
+  it("uses the Cloud Run origin without leaving a double slash", () => {
+    expect(resolvePlatformApiPrefix("https://lenslayer-api.example.run.app/"))
+      .toBe("https://lenslayer-api.example.run.app/api/v1");
+  });
+
+  it("keeps the server proxy fallback for local development", () => {
+    expect(resolvePlatformApiPrefix()).toBe("/api/platform/api/v1");
+  });
+});
 
 describe("resolveAuthenticatedSession", () => {
   it("retries once when the access token is still hydrating", async () => {

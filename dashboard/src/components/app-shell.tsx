@@ -6,6 +6,7 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BarChart3, Bell, CalendarDays, CheckSquare2, ChevronDown, FileOutput, Files, Inbox, LayoutDashboard, LogIn, Menu, Plus, Search, Settings, UsersRound, X } from "lucide-react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 import { api } from "@/lib/api";
@@ -14,8 +15,9 @@ import { BrandMark } from "./brand-mark";
 import { WorkspaceGate } from "./workspace-gate";
 import { useWorkspace } from "./workspace-provider";
 import { NotificationRow } from "./notification-row";
-import { AiAssistant } from "./ai-assistant";
 import { ThemeToggle } from "./theme-toggle";
+
+const AiAssistant = dynamic(() => import("./ai-assistant").then((module) => module.AiAssistant), { ssr: false });
 
 const navigationGroups = [
   { label: "Work", items: [
@@ -44,7 +46,7 @@ function Navigation({ close }: { close?: () => void }) {
     <nav className="side-nav" aria-label="Workspace navigation">
       {navigationGroups.map((group) => <div className="nav-group" key={group.label}><p>{group.label}</p>{group.items.map(({ href, label, icon: Icon }) => {
         const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
-        return <Link key={href} href={href} className={`nav-link ${active ? "active" : ""}`} aria-current={active ? "page" : undefined} onNavigate={close}><Icon size={17} />{label}</Link>;
+        return <Link key={href} href={href} prefetch={false} className={`nav-link ${active ? "active" : ""}`} aria-current={active ? "page" : undefined} onNavigate={close}><Icon size={17} />{label}</Link>;
       })}</div>)}
     </nav>
   );
@@ -108,7 +110,7 @@ function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
             {hasSearchableRecords && <div className={`global-search ${mobileSearchOpen ? "mobile-search-open" : ""}`}><label><Search size={16} /><span className="sr-only">Global search</span><input autoFocus={mobileSearchOpen} value={globalSearch} onChange={(event) => setGlobalSearch(event.target.value)} placeholder="Search contracts, tasks, parties, or dates" /></label>{mobileSearchOpen && <button className="icon-button mobile-search-close" type="button" aria-label="Close global search" onClick={() => { setMobileSearchOpen(false); setGlobalSearch(""); }}><X size={18} /></button>}{globalSearch.trim().length >= 2 && <div className="global-results">{searchResults.length ? searchResults.map((result) => <Link href={result.href} key={`${result.href}-${result.id}`} onClick={() => { setGlobalSearch(""); setMobileSearchOpen(false); }}><strong>{result.title}</strong><span>{result.meta}</span></Link>) : <p>No workspace records match this search.</p>}</div>}</div>}
             <div className="top-actions">
               {hasSearchableRecords && <button className="icon-button mobile-search-trigger" type="button" aria-label="Search workspace" onClick={() => setMobileSearchOpen(true)}><Search size={18} /></button>}
-              {canUpload && <Link href="/contracts/new" className="button top-new"><Plus size={16} />New contract</Link>}
+              {canUpload && <Link href="/contracts/new" prefetch={false} className="button top-new"><Plus size={16} />New contract</Link>}
               <ThemeToggle />
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger asChild>
