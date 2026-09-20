@@ -1,0 +1,22 @@
+{
+  "DESIGN.md": {
+    "backup": "DESIGN.md",
+    "applied_sha256": "3020e164088aea824ad3f1ba8afce8aaf0499c79e8dc7aa469f3a25ad07398af"
+  },
+  "landing/public/lenslayer-dashboard.png": {
+    "backup": "lenslayer-dashboard.png",
+    "applied_sha256": "e4712afd6db9e8c8f935b07c8fc0c4815e426031c82dede3becee216241b96ca"
+  },
+  "landing/public/lenslayer-mark.svg": {
+    "backup": "lenslayer-mark.svg",
+    "applied_sha256": "e28bf62cbb629e1ef70ba3af6f92a115cd2d698a90a5657d889c7360c9a2a30c"
+  },
+  "landing/public/lenslayer-lockup.svg": {
+    "backup": "lenslayer-lockup.svg",
+    "applied_sha256": "570c385f24a916d56ad98451950fb78a14adc3f26f731efae5dd0bdc3b4324a9"
+  },
+  "css": {
+    "dashboard/src/app/globals.css": "dashboard-applied-theme.css",
+    "landing/src/index.css": "landing-applied-theme.css"
+  }
+}

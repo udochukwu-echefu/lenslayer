@@ -1,0 +1,83 @@
+{
+  "name": "Reference pastels",
+  "source": "/Users/udo/Desktop/refernce color .jpg",
+  "method": "Median RGB from flat image regions; charcoal tinted slightly for UI use.",
+  "colors": {
+    "cream": {
+      "hex": "#FAF4E6",
+      "oklch": "oklch(96.803% 0.01957 87.51)"
+    },
+    "paper": {
+      "hex": "#FDF9F0",
+      "oklch": "oklch(98.274% 0.01262 86.83)"
+    },
+    "charcoal": {
+      "hex": "#191A17",
+      "oklch": "oklch(21.552% 0.00595 121.94)"
+    },
+    "pink": {
+      "hex": "#F5B8DA",
+      "oklch": "oklch(84.809% 0.08250 344.48)"
+    },
+    "yellow": {
+      "hex": "#F6D868",
+      "oklch": "oklch(88.581% 0.13517 94.49)"
+    },
+    "olive": {
+      "hex": "#9AA963",
+      "oklch": "oklch(70.652% 0.09538 118.80)"
+    },
+    "blue": {
+      "hex": "#B5C9E8",
+      "oklch": "oklch(83.096% 0.04880 259.10)"
+    },
+    "muted": {
+      "hex": "#625F54",
+      "oklch": "oklch(48.486% 0.01753 94.39)"
+    },
+    "faint": {
+      "hex": "#706B5F",
+      "oklch": "oklch(52.871% 0.01931 88.06)"
+    },
+    "line": {
+      "hex": "#DFD8C8",
+      "oklch": "oklch(88.345% 0.02288 87.16)"
+    },
+    "strong": {
+      "hex": "#B8AE98",
+      "oklch": "oklch(75.320% 0.03262 86.47)"
+    },
+    "rose": {
+      "hex": "#834965",
+      "oklch": "oklch(48.347% 0.08662 350.48)"
+    },
+    "pinkSoft": {
+      "hex": "#F8E5EC",
+      "oklch": "oklch(93.908% 0.02260 353.15)"
+    },
+    "blueSoft": {
+      "hex": "#E6EDF5",
+      "oklch": "oklch(94.313% 0.01316 251.56)"
+    },
+    "oliveSoft": {
+      "hex": "#E9ECD9",
+      "oklch": "oklch(93.567% 0.02538 114.17)"
+    },
+    "yellowSoft": {
+      "hex": "#FAF0C5",
+      "oklch": "oklch(95.230% 0.05672 96.42)"
+    },
+    "danger": {
+      "hex": "#A13C36",
+      "oklch": "oklch(49.615% 0.13548 26.57)"
+    },
+    "good": {
+      "hex": "#48602F",
+      "oklch": "oklch(45.697% 0.07896 130.42)"
+    },
+    "warning": {
+      "hex": "#805C15",
+      "oklch": "oklch(50.026% 0.09524 79.27)"
+    }
+  }
+}

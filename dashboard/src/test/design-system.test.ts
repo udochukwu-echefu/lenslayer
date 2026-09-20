@@ -34,6 +34,6 @@ describe("LensLayer design-system policies", () => {
 
   it("bounds long notification feeds with internal scrolling", () => {
     const css = fs.readFileSync(path.resolve(process.cwd(), "src/app/globals.css"), "utf8");
-    expect(css).toMatch(/\.notification-scroll\s*\{[^}]*max-height:[^}]*overflow-y:\s*auto/s);
+    expect(css).toMatch(/\.notification-scroll\s*\{[^}]*max-height:[^}]*overflow-y:\s*auto/);
   });
 });

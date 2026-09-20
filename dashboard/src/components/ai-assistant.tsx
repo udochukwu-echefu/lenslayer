@@ -1,12 +1,13 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { ArrowUpRight, BookOpen, ChevronDown, MessageCircle, Send, X } from "lucide-react";
-import Link from "next/link";
+import { BookOpen, ChevronDown, Layers3, MessageCircle, Send, X } from "lucide-react";
 import { FormEvent, type PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import type { PortfolioAnswer } from "@/lib/types";
 import { useWorkspace } from "./workspace-provider";
+import { StructuredAnswer } from "./structured-answer";
+import { EvidenceContextCard } from "./evidence-context-card";
 
 type ChatMessage = { id: string; role: "viewer" | "assistant"; text: string; answer?: PortfolioAnswer };
 type AssistantPhase = "idle" | "loading" | "thinking" | "streaming";
@@ -18,6 +19,13 @@ const suggestions = [
 ];
 
 export function AiAssistant() {
+  const { activeOrganization } = useWorkspace();
+  // Remount all conversation state so previous answers and in-flight requests
+  // cannot appear under a different workspace.
+  return <WorkspaceAssistant key={activeOrganization?.id ?? ""} />;
+}
+
+function WorkspaceAssistant() {
   const { activeOrganization } = useWorkspace();
   const [open, setOpen] = useState(false);
   const [question, setQuestion] = useState("");
@@ -272,7 +280,7 @@ export function AiAssistant() {
             if (message.role === "viewer") return <div className="chat-message viewer" key={message.id}><span>You</span><p>{message.text}</p></div>;
             const streaming = message.id === streamingId;
             const visibleText = streaming ? message.text.slice(0, streamedLength) : message.text;
-            return <article className={`chat-message assistant${streaming ? " streaming" : ""}`} key={message.id}><div className="chat-answer-label"><MessageCircle size={14} /><span>{streaming ? "Streaming evidence-backed answer" : message.answer?.generated_by === "model" ? "AI recommendation" : "Evidence retrieval"}</span></div><p>{visibleText}{streaming && <span className="streaming-cursor" aria-hidden="true" />}</p>{!streaming && message.answer && (message.answer.sources.length ? <div className="chat-sources"><strong>{message.answer.sources.length} cited source{message.answer.sources.length === 1 ? "" : "s"}</strong>{message.answer.sources.map((source, index) => <Link key={`${source.contract_id}-${index}`} href={`/contracts/${source.contract_id}?tab=ask`} prefetch={false} onClick={() => setOpen(false)}><span>{source.contract_title}<ArrowUpRight size={13} /></span><small>{source.location}</small><blockquote>{source.excerpt}</blockquote></Link>)}</div> : <div className="unsupported-answer"><BookOpen size={15} />No retained excerpt supports a more specific answer.</div>)}</article>;
+            return <article className={`chat-message assistant${streaming ? " streaming" : ""}`} key={message.id}><div className="chat-answer-label"><MessageCircle size={14} /><span>{streaming ? "Writing supported answer" : message.answer?.generated_by === "model" ? "LensLayer answer" : "Evidence retrieval"}</span></div><StructuredAnswer text={visibleText} cursor={streaming} />{!streaming && message.answer && (message.answer.sources.length ? <details className="ai-context"><summary><Layers3 size={15} /><div><strong>Context used</strong><span>{message.answer.sources.length} retained excerpt{message.answer.sources.length === 1 ? "" : "s"}</span></div><ChevronDown size={15} /></summary><div className="context-card-grid">{message.answer.sources.map((source, index) => <EvidenceContextCard key={`${source.contract_id}-${index}`} title={source.contract_title} location={source.location} excerpt={source.excerpt} href={`/contracts/${source.contract_id}?tab=ask`} onOpen={() => setOpen(false)} />)}</div></details> : <div className="unsupported-answer"><BookOpen size={15} />No retained excerpt supports a more specific answer.</div>)}</article>;
           })}
           {phase === "loading" && <div className="chat-progress loading" role="status" aria-live="polite"><span className="progress-grid" aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <i key={index} />)}</span><div><strong>Opening evidence index</strong><span>Connecting to retained workspace records · {elapsed.toFixed(1)}s</span></div></div>}
           {phase === "thinking" && <details className="chat-progress thinking" open><summary><span className="thinking-pulse" aria-hidden="true"><i /><i /><i /></span><div><strong>Reviewing retained evidence</strong><span>Searching contracts and citations · {elapsed.toFixed(1)}s</span></div><ChevronDown size={15} /></summary><div className="thinking-steps" aria-live="polite"><span><i />Locate relevant agreements</span><span><i />Check source excerpts and dates</span><span><i />Compose a supported response</span></div></details>}

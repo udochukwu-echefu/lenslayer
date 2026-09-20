@@ -59,6 +59,22 @@ export class ApiError extends Error {
   constructor(message: string, public status: number, public detail?: unknown) { super(message); }
 }
 
+function errorMessage(detail: unknown, status: number): string {
+  const value = typeof detail === "object" && detail && "detail" in detail ? detail.detail : detail;
+  if (typeof value === "string" && value.trim() && !value.trim().startsWith("<")) return value;
+  if (Array.isArray(value)) {
+    const messages = value.flatMap((issue: unknown) => {
+      if (!issue || typeof issue !== "object" || !("msg" in issue) || typeof issue.msg !== "string") return [];
+      const location = "loc" in issue && Array.isArray(issue.loc)
+        ? issue.loc.filter((part) => !["body", "query", "path"].includes(String(part))).join(".")
+        : "";
+      return [location ? `${location}: ${issue.msg}` : issue.msg];
+    });
+    if (messages.length) return messages.join("; ");
+  }
+  return `Request failed (${status})`;
+}
+
 async function request<T>(path: string, init?: RequestInit, usePublicAccess = PUBLIC_ACCESS_ENABLED): Promise<T> {
   if (usePublicAccess) {
     const preview = getDemoResponse(path, init);
@@ -73,10 +89,11 @@ async function request<T>(path: string, init?: RequestInit, usePublicAccess = PU
   if (session?.accessToken) headers.set("Authorization", `Bearer ${session.accessToken}`);
   const response = await fetch(`${API_PREFIX}${path}`, { ...init, headers, cache: "no-store" });
   if (!response.ok) {
-    let detail: unknown;
-    try { detail = await response.json(); } catch { detail = await response.text(); }
-    const message = typeof detail === "object" && detail && "detail" in detail ? String((detail as { detail: unknown }).detail) : `Request failed (${response.status})`;
-    throw new ApiError(message, response.status, detail);
+    // Read once: a failed json() call already consumes the response body.
+    const body = await response.text();
+    let detail: unknown = body;
+    try { detail = JSON.parse(body); } catch { /* Keep plain-text upstream errors. */ }
+    throw new ApiError(errorMessage(detail, response.status), response.status, detail);
   }
   if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;

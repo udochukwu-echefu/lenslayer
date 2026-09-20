@@ -24,9 +24,10 @@ const WorkspaceContext = createContext<WorkspaceValue | null>(null);
 const storageKey = "lenslayer.activeOrganization";
 
 export function resolveWorkspaceAccess(publicAccess: boolean, sessionStatus: "authenticated" | "loading" | "unauthenticated") {
+  const useDemoWorkspace = publicAccess && sessionStatus === "unauthenticated";
   return {
-    useDemoWorkspace: publicAccess,
-    canLoadWorkspace: sessionStatus !== "loading" && (publicAccess || sessionStatus === "authenticated"),
+    useDemoWorkspace,
+    canLoadWorkspace: sessionStatus !== "loading" && (useDemoWorkspace || sessionStatus === "authenticated"),
   };
 }
 

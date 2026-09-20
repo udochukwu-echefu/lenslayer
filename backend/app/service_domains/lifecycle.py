@@ -80,10 +80,14 @@ class LifecycleServiceMixin:
             select(LifecycleItem).where(
                 LifecycleItem.id == item_id,
                 LifecycleItem.organization_id == organization_id,
-            )
+            ).with_for_update()
         )
         if item is None:
             raise HTTPException(status_code=404, detail="Lifecycle item not found.")
+        if changes.get("due_at") is not None and aware(changes["due_at"]) != aware(item.due_at):
+            # A rescheduled deadline needs its own reminders and escalation.
+            item.last_notified_at = None
+            item.escalated_at = None
         if "owner_user_id" in changes:
             owner = self.tasks._task_assignee(organization_id, changes["owner_user_id"])
             item.owner_user_id = owner.id if owner else None
@@ -93,7 +97,7 @@ class LifecycleServiceMixin:
                 if isinstance(value, str) and field in {"title", "description", "amount"}:
                     value = value.strip()
                 setattr(item, field, value)
-        if changes.get("status"):
+        if changes.get("status") and changes["status"] != item.status:
             item.status = changes["status"]
             item.completed_at = utcnow() if item.status == "completed" else None
             if item.status == "completed" and item.recurrence != "none":

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, ArrowLeft, CheckCircle2, ChevronRight, ClipboardPlus, Clock3, Download, FileText, MessageSquareText, Quote, Send, ShieldAlert, Trash2 } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Banknote, CheckCircle2, ChevronRight, ClipboardPlus, Clock3, Download, FileText, Layers3, ListChecks, MessageSquareText, Quote, Send, ShieldAlert, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -18,6 +18,8 @@ import { ContractNegotiation } from "./contract-negotiation";
 import { DealPassport } from "./deal-passport";
 import { AppSelect } from "./app-select";
 import { StatusBadge } from "./ui/status-badge";
+import { StructuredAnswer } from "./structured-answer";
+import { EvidenceContextCard } from "./evidence-context-card";
 
 type Tab = "overview" | "passport" | "risks" | "obligations" | "negotiate" | "ask" | "actions" | "collaboration" | "lifecycle" | "activity";
 const tabs: Tab[] = ["overview", "passport", "risks", "obligations", "negotiate", "ask", "actions", "collaboration", "lifecycle", "activity"];
@@ -31,16 +33,64 @@ function Finding({ finding, index, contractId, canCreate }: { finding: RiskFindi
   const level = severity(finding.risk_level);
   const evidence = finding.evidence || finding.excerpt || finding.quote || finding.clause;
   const location = [finding.citation, finding.section, finding.page ? `Page ${finding.page}` : null, finding.location].filter(Boolean).join(" · ");
-  return <article className="finding"><div className="finding-index">{String(index + 1).padStart(2,"0")}</div><div className="finding-body"><header><div><h3>{asText(finding.title, "Clause finding")}</h3>{finding.clause && <p className="finding-clause">{finding.clause}</p>}</div><span className={`pill ${level}`}>{titleCase(finding.risk_level || level)}</span></header>{finding.explanation && <div className="finding-copy"><span>Why it matters</span><p>{finding.explanation}</p></div>}{finding.recommendation && <div className="finding-copy"><span>Recommendation</span><p>{finding.recommendation}</p></div>}{evidence && <blockquote><Quote size={15} /><div>{location && <cite>{location}</cite>}<p>{evidence}</p></div></blockquote>}{finding.suggested_language && <details><summary>Suggested language <ChevronRight size={14} /></summary><p>{finding.suggested_language}</p></details>}{canCreate && <Link className="finding-task-link" prefetch={false} href={{ pathname: "/tasks", query: { new: "1", contractId, category: "risk", sourceKind: "finding", sourceIndex: String(index), title: asText(finding.title, "Review clause finding"), description: finding.recommendation || finding.explanation || "Confirm this finding against the agreement and decide the next step." } }}><ClipboardPlus size={14} />Create follow-up</Link>}</div></article>;
+  return <article className="finding">
+    <header className="finding-head">
+      <span className="finding-index">{String(index + 1).padStart(2,"0")}</span>
+      <div><span className="finding-kind">Risk finding</span><h3>{asText(finding.title, "Clause finding")}</h3>{finding.clause && <p className="finding-clause">{finding.clause}</p>}</div>
+      <span className={`pill ${level}`}>{titleCase(finding.risk_level || level)}</span>
+    </header>
+    <div className="finding-body">
+      {finding.explanation && <div className="finding-copy"><span>Why it matters</span><p>{finding.explanation}</p></div>}
+      {finding.recommendation && <div className="finding-copy recommendation"><span>Recommended next step</span><p>{finding.recommendation}</p></div>}
+      {evidence && <blockquote><Quote size={15} /><div>{location && <cite>{location}</cite>}<p>{evidence}</p></div></blockquote>}
+      {finding.suggested_language && <details><summary>Suggested language <ChevronRight size={14} /></summary><p>{finding.suggested_language}</p></details>}
+    </div>
+    {canCreate && <footer className="finding-actions"><Link className="finding-task-link" prefetch={false} href={{ pathname: "/tasks", query: { new: "1", contractId, category: "risk", sourceKind: "finding", sourceIndex: String(index), title: asText(finding.title, "Review clause finding"), description: finding.recommendation || finding.explanation || "Confirm this finding against the agreement and decide the next step." } }}><ClipboardPlus size={14} />Create follow-up</Link></footer>}
+  </article>;
+}
+
+const recordConfig = {
+  obligation: { label: "Obligation", icon: ListChecks },
+  payment: { label: "Payment term", icon: Banknote },
+  deadline: { label: "Key date", icon: Clock3 },
+  negotiation: { label: "Negotiation point", icon: MessageSquareText },
+} as const;
+
+const recordTitleKeys = new Set(["title", "obligation", "deadline", "action", "priority", "issue", "item", "event"]);
+const recordSourceKeys = new Set(["citation", "source", "section", "location", "page", "quote", "excerpt", "evidence"]);
+
+function recordValue(value: unknown) {
+  if (Array.isArray(value)) return value.map((item) => asText(item, "")).filter(Boolean).join(", ") || "—";
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  return asText(value, "—");
 }
 
 function RecordRows({ items, empty, contractId, category, canCreate, taskCategory }: { items: Array<Record<string, unknown>>; empty: string; contractId: string; category: "obligation" | "deadline" | "payment" | "negotiation"; canCreate: boolean; taskCategory?: "obligation" | "deadline" | "negotiation" }) {
   if (!items.length) return <div className="quiet-panel"><CheckCircle2 size={18} /><p>{empty}</p></div>;
   const resolvedTaskCategory = taskCategory ?? (category === "payment" ? "obligation" : category);
   return <div className="record-list">{items.map((item, index) => {
-    const title = asText(item.title ?? item.obligation ?? item.deadline ?? item.action, category === "deadline" ? "Confirm contract deadline" : "Confirm contract obligation");
-    const description = asText(item.description ?? item.details ?? item.context ?? item.date, `Verify this ${category} against the agreement, assign an owner, and record the next step.`);
-    return <div className="record-row" key={index}><span>{String(index + 1).padStart(2,"0")}</span><div>{Object.entries(item).map(([key, value]) => <p key={key}><strong>{titleCase(key)}</strong>{Array.isArray(value) ? value.join(", ") : asText(value, "—")}</p>)}{canCreate && <Link className="finding-task-link" prefetch={false} href={{ pathname: "/tasks", query: { new: "1", contractId, category: resolvedTaskCategory, sourceKind: category, sourceIndex: String(index), title, description } }}><ClipboardPlus size={14} />Create action</Link>}</div></div>;
+    const config = recordConfig[category];
+    const Icon = config.icon;
+    const title = asText(item.title ?? item.obligation ?? item.deadline ?? item.action ?? item.priority ?? item.issue ?? item.item ?? item.event, category === "deadline" ? "Contract deadline" : config.label);
+    const description = asText(item.description ?? item.details ?? item.context ?? item.date ?? item.ask ?? item.explanation, `Verify this ${category} against the agreement, assign an owner, and record the next step.`);
+    const evidenceText = asText(item.quote ?? item.excerpt, "");
+    const rawEvidence = asText(item.evidence, "");
+    const sourceParts = [item.citation, item.source, item.section, item.location, item.page ? `Page ${item.page}` : null, rawEvidence && rawEvidence.length < 120 ? rawEvidence : null]
+      .map((value) => asText(value, ""))
+      .filter(Boolean);
+    const source = [...new Set(sourceParts)].join(" · ");
+    const quote = evidenceText || (rawEvidence.length >= 120 ? rawEvidence : "");
+    const fields = Object.entries(item).filter(([key]) => !recordTitleKeys.has(key) && !recordSourceKeys.has(key));
+    return <article className={`record-card ${category}`} key={index}>
+      <header>
+        <span className="record-card-icon"><Icon size={15} /></span>
+        <div><span className="record-card-kicker">{config.label} {String(index + 1).padStart(2,"0")}</span><h3>{title}</h3></div>
+        {item.status ? <span className="record-state">{titleCase(asText(item.status))}</span> : null}
+      </header>
+      {fields.length > 0 && <dl className="record-fields">{fields.map(([key, value]) => { const content = recordValue(value); const long = content.length > 82 || ["suggested_language", "verification_note", "recommendation", "explanation", "description", "details", "context", "ask"].includes(key); return <div className={long ? "long" : ""} key={key}><dt>{titleCase(key)}</dt><dd>{content}</dd></div>; })}</dl>}
+      {quote && <blockquote className="record-quote"><Quote size={14} /><div><span>Source excerpt</span><p>{quote}</p></div></blockquote>}
+      {(source || canCreate) && <footer>{source ? <div className="record-source"><Quote size={13} /><span>{source}</span></div> : <span />}{canCreate && <Link className="finding-task-link" prefetch={false} href={{ pathname: "/tasks", query: { new: "1", contractId, category: resolvedTaskCategory, sourceKind: category, sourceIndex: String(index), title, description } }}><ClipboardPlus size={14} />Create action</Link>}</footer>}
+    </article>;
   })}</div>;
 }
 
@@ -96,7 +146,7 @@ export function ContractDetail({ contractId }: { contractId: string }) {
         {tab === "risks" && <section><div className="content-heading"><div><p className="eyebrow">Evidence-linked findings</p><h2>Risks and protection gaps</h2></div><p>Prioritised from the selected perspective. A possible gap means the protection was not detected, not that it is legally required.</p></div>{risks.length ? <div className="findings">{risks.map((finding,index) => <Finding key={`${finding.title}-${index}`} finding={finding} index={index} contractId={contractId} canCreate={canUpload} />)}</div> : <div className="quiet-panel"><CheckCircle2 size={18} /><p>No clause risks were returned. This does not mean the agreement is risk-free.</p></div>}<h3 className="subsection-title">Possible protection gaps</h3><RecordRows items={gaps.map((item) => typeof item === "string" ? { issue: item } : item)} empty="No possible protection gaps were returned." contractId={contractId} category="negotiation" taskCategory="negotiation" canCreate={canUpload} /></section>}
         {tab === "obligations" && <section><div className="content-heading"><div><p className="eyebrow">Commitments</p><h2>Obligations, payments, and dates</h2></div><p>Verify owners, amounts, and dates before moving them into a system of record.</p></div><h3 className="subsection-title">Obligations</h3><RecordRows items={analysis.obligations ?? []} empty="No obligations were extracted." contractId={contractId} category="obligation" canCreate={canUpload} /><h3 className="subsection-title">Payments</h3><RecordRows items={analysis.payments ?? []} empty="No payment terms were extracted." contractId={contractId} category="payment" taskCategory="obligation" canCreate={canUpload} /><h3 className="subsection-title">Deadlines</h3><RecordRows items={analysis.deadlines ?? []} empty="No deadlines were extracted." contractId={contractId} category="deadline" canCreate={canUpload} /></section>}
         {tab === "negotiate" && <section><div className="content-heading"><div><p className="eyebrow">Prepare the next move</p><h2>Negotiation and playbook</h2></div><p>Turn findings into ranked asks, fallback positions, and escalation points.</p></div><h3 className="subsection-title">Negotiation priorities</h3><RecordRows items={(analysis.negotiation_priorities ?? []).map((item) => typeof item === "string" ? { priority: item } : item)} empty="No negotiation priorities were returned." contractId={contractId} category="negotiation" canCreate={canUpload} /><div className="playbook-summary"><div><p className="eyebrow">Review playbook</p><h3>{analysis.playbook_evaluation?.playbook_name || "Baseline commercial review"}</h3><p>Deterministic checks compare returned findings with the preferred positions, fallbacks, and escalation triggers in the baseline playbook.</p></div><dl>{Object.entries(analysis.playbook_evaluation?.summary ?? {}).map(([key, value]) => <div key={key}><dt>{titleCase(key)}</dt><dd>{value}</dd></div>)}</dl></div><RecordRows items={analysis.playbook_evaluation?.deviations ?? []} empty="No playbook deviations were matched." contractId={contractId} category="negotiation" canCreate={canUpload} /><ContractNegotiation contractId={contractId} /></section>}
-        {tab === "ask" && <section className="qa-section"><div className="content-heading"><div><p className="eyebrow">Document Q&amp;A</p><h2>Ask the retained contract</h2></div><p>Answers are limited to retrieved excerpts and preserve the evidence used.</p></div>{review.source_text_retained ? <><form className="qa-form" onSubmit={(event) => { event.preventDefault(); if (question.trim().length >= 3) questionMutation.mutate(question.trim()); }}><MessageSquareText size={18} /><textarea value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="What does the agreement say about termination notice?" aria-label="Contract question" /><button className="button" type="submit" disabled={questionMutation.isPending || question.trim().length < 3}>{questionMutation.isPending ? "Reviewing…" : <><Send size={14} />Ask</>}</button></form>{questionMutation.error && <p className="form-error">{questionMutation.error.message}</p>}{questionMutation.data && <div className="qa-answer"><p className="eyebrow">{questionMutation.data.generated_by === "model" ? "Evidence-grounded answer" : "Relevant excerpts"}</p><div className="qa-answer-copy">{questionMutation.data.answer}</div><div className="qa-sources">{questionMutation.data.sources.map((source) => <blockquote key={source.label}><cite>{source.label} · {source.location}</cite><p>{source.excerpt}</p></blockquote>)}</div></div>}</> : <div className="qa-unavailable"><ShieldAlert size={20} /><div><strong>Source text was not retained for this review.</strong><p>Contract Q&amp;A needs retained extracted text. Upload a new review with “Retain extracted source text” enabled. The structured report and exports remain available.</p></div></div>}</section>}
+        {tab === "ask" && <section className="qa-section"><div className="content-heading"><div><p className="eyebrow">Document Q&amp;A</p><h2>Ask the retained contract</h2></div><p>Answers are limited to retrieved excerpts and preserve the evidence used.</p></div>{review.source_text_retained ? <><form className="qa-form" onSubmit={(event) => { event.preventDefault(); if (question.trim().length >= 3) questionMutation.mutate(question.trim()); }}><MessageSquareText size={18} /><textarea value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="What does the agreement say about termination notice?" aria-label="Contract question" /><button className="button" type="submit" disabled={questionMutation.isPending || question.trim().length < 3}>{questionMutation.isPending ? "Reviewing…" : <><Send size={14} />Ask</>}</button></form>{questionMutation.isPending && <div className="qa-thinking" role="status"><span><i /><i /><i /></span><div><strong>Reviewing retained evidence</strong><p>Locating relevant clauses and checking citations.</p></div></div>}{questionMutation.error && <p className="form-error">{questionMutation.error.message}</p>}{questionMutation.data && <div className="qa-answer"><p className="eyebrow">{questionMutation.data.generated_by === "model" ? "Evidence-grounded answer" : "Relevant excerpts"}</p><div className="qa-answer-copy"><StructuredAnswer text={questionMutation.data.answer} /></div>{questionMutation.data.sources.length > 0 && <section className="qa-context" aria-labelledby="qa-context-title"><div className="qa-context-heading"><Layers3 size={15} /><div><h3 id="qa-context-title">Context used</h3><p>{questionMutation.data.sources.length} retained excerpt{questionMutation.data.sources.length === 1 ? "" : "s"}</p></div></div><div className="context-card-grid">{questionMutation.data.sources.map((source) => <EvidenceContextCard key={`${source.label}-${source.location}`} title={source.label} location={source.location} excerpt={source.excerpt} />)}</div></section>}</div>}</> : <div className="qa-unavailable"><ShieldAlert size={20} /><div><strong>Source text was not retained for this review.</strong><p>Contract Q&amp;A needs retained extracted text. Upload a new review with “Retain extracted source text” enabled. The structured report and exports remain available.</p></div></div>}</section>}
         {tab === "actions" && <section><div className="content-heading"><div><p className="eyebrow">Human follow-through</p><h2>Actions for this contract</h2></div><p>Assign what needs to be verified, negotiated, escalated, or delivered. Extracted findings remain evidence, not automatic work.</p></div><div className="contract-task-composer panel"><TaskComposer contractId={contractId} /></div>{tasksQuery.isLoading ? <PageLoading rows={4} /> : tasksQuery.error ? <PageError error={tasksQuery.error} /> : <TaskList tasks={tasksQuery.data ?? []} empty="No actions have been created for this contract." />}</section>}
         {tab === "collaboration" && <ContractCollaboration contractId={contractId} />}
         {tab === "lifecycle" && <ContractLifecycle contractId={contractId} />}

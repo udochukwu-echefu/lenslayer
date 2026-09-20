@@ -11,6 +11,11 @@ function slugify(value: string) {
   return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 120);
 }
 
+export function unauthenticatedDestination(pathname: string) {
+  if (pathname === "/") return "/sample";
+  return `/signin?callbackUrl=${encodeURIComponent(pathname)}`;
+}
+
 export function WorkspaceGate({ children }: { children: React.ReactNode }) {
   const { organizations, isLoading, error } = useWorkspace();
   const { data: session, status: sessionStatus } = useSession();
@@ -25,7 +30,7 @@ export function WorkspaceGate({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const callbackUrl = encodeURIComponent(pathname || "/");
     if (privateSessionExpired) router.replace(`/auth/session-expired?callbackUrl=${callbackUrl}`);
-    else if (authRequired && sessionStatus === "unauthenticated") router.replace(`/signin?callbackUrl=${callbackUrl}`);
+    else if (authRequired && sessionStatus === "unauthenticated") router.replace(unauthenticatedDestination(pathname || "/"));
   }, [authRequired, pathname, privateSessionExpired, router, sessionStatus]);
 
   if (isLoading || privateSessionExpired || (authRequired && sessionStatus !== "authenticated")) {

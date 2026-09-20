@@ -937,6 +937,57 @@ class PlatformApiTests(unittest.TestCase):
             }.issubset({event["action"] for event in activity})
         )
 
+    def test_repeated_lifecycle_completion_creates_only_one_next_occurrence(self):
+        organization_id = self.create_organization()["id"]
+        contract_id = self.upload_contract(organization_id).json()["contract"]["id"]
+        base = f"/api/v1/organizations/{organization_id}"
+        created = self.client.post(
+            f"{base}/contracts/{contract_id}/lifecycle",
+            headers=self.alice,
+            json={"kind": "payment", "title": "Monthly fee", "due_at": "2026-01-31T12:00:00Z", "recurrence": "monthly"},
+        )
+        self.assertEqual(created.status_code, 201, created.text)
+        url = f"{base}/lifecycle/{created.json()['id']}"
+        completed = self.client.patch(url, headers=self.alice, json={"status": "completed"})
+        self.assertEqual(completed.status_code, 200, completed.text)
+        retried = self.client.patch(url, headers=self.alice, json={"status": "completed"})
+        self.assertEqual(retried.status_code, 200, retried.text)
+        items = self.client.get(f"{base}/lifecycle", headers=self.alice).json()
+        self.assertEqual(len(items), 2, "A retry must not create another recurring payment")
+        self.assertEqual(retried.json()["completed_at"], completed.json()["completed_at"])
+        next_item = next(item for item in items if item["status"] == "active")
+        self.assertTrue(next_item["due_at"].startswith("2026-02-28T12:00:00"))
+
+    def test_rescheduling_lifecycle_clears_old_escalation_and_reminder_state(self):
+        organization_id = self.create_organization()["id"]
+        contract_id = self.upload_contract(organization_id).json()["contract"]["id"]
+        base = f"/api/v1/organizations/{organization_id}"
+        created = self.client.post(
+            f"{base}/contracts/{contract_id}/lifecycle",
+            headers=self.alice,
+            json={"kind": "renewal", "title": "Review renewal", "due_at": (utcnow() - timedelta(days=1)).isoformat()},
+        )
+        self.assertEqual(created.status_code, 201, created.text)
+        from backend.app.worker import process_lifecycle_reminders
+        process_lifecycle_reminders(self.client.app.state.database, self.settings)
+        item = self.client.get(f"{base}/lifecycle", headers=self.alice).json()[0]
+        self.assertIsNotNone(item["escalated_at"])
+        self.assertIsNotNone(item["last_notified_at"])
+        url = f"{base}/lifecycle/{item['id']}"
+        unchanged = self.client.patch(url, headers=self.alice, json={"due_at": item["due_at"]})
+        self.assertEqual(unchanged.status_code, 200, unchanged.text)
+        self.assertEqual(unchanged.json()["escalated_at"], item["escalated_at"])
+        self.assertEqual(unchanged.json()["last_notified_at"], item["last_notified_at"])
+        updated = self.client.patch(url, headers=self.alice, json={"due_at": (utcnow() + timedelta(days=30)).isoformat()})
+        self.assertEqual(updated.status_code, 200, updated.text)
+        self.assertIsNone(updated.json()["escalated_at"])
+        self.assertIsNone(updated.json()["last_notified_at"])
+        self.assertEqual(process_lifecycle_reminders(self.client.app.state.database, self.settings), 0)
+        self.client.patch(url, headers=self.alice, json={"due_at": (utcnow() - timedelta(hours=1)).isoformat()})
+        self.assertGreater(process_lifecycle_reminders(self.client.app.state.database, self.settings), 0)
+        item = self.client.get(f"{base}/lifecycle", headers=self.alice).json()[0]
+        self.assertIsNotNone(item["escalated_at"])
+
     def test_lifecycle_recurring_reminders_calendar_and_portfolio_questions(self):
         organization = self.create_organization()
         organization_id = organization["id"]

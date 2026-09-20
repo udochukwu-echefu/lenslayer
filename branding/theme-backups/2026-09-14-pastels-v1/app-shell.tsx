@@ -86,7 +86,7 @@ function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
   return (
     <WorkspaceGate>
       <a className="skip-link" href="#main-content">Skip to content</a>
-      <div className="app-shell" data-workspace-area={pathname.split("/")[1] || "overview"}>
+      <div className="app-shell">
         <aside className="sidebar">
           <div className="sidebar-brand"><BrandMark /></div>
           <Navigation />
