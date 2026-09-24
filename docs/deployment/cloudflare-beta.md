@@ -94,7 +94,7 @@ npx wrangler secret put AUTH_OIDC_CLIENT_ID
 npx wrangler secret put AUTH_OIDC_CLIENT_SECRET
 ```
 
-Use the Cloud Run API URL for `PLATFORM_API_URL` and the final Cloudflare domain for `NEXTAUTH_URL`. Set `NEXT_PUBLIC_LENSLAYER_PUBLIC_ACCESS=false` during the production build, then run `npm run cf:deploy`. The Auth0 callback remains `https://YOUR_DASHBOARD_DOMAIN/api/auth/callback/oidc`.
+Use the Cloud Run API URL for `PLATFORM_API_URL` and the final Cloudflare domain for `NEXTAUTH_URL`. Set `NEXT_PUBLIC_LENSLAYER_PUBLIC_ACCESS=true` when the landing page should open the synthetic demo workspace for signed-out visitors, then run `npm run cf:deploy`. Signed-in visitors still use their private Auth0-backed workspace. The Auth0 callback remains `https://YOUR_DASHBOARD_DOMAIN/api/auth/callback/oidc`.
 
 ## 6. Release verification
 

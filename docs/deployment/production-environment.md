@@ -39,4 +39,4 @@ Production startup fails closed if PostgreSQL, private S3-compatible storage, Cl
 
 These are server-side Worker secrets: `PLATFORM_API_URL`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `AUTH_OIDC_ISSUER`, `AUTH_OIDC_AUDIENCE`, `AUTH_OIDC_CLIENT_ID`, and `AUTH_OIDC_CLIENT_SECRET`.
 
-The public build-time variables are `NEXT_PUBLIC_LENSLAYER_PUBLIC_ACCESS=false` and the non-secret Cloud Run origin in `NEXT_PUBLIC_PLATFORM_API_URL`. Browser requests go directly to Cloud Run with the user's short-lived Auth0 bearer token, avoiding CPU-heavy Next.js proxy invocations on the Cloudflare free tier. The dashboard does not receive database, R2, Cloudmersive, Resend, or Groq credentials.
+The public build-time variables are `NEXT_PUBLIC_LENSLAYER_PUBLIC_ACCESS=true` and the non-secret Cloud Run origin in `NEXT_PUBLIC_PLATFORM_API_URL`. Public access serves only the bundled, read-only synthetic workspace; signed-in visitors use Cloud Run with their short-lived Auth0 bearer token. Browser requests go directly to Cloud Run, avoiding CPU-heavy Next.js proxy invocations on the Cloudflare free tier. The dashboard does not receive database, R2, Cloudmersive, Resend, or Groq credentials.

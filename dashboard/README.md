@@ -33,7 +33,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Local identity variables are used only when `NODE_ENV` is not `production`. Production signs users in through Auth0, keeps access and rotating refresh tokens in an encrypted server session, and forwards the bearer access token to the API. Configure `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `AUTH_OIDC_ISSUER`, `AUTH_OIDC_AUDIENCE`, `AUTH_OIDC_CLIENT_ID`, and `AUTH_OIDC_CLIENT_SECRET`; the provider callback is `/api/auth/callback/oidc`.
 
-`NEXT_PUBLIC_LENSLAYER_PUBLIC_ACCESS=true` enables the synthetic public workspace. Set it to `false` at dashboard build time for a real Auth0-backed deployment. Real mode exposes `/signin`, `/login`, `/signup`, invitation authentication, sign-out, auth-error, and session-expiry recovery pages.
+`NEXT_PUBLIC_LENSLAYER_PUBLIC_ACCESS=true` enables the synthetic public workspace for signed-out visitors while signed-in visitors continue to use Auth0-backed private workspaces. Set it to `false` only when every workspace route must require authentication. Authenticated deployments expose `/signin`, `/login`, `/signup`, invitation authentication, sign-out, auth-error, and session-expiry recovery pages.
 
 ## Team roles
 

@@ -7,7 +7,8 @@ import FaqSection from "./components/landing/faq-section"
 import { RoundLink, HeroEvidence } from "./components/landing/hero-components"
 
 const APP_URL = (import.meta.env.VITE_APP_URL ?? "http://localhost:3000").replace(/\/$/, "")
-const SAMPLE_URL = `${APP_URL}/sample`
+const SAMPLE_URL = APP_URL
+const SIGN_IN_URL = `${APP_URL}/signin`
 const navigation = [{ label: "The product", href: "#product" }, { label: "How it works", href: "#workflow" }, { label: "Your data", href: "#control" }]
 
 function App() {
@@ -52,8 +53,8 @@ function App() {
   return <div className="site" id="top">
     <a className="skip-link" href="#main">Skip to content</a>
     <header className="header">
-      <div className="shell header-inner"><Brand /><nav className="desktop-nav" aria-label="Primary navigation">{navigation.map((item) => <a href={item.href} key={item.href}>{item.label}</a>)}</nav><div className="header-actions"><a className="sign-in" href={APP_URL}>Sign in</a><RoundLink compact href={SAMPLE_URL}>Explore sample</RoundLink><button type="button" className="menu-button" ref={menuButton} aria-label={menuOpen ? "Close navigation" : "Open navigation"} aria-expanded={menuOpen} aria-controls="mobile-navigation" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}</button></div></div>
-      <nav id="mobile-navigation" className="mobile-nav" aria-label="Mobile navigation" hidden={!menuOpen}>{navigation.map((item) => <a href={item.href} key={item.href} onClick={() => setMenuOpen(false)}>{item.label}<ArrowRight aria-hidden="true" /></a>)}<a href={APP_URL}>Sign in <ArrowRight aria-hidden="true" /></a></nav>
+      <div className="shell header-inner"><Brand /><nav className="desktop-nav" aria-label="Primary navigation">{navigation.map((item) => <a href={item.href} key={item.href}>{item.label}</a>)}</nav><div className="header-actions"><a className="sign-in" href={SIGN_IN_URL}>Sign in</a><RoundLink compact href={SAMPLE_URL}>Explore sample</RoundLink><button type="button" className="menu-button" ref={menuButton} aria-label={menuOpen ? "Close navigation" : "Open navigation"} aria-expanded={menuOpen} aria-controls="mobile-navigation" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}</button></div></div>
+      <nav id="mobile-navigation" className="mobile-nav" aria-label="Mobile navigation" hidden={!menuOpen}>{navigation.map((item) => <a href={item.href} key={item.href} onClick={() => setMenuOpen(false)}>{item.label}<ArrowRight aria-hidden="true" /></a>)}<a href={SIGN_IN_URL}>Sign in <ArrowRight aria-hidden="true" /></a></nav>
     </header>
     <main id="main">
       <section className="hero" aria-labelledby="hero-title">
@@ -108,7 +109,7 @@ function App() {
 
       <FaqSection />
 
-      <section className="closing" data-motion="closing" aria-labelledby="closing-title"><div className="shell closing-inner"><LensMark className="closing-mark" /><div><h2 id="closing-title">Your next agreement.<br />A clearer starting point.</h2><p>Start with our sample. See what’s in the fine print.</p></div><div className="closing-actions"><RoundLink href={SAMPLE_URL} light>Explore sample</RoundLink><a className="closing-signin" href={APP_URL}>Or open your workspace <ArrowRight aria-hidden="true" /></a></div></div></section>
+      <section className="closing" data-motion="closing" aria-labelledby="closing-title"><div className="shell closing-inner"><LensMark className="closing-mark" /><div><h2 id="closing-title">Your next agreement.<br />A clearer starting point.</h2><p>Start with our sample. See what’s in the fine print.</p></div><div className="closing-actions"><RoundLink href={SAMPLE_URL} light>Explore sample</RoundLink><a className="closing-signin" href={SIGN_IN_URL}>Or open your workspace <ArrowRight aria-hidden="true" /></a></div></div></section>
     </main>
     <footer className="footer shell"><div className="footer-top"><Brand /></div><div className="footer-bottom"><span>© {new Date().getFullYear()} LensLayer</span><a href="#top">Back to top <ArrowRight aria-hidden="true" /></a></div></footer>
   </div>
