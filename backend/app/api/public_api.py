@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, File, Form, Request, Response, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, File, Form, Request, Response, UploadFile, status
 
 from ..schemas import (
     ApiKeyCreate,
@@ -18,6 +18,7 @@ from ..schemas import (
     WebhookSubscriptionCreatedResponse,
     WebhookSubscriptionResponse,
 )
+from ..review_trigger import queue_review_worker
 from .dependencies import ServiceDep, UserDep, public_api_token, read_upload
 
 
@@ -142,6 +143,7 @@ def list_webhook_deliveries(
 )
 async def public_api_upload_contract(
     request: Request,
+    background_tasks: BackgroundTasks,
     service: ServiceDep,
     file: Annotated[UploadFile, File()],
     title: Annotated[str, Form()] = "",
@@ -171,6 +173,7 @@ async def public_api_upload_contract(
         retain_source_text=retain_source_text,
         retention_days=retention_days,
     )
+    queue_review_worker(background_tasks, request.app.state.settings)
     return IntakeCreatedResponse(
         import_record=service.integration_import_response(import_record),
         contract=service.contract_response(contract),

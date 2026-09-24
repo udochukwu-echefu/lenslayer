@@ -126,7 +126,20 @@ class PlatformApiTests(unittest.TestCase):
                 files={"file": ("imported.txt", b"Review this agreement.", "text/plain")},
             )
             self.assertEqual(imported.status_code, 202, imported.text)
-        self.assertEqual(trigger.call_count, 2)
+            api_key = self.client.post(
+                f"/api/v1/organizations/{organization['id']}/api-keys",
+                headers=self.alice,
+                json={"name": "Trigger test", "scopes": ["contracts:write"]},
+            )
+            self.assertEqual(api_key.status_code, 201, api_key.text)
+            public_upload = self.client.post(
+                "/api/v1/public/contracts",
+                headers={"Authorization": f"Bearer {api_key.json()['token']}"},
+                data={"external_id": "public-trigger-check"},
+                files={"file": ("public.txt", b"Review this contract.", "text/plain")},
+            )
+            self.assertEqual(public_upload.status_code, 202, public_upload.text)
+        self.assertEqual(trigger.call_count, 3)
 
     def test_contract_upload_is_queued_and_scoped_to_the_organization(self):
         organization = self.create_organization()
