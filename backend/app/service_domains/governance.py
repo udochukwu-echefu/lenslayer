@@ -1,14 +1,41 @@
 from __future__ import annotations
 
-from .base import (
-    Any, Contract, ContractActivityResponse, ContractDecision, ContractReview, HTTPException,
-    LifecycleItem, Membership, Notification, NotificationResponse, PlatformAuditEvent,
-    PortfolioQuestionResponse, PortfolioQuestionSource, ProcessingJob, ReportActivityItem,
-    ReportDistributionItem, ReportOverviewResponse, ReportTimelinePoint, ReportWorkloadItem,
-    User, WorkflowTask, aware, csv, datetime, io, json_dump, json_load, math,
-    normalized_role, select, timedelta, utcnow,
-)
+from datetime import datetime, timedelta
+from typing import Any
+import csv
+import io
+import math
+
+from fastapi import HTTPException
+from sqlalchemy import select
+from sqlalchemy.orm import contains_eager, joinedload
+
 from ..document_intelligence import PortfolioDocument
+from ..models import (
+    Contract,
+    ContractDecision,
+    ContractReview,
+    LifecycleItem,
+    Membership,
+    Notification,
+    PlatformAuditEvent,
+    ProcessingJob,
+    User,
+    WorkflowTask,
+    utcnow,
+)
+from ..schemas import (
+    ContractActivityResponse,
+    NotificationResponse,
+    PortfolioQuestionResponse,
+    PortfolioQuestionSource,
+    ReportActivityItem,
+    ReportDistributionItem,
+    ReportOverviewResponse,
+    ReportTimelinePoint,
+    ReportWorkloadItem,
+)
+from .common import aware, json_dump, json_load, normalized_role
 
 
 class GovernanceServiceMixin:
@@ -184,6 +211,7 @@ class GovernanceServiceMixin:
         contracts = list(
             self.session.scalars(
                 select(Contract)
+                .options(joinedload(Contract.review).load_only(ContractReview.analysis_json))
                 .where(Contract.organization_id == organization_id)
                 .order_by(Contract.created_at.asc())
             ).all()
@@ -233,6 +261,7 @@ class GovernanceServiceMixin:
             self.session.scalars(
                 select(Membership)
                 .join(User, User.id == Membership.user_id)
+                .options(contains_eager(Membership.user))
                 .where(Membership.organization_id == organization_id)
                 .order_by(User.display_name.asc(), User.email.asc())
             ).all()
@@ -415,7 +444,7 @@ class GovernanceServiceMixin:
 
     @staticmethod
     def report_csv(report: ReportOverviewResponse) -> str:
-        from export_utils import csv_safe_cell
+        from ..report_exports import csv_safe_cell
 
         output = io.StringIO()
         writer = csv.writer(output)

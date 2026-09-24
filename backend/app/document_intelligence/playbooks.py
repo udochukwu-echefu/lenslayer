@@ -67,14 +67,6 @@ DEFAULT_PLAYBOOK = {
 }
 
 
-def ensure_default_playbook(store: Any, owner_id: str) -> dict[str, Any]:
-    playbooks = store.list_playbooks(owner_id)
-    if playbooks:
-        return next((item for item in playbooks if item.get("is_default")), playbooks[0])
-    playbook_id = store.save_playbook(owner_id, DEFAULT_PLAYBOOK)
-    return store.get_playbook(owner_id, playbook_id)
-
-
 def finding_key(finding: dict[str, Any], index: int = 0) -> str:
     raw = "|".join(
         str(finding.get(key) or "")

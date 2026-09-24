@@ -1,6 +1,14 @@
 from __future__ import annotations
 
-from .base import Any, ContractVersion, HTTPException, Path, User, io, json_load, safe_filename, select
+from pathlib import Path
+from typing import Any
+import io
+
+from fastapi import HTTPException
+from sqlalchemy import select
+
+from ..models import ContractVersion, User
+from .common import json_load, safe_filename
 
 
 class ReviewServiceMixin:
@@ -91,7 +99,7 @@ class ReviewServiceMixin:
         analysis = json_load(review.analysis_json, {})
         quality = json_load(review.quality_json, {})
         context = json_load(contract.review_context_json, {})
-        from export_utils import (
+        from ..report_exports import (
             build_csv,
             build_docx_report,
             build_json_report,

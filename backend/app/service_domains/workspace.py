@@ -1,11 +1,38 @@
 from __future__ import annotations
 
-from .base import (
-    Any, HTTPException, INVITABLE_ROLES, IntegrityError, InvitationPreviewResponse,
-    InvitationResponse, Membership, MembershipResponse, Organization, OrganizationInvitation,
-    OrganizationSettings, OrganizationSettingsResponse, Principal, User, VALID_ROLES,
-    email_hint, func, hashlib, invitation_status, normalized_email, normalized_role,
-    queue_email, secrets, select, timedelta, utcnow,
+from datetime import timedelta
+from typing import Any
+import hashlib
+import secrets
+
+from fastapi import HTTPException
+from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import contains_eager
+
+from ..email_delivery import queue_email
+from ..models import (
+    Membership,
+    Organization,
+    OrganizationInvitation,
+    OrganizationSettings,
+    User,
+    utcnow,
+)
+from ..schemas import (
+    InvitationPreviewResponse,
+    InvitationResponse,
+    MembershipResponse,
+    OrganizationSettingsResponse,
+)
+from ..security import Principal
+from .common import (
+    INVITABLE_ROLES,
+    VALID_ROLES,
+    email_hint,
+    invitation_status,
+    normalized_email,
+    normalized_role,
 )
 
 
@@ -157,6 +184,7 @@ class WorkspaceServiceMixin:
             self.session.scalars(
                 select(Membership)
                 .join(User, User.id == Membership.user_id)
+                .options(contains_eager(Membership.user))
                 .where(Membership.organization_id == organization_id)
                 .order_by(User.display_name.asc(), User.email.asc())
             ).all()

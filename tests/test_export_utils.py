@@ -2,7 +2,7 @@ import csv
 import io
 import unittest
 
-from export_utils import build_csv, csv_safe_cell
+from backend.app.report_exports import build_csv, csv_safe_cell
 
 
 class CsvExportSafetyTests(unittest.TestCase):

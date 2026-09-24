@@ -5,7 +5,7 @@ LensLayer's low-traffic production layout is:
 - Cloudflare Workers serves the Next.js dashboard.
 - A private Cloudflare R2 bucket stores uploaded source documents. The browser and dashboard Worker have no bucket credentials.
 - Google Cloud Run serves the FastAPI API and scales to zero.
-- A separate Cloud Run Job drains review and transactional-email queues. Cloud Scheduler starts it once per minute.
+- A separate Cloud Run Job drains review and transactional-email queues. The API starts it after a review is queued; Cloud Scheduler runs it hourly to recover missed work and send reminders.
 - Neon PostgreSQL stores application state. Runtime services use the pooled URL; the migration job uses the direct URL.
 - Cloudmersive scans every upload before the API writes it to R2.
 - Resend sends invitations and existing notification events from the database-backed email outbox.
@@ -55,20 +55,30 @@ Every build builds one immutable image, executes Alembic against Neon's direct e
 
 Cloud Run transport is unauthenticated so the Cloudflare server-side proxy can reach it, but application endpoints still require and validate the Auth0 bearer token. Restrict CORS to the production dashboard origin.
 
-## 4. Schedule the review job
+## 4. Trigger reviews and schedule recovery
 
-Use a dedicated scheduler service account with permission to run only `lenslayer-review-worker`:
+Set `LENSLAYER_PLATFORM_REVIEW_WORKER_JOB=projects/PROJECT_ID/locations/europe-west1/jobs/lenslayer-review-worker` on the API service. The API starts the job after a successful upload or import commit. Grant its runtime identity permission to invoke only this job:
 
 ```bash
-gcloud scheduler jobs create http lenslayer-review-worker-every-minute \
+gcloud run jobs add-iam-policy-binding lenslayer-review-worker \
+  --region=europe-west1 \
+  --member=serviceAccount:lenslayer-runtime@PROJECT_ID.iam.gserviceaccount.com \
+  --role=roles/run.invoker
+```
+
+Use a dedicated scheduler service account with permission to run only `lenslayer-review-worker`. Create an hourly recovery job for missed triggers, lifecycle reminders, and queued email:
+
+```bash
+gcloud scheduler jobs create http lenslayer-review-worker-hourly \
   --location=europe-west1 \
-  --schedule="* * * * *" \
+  --schedule="0 * * * *" \
+  --time-zone="Africa/Lagos" \
   --uri="https://run.googleapis.com/v2/projects/PROJECT_ID/locations/europe-west1/jobs/lenslayer-review-worker:run" \
   --http-method=POST \
   --oauth-service-account-email=lenslayer-scheduler@PROJECT_ID.iam.gserviceaccount.com
 ```
 
-The job uses PostgreSQL row locking, drains all queued document reviews and email deliveries, and exits. Resend requests use the delivery row ID as an idempotency key.
+If the old one-minute schedule exists, pause it with `gcloud scheduler jobs pause lenslayer-review-worker-every-minute --location=europe-west1`. Keep Neon at 0.25 CU and five-minute scale-to-zero in its console. The worker uses PostgreSQL row locking, drains queued reviews and email deliveries, and exits. Resend requests use the delivery row ID as an idempotency key.
 
 ## 5. Deploy the Cloudflare dashboard
 

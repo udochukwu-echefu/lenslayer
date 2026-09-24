@@ -57,6 +57,7 @@ class Settings(BaseSettings):
     worker_poll_seconds: float = Field(default=2.0, ge=0.2, le=60.0)
     worker_max_attempts: int = Field(default=3, ge=1, le=10)
     worker_lease_seconds: int = Field(default=2100, ge=300, le=7200)
+    review_worker_job: str = ""
 
     @property
     def allowed_extension_set(self) -> set[str]:

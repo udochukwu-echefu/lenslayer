@@ -22,7 +22,7 @@ import type {
   WorkflowTask,
 } from "./types";
 
-export const DEMO_WORKSPACE_ID = "public-workspace";
+import { DEMO_WORKSPACE_ID } from "./workspace-mode";
 
 export const demoUser: User = {
   id: "demo-viewer",

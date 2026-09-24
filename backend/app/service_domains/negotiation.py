@@ -1,12 +1,33 @@
 from __future__ import annotations
 
-from .base import (
-    Any, ApprovalRequest, ContractVersion, ContractVersionResponse, CounterpartyResponse,
-    CounterpartyResponseResponse, DealPassportResponse, DocumentAsset, HTTPException,
-    LifecycleItem, NegotiationItem, NegotiationItemResponse, NegotiationSummaryResponse,
-    Path, User, WorkflowTask, hashlib, json_dump, json_load, safe_filename, scan_upload,
-    select, utcnow, uuid4,
+from pathlib import Path
+from typing import Any
+from uuid import uuid4
+import hashlib
+
+from fastapi import HTTPException
+from sqlalchemy import select
+
+from ..malware import scan_upload
+from ..models import (
+    ApprovalRequest,
+    ContractVersion,
+    CounterpartyResponse,
+    DocumentAsset,
+    LifecycleItem,
+    NegotiationItem,
+    User,
+    WorkflowTask,
+    utcnow,
 )
+from ..schemas import (
+    ContractVersionResponse,
+    CounterpartyResponseResponse,
+    DealPassportResponse,
+    NegotiationItemResponse,
+    NegotiationSummaryResponse,
+)
+from .common import json_dump, json_load, safe_filename
 
 
 class NegotiationServiceMixin:

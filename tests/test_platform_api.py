@@ -113,6 +113,21 @@ class PlatformApiTests(unittest.TestCase):
 
         self.assertEqual(calls, [True])
 
+    def test_upload_and_import_start_worker_after_queueing(self):
+        organization = self.create_organization()
+        self.settings.review_worker_job = "projects/lenslayer/locations/europe-west1/jobs/lenslayer-review-worker"
+        with patch("backend.app.review_trigger.trigger_review_worker") as trigger:
+            uploaded = self.upload_contract(organization["id"])
+            self.assertEqual(uploaded.status_code, 202, uploaded.text)
+            imported = self.client.post(
+                f"/api/v1/organizations/{organization['id']}/intake/email",
+                headers=self.alice,
+                data={"external_id": "mail-trigger-check"},
+                files={"file": ("imported.txt", b"Review this agreement.", "text/plain")},
+            )
+            self.assertEqual(imported.status_code, 202, imported.text)
+        self.assertEqual(trigger.call_count, 2)
+
     def test_contract_upload_is_queued_and_scoped_to_the_organization(self):
         organization = self.create_organization()
         response = self.upload_contract(organization["id"])

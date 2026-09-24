@@ -1,9 +1,16 @@
 from __future__ import annotations
 
-from .base import (
-    Any, HTTPException, LifecycleItem, LifecycleItemResponse, User, aware, calendar,
-    datetime, select, timedelta, timezone, utcnow,
-)
+from datetime import datetime, timedelta, timezone
+from typing import Any
+import calendar
+
+from fastapi import HTTPException
+from sqlalchemy import select
+from sqlalchemy.orm import joinedload
+
+from ..models import LifecycleItem, User, utcnow
+from ..schemas import LifecycleItemResponse
+from .common import aware
 
 
 class LifecycleServiceMixin:
@@ -15,7 +22,11 @@ class LifecycleServiceMixin:
         status: str | None = None,
     ) -> list[LifecycleItem]:
         self.workspace.membership(organization_id, user)
-        query = select(LifecycleItem).where(LifecycleItem.organization_id == organization_id)
+        query = (
+            select(LifecycleItem)
+            .options(joinedload(LifecycleItem.contract), joinedload(LifecycleItem.owner))
+            .where(LifecycleItem.organization_id == organization_id)
+        )
         if contract_id:
             query = query.where(LifecycleItem.contract_id == contract_id)
         if status:

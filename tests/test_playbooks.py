@@ -1,6 +1,6 @@
 import unittest
 
-from playbooks import DEFAULT_PLAYBOOK, evaluate_report, finding_key
+from backend.app.document_intelligence.playbooks import DEFAULT_PLAYBOOK, evaluate_report, finding_key
 
 
 class PlaybookTests(unittest.TestCase):

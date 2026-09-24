@@ -78,6 +78,7 @@ Invitation links expire after seven days, are bound to the invited email, and ar
 
 ```bash
 npm run lint
+npm test
 npm run build
 npm audit --audit-level=moderate
 ```
@@ -94,3 +95,15 @@ npm run cf:deploy
 See `../docs/deployment/cloudflare-beta.md` for the full beta stack, including Cloudflare R2, Neon Postgres, API hosting, worker hosting, and required secrets.
 
 The design uses self-hosted Figtree, a restrained near-black/coral token system, WCAG-conscious states, keyboard focus styles, and responsive navigation. AI output is always framed as evidence to inspect rather than a final legal decision.
+
+## Code boundaries
+
+`src/lib/api.ts` is the stable public facade. Endpoint definitions live in
+`src/lib/api/<domain>.ts`; `client.ts` owns authentication, JSON serialization,
+error handling, and downloads. JSON mutations use `jsonRequest`; multipart
+uploads use `request` so the browser sets the boundary. Demo fixtures load
+only when demo access is enabled, and `workspace-mode.ts` holds lightweight
+workspace identifiers.
+
+The AI assistant displays complete responses as soon as the API returns.
+Pending indicators reflect the actual request; there is no artificial typing delay.

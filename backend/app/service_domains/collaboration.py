@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-from .base import (
-    Any, ApprovalRequest, ApprovalRequestResponse, CONTRACT_DECISIONS, ContractComment,
-    ContractCommentResponse, ContractDecision, ContractDecisionResponse, HTTPException,
-    Membership, User, json_dump, json_load, normalized_role, select, utcnow,
-)
+from typing import Any
+
+from fastapi import HTTPException
+from sqlalchemy import select
+
+from ..models import ApprovalRequest, ContractComment, ContractDecision, Membership, User, utcnow
+from ..schemas import ApprovalRequestResponse, ContractCommentResponse, ContractDecisionResponse
+from .common import CONTRACT_DECISIONS, json_dump, json_load, normalized_role
 
 
 class CollaborationServiceMixin:

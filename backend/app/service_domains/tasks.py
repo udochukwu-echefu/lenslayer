@@ -1,10 +1,15 @@
 from __future__ import annotations
 
-from .base import (
-    Any, Contract, HTTPException, Membership, TASK_SOURCE_KINDS, TASK_STATUSES,
-    TaskResponse, User, WorkflowTask, datetime, json_dump, json_load, normalized_role,
-    select, utcnow,
-)
+from datetime import datetime
+from typing import Any
+
+from fastapi import HTTPException
+from sqlalchemy import select
+from sqlalchemy.orm import joinedload
+
+from ..models import Contract, Membership, User, WorkflowTask, utcnow
+from ..schemas import TaskResponse
+from .common import TASK_SOURCE_KINDS, TASK_STATUSES, json_dump, json_load, normalized_role
 
 
 class TasksServiceMixin:
@@ -20,7 +25,11 @@ class TasksServiceMixin:
         due_after: datetime | None = None,
     ) -> list[WorkflowTask]:
         self.workspace.membership(organization_id, user)
-        query = select(WorkflowTask).where(WorkflowTask.organization_id == organization_id)
+        query = (
+            select(WorkflowTask)
+            .options(joinedload(WorkflowTask.contract), joinedload(WorkflowTask.assigned_to_user))
+            .where(WorkflowTask.organization_id == organization_id)
+        )
         if status:
             if status not in TASK_STATUSES:
                 raise HTTPException(status_code=422, detail="Unknown task status.")

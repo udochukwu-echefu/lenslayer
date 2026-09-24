@@ -14,3 +14,6 @@ dashboard/.wrangler/
 .wrangler/
 dashboard/cloudflare-env.d.ts
 .codex-previews/
+
+# Generated screenshots, experiments, and verification artifacts
+/output/

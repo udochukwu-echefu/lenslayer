@@ -35,7 +35,7 @@ from .models import (
     utcnow,
 )
 from .object_storage import ObjectStore, build_object_store
-from .services import json_dump, json_load
+from .service_domains.common import json_dump, json_load
 
 
 logger = logging.getLogger(__name__)

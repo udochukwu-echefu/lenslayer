@@ -30,7 +30,16 @@ docs/         Deployment and milestone documentation
 tests/        Platform and deterministic analysis tests
 ```
 
-The backend also uses the root-level `analyzer.py`, `prompts.py`, `playbooks.py`, and `export_utils.py` modules.
+Backend ownership is explicit:
+
+- `backend/app/main.py`: application setup and lifecycle
+- `backend/app/api/`: HTTP routes grouped by product domain and shared request dependencies
+- `backend/app/service_domains/`: authorization, business rules, and persistence
+- `backend/app/document_intelligence/`: extraction, model analysis, prompts, playbooks, and evidence Q&A
+- `backend/app/report_exports.py`: document and spreadsheet report generation
+- `dashboard/src/lib/api/`: typed clients by domain, backed by one HTTP transport
+
+See [repository maintenance](docs/architecture/repository-maintenance.md) for extension points and verification commands.
 
 ## Local Development
 
@@ -64,6 +73,8 @@ The dashboard opens at `http://127.0.0.1:3000`.
 
 ## Verification
 
+Run `make check` from the repository root after installing dependencies. Individual commands:
+
 ```bash
 python -m unittest discover -s tests -v
 python -m evaluation evaluation_fixtures
@@ -71,6 +82,7 @@ alembic -c backend/alembic.ini upgrade head
 
 cd dashboard
 npm run lint
+npm test
 npm run build
 
 cd ../landing

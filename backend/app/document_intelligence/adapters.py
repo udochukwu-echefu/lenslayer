@@ -34,7 +34,7 @@ class AnalyzerDocumentExtractor:
 
     def extract(self, path: str | Path) -> ExtractionResult:
         if self._parser is None:
-            from analyzer import parse_document
+            from .extraction import parse_document
 
             parser = parse_document
         else:
@@ -75,7 +75,7 @@ class AnalyzerContractAnalyzer:
         review_context: Mapping[str, Any] | None = None,
     ) -> dict[str, Any]:
         if self._analyzer is None:
-            from analyzer import analyze_contract
+            from .analysis import analyze_contract
 
             analyzer = analyze_contract
         else:
@@ -85,7 +85,7 @@ class AnalyzerContractAnalyzer:
 
 class DefaultPlaybookEvaluator:
     def evaluate(self, report: dict[str, Any]) -> dict[str, Any]:
-        from playbooks import DEFAULT_PLAYBOOK, evaluate_report
+        from .playbooks import DEFAULT_PLAYBOOK, evaluate_report
 
         return evaluate_report(report, DEFAULT_PLAYBOOK)
 
@@ -157,7 +157,7 @@ class RetainedTextQuestionAnswerer:
             return QAResult(answer="", sources=[], generated_by="extractive")
 
         if self._model_enabled():
-            from analyzer import get_llm, review_context_text
+            from .analysis import get_llm, review_context_text
 
             model = self._model_factory() if self._model_factory else get_llm()
             evidence = "\n\n".join(
@@ -219,7 +219,7 @@ class PortfolioEvidenceQuestionAnswerer:
             )
 
         if self._model_enabled():
-            from analyzer import get_llm
+            from .analysis import get_llm
 
             model = self._model_factory() if self._model_factory else get_llm()
             evidence = "\n\n".join(

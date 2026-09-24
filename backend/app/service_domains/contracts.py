@@ -1,10 +1,27 @@
 from __future__ import annotations
 
-from .base import (
-    Any, Contract, ContractResponse, ContractReview, ContractVersion, DocumentAsset,
-    HTTPException, JobResponse, Path, ProcessingJob, ReviewResponse, User, hashlib,
-    json_dump, json_load, safe_filename, scan_upload, select, timedelta, utcnow, uuid4,
+from datetime import timedelta
+from pathlib import Path
+from typing import Any
+from uuid import uuid4
+import hashlib
+
+from fastapi import HTTPException
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
+
+from ..malware import scan_upload
+from ..models import (
+    Contract,
+    ContractReview,
+    ContractVersion,
+    DocumentAsset,
+    ProcessingJob,
+    User,
+    utcnow,
 )
+from ..schemas import ContractResponse, JobResponse, ReviewResponse
+from .common import json_dump, json_load, safe_filename
 
 
 class ContractsServiceMixin:
@@ -136,6 +153,7 @@ class ContractsServiceMixin:
         return list(
             self.session.scalars(
                 select(Contract)
+                .options(selectinload(Contract.jobs))
                 .where(Contract.organization_id == organization_id)
                 .order_by(Contract.updated_at.desc())
             ).all()

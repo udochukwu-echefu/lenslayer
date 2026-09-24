@@ -1,0 +1,51 @@
+M ../.github/workflows/tests.yml
+ M ../.gitignore
+ M ../README.md
+ D ../analyzer.py
+ M ../backend/app/document_intelligence/adapters.py
+ M ../backend/app/main.py
+ M ../backend/app/service_domains/base.py
+ M ../backend/app/service_domains/collaboration.py
+ M ../backend/app/service_domains/contracts.py
+ M ../backend/app/service_domains/governance.py
+ M ../backend/app/service_domains/integrations.py
+ M ../backend/app/service_domains/lifecycle.py
+ M ../backend/app/service_domains/negotiation.py
+ M ../backend/app/service_domains/review.py
+ M ../backend/app/service_domains/sharing.py
+ M ../backend/app/service_domains/tasks.py
+ M ../backend/app/service_domains/workspace.py
+ M ../backend/app/services.py
+ M ../backend/app/worker.py
+ M ../dashboard/README.md
+ D ../dashboard/public/file.svg
+ D ../dashboard/public/globe.svg
+ D ../dashboard/public/next.svg
+ D ../dashboard/public/vercel.svg
+ D ../dashboard/public/window.svg
+ M ../dashboard/src/components/ai-assistant.test.tsx
+ M ../dashboard/src/components/ai-assistant.tsx
+ M ../dashboard/src/lib/api.ts
+ M ../dashboard/src/lib/demo-data.ts
+ M ../docs/architecture/backend-domains.md
+ D ../export_utils.py
+ D ../playbooks.py
+ D ../prompts.py
+ M ../requirements.txt
+ M ../tests/test_export_utils.py
+ M ../tests/test_playbooks.py
+?? ../Makefile
+?? ../backend/app/api/
+?? ../backend/app/document_intelligence/analysis.py
+?? ../backend/app/document_intelligence/extraction.py
+?? ../backend/app/document_intelligence/playbooks.py
+?? ../backend/app/document_intelligence/prompts.py
+?? ../backend/app/report_exports.py
+?? ../backend/app/service_domains/common.py
+?? ../dashboard/src/lib/api-transport.test.ts
+?? ../dashboard/src/lib/api/
+?? ../dashboard/src/lib/workspace-mode.ts
+?? ../docs/architecture/refactor-verification.md
+?? ../docs/architecture/repository-maintenance.md
+?? ../landing-backups/
+?? ../tests/test_query_performance.py

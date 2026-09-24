@@ -1,16 +1,34 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { BookOpen, ChevronDown, Layers3, MessageCircle, Send, X } from "lucide-react";
-import { FormEvent, type PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from "react";
+import {
+  BookOpen,
+  ChevronDown,
+  Layers3,
+  MessageCircle,
+  Send,
+  X,
+} from "lucide-react";
+import {
+  FormEvent,
+  type PointerEvent as ReactPointerEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { api } from "@/lib/api";
 import type { PortfolioAnswer } from "@/lib/types";
 import { useWorkspace } from "./workspace-provider";
 import { StructuredAnswer } from "./structured-answer";
 import { EvidenceContextCard } from "./evidence-context-card";
 
-type ChatMessage = { id: string; role: "viewer" | "assistant"; text: string; answer?: PortfolioAnswer };
-type AssistantPhase = "idle" | "loading" | "thinking" | "streaming";
+type ChatMessage = {
+  id: string;
+  role: "viewer" | "assistant";
+  text: string;
+  answer?: PortfolioAnswer;
+};
+type AssistantPhase = "idle" | "loading" | "thinking";
 
 const suggestions = [
   "Which agreements renew automatically?",
@@ -31,20 +49,30 @@ function WorkspaceAssistant() {
   const [question, setQuestion] = useState("");
   const [phase, setPhase] = useState<AssistantPhase>("idle");
   const [elapsed, setElapsed] = useState(0);
-  const [streamingId, setStreamingId] = useState<string | null>(null);
-  const [streamedLength, setStreamedLength] = useState(0);
   const [error, setError] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const orbRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const streamedLengthRef = useRef(0);
   const turnFrameRef = useRef(0);
   const idleFrameRef = useRef(0);
   const idleTimerRef = useRef(0);
   const glanceIndexRef = useRef(0);
   const draggedRef = useRef(false);
-  const dragRef = useRef({ active: false, pointerId: -1, startX: 0, startY: 0, originX: 0, originY: 0, targetX: 0, targetY: 0, x: 0, y: 0, velocityX: 0, velocityY: 0 });
+  const dragRef = useRef({
+    active: false,
+    pointerId: -1,
+    startX: 0,
+    startY: 0,
+    originX: 0,
+    originY: 0,
+    targetX: 0,
+    targetY: 0,
+    x: 0,
+    y: 0,
+    velocityX: 0,
+    velocityY: 0,
+  });
   const busy = phase !== "idle";
 
   function renderTurn(x: number, y: number) {
@@ -98,7 +126,13 @@ function WorkspaceAssistant() {
       drag.x += drag.velocityX;
       drag.y += drag.velocityY;
       renderTurn(drag.x, drag.y);
-      if (Math.abs(drag.x) + Math.abs(drag.y) + Math.abs(drag.velocityX) + Math.abs(drag.velocityY) > 0.08) {
+      if (
+        Math.abs(drag.x) +
+          Math.abs(drag.y) +
+          Math.abs(drag.velocityX) +
+          Math.abs(drag.velocityY) >
+        0.08
+      ) {
         turnFrameRef.current = window.requestAnimationFrame(step);
       } else {
         drag.x = 0;
@@ -120,7 +154,20 @@ function WorkspaceAssistant() {
     draggedRef.current = false;
     const currentX = dragRef.current.x;
     const currentY = dragRef.current.y;
-    dragRef.current = { active: true, pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, originX: currentX, originY: currentY, targetX: currentX, targetY: currentY, x: currentX, y: currentY, velocityX: 0, velocityY: 0 };
+    dragRef.current = {
+      active: true,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      originX: currentX,
+      originY: currentY,
+      targetX: currentX,
+      targetY: currentY,
+      x: currentX,
+      y: currentY,
+      velocityX: 0,
+      velocityY: 0,
+    };
     event.currentTarget.setPointerCapture(event.pointerId);
     orbRef.current?.setAttribute("data-dragging", "true");
     followTurn();
@@ -129,8 +176,14 @@ function WorkspaceAssistant() {
   function turnCharacter(event: ReactPointerEvent<HTMLSpanElement>) {
     const drag = dragRef.current;
     if (!drag.active || drag.pointerId !== event.pointerId) return;
-    const nextX = Math.max(-60, Math.min(60, drag.originX + event.clientX - drag.startX));
-    const nextY = Math.max(-26, Math.min(26, drag.originY + event.clientY - drag.startY));
+    const nextX = Math.max(
+      -60,
+      Math.min(60, drag.originX + event.clientX - drag.startX),
+    );
+    const nextY = Math.max(
+      -26,
+      Math.min(26, drag.originY + event.clientY - drag.startY),
+    );
     drag.targetX = nextX;
     drag.targetY = nextY;
     if (Math.hypot(nextX, nextY) > 4) draggedRef.current = true;
@@ -142,14 +195,18 @@ function WorkspaceAssistant() {
     drag.active = false;
     drag.targetX = 0;
     drag.targetY = 0;
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    if (event.currentTarget.hasPointerCapture(event.pointerId))
+      event.currentTarget.releasePointerCapture(event.pointerId);
     orbRef.current?.removeAttribute("data-dragging");
     settleTurn();
-    window.setTimeout(() => { draggedRef.current = false; }, 0);
+    window.setTimeout(() => {
+      draggedRef.current = false;
+    }, 0);
   }
 
   useEffect(() => {
-    if (open || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (open || window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+      return;
     let disposed = false;
     const glances = [
       { x: -14, y: -3 },
@@ -158,7 +215,12 @@ function WorkspaceAssistant() {
       { x: -10, y: 3 },
     ];
 
-    const animateTo = (targetX: number, targetY: number, duration: number, complete: () => void) => {
+    const animateTo = (
+      targetX: number,
+      targetY: number,
+      duration: number,
+      complete: () => void,
+    ) => {
       window.cancelAnimationFrame(idleFrameRef.current);
       const fromX = dragRef.current.x;
       const fromY = dragRef.current.y;
@@ -174,7 +236,8 @@ function WorkspaceAssistant() {
         dragRef.current.x = fromX + (targetX - fromX) * eased;
         dragRef.current.y = fromY + (targetY - fromY) * eased;
         renderTurn(dragRef.current.x, dragRef.current.y);
-        if (progress < 1) idleFrameRef.current = window.requestAnimationFrame(step);
+        if (progress < 1)
+          idleFrameRef.current = window.requestAnimationFrame(step);
         else complete();
       };
       idleFrameRef.current = window.requestAnimationFrame(step);
@@ -186,7 +249,10 @@ function WorkspaceAssistant() {
       animateTo(target.x, target.y, 360, () => {
         idleTimerRef.current = window.setTimeout(() => {
           animateTo(target.x * 0.62, target.y * 0.5, 240, () => {
-            idleTimerRef.current = window.setTimeout(() => animateTo(0, 0, 440, schedule), 520);
+            idleTimerRef.current = window.setTimeout(
+              () => animateTo(0, 0, 440, schedule),
+              520,
+            );
           });
         }, 720);
       });
@@ -208,86 +274,296 @@ function WorkspaceAssistant() {
     };
   }, [open]);
 
-  useEffect(() => () => {
-    window.cancelAnimationFrame(turnFrameRef.current);
-    window.cancelAnimationFrame(idleFrameRef.current);
-    window.clearTimeout(idleTimerRef.current);
-  }, []);
+  useEffect(
+    () => () => {
+      window.cancelAnimationFrame(turnFrameRef.current);
+      window.cancelAnimationFrame(idleFrameRef.current);
+      window.clearTimeout(idleTimerRef.current);
+    },
+    [],
+  );
 
-  useEffect(() => { if (open) window.setTimeout(() => inputRef.current?.focus(), 120); }, [open]);
-  useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }); }, [messages, phase, streamedLength]);
+  useEffect(() => {
+    if (open) window.setTimeout(() => inputRef.current?.focus(), 120);
+  }, [open]);
+  useEffect(() => {
+    scrollRef.current?.scrollTo({
+      top: scrollRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [messages, phase]);
   useEffect(() => {
     if (phase !== "loading" && phase !== "thinking") return;
-    const timer = window.setInterval(() => setElapsed((seconds) => seconds + 0.1), 100);
+    const timer = window.setInterval(
+      () => setElapsed((seconds) => seconds + 0.1),
+      100,
+    );
     return () => window.clearInterval(timer);
   }, [phase]);
-  useEffect(() => {
-    if (phase !== "streaming" || !streamingId) return;
-    const message = messages.find((item) => item.id === streamingId);
-    if (!message) return;
-    const step = Math.max(1, Math.ceil(message.text.length / 120));
-    const timer = window.setInterval(() => {
-      const next = Math.min(message.text.length, streamedLengthRef.current + step);
-      streamedLengthRef.current = next;
-      setStreamedLength(next);
-      if (next >= message.text.length) {
-        window.clearInterval(timer);
-        setPhase("idle");
-        setStreamingId(null);
-      }
-    }, 18);
-    return () => window.clearInterval(timer);
-  }, [messages, phase, streamingId]);
 
   async function ask(value: string) {
     const text = value.trim();
     if (!text || !activeOrganization || busy) return;
     setQuestion("");
     setError("");
-    setMessages((items) => [...items, { id: crypto.randomUUID(), role: "viewer", text }]);
+    setMessages((items) => [
+      ...items,
+      { id: crypto.randomUUID(), role: "viewer", text },
+    ]);
     setElapsed(0);
     setPhase("loading");
-    const thinkingTimer = window.setTimeout(() => setPhase((current) => current === "loading" ? "thinking" : current), 450);
+    const thinkingTimer = window.setTimeout(
+      () =>
+        setPhase((current) => (current === "loading" ? "thinking" : current)),
+      450,
+    );
     try {
       const answer = await api.askPortfolio(activeOrganization.id, text);
       window.clearTimeout(thinkingTimer);
       const messageId = crypto.randomUUID();
-      setMessages((items) => [...items, { id: messageId, role: "assistant", text: answer.answer, answer }]);
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        setPhase("idle");
-      } else {
-        streamedLengthRef.current = 0;
-        setStreamedLength(0);
-        setStreamingId(messageId);
-        setPhase("streaming");
-      }
+      setMessages((items) => [
+        ...items,
+        { id: messageId, role: "assistant", text: answer.answer, answer },
+      ]);
+      setPhase("idle");
     } catch (cause) {
       window.clearTimeout(thinkingTimer);
-      setError(cause instanceof Error ? cause.message : "LensLayer could not retrieve an evidence-backed answer.");
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "LensLayer could not retrieve an evidence-backed answer.",
+      );
       setPhase("idle");
     }
   }
 
-  return <Dialog.Root open={open} onOpenChange={setOpen}>
-    <Dialog.Trigger asChild><button ref={orbRef} className="ask-ai-orb" type="button" aria-label="Ask LensLayer AI" onClick={(event) => { if (draggedRef.current) { event.preventDefault(); event.stopPropagation(); draggedRef.current = false; } }}><span className="orb-character" aria-hidden="true" onPointerDown={startTurn} onPointerMove={turnCharacter} onPointerUp={releaseTurn} onPointerCancel={releaseTurn}><span className="orb-highlight" /><span className="orb-eyes"><i /><i /></span></span><span className="orb-label">Ask AI</span></button></Dialog.Trigger>
-    <Dialog.Portal>
-      <Dialog.Overlay className="ai-overlay" />
-      <Dialog.Content className="ai-drawer" aria-describedby="ai-drawer-description">
-        <header className="ai-drawer-head"><div className="ai-mini-orb" aria-hidden="true"><i /><i /></div><div><Dialog.Title>Ask LensLayer</Dialog.Title><Dialog.Description id="ai-drawer-description">Answers stay tied to retained contract evidence.</Dialog.Description></div><Dialog.Close asChild><button className="icon-button" aria-label="Close AI assistant"><X size={19} /></button></Dialog.Close></header>
-        <div className="ai-chat" ref={scrollRef}>
-          {!messages.length && <div className="ai-welcome"><BookOpen size={22} /><h2>Start with your agreements</h2><p>Ask about clauses, obligations, deadlines, or review findings. Unsupported answers are blocked.</p><div>{suggestions.map((item) => <button type="button" key={item} onClick={() => void ask(item)}>{item}</button>)}</div></div>}
-          {messages.map((message) => {
-            if (message.role === "viewer") return <div className="chat-message viewer" key={message.id}><span>You</span><p>{message.text}</p></div>;
-            const streaming = message.id === streamingId;
-            const visibleText = streaming ? message.text.slice(0, streamedLength) : message.text;
-            return <article className={`chat-message assistant${streaming ? " streaming" : ""}`} key={message.id}><div className="chat-answer-label"><MessageCircle size={14} /><span>{streaming ? "Writing supported answer" : message.answer?.generated_by === "model" ? "LensLayer answer" : "Evidence retrieval"}</span></div><StructuredAnswer text={visibleText} cursor={streaming} />{!streaming && message.answer && (message.answer.sources.length ? <details className="ai-context"><summary><Layers3 size={15} /><div><strong>Context used</strong><span>{message.answer.sources.length} retained excerpt{message.answer.sources.length === 1 ? "" : "s"}</span></div><ChevronDown size={15} /></summary><div className="context-card-grid">{message.answer.sources.map((source, index) => <EvidenceContextCard key={`${source.contract_id}-${index}`} title={source.contract_title} location={source.location} excerpt={source.excerpt} href={`/contracts/${source.contract_id}?tab=ask`} onOpen={() => setOpen(false)} />)}</div></details> : <div className="unsupported-answer"><BookOpen size={15} />No retained excerpt supports a more specific answer.</div>)}</article>;
-          })}
-          {phase === "loading" && <div className="chat-progress loading" role="status" aria-live="polite"><span className="progress-grid" aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <i key={index} />)}</span><div><strong>Opening evidence index</strong><span>Connecting to retained workspace records · {elapsed.toFixed(1)}s</span></div></div>}
-          {phase === "thinking" && <details className="chat-progress thinking" open><summary><span className="thinking-pulse" aria-hidden="true"><i /><i /><i /></span><div><strong>Reviewing retained evidence</strong><span>Searching contracts and citations · {elapsed.toFixed(1)}s</span></div><ChevronDown size={15} /></summary><div className="thinking-steps" aria-live="polite"><span><i />Locate relevant agreements</span><span><i />Check source excerpts and dates</span><span><i />Compose a supported response</span></div></details>}
-          {error && <div className="chat-error" role="alert"><strong>Answer unavailable</strong><p>{error}</p></div>}
-        </div>
-        <form className="ai-composer" onSubmit={(event: FormEvent) => { event.preventDefault(); void ask(question); }}><label htmlFor="ai-question">Ask across this workspace</label><div><textarea ref={inputRef} id="ai-question" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="Ask about a clause, deadline, or finding" rows={2} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); void ask(question); } }} /><button type="submit" aria-label="Send question" disabled={busy || question.trim().length < 3}><Send size={17} /></button></div><p>Answers include sources. Human review owns every decision.</p></form>
-      </Dialog.Content>
-    </Dialog.Portal>
-  </Dialog.Root>;
+  return (
+    <Dialog.Root open={open} onOpenChange={setOpen}>
+      <Dialog.Trigger asChild>
+        <button
+          ref={orbRef}
+          className="ask-ai-orb"
+          type="button"
+          aria-label="Ask LensLayer AI"
+          onClick={(event) => {
+            if (draggedRef.current) {
+              event.preventDefault();
+              event.stopPropagation();
+              draggedRef.current = false;
+            }
+          }}
+        >
+          <span
+            className="orb-character"
+            aria-hidden="true"
+            onPointerDown={startTurn}
+            onPointerMove={turnCharacter}
+            onPointerUp={releaseTurn}
+            onPointerCancel={releaseTurn}
+          >
+            <span className="orb-highlight" />
+            <span className="orb-eyes">
+              <i />
+              <i />
+            </span>
+          </span>
+          <span className="orb-label">Ask AI</span>
+        </button>
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay className="ai-overlay" />
+        <Dialog.Content
+          className="ai-drawer"
+          aria-describedby="ai-drawer-description"
+        >
+          <header className="ai-drawer-head">
+            <div className="ai-mini-orb" aria-hidden="true">
+              <i />
+              <i />
+            </div>
+            <div>
+              <Dialog.Title>Ask LensLayer</Dialog.Title>
+              <Dialog.Description id="ai-drawer-description">
+                Answers stay tied to retained contract evidence.
+              </Dialog.Description>
+            </div>
+            <Dialog.Close asChild>
+              <button className="icon-button" aria-label="Close AI assistant">
+                <X size={19} />
+              </button>
+            </Dialog.Close>
+          </header>
+          <div className="ai-chat" ref={scrollRef}>
+            {!messages.length && (
+              <div className="ai-welcome">
+                <BookOpen size={22} />
+                <h2>Start with your agreements</h2>
+                <p>
+                  Ask about clauses, obligations, deadlines, or review findings.
+                  Unsupported answers are blocked.
+                </p>
+                <div>
+                  {suggestions.map((item) => (
+                    <button
+                      type="button"
+                      key={item}
+                      onClick={() => void ask(item)}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {messages.map((message) => {
+              if (message.role === "viewer")
+                return (
+                  <div className="chat-message viewer" key={message.id}>
+                    <span>You</span>
+                    <p>{message.text}</p>
+                  </div>
+                );
+              return (
+                <article className="chat-message assistant" key={message.id}>
+                  <div className="chat-answer-label">
+                    <MessageCircle size={14} />
+                    <span>
+                      {message.answer?.generated_by === "model"
+                        ? "LensLayer answer"
+                        : "Evidence retrieval"}
+                    </span>
+                  </div>
+                  <StructuredAnswer text={message.text} />
+                  {message.answer &&
+                    (message.answer.sources.length ? (
+                      <details className="ai-context">
+                        <summary>
+                          <Layers3 size={15} />
+                          <div>
+                            <strong>Context used</strong>
+                            <span>
+                              {message.answer.sources.length} retained excerpt
+                              {message.answer.sources.length === 1 ? "" : "s"}
+                            </span>
+                          </div>
+                          <ChevronDown size={15} />
+                        </summary>
+                        <div className="context-card-grid">
+                          {message.answer.sources.map((source, index) => (
+                            <EvidenceContextCard
+                              key={`${source.contract_id}-${index}`}
+                              title={source.contract_title}
+                              location={source.location}
+                              excerpt={source.excerpt}
+                              href={`/contracts/${source.contract_id}?tab=ask`}
+                              onOpen={() => setOpen(false)}
+                            />
+                          ))}
+                        </div>
+                      </details>
+                    ) : (
+                      <div className="unsupported-answer">
+                        <BookOpen size={15} />
+                        No retained excerpt supports a more specific answer.
+                      </div>
+                    ))}
+                </article>
+              );
+            })}
+            {phase === "loading" && (
+              <div
+                className="chat-progress loading"
+                role="status"
+                aria-live="polite"
+              >
+                <span className="progress-grid" aria-hidden="true">
+                  {Array.from({ length: 9 }, (_, index) => (
+                    <i key={index} />
+                  ))}
+                </span>
+                <div>
+                  <strong>Opening evidence index</strong>
+                  <span>
+                    Connecting to retained workspace records ·{" "}
+                    {elapsed.toFixed(1)}s
+                  </span>
+                </div>
+              </div>
+            )}
+            {phase === "thinking" && (
+              <details className="chat-progress thinking" open>
+                <summary>
+                  <span className="thinking-pulse" aria-hidden="true">
+                    <i />
+                    <i />
+                    <i />
+                  </span>
+                  <div>
+                    <strong>Reviewing retained evidence</strong>
+                    <span>
+                      Searching contracts and citations · {elapsed.toFixed(1)}s
+                    </span>
+                  </div>
+                  <ChevronDown size={15} />
+                </summary>
+                <div className="thinking-steps" aria-live="polite">
+                  <span>
+                    <i />
+                    Locate relevant agreements
+                  </span>
+                  <span>
+                    <i />
+                    Check source excerpts and dates
+                  </span>
+                  <span>
+                    <i />
+                    Compose a supported response
+                  </span>
+                </div>
+              </details>
+            )}
+            {error && (
+              <div className="chat-error" role="alert">
+                <strong>Answer unavailable</strong>
+                <p>{error}</p>
+              </div>
+            )}
+          </div>
+          <form
+            className="ai-composer"
+            onSubmit={(event: FormEvent) => {
+              event.preventDefault();
+              void ask(question);
+            }}
+          >
+            <label htmlFor="ai-question">Ask across this workspace</label>
+            <div>
+              <textarea
+                ref={inputRef}
+                id="ai-question"
+                value={question}
+                onChange={(event) => setQuestion(event.target.value)}
+                placeholder="Ask about a clause, deadline, or finding"
+                rows={2}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    void ask(question);
+                  }
+                }}
+              />
+              <button
+                type="submit"
+                aria-label="Send question"
+                disabled={busy || question.trim().length < 3}
+              >
+                <Send size={17} />
+              </button>
+            </div>
+            <p>Answers include sources. Human review owns every decision.</p>
+          </form>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
 }

@@ -4,7 +4,9 @@ import { AiAssistant } from "./ai-assistant";
 import { api } from "@/lib/api";
 import type { PortfolioAnswer } from "@/lib/types";
 
-const workspace = vi.hoisted(() => ({ activeOrganization: { id: "workspace-a" } }));
+const workspace = vi.hoisted(() => ({
+  activeOrganization: { id: "workspace-a" },
+}));
 vi.mock("./workspace-provider", () => ({ useWorkspace: () => workspace }));
 vi.mock("@/lib/api", () => ({ api: { askPortfolio: vi.fn() } }));
 
@@ -18,7 +20,9 @@ afterEach(() => vi.unstubAllGlobals());
 
 function askQuestion() {
   fireEvent.click(screen.getByRole("button", { name: "Ask LensLayer AI" }));
-  fireEvent.change(screen.getByLabelText("Ask across this workspace"), { target: { value: "Private renewal terms?" } });
+  fireEvent.change(screen.getByLabelText("Ask across this workspace"), {
+    target: { value: "Private renewal terms?" },
+  });
   fireEvent.click(screen.getByRole("button", { name: "Send question" }));
 }
 
@@ -31,9 +35,40 @@ function switchWorkspace(rerender: (ui: React.ReactNode) => void) {
 }
 
 const question = "Private renewal terms?";
-const answer: PortfolioAnswer = { answer: "Workspace A confidential terms", generated_by: "extractive", sources: [] };
+const answer: PortfolioAnswer = {
+  answer: "Workspace A confidential terms",
+  generated_by: "extractive",
+  sources: [],
+};
 
 describe("AI assistant workspace isolation", () => {
+  it("shows completed answers immediately without a simulated streaming delay", async () => {
+    vi.stubGlobal("matchMedia", vi.fn().mockReturnValue({ matches: false }));
+    let resolve!: (answer: PortfolioAnswer) => void;
+    vi.mocked(api.askPortfolio).mockReturnValue(
+      new Promise((done) => {
+        resolve = done;
+      }),
+    );
+    render(<AiAssistant />);
+    askQuestion();
+    const completed = {
+      ...answer,
+      answer: "An evidence-backed answer. ".repeat(50),
+    };
+    await act(async () => {
+      resolve(completed);
+    });
+    expect(screen.getByText(completed.answer.trim())).toBeInTheDocument();
+    expect(
+      screen.queryByText("Writing supported answer"),
+    ).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Ask across this workspace"), {
+      target: { value: "Next question?" },
+    });
+    expect(screen.getByRole("button", { name: "Send question" })).toBeEnabled();
+  });
+
   it("clears the previous workspace conversation when switching workspaces", async () => {
     vi.mocked(api.askPortfolio).mockResolvedValue(answer);
     const { rerender } = render(<AiAssistant />);
@@ -46,12 +81,18 @@ describe("AI assistant workspace isolation", () => {
 
   it("does not append a late answer from the previous workspace", async () => {
     let resolve!: (answer: PortfolioAnswer) => void;
-    vi.mocked(api.askPortfolio).mockReturnValue(new Promise((done) => { resolve = done; }));
+    vi.mocked(api.askPortfolio).mockReturnValue(
+      new Promise((done) => {
+        resolve = done;
+      }),
+    );
     const { rerender } = render(<AiAssistant />);
     askQuestion();
     expect(api.askPortfolio).toHaveBeenCalledWith("workspace-a", question);
     switchWorkspace(rerender);
-    await act(async () => { resolve(answer); });
+    await act(async () => {
+      resolve(answer);
+    });
     expect(screen.queryByText(answer.answer)).not.toBeInTheDocument();
     expect(screen.getByText("Start with your agreements")).toBeInTheDocument();
   });

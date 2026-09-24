@@ -1,9 +1,16 @@
 from __future__ import annotations
 
-from .base import (
-    Any, Contract, ExternalShare, ExternalShareResponse, HTTPException, User, aware,
-    hashlib, json_load, secrets, select, timedelta, utcnow,
-)
+from datetime import timedelta
+from typing import Any
+import hashlib
+import secrets
+
+from fastapi import HTTPException
+from sqlalchemy import select
+
+from ..models import Contract, ExternalShare, User, utcnow
+from ..schemas import ExternalShareResponse
+from .common import aware, json_load
 
 
 class SharingServiceMixin:

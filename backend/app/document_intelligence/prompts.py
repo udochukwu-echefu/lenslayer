@@ -1,4 +1,4 @@
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.prompts import ChatPromptTemplate
 
 
 CONTRACT_ANALYSIS_PROMPT = ChatPromptTemplate.from_messages([
@@ -59,51 +59,5 @@ Severity means attention priority, not a legal conclusion. Missing protections m
     (
         "human",
         "REVIEW CONTEXT\n{review_context}\n\nCONTRACT TEXT\n{contract_text}",
-    ),
-])
-
-
-REWRITE_PROMPT = ChatPromptTemplate.from_messages([
-    MessagesPlaceholder(variable_name="chat_history"),
-    ("human", "{input}"),
-    (
-        "human",
-        "Rewrite the latest question as a standalone contract question. Do not answer it. If it is already standalone, repeat it.",
-    ),
-])
-
-
-QA_PROMPT = ChatPromptTemplate.from_messages([
-    (
-        "system",
-        """You answer questions for contract education and first-pass triage. Use ONLY the numbered evidence excerpts below and respect the review context. If the evidence does not answer the question, clearly say that it is not established by the retrieved document excerpts. Cite sources inline as [Source 1], [Source 2]. Explain in plain English, distinguish document facts from suggestions, and recommend qualified legal review for consequential decisions.
-
-REVIEW CONTEXT
-{review_context}
-
-EVIDENCE
-{context}""",
-    ),
-    MessagesPlaceholder(variable_name="chat_history"),
-    ("human", "{input}"),
-])
-
-
-COMPARISON_PROMPT = ChatPromptTemplate.from_messages([
-    (
-        "system",
-        """Compare two versions of a contract for education and triage. Use only the supplied texts. Return ONLY valid JSON:
-{{
-  "summary":"plain-language change summary",
-  "risk_direction":"Higher|Lower|Mixed|No material change detected",
-  "changes":[{{"category":"Added|Removed|Changed","title":"string","before":"short excerpt or Not present","after":"short excerpt or Not present","impact":"plain-English impact","attention":"High|Medium|Low"}}],
-  "questions_to_ask":["string"],
-  "uncertainties":["string"]
-}}
-Focus on substantive changes, not formatting. Do not claim legal validity.""",
-    ),
-    (
-        "human",
-        "REVIEW CONTEXT\n{review_context}\n\nORIGINAL\n{original}\n\nREVISED\n{revised}",
     ),
 ])
