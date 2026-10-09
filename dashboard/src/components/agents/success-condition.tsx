@@ -1,0 +1,11 @@
+import Link from "next/link";
+import type { SuccessCondition } from "@/lib/agent-types";
+import { exactDateTime } from "@/lib/agent-state";
+import { isCalendarCondition, isTaskCondition, knownCondition } from "@/lib/agent-shapes";
+
+export function SuccessConditionView({ condition }: { condition: SuccessCondition }) {
+  if (condition?.type === "all" && knownCondition(condition)) return <div><p>Every named condition needs its own verified receipt. Completing one action does not complete the workflow.</p><ol>{condition.conditions.map((entry) => <li key={entry.id}><h3>Condition <code>{entry.id}</code></h3><SuccessConditionView condition={entry.condition} /></li>)}</ol></div>;
+  if (isTaskCondition(condition)) return <><p>One assigned follow-up task created with persisted fields and source identity verified.</p><dl className="agent-facts"><div><dt>Condition type</dt><dd><code>{condition.type}</code></dd></div><div><dt>Target contract</dt><dd><Link href={`/contracts/${encodeURIComponent(condition.contract_id)}`}>{condition.contract_id}</Link></dd></div><div><dt>Assigned user</dt><dd><code>{condition.assigned_to_user_id}</code></dd></div><div><dt>Exact due date</dt><dd><time dateTime={condition.due_at}>{exactDateTime(condition.due_at)}</time><code>{condition.due_at}</code></dd></div></dl></>;
+  if (isCalendarCondition(condition)) return <><p>One private timed event on the exact delegated calendar, verified by provider read-back at completion.</p><dl className="agent-facts"><div><dt>Condition type</dt><dd><code>{condition.type}</code></dd></div><div><dt>Connection ID</dt><dd><code>{condition.connection_id}</code></dd></div><div><dt>Calendar ID</dt><dd><code>{condition.calendar_id}</code></dd></div><div><dt>Summary</dt><dd>{condition.summary}</dd></div><div><dt>Start</dt><dd><time dateTime={condition.start_at}>{exactDateTime(condition.start_at)}</time><code>{condition.start_at}</code></dd></div><div><dt>End</dt><dd><time dateTime={condition.end_at}>{exactDateTime(condition.end_at)}</time><code>{condition.end_at}</code></dd></div></dl></>;
+  return <><p className="agent-notice" role="alert">Unrecognized success condition. No task or calendar target is assumed, and approval is disabled for unmatched input.</p><pre>{JSON.stringify(condition, null, 2)}</pre></>;
+}

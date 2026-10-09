@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "project_id": "lenslayer",
+  "region": "europe-west1",
+  "artifact_repository": "lenslayer",
+  "image_name": "platform-staging",
+  "api_service": "lenslayer-api-staging",
+  "migration_job": "lenslayer-migrate-staging",
+  "review_job": "lenslayer-review-worker-staging",
+  "agent_worker_pool": "lenslayer-agent-worker-staging",
+  "runtime_service_account": "lenslayer-staging-runtime",
+  "dashboard_worker": "lenslayer-dashboard-staging",
+  "dashboard_origin": "https://lenslayer-dashboard-staging.udboy361.workers.dev",
+  "oidc_issuer": "https://deveze.uk.auth0.com/",
+  "oidc_audience": "https://api.lenslayer.staging",
+  "oidc_jwks_url": "https://deveze.uk.auth0.com/.well-known/jwks.json",
+  "r2_bucket": "lenslayer-documents-staging",
+  "r2_endpoint": "https://9d03f4c51b061a0160b4e10c9765527b.r2.cloudflarestorage.com",
+  "resend_from_email": "LensLayer staging <onboarding@resend.dev>",
+  "calendar_enabled": false,
+  "model_enabled": false,
+  "secret_versions": {
+    "neon-pooled-url": "1",
+    "neon-direct-url": "1",
+    "r2-access-key-id": "1",
+    "r2-secret-access-key": "1",
+    "cloudmersive-api-key": "1",
+    "resend-api-key": "1",
+    "groq-api-key": "1"
+  }
+}

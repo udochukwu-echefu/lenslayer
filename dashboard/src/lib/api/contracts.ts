@@ -9,8 +9,8 @@ import type {
 import { request, jsonRequest, download, API_PREFIX } from "./client";
 
 export const contractsApi = {
-  contracts: (organizationId: string) =>
-    request<Contract[]>(`/organizations/${organizationId}/contracts`),
+  contracts: (organizationId: string, options?: { signal?: AbortSignal; privateWorkspace?: boolean }) =>
+    request<Contract[]>(`/organizations/${encodeURIComponent(organizationId)}/contracts`, { signal: options?.signal }, options?.privateWorkspace ? false : undefined, options?.privateWorkspace ? "fresh" : undefined),
   contract: (organizationId: string, contractId: string) =>
     request<Contract>(
       `/organizations/${organizationId}/contracts/${contractId}`,

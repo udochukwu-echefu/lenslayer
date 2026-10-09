@@ -60,6 +60,9 @@ def public_api_token(request: Request) -> str:
 
 
 def get_current_user(request: Request, service: Annotated[PlatformService, Depends(get_platform_service)]) -> User:
+    scheme, _, token = request.headers.get("authorization", "").partition(" ")
+    if scheme.lower() == "bearer" and token.strip().startswith("ll_agent_"):
+        raise HTTPException(status_code=401, detail="Use a human identity for workspace administration.")
     return service.ensure_user(resolve_principal(request))
 
 

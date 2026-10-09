@@ -47,6 +47,7 @@ CONTRACT_DECISIONS = {"accept", "change", "escalate", "resolve"}
 
 INTEGRATION_PROVIDERS = {
     "email",
+    "google_calendar",
     "google_drive",
     "onedrive",
     "sharepoint",
@@ -92,7 +93,7 @@ def normalized_email(email: str) -> str:
 
 
 def aware(value: datetime) -> datetime:
-    return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc) if value.tzinfo else value.replace(tzinfo=timezone.utc)
 
 
 def invitation_status(invitation: OrganizationInvitation) -> str:

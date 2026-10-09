@@ -1,21 +1,42 @@
 import { useState } from "react"
 import { usePanelMotion } from "../../hooks/use-panel-motion"
-import { ArrowRight, FileText, Link2, Search } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 
 const questions = [
-  { label: "Renewals", question: "Which agreements renew automatically?", answer: "Two sample agreements include automatic renewal. Harborline requires 60 days’ notice; Northstar requires 90 days.", sources: [{ name: "Harborline supply agreement", location: "Clause 11.2", quote: "The Term will renew for successive periods unless either party gives not less than sixty (60) days’ written notice." }, { name: "Northstar services order", location: "Page 8", quote: "This Order renews annually unless written notice is received at least ninety days before the renewal date." }] },
-  { label: "Service credits", question: "Is there a cap on service credits?", answer: "No aggregate cap was found in Harborline’s service-credit clause. Check the complete agreement and related schedules before concluding that no cap applies.", sources: [{ name: "Harborline supply agreement", location: "Clause 8.4", quote: "Customer may claim the applicable Service Credit for each affected service and reporting period." }] },
-  { label: "Termination", question: "Can we terminate for repeated service failures?", answer: "Harborline preserves a right to terminate for persistent material failure. The full agreement should be reviewed for the applicable process and notice requirements.", sources: [{ name: "Harborline supply agreement", location: "Clause 8.5", quote: "Service Credits do not limit Customer’s right to terminate for persistent material failure." }] },
+  { label: "Evidence", question: "Retrieve the retained renewal clause", answer: "Literal phrase retrieval returns a source excerpt with a version, extracted-text hash, and offsets. The receipt identifies the source; it does not prove a legal interpretation.", sources: [{ name: "Synthetic retained agreement", location: "Source excerpt", quote: "The Term shall renew automatically unless either party gives not less than 120 days’ written notice." }] },
+  { label: "Approval", question: "Inspect the exact follow-up task", answer: "Check the allowed assignee and explicit due instant against the run’s success condition. A pending proposal stops for a human decision; an agent cannot turn source instructions into approval.", sources: [{ name: "Immutable task input", location: "Human review", quote: "Review renewal notice deadline. Confirm whether to renew before sending notice." }] },
+  { label: "Receipt", question: "Verify task creation, not task performance", answer: "A succeeded run records the task ID, evidence reference, verified=true, and database_read_back. Queued, accepted, or awaiting_approval does not mean the action executed.", sources: [{ name: "Completion receipt", location: "Sample run", quote: "Outcome: follow-up task created. The renewal itself is not handled." }] },
 ]
 export default function PortfolioDemo({ sampleUrl }) {
   const [active, setActive] = useState(0)
   const panelRef = usePanelMotion(active)
   const query = questions[active]
-  return <div className="portfolio-demo">
-    <div className="portfolio-heading"><span><Search aria-hidden="true" /> Portfolio questions</span><span>Sample answers</span></div>
-    <div className="query-options" role="group" aria-label="Choose a sample portfolio question">{questions.map((question, index) => <button type="button" key={question.label} aria-pressed={active === index} onClick={() => setActive(index)}>{question.label}</button>)}</div>
-    <div className="sample-question"><span>{query.question}</span><Search aria-hidden="true" /></div>
-    <div ref={panelRef} className="portfolio-answer" aria-live="polite"><div className="answer-heading"><span className="answer-symbol"><Link2 aria-hidden="true" /></span><strong>Here’s what the sources say.</strong></div><p>{query.answer}</p><div className="answer-sources">{query.sources.map((source, index) => <a href={sampleUrl} className="answer-source" key={source.name}><div><span><FileText aria-hidden="true" /> {source.name}</span><span>{source.location} <ArrowRight aria-hidden="true" /></span></div><blockquote>{source.quote}</blockquote><span className="source-number">{index + 1}</span></a>)}</div></div>
-    <p className="portfolio-disclosure">Preset examples from synthetic documents. Open the sample to explore the review.</p>
-  </div>
+  return (
+    <div className="portfolio-demo">
+      <div className="portfolio-toolbar">
+        <p className="portfolio-label">Illustrative workflow · synthetic data</p>
+        <div className="query-options" role="group" aria-label="Inspect an illustrative workflow stage">
+          {questions.map((question, index) => (
+            <button type="button" key={question.label} aria-pressed={active === index} aria-controls="portfolio-example" onClick={() => setActive(index)}>
+              {question.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div ref={panelRef} className="portfolio-answer" id="portfolio-example" aria-live="polite">
+        <h3 className="sample-question">{query.question}</h3>
+        <p>{query.answer}</p>
+        <div className="answer-sources">
+          <p>{active === 0 ? "Retained source" : "Workflow record"}</p>
+          {query.sources.map((source) => (
+            <a href={sampleUrl} className="answer-source" key={source.name}>
+              <div><span>{source.name}</span><span>{source.location} <ArrowRight aria-hidden="true" /></span></div>
+              <blockquote>“{source.quote}”</blockquote>
+            </a>
+          ))}
+        </div>
+      </div>
+      <p className="portfolio-disclosure">Static illustrations, not live executions. Open Runs to inspect the read-only synthetic ledger.</p>
+    </div>
+  )
 }

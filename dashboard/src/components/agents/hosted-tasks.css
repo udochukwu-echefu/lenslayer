@@ -1,0 +1,21 @@
+.hosted-task-page { min-width: 0; }
+.hosted-assignment { padding: 28px; border: 1px solid var(--line); min-width: 0; }
+.hosted-assignment > p, .hosted-status > p { margin: 12px 0 20px; max-width: 70ch; color: var(--ink-muted); font-size: 14px; line-height: 1.65; }
+.hosted-assignment form { margin-top: 24px; }
+.hosted-assignment .field { min-width: 0; align-content: start; }
+.hosted-assignment .input, .hosted-assignment .textarea { width: 100%; min-width: 0; }
+.hosted-facts { display: grid; gap: 20px; padding-top: 20px; border-top: 1px solid var(--line); }
+.hosted-wide { grid-column: 1 / -1; }
+.hosted-history, .hosted-records { display: grid; gap: 24px; min-width: 0; }
+.hosted-record { padding: 24px 0; border-bottom: 1px solid var(--line); min-width: 0; }
+.hosted-status h3 { overflow-wrap: anywhere; white-space: pre-wrap; }
+.hosted-status .agent-facts { margin: 20px 0; }
+.hosted-status > .button { margin-top: 12px; }
+.hosted-record > a { display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; }
+.hosted-form-error { font-size: 14px; margin-top: 20px; }
+.hosted-assignment > .agent-notice, .hosted-assignment > .agent-controls { margin-top: 20px; }
+@media (max-width: 760px) {
+  .hosted-assignment { padding: 18px; }
+  .hosted-task-page .agent-controls { width: 100%; }
+  .hosted-task-page .agent-controls .button { max-width: 100%; white-space: normal; }
+}
