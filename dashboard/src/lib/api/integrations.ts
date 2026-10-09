@@ -16,9 +16,10 @@ import type {
 import { request, jsonRequest } from "./client";
 
 export const integrationsApi = {
-  integrations: (organizationId: string, provider?: IntegrationProvider) =>
+  integrations: (organizationId: string, provider?: IntegrationProvider, options?: { signal?: AbortSignal; privateWorkspace?: boolean }) =>
     request<IntegrationConnection[]>(
-      `/organizations/${organizationId}/integrations${provider ? `?provider=${provider}` : ""}`,
+      `/organizations/${encodeURIComponent(organizationId)}/integrations${provider ? `?provider=${provider}` : ""}`,
+      { signal: options?.signal }, options?.privateWorkspace ? false : undefined, options?.privateWorkspace ? "fresh" : undefined,
     ),
   integrationProviders: (organizationId: string) =>
     request<IntegrationProviderDescriptor[]>(

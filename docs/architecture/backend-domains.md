@@ -4,6 +4,7 @@ LensLayer keeps `PlatformService` as a compatibility facade for FastAPI and exis
 
 | Module | Responsibility |
 | --- | --- |
+| `agents` | agent delegations, bounded runs, evidence receipts, action approvals, and execution records |
 | `workspace` | users, organizations, membership, roles, and invitations |
 | `tasks` | assigned actions and task policy |
 | `contracts` | contract intake, review records, jobs, retention, and deletion |
@@ -33,3 +34,18 @@ LensLayer keeps `PlatformService` as a compatibility facade for FastAPI and exis
 Adapters translate `extraction.py`, `analysis.py`, and `playbooks.py` into those ports. The active model prompt lives in `document_intelligence/prompts.py`; exported review files are generated in `report_exports.py`. The worker retains persistence, retention, notifications, audit, and failure transitions; the review workflow remains synchronous and side-effect-free. FastAPI and the worker accept workflow factories at their composition roots, allowing tests and future deployments to substitute adapters without patching provider libraries.
 
 Historical route paths, response schemas, database models, transaction ordering, and retention behavior remain unchanged by this refactor.
+
+## Agent infrastructure
+
+`agent_models.py` and `agent_schemas.py` define the new control-plane records and
+strict API contract. `api/agents.py` separates human administration from agent
+bearer authentication. `service_domains/agents.py` owns scoped delegation, source
+receipts, run state/events, immutable action creation, and human approvals.
+
+`agent_runtime.py` implements the first durable internal action. Its action rows
+are the transactional dispatch outbox. `worker.py` claims and executes actions,
+recovers expired leases, and closes expired runs. Task creation and independent
+read-back verification commit with the action/run result. The document review
+workflow remains separate from agent planning and execution.
+
+See [agent API v1](agent-api-v1.md) for the shipped contract and its limits.

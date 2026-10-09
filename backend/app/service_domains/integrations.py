@@ -102,6 +102,8 @@ class IntegrationsServiceMixin:
             "Only owners and administrators can manage integrations.",
         )
         provider = payload["provider"]
+        if provider == "google_calendar":
+            raise HTTPException(422, "Use the Calendar OAuth routes; metadata is not a credential grant.")
         if provider not in INTEGRATION_PROVIDERS:
             raise HTTPException(status_code=422, detail="Unknown integration provider.")
         settings = payload.get("settings", {})
@@ -159,6 +161,11 @@ class IntegrationsServiceMixin:
         )
         if connection is None:
             raise HTTPException(status_code=404, detail="Integration connection not found.")
+        if connection.provider == "google_calendar":
+            self.session.commit()
+            self.disconnect_calendar(organization_id, connection_id, user)
+            self.session.refresh(connection)
+            return connection
         connection.status = "revoked"
         connection.updated_at = utcnow()
         self._audit(
@@ -192,6 +199,8 @@ class IntegrationsServiceMixin:
         retain_source_text: bool = False,
         retention_days: int = 30,
     ) -> tuple[IntegrationImport, Contract, DocumentAsset, ProcessingJob]:
+        if provider == "google_calendar":
+            raise HTTPException(422, "Calendar connections do not accept document imports.")
         if provider not in INTEGRATION_PROVIDERS:
             raise HTTPException(status_code=422, detail="Unknown integration provider.")
         connection = None

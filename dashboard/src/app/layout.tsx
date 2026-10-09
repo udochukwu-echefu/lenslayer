@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     default: "LensLayer Workspace",
     template: "%s · LensLayer",
   },
-  description: "Evidence-led contract review and decision workspace.",
+  description: "Retained context, delegated agent access, and verified task outcomes in an inspectable workspace.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

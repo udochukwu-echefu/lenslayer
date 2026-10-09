@@ -1,0 +1,19 @@
+{
+  "$schema": "../../dashboard/node_modules/wrangler/config-schema.json",
+  "name": "lenslayer-dashboard-staging",
+  "main": "../../dashboard/.open-next/worker.js",
+  "compatibility_date": "2026-10-09",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": "../../dashboard/.open-next/assets",
+    "binding": "ASSETS"
+  },
+  "vars": {
+    "NEXT_PUBLIC_LENSLAYER_PUBLIC_ACCESS": "true"
+  },
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "invocation_logs": false },
+    "traces": { "enabled": false }
+  }
+}

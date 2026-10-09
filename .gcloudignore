@@ -17,3 +17,16 @@ dashboard/.open-next/
 dashboard/.wrangler/
 landing/node_modules/
 landing/dist/
+**/node_modules/
+**/dist/
+**/.next/
+**/.open-next/
+**/.wrangler/
+.agents/
+.codex/
+.aws/
+landing-backups/
+**/.DS_Store
+**/.hosted-ui-qa/
+**/playwright-report/
+**/test-results/

@@ -9,7 +9,7 @@ from sqlalchemy.orm import joinedload
 
 from ..models import Contract, Membership, User, WorkflowTask, utcnow
 from ..schemas import TaskResponse
-from .common import TASK_SOURCE_KINDS, TASK_STATUSES, json_dump, json_load, normalized_role
+from .common import TASK_SOURCE_KINDS, TASK_STATUSES, aware, json_dump, json_load, normalized_role
 
 
 class TasksServiceMixin:
@@ -204,10 +204,10 @@ class TasksServiceMixin:
             category=task.category,
             priority=task.priority,
             status=task.status,
-            due_at=task.due_at,
+            due_at=aware(task.due_at) if task.due_at else None,
             source_kind=task.source_kind,
             source_reference=json_load(task.source_reference_json, {}),
-            completed_at=task.completed_at,
-            created_at=task.created_at,
-            updated_at=task.updated_at,
+            completed_at=aware(task.completed_at) if task.completed_at else None,
+            created_at=aware(task.created_at),
+            updated_at=aware(task.updated_at),
         )
