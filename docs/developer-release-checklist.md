@@ -1,14 +1,18 @@
 # Developer/product release checklist
 
 Developer infrastructure and the bounded user-assigned hosted service are
-implemented and independently checked. Staging and SDK artifacts are prepared for
-review; **nothing was published, deployed or verified against live providers/models**.
-Unchecked items are release verification or subsequent product work. Current
-combined evidence is in [finish verification](architecture/agent-pivot-finish-verification.md);
+implemented and independently checked. **Isolated document-task staging is deployed
+and verified; the continuous worker is paused, and human review precedes production.**
+The actual scanner, email and document-analysis providers were used for synthetic
+checks. Calendar and the hosted product planner model remain disabled; nothing was
+merged, deployed to production or published to npm. Unchecked items are broader
+release verification or subsequent product work. Live evidence is in the
+[staging execution report](deployment/agent-staging-execution.md); local combined
+evidence is in [finish verification](architecture/agent-pivot-finish-verification.md);
 the earlier [integration record](architecture/agent-pivot-integration-verification.md)
 is historical.
 
-## Local checks completed
+## Original local checks completed
 
 - [x] Dependency-free server-only SDK 0.1.0 builds; 33 tests pass.
 - [x] `npm --prefix sdk run release:check`: 18-file pack allowlist, credential
@@ -44,7 +48,8 @@ is historical.
 - [x] OpenNext Cloudflare staging build and Wrangler deployment dry-run; 74 assets,
   no publication. Names-only Google inventory identifies missing staging secrets.
 - [x] No self-approval, submitted-code execution, credential/excerpt checkpoints,
-  real provider/model writes, npm publishing or deployment in this assignment.
+  real provider/model writes, npm publishing or deployment in the original local
+  verification phase. Subsequent approved staging execution is recorded separately.
 
 Commands/setup: [quickstart](developer-agent-quickstart.md),
 [`sdk/README.md`](../sdk/README.md), [`mcp/README.md`](../mcp/README.md),
@@ -67,7 +72,8 @@ Commands/setup: [quickstart](developer-agent-quickstart.md),
   smoke and 33 tests include abort/timeout/idempotency. Document ESM-only support.
 - [x] Add a manual artifact-review CI workflow that runs release checks, packs,
   records integrity and uploads the artifact without publishing. GitHub Actions
-  execution itself remains unverified until the workflow is pushed/run.
+  execution of this dedicated manual artifact-review workflow remains unverified;
+  the feature test workflow has run successfully.
 - [ ] Establish trusted CI/OIDC publishing with provenance; review the repository
   release/tag/commit binding and dependency lockfile. Follow
   https://docs.npmjs.com/generating-provenance-statements.
@@ -95,15 +101,26 @@ Commands/setup: [quickstart](developer-agent-quickstart.md),
 - [x] Prepare [staging review](deployment/agent-staging-review.md) and non-secret
   commands/environment bundle without cloud mutation; keep model disabled and
   dedicated worker at zero instances until separately activated.
-- [ ] Provision staging PostgreSQL/storage and run migrations through existing
-  deployment process. Validate worker leases, locks, restart/crash behavior,
-  queue retries, `/health/worker`, metrics, revocation backlog and alerting.
-- [ ] Configure existing OIDC/session/proxy correctly; exercise owner/admin,
-  reviewer/viewer, membership revocation and organization switching. Do not use
-  local identity headers or synthetic data as proof of live browser identity.
+- [x] Provision independent empty staging PostgreSQL/private storage and apply
+  migrations; live drift/pooled checks, retained synthetic upload/review, agent
+  readiness, worker restart persistence, approval and exact receipts passed.
+- [x] Configure real staging OIDC/session/proxy; establish the signed-in Google
+  identity, owner assignment/approval, viewer UI restrictions and scoped contract
+  lookup after organization switching. No local identity headers were used.
+- [x] Verify live SDK/MCP scope boundaries, immutable replay/409, cancellation,
+  credential revocation and zero duplicate tasks; return the worker to zero
+  instances and confirm all review jobs finished.
+- [ ] Before sustained production operation, complete monitoring and alert routing,
+  live crash/queue-retry rehearsal as required, and remaining admin/reviewer/
+  membership-revocation checks. Local PostgreSQL tests cover leases, locks and
+  concurrent claims; browser automation did not read the private metrics endpoint
+  because direct API navigation was blocked.
 - [x] Verify loopback landing `/developers` and `/runs` CTAs and the public
   signed-out guide/sample navigation.
-- [ ] Configure actual deployed dashboard/landing URLs and test live sign-in.
+- [x] Connect the deployed staging dashboard to its staging API; test real sign-in,
+  callback, private API identity and sign-out.
+- [ ] Review/approve staging before merge and production promotion; validate
+  production dashboard/landing URLs through that separate rollout.
 
 ## Google Calendar OAuth/provider — platform and UI owner
 
@@ -131,6 +148,10 @@ Commands/setup: [quickstart](developer-agent-quickstart.md),
 
 ## Local MCP host and optional planner model
 
+- [x] Official client → actual local stdio → live staging API initialization,
+  discovery, retrieval, proposal, real OIDC human approval, verified completion
+  and revocation; temporary scoped credentials stayed in process memory and were
+  revoked afterward.
 - [ ] Configure an actual approved MCP host using
   `mcp/client-config.example.json`; direct absolute Node entrypoint, no npm stdout
   chatter, process-only scoped credentials, metadata-only stderr. Exercise legacy
@@ -167,6 +188,10 @@ Commands/setup: [quickstart](developer-agent-quickstart.md),
 - [x] Hosted synthetic assignment/detail browser checks at 320–1440px in
   light/dark, model disclosure, no horizontal/input overflow and zero assignment
   writes/runtime errors; component tests include focused axe coverage.
+- [x] Real staging private document assignment, exact approval/evidence, ordered
+  verified receipts and viewer/organization boundaries. Correct select chevrons
+  and plain contract step numbers; focused tests, lint and clean Next.js/TypeScript/
+  OpenNext builds passed and staging was redeployed.
 - [ ] Complete private operator browser checks under staging OIDC: calendar/mixed
   conditions, input history after reload, expiry, unknown receipts and role changes.
   Automated local component/API checks cover these, not a live private browser.
@@ -178,8 +203,9 @@ Commands/setup: [quickstart](developer-agent-quickstart.md),
 
 - [x] Implement a user-facing LensLayer agent service with shared checkpoints,
   explicit task assignment and a dedicated supervised-worker deployment plan.
-- [ ] Deploy it and complete real OIDC/worker/provider/model acceptance through
-  the staging gates above. Local tests and prepared commands do not prove hosting.
+- [x] Deploy bounded document tasks and complete real staging OIDC/worker/scanner/
+  document-analysis acceptance through hosted and developer clients. Calendar and
+  hosted product-model acceptance remain separate gates above.
 - [ ] Add further customer-validated goal types and connectors. Hosted planning
   covers document/Calendar/combined fixed-fact goals; the registry is closed and
   workflows are bounded named `all` conditions rather than general DAGs.

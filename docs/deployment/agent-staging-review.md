@@ -2,8 +2,9 @@
 
 The preparation record below is followed by the [staging execution record](agent-staging-execution.md).
 After explicit approval, the image, isolated database/storage/identity, login
-application and staging dashboard were provisioned. Private API/worker acceptance
-still awaits the three provider secret versions; production rollout is pending.
+application, API, dashboard and workers were deployed. Real private document-task
+acceptance passed through hosted assignment and SDK/MCP; the continuous worker was
+paused afterward. Human staging review and production rollout remain pending.
 
 The finish phase prepares a separate Cloudflare dashboard, Cloud Run API,
 review job, migration job and continuous agent worker pool. It does not deploy
