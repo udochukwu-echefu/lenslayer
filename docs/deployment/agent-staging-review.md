@@ -1,5 +1,10 @@
 # Agent service staging deployment review
 
+The preparation record below is followed by the [staging execution record](agent-staging-execution.md).
+After explicit approval, the image, isolated database/storage/identity, login
+application and staging dashboard were provisioned. Private API/worker acceptance
+still awaits the three provider secret versions; production rollout is pending.
+
 The finish phase prepares a separate Cloudflare dashboard, Cloud Run API,
 review job, migration job and continuous agent worker pool. It does not deploy
 them. The existing `lenslayer-api`, `lenslayer-review-worker`, production Neon

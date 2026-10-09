@@ -133,6 +133,12 @@ superseded for current status by this report.
 
 ## Remaining release steps
 
+The list below records the finish-phase handoff. Subsequent feature-branch/CI
+and staging provisioning progress is recorded in the
+[staging execution report](../deployment/agent-staging-execution.md). The draft
+PR and staging build passed; database migration/storage and browser login/logout
+checks passed. Private API/worker acceptance awaits three provider credentials.
+
 1. Provision separate empty staging PostgreSQL, private R2, runtime identity,
    OIDC audience/client and seven staging secrets. Review/execute the prepared
    immutable-image migration/API/dashboard/worker plan; activate the continuous
