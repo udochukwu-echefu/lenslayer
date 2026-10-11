@@ -23,6 +23,9 @@ class Database:
 
     def create_schema(self) -> None:
         from . import models  # noqa: F401
+        from . import agent_models  # noqa: F401
+        from . import connector_models  # noqa: F401
+        from . import hosted_agent_models  # noqa: F401
 
         Base.metadata.create_all(self.engine)
 

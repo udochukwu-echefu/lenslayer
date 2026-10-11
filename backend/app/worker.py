@@ -10,9 +10,12 @@ from collections.abc import Callable
 from datetime import timedelta
 from pathlib import Path
 
-from sqlalchemy import and_, or_, select
+from sqlalchemy import and_, delete, or_, select
 
 from .config import Settings, get_settings
+from .agent_runtime import claim_next_agent_action, expire_agent_runs, process_agent_action
+from .agent_models import AgentWorkerHeartbeat
+from .hosted_agent_runtime import claim_next_hosted_task, process_hosted_task
 from .database import Database
 from .document_intelligence import ReviewWorkflow, build_review_workflow
 from .email_delivery import ResendEmailSender, queue_email
@@ -33,6 +36,7 @@ from .models import (
     WebhookDelivery,
     WebhookSubscription,
     utcnow,
+    new_id,
 )
 from .object_storage import ObjectStore, build_object_store
 from .service_domains.common import json_dump, json_load
@@ -508,29 +512,55 @@ def run_worker(
     once: bool = False,
     drain: bool = False,
     review_workflow_factory: Callable[[], ReviewWorkflow] = build_review_workflow,
+    agents_only: bool = False,
 ) -> None:
     database = Database(settings)
     if settings.auto_create_schema:
         database.create_schema()
     object_store = build_object_store(settings)
-    review_workflow = review_workflow_factory()
+    review_workflow = None if agents_only else review_workflow_factory()
+    worker_id = new_id()
     try:
         while True:
-            purge_expired_contracts(database, object_store)
-            process_lifecycle_reminders(database, settings)
-            job_id = claim_next_job(database, settings)
+            with database.session_factory() as session:
+                session.execute(delete(AgentWorkerHeartbeat).where(AgentWorkerHeartbeat.last_seen_at < utcnow() - timedelta(days=1)))
+                heartbeat = session.get(AgentWorkerHeartbeat, worker_id)
+                if heartbeat is None:
+                    session.add(AgentWorkerHeartbeat(worker_id=worker_id, last_seen_at=utcnow(), lane="agents" if agents_only else "mixed"))
+                else:
+                    heartbeat.last_seen_at = utcnow()
+                session.commit()
+            if not agents_only:
+                purge_expired_contracts(database, object_store)
+                process_lifecycle_reminders(database, settings)
+            expire_agent_runs(database, settings, object_store)
+            hosted_claim = claim_next_hosted_task(database, settings)
+            if hosted_claim:
+                try:
+                    process_hosted_task(database, settings, object_store, *hosted_claim)
+                except Exception:
+                    logger.error("Hosted planning failed; its durable lease will be recovered.",
+                                 extra={"hosted_task_id": hosted_claim[0]})
+            agent_claim = claim_next_agent_action(database, settings)
+            if agent_claim:
+                try:
+                    process_agent_action(database, settings, object_store, *agent_claim)
+                except Exception:
+                    logger.error("Agent dispatch failed; its durable lease will be recovered.",
+                                 extra={"action_id": agent_claim[0]})
+            job_id = None if agents_only else claim_next_job(database, settings)
             if job_id:
                 process_job(database, object_store, job_id, settings, review_workflow)
-            email_id = claim_next_email(database, settings)
+            email_id = None if agents_only else claim_next_email(database, settings)
             if email_id:
                 process_email(database, settings, email_id)
             if once:
                 return
-            if drain and not job_id and not email_id:
+            if drain and not job_id and not email_id and not agent_claim and not hosted_claim:
                 return
             if drain:
                 continue
-            if not job_id and not email_id:
+            if not job_id and not email_id and not agent_claim and not hosted_claim:
                 time.sleep(settings.worker_poll_seconds)
     finally:
         database.dispose()
@@ -540,10 +570,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Process queued LensLayer platform jobs.")
     parser.add_argument("--once", action="store_true", help="Process at most one queued job, then exit.")
     parser.add_argument("--drain", action="store_true", help="Process queued jobs and emails until the queue is empty.")
+    parser.add_argument("--agents-only", action="store_true", help="Dedicated hosted planning/action lane; no reviews or emails.")
     args = parser.parse_args()
     if args.once and args.drain:
         parser.error("--once and --drain cannot be combined")
-    run_worker(get_settings(), once=args.once, drain=args.drain)
+    run_worker(get_settings(), once=args.once, drain=args.drain, agents_only=args.agents_only)
     return 0
 
 

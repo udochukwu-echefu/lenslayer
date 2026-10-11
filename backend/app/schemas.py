@@ -58,6 +58,7 @@ TaskCategoryName = Literal["follow_up", "risk", "obligation", "deadline", "negot
 ReportRangeName = Literal["30d", "90d", "365d", "all"]
 IntegrationProviderName = Literal[
     "email",
+    "google_calendar",
     "google_drive",
     "onedrive",
     "sharepoint",
@@ -173,7 +174,7 @@ class IntakeAddressResponse(BaseModel):
 class IntegrationProviderResponse(BaseModel):
     provider: IntegrationProviderName
     display_name: str
-    category: Literal["email", "cloud_storage", "messaging", "developer"]
+    category: Literal["email", "cloud_storage", "messaging", "developer", "calendar"]
     capabilities: list[str]
     connection_mode: Literal["managed", "oauth", "bot", "webhook", "api_key", "secure_link"]
     configured: bool

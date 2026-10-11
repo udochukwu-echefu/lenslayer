@@ -1,0 +1,15 @@
+{
+  "name": "@lenslayer/bounded-planner",
+  "version": "0.1.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "build": "npm --prefix ../sdk run build && tsc -p tsconfig.json",
+    "test": "npm run build && node --test tests/*.test.mjs",
+    "start": "node dist/cli.js"
+  },
+  "dependencies": { "@lenslayer/agent-sdk": "file:../sdk", "zod": "4.4.3" },
+  "devDependencies": { "@types/node": "24.10.1", "typescript": "5.9.3" },
+  "engines": { "node": ">=20.3.0" }
+}

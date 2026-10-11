@@ -1,0 +1,23 @@
+# Build only. No migration, deployment, IAM change or worker activation occurs.
+# Submit from the repository root after reviewing the staging plan.
+substitutions:
+  _REGION: europe-west1
+  _ARTIFACT_REPOSITORY: lenslayer
+  _SOURCE_ID: review-required
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+steps:
+  - id: build-staging-runtime
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file
+      - backend/Dockerfile
+      - --tag
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/platform-staging:${_SOURCE_ID}
+      - .
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/platform-staging:${_SOURCE_ID}

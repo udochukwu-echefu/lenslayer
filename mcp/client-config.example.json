@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "lenslayer": {
+      "command": "node",
+      "args": ["/absolute/path/to/lenslayer/mcp/dist/stdio.js"],
+      "env": {
+        "LENSLAYER_API_URL": "http://127.0.0.1:8000",
+        "LENSLAYER_AGENT_TOKEN": "REPLACE_WITH_SCOPED_SERVER_SECRET"
+      }
+    }
+  }
+}

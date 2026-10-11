@@ -4,6 +4,12 @@ This backend powers the standalone LensLayer platform and its Next.js workspace.
 
 ## Included foundation
 
+- Separate agent bearer credentials, owner/admin delegations, resource/tool/assignee scopes, expiry, and revocation
+- Durable external-agent runs, ordered events, retained-source evidence receipts, and immutable approval-bound actions
+- Transactional task dispatch with lease fencing, bounded recovery, cancellation, and verified database read-back outcomes
+- Typed/versioned tools, explicit contract/calendar grants, composite checkpoints, and immutable structured input waits
+- Encrypted tenant Calendar OAuth, stable event IDs, bounded dispatch, exact provider read-back and partial-effect/unknown-outcome records
+- Human-assigned hosted goals, durable planning checkpoints, internal scoped delegation and an independent agent worker lane
 - FastAPI application with local and OIDC authentication boundaries
 - Organisation and membership isolation
 - Owner, administrator, reviewer, and read-only viewer roles
@@ -73,6 +79,43 @@ Negotiation closeout uses `/contracts/{contract_id}/versions`, `/negotiation-ite
 Intake and integrations use `/integrations/providers`, `/integrations`, `/integrations/{provider}/imports`, `/intake/email-address`, `/intake/email`, `/api-keys`, `/webhooks`, `/webhook-deliveries`, and `/public/contracts`. The platform stores connection metadata and import provenance, routes every supported document through the same review pipeline, rejects connector secrets in database settings, and records downstream delivery state. Live OAuth, mailbox routing, Graph, Dropbox, and messaging credentials are deployment secrets and are intentionally not committed.
 
 Interactive OpenAPI documentation is available at `http://localhost:8000/docs` outside production.
+
+## Agent execution
+
+Human owners/admins create a scoped agent through
+`POST /api/v1/organizations/{organization_id}/agents`. The returned agent credential
+is shown once and must be kept server-side. Developers use it at `/api/v1/agent/*`
+to create a bounded run, retrieve evidence from a retained contract version, and
+propose `workspace.tasks.create`. Human approval is required by default.
+
+The worker rechecks delegation, source, approval, expiry, and lease ownership;
+it creates the task, reads it back, and persists the verified run result in one
+transaction. It also expires abandoned runs and approval windows. Run it
+continuously for recovery; `--once` and `--drain` also process agent actions.
+
+This supplies infrastructure for externally planned agents, internal workspace
+tasks and a bounded Google Calendar connector implementation. Independent
+calendar goals need no contract; document-backed reminders can cite retained
+evidence. Human owners/admins also assign hosted goals through
+`/api/v1/organizations/{organization_id}/hosted-agent-tasks`. The Python hosted
+planner persists checkpoints for document follow-ups, Calendar-only events and
+combined goals. It requires human action approval and matching verified receipts;
+it never issues a usable agent bearer to the browser. Use
+`python -m backend.app.worker --agents-only` for its continuous planning/action
+lane without document/email processing. Calendar uses fake-HTTP tests; real
+consent/provider and staging verification remain pending.
+See [the API contract](../docs/architecture/agent-api-v1.md) for schemas, endpoints,
+idempotency, limits, failure states, and verification details.
+See [additive interface changes](../docs/architecture/agent-interface-changes.md)
+for workflows, composite conditions, tool actions, input requests, OAuth,
+reconciliation and metrics. Original v1 routes/hashes remain compatible.
+[Worker operations](../docs/deployment/agent-worker-operations.md) covers continuous
+execution, migration/health, explicit sandbox OAuth, disposable PostgreSQL tests
+and pending staging acceptance.
+See [hosted API](../docs/architecture/hosted-agent-api.md),
+[hosted operations](../docs/deployment/hosted-agent-service.md) and
+[staging review](../docs/deployment/agent-staging-review.md) for the assignment
+contract, optional decision-only model and deployment preparation.
 
 ## Production boundaries
 

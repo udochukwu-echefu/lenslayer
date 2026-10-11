@@ -9,6 +9,9 @@
     "binding": "ASSETS"
   },
   "observability": {
-    "enabled": true
+    "enabled": true,
+    // OAuth callback URLs contain one-time code/state. Keep metadata-only custom
+    // logs, but never store automatic invocation request URLs for this Worker.
+    "logs": { "invocation_logs": false }
   }
 }

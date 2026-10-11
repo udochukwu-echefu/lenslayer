@@ -40,8 +40,8 @@ export const workspaceApi = {
       "PATCH",
       payload,
     ),
-  members: (organizationId: string) =>
-    request<Membership[]>(`/organizations/${organizationId}/members`),
+  members: (organizationId: string, options?: { signal?: AbortSignal; privateWorkspace?: boolean }) =>
+    request<Membership[]>(`/organizations/${encodeURIComponent(organizationId)}/members`, { signal: options?.signal }, options?.privateWorkspace ? false : undefined, options?.privateWorkspace ? "fresh" : undefined),
   updateMemberRole: (
     organizationId: string,
     membershipId: string,

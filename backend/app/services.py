@@ -11,9 +11,13 @@ from .service_domains.collaboration import CollaborationServiceMixin
 from .service_domains.sharing import SharingServiceMixin
 from .service_domains.lifecycle import LifecycleServiceMixin
 from .service_domains.governance import GovernanceServiceMixin
+from .service_domains.agents import AgentsServiceMixin
+from .service_domains.calendar import CalendarServiceMixin
 
 
 class PlatformService(
+    AgentsServiceMixin,
+    CalendarServiceMixin,
     WorkspaceServiceMixin,
     TasksServiceMixin,
     ContractsServiceMixin,

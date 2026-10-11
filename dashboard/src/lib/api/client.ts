@@ -102,6 +102,7 @@ export async function request<T>(
   path: string,
   init?: RequestInit,
   usePublicAccess = PUBLIC_ACCESS_ENABLED,
+  sessionPolicy?: "fresh",
 ): Promise<T> {
   if (usePublicAccess) {
     const { getDemoResponse } = await import("../demo-data");
@@ -112,10 +113,14 @@ export async function request<T>(
   }
   const headers = new Headers(init?.headers);
   const method = init?.method?.toUpperCase() ?? "GET";
-  const session =
-    method === "GET"
+  const session = sessionPolicy === "fresh"
+    ? await resolveAuthenticatedSession(getSession)
+    : method === "GET"
       ? await authenticatedSession()
       : await resolveAuthenticatedSession();
+  init?.signal?.throwIfAborted();
+  if (sessionPolicy === "fresh" && (!session?.accessToken || session.error))
+    throw new ApiError("Sign in to a private workspace to assign or inspect hosted agent tasks.", 401);
   if (session?.accessToken)
     headers.set("Authorization", `Bearer ${session.accessToken}`);
   const response = await fetch(`${API_PREFIX}${path}`, {
@@ -166,6 +171,7 @@ export function jsonRequest<T>(
   method: "POST" | "PATCH" | "PUT",
   payload: unknown,
   usePublicAccess = PUBLIC_ACCESS_ENABLED,
+  signal?: AbortSignal,
 ): Promise<T> {
   return request<T>(
     path,
@@ -173,6 +179,7 @@ export function jsonRequest<T>(
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
+      signal,
     },
     usePublicAccess,
   );

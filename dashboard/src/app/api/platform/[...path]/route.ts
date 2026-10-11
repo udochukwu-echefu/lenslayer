@@ -33,14 +33,17 @@ async function proxy(request: Request, context: RouteContext<"/api/platform/[...
   try {
     const response = await fetch(upstreamUrl(request, path), { method, headers, body, cache: "no-store", redirect: "manual" });
     const outgoing = new Headers();
+    // API records and one-time credentials must not enter intermediary caches.
+    outgoing.set("Cache-Control", "private, no-store");
     const contentType = response.headers.get("content-type");
     if (contentType) outgoing.set("content-type", contentType);
     const contentDisposition = response.headers.get("content-disposition");
     if (contentDisposition) outgoing.set("content-disposition", contentDisposition);
     return new Response(response.body, { status: response.status, headers: outgoing });
-  } catch (error) {
-    console.error("Platform API proxy failed", error);
-    return Response.json({ detail: "The LensLayer API is unavailable. Start the platform API and try again." }, { status: 503 });
+  } catch {
+    // Fetch exceptions can include URLs, headers, or other credential-bearing data.
+    console.error("Platform API proxy failed");
+    return Response.json({ detail: "The LensLayer API is unavailable. Start the platform API and try again." }, { status: 503, headers: { "Cache-Control": "private, no-store" } });
   }
 }
 

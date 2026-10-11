@@ -67,6 +67,9 @@ class Organization(Base):
 
 class OrganizationSettings(Base):
     __tablename__ = "organization_settings"
+    # Historical migrations enforce both a table constraint and an index.
+    # Preserve both in metadata rather than silently weakening uniqueness.
+    __table_args__ = (UniqueConstraint("organization_id"),)
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=new_id)
     organization_id: Mapped[str] = mapped_column(
@@ -348,6 +351,7 @@ class VerificationReconciliation(Base):
 
 class SecureIntakeLink(Base):
     __tablename__ = "secure_intake_links"
+    __table_args__ = (UniqueConstraint("token_hash"),)
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=new_id)
     organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id", ondelete="CASCADE"), index=True)
@@ -533,6 +537,7 @@ class IntegrationImport(Base):
 
 class PublicApiKey(Base):
     __tablename__ = "public_api_keys"
+    __table_args__ = (UniqueConstraint("key_hash"),)
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=new_id)
     organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id", ondelete="CASCADE"), index=True)
@@ -746,6 +751,7 @@ class ApprovalRequest(Base):
 
 class ExternalShare(Base):
     __tablename__ = "external_shares"
+    __table_args__ = (UniqueConstraint("token_hash"),)
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=new_id)
     organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id", ondelete="CASCADE"), index=True)

@@ -4,7 +4,7 @@ import * as Avatar from "@radix-ui/react-avatar";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BarChart3, Bell, CalendarDays, CheckSquare2, ChevronDown, FileOutput, Files, Inbox, LayoutDashboard, LogIn, Menu, Plus, Search, Settings, UsersRound, X } from "lucide-react";
+import { BarChart3, Bell, BookOpen, Bot, CalendarDays, CheckSquare2, ChevronDown, FileOutput, Files, Inbox, LayoutDashboard, ListChecks, LogIn, Menu, Plus, Search, Settings, UsersRound, X } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
@@ -25,6 +25,7 @@ const navigationGroups = [
     { href: "/inbox", label: "Inbox", icon: Inbox },
     { href: "/tasks", label: "Tasks", icon: CheckSquare2 },
     { href: "/calendar", label: "Calendar", icon: CalendarDays },
+    { href: "/agent-tasks", label: "Agent tasks", icon: Bot },
   ] },
   { label: "Agreements", items: [
     { href: "/contracts", label: "Contracts", icon: Files },
@@ -32,9 +33,12 @@ const navigationGroups = [
     { href: "/convert", label: "Document converter", icon: FileOutput },
   ] },
   { label: "Governance", items: [
+    { href: "/runs", label: "Runs", icon: ListChecks },
+    { href: "/developers", label: "Developer guide", icon: BookOpen },
     { href: "/reports", label: "Reports", icon: BarChart3 },
   ] },
   { label: "Administration", items: [
+    { href: "/agents", label: "Agents", icon: Bot },
     { href: "/team", label: "Team", icon: UsersRound },
     { href: "/settings", label: "Settings", icon: Settings },
   ] },
@@ -159,6 +163,6 @@ function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  if (pathname.startsWith("/invite/") || pathname.startsWith("/shared/") || pathname.startsWith("/auth/") || pathname === "/signin" || pathname === "/login" || pathname === "/signup" || pathname === "/sample") return <>{children}</>;
+  if (pathname.startsWith("/invite/") || pathname.startsWith("/shared/") || pathname.startsWith("/auth/") || pathname === "/calendar/oauth-return" || pathname === "/developers" || pathname === "/signin" || pathname === "/login" || pathname === "/signup" || pathname === "/sample") return <>{children}</>;
   return <WorkspaceAppShell>{children}</WorkspaceAppShell>;
 }

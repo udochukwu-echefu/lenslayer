@@ -1,0 +1,7 @@
+{
+  "goal": "retained-document-follow-up",
+  "runKey": "replace-with-persisted-run-key",
+  "actionKey": "replace-with-persisted-task-key",
+  "query": "renewal notice",
+  "limits": { "modelCalls": 1, "evidence": 1, "actions": 1, "timeMs": 60000, "outputBytes": 4096 }
+}

@@ -1,0 +1,5 @@
+export const env = {
+  LENSLAYER_AGENT_TOKEN: "ll_agent_example_test_only", LENSLAYER_CONTRACT_ID: "contract-1", LENSLAYER_ASSIGNEE_ID: "user-1",
+  LENSLAYER_DUE_AT: "2099-10-30T10:00:00+01:00", LENSLAYER_DEADLINE_AT: "2099-11-01T00:00:00Z",
+  LENSLAYER_RUN_KEY: "run-key", LENSLAYER_ACTION_KEY: "action-key",
+};

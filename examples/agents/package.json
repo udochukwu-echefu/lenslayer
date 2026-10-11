@@ -1,0 +1,12 @@
+{
+  "name": "lenslayer-external-agent-example",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20.6.0" },
+  "scripts": {
+    "start": "node renewal-follow-up.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:local": "node tests/verify-local-backend.mjs"
+  }
+}

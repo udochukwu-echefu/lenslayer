@@ -3,28 +3,28 @@ import { Plus } from "lucide-react"
 
 const questions = [
   {
-    question: "Which document types can I review?",
-    answer: "LensLayer accepts PDF, DOCX, and TXT agreements. The sample review lets you explore the workflow before using one of your own documents.",
+    question: "What can an agent do today?",
+    answer: "The v1 workflow retrieves retained agreement text by literal phrase and proposes an assigned internal workspace task. A worker verifies task creation by database read-back. General cross-system execution and a live connector catalog are not claimed here.",
   },
   {
-    question: "Can I see where a finding came from?",
-    answer: "Yes. Findings and portfolio answers stay connected to the relevant clause, page, and source excerpt so you can inspect the evidence in context.",
+    question: "Can I bring my own agent?",
+    answer: "Yes. A server-side client uses a scoped bearer credential and the run, evidence, and action API. The SDK is prepared locally, not published on npm. The MCP adapter runs locally over stdio; there is no hosted MCP endpoint or remote OAuth service.",
   },
   {
-    question: "Can I ask questions across several agreements?",
-    answer: "Yes. Portfolio questions can compare terms across agreements and show the excerpts used for the answer, including where the available evidence is incomplete.",
+    question: "Who gives an agent permission to act?",
+    answer: "A workspace owner or administrator delegates exact tools, documents, and assignees with an expiry and action limit. Human approval is required by default and binds the exact task input. Neither source text nor model output grants permission.",
   },
   {
     question: "What happens to the documents I upload?",
-    answer: "You can choose original-document and source-text retention for each review, apply workspace defaults, and delete records you no longer need. Grounded questions require retained source text.",
+    answer: "Choose retention when uploading or use workspace defaults. Agent evidence retrieval requires retained source text. Evidence receipts store version, hash, and offsets rather than a copied excerpt; removed or expired text cannot be read back.",
   },
   {
-    question: "Can a team work on the same review?",
-    answer: "Workspace roles define who can review, upload, and approve. Decisions can include an owner and rationale so the next person can follow the record.",
+    question: "Does verified mean the renewal was handled?",
+    answer: "No. It means the follow-up task was created with the expected assignee, due instant, and source reference at completion. It does not certify legal interpretation, send a notice, or prove the person performed the task.",
   },
   {
-    question: "Can I try LensLayer without signing up?",
-    answer: "Yes. Open the public sample to explore findings, next moves, decisions, and source evidence without creating an account or uploading a document.",
+    question: "Does LensLayer host a planner for me?",
+    answer: "The initial workflow is developer-run. A bounded server-side planner CLI is implemented locally against the same API, but no hosted deployment is offered here. Real product-model use requires a separate opt-in credential and explicit model. Public sample runs are synthetic and read-only.",
   },
 ]
 
@@ -35,8 +35,7 @@ export default function FaqSection() {
   return <section className="faq-section" id="faq" aria-labelledby={`${sectionId}-title`}>
     <div className="shell faq-grid">
       <div className="faq-intro" data-motion="copy-left">
-        <h2 id={`${sectionId}-title`}>Questions before the first review?</h2>
-        <p>The practical details about documents, evidence, collaboration, and trying the product.</p>
+        <h2 id={`${sectionId}-title`}>Questions about LensLayer?</h2>
       </div>
       <div className="faq-list" data-motion="visual-right">
         {questions.map((item, index) => {

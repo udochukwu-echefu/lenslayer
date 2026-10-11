@@ -55,9 +55,27 @@ class Settings(BaseSettings):
     email_lease_seconds: int = Field(default=900, ge=60, le=3600)
     intake_email_domain: str = "intake.lenslayer.local"
     worker_poll_seconds: float = Field(default=2.0, ge=0.2, le=60.0)
+    worker_health_max_age_seconds: int = Field(default=2400, ge=30, le=14400)
     worker_max_attempts: int = Field(default=3, ge=1, le=10)
     worker_lease_seconds: int = Field(default=2100, ge=300, le=7200)
     review_worker_job: str = ""
+    agent_action_lease_seconds: int = Field(default=60, ge=10, le=600)
+    agent_action_max_attempts: int = Field(default=3, ge=1, le=10)
+    agent_max_evidence_receipts_per_run: int = Field(default=100, ge=1, le=1000)
+    google_calendar_client_id: str = ""
+    google_calendar_client_secret: str = Field(default="", repr=False)
+    google_calendar_redirect_uri: str = ""
+    connector_encryption_key: str = Field(default="", repr=False)
+    connector_state_signing_key: str = Field(default="", repr=False)
+    connector_http_timeout_seconds: float = Field(default=5, ge=1, le=10)
+    hosted_agents_enabled: bool = True
+    hosted_agent_lease_seconds: int = Field(default=180, ge=30, le=600)
+    hosted_agent_max_attempts: int = Field(default=12, ge=6, le=30)
+    hosted_agent_wait_seconds: int = Field(default=15, ge=5, le=60)
+    hosted_model_enabled: bool = False
+    hosted_model_api_key: str = Field(default="", repr=False)
+    hosted_model_timeout_seconds: float = Field(default=30, ge=1, le=60)
+    hosted_model_max_output_tokens: int = Field(default=2048, ge=512, le=4096)
 
     @property
     def allowed_extension_set(self) -> set[str]:
@@ -69,6 +87,8 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_security(self) -> "Settings":
+        if self.hosted_agent_lease_seconds <= self.hosted_model_timeout_seconds * 2:
+            raise ValueError("Hosted planner lease must exceed twice the model timeout")
         environment = self.environment.lower()
         auth_mode = self.auth_mode.lower()
         storage_backend = self.object_storage_backend.lower()

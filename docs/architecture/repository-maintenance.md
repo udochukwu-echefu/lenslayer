@@ -5,6 +5,8 @@
 | Location | Responsibility |
 | --- | --- |
 | `backend/app/main.py` | Compose the API and manage runtime resources |
+| `backend/app/agent_models.py`, `agent_schemas.py` | Agent identities, runs, evidence, actions, events, and strict API contracts |
+| `backend/app/agent_runtime.py` | Leased agent dispatch, transactional effects, completion verification, and expiry |
 | `backend/app/api/` | Parse HTTP inputs, call services, serialize responses |
 | `backend/app/api/dependencies.py` | Request-scoped session, service, and authenticated user |
 | `backend/app/service_domains/` | Domain authorization, business rules, transactions |

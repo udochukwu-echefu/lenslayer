@@ -1,0 +1,10 @@
+.calendar-connection p { line-height: 1.6; margin: 12px 0; }
+.calendar-connect-form fieldset { border: 0; padding: 0; margin: 20px 0; display: grid; gap: 16px; max-width: 660px; }
+.calendar-connect-form .button { justify-self: start; }
+.calendar-connections article { border-top: 1px solid var(--line); padding: 20px 0; }
+.calendar-connections dl { display: grid; gap: 12px; }
+.calendar-connections dd { margin: 6px 0; overflow-wrap: anywhere; }
+.calendar-callback { max-width: 700px; margin: 64px auto; padding: 24px; }
+.calendar-callback h1 { margin: 24px 0 16px; font-size: clamp(28px, 5vw, 40px); }
+.calendar-callback p { line-height: 1.7; margin: 16px 0; }
+.calendar-callback code { overflow-wrap: anywhere; }

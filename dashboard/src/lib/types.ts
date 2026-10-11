@@ -145,11 +145,11 @@ export type Notification = {
   created_at: string;
 };
 
-export type IntegrationProvider = "email" | "google_drive" | "onedrive" | "sharepoint" | "dropbox" | "slack" | "telegram" | "whatsapp" | "public_api";
+export type IntegrationProvider = "email" | "google_drive" | "google_calendar" | "onedrive" | "sharepoint" | "dropbox" | "slack" | "telegram" | "whatsapp" | "public_api";
 export type IntegrationProviderDescriptor = {
   provider: IntegrationProvider;
   display_name: string;
-  category: "email" | "cloud_storage" | "messaging" | "developer";
+  category: "email" | "cloud_storage" | "messaging" | "developer" | "calendar";
   capabilities: string[];
   connection_mode: "managed" | "oauth" | "bot" | "webhook" | "api_key" | "secure_link";
   configured: boolean;

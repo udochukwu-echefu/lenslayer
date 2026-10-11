@@ -25,13 +25,24 @@ class ServiceBase:
         self.session = session
         self.settings = settings
         self.object_store = object_store
-        self.review_workflow = review_workflow or build_review_workflow()
+        self._review_workflow = review_workflow
         dependencies = domain_dependencies or DomainDependencies()
         self.workspace = dependencies.workspace or self
         self.contracts = dependencies.contracts or self
         self.tasks = dependencies.tasks or self
         self.collaboration = dependencies.collaboration or self
         self.integrations = dependencies.integrations or self
+
+    @property
+    def review_workflow(self) -> ReviewWorkflow:
+        # Agent-only paths need policy/retrieval, not document/model initialization.
+        if self._review_workflow is None:
+            self._review_workflow = build_review_workflow()
+        return self._review_workflow
+
+    @review_workflow.setter
+    def review_workflow(self, value: ReviewWorkflow | None) -> None:
+        self._review_workflow = value
 
     def _notify(
         self,
