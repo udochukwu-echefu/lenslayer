@@ -1,5 +1,9 @@
 # Agent service staging deployment review
 
+The worker-pool commands/results below describe the original October 9 deployment.
+New deployments use the private, request-billed worker described in
+[agent-worker-operations.md](agent-worker-operations.md); the old pool stays at zero.
+
 The preparation record below is followed by the [staging execution record](agent-staging-execution.md).
 After explicit approval, the image, isolated database/storage/identity, login
 application, API, dashboard and workers were deployed. Real private document-task

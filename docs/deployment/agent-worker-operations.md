@@ -4,24 +4,64 @@ Local SQLite, disposable PostgreSQL 17, and fake Google HTTP verification are
 not deployed-staging/OIDC or real OAuth proof. See the
 [exact interfaces](../architecture/agent-interface-changes.md).
 
-## Migration and continuous execution
+## Migration and on-demand execution
 
-Run API and worker separately with the same database/secrets. Disable automatic
-schema creation in staging/production. Apply migrations before the new services:
+Deployed workers must stop consuming idle CPU when there is no work. Agent
+execution uses a **private Cloud Run HTTP service**, request-based CPU billing,
+revision/service minimum instances **0**, maximum instances **1**, concurrency
+**1**, and a 300-second request timeout. Cloud Tasks sends an empty authenticated
+POST to `/drain`. The worker reads the durable ledger, processes available agent
+work for a 120-second budget, schedules the next lease/expiry wake, and returns.
+There is no idle polling loop. Google may retain a warm container before scaling
+it to zero; request-based CPU is throttled while it has no request. This saves
+idle compute, not the cost of actual jobs, cold starts, queue operations or recovery
+requests. See [Cloud Run billing](https://docs.cloud.google.com/run/docs/configuring/billing-settings).
+
+The review/email/retention lane is a separate Cloud Run Job:
+`python -m backend.app.worker --documents-only --drain`. It initializes the
+review model only after claiming a review and exits when its queues are empty.
+Scheduled maintenance invokes that bounded job; it does not keep a process alive.
+Legacy continuous mode remains available for local development only. Do not deploy
+`python -m backend.app.worker` as an always-running service or enable an idle worker
+pool. The old staging pool must stay at zero instances.
+
+API commits enqueue wakes for new work, approvals, input replies, cancellation,
+revocation and authority changes. Human waits park until their deadline. Action
+completion resumes the hosted checkpoint. Expired leases recover the same output
+ID; Calendar dispatch uncertainty continues to permit GET-only reconciliation.
+Cloud Tasks uses a distinct invoker with `roles/run.invoker` on only the private
+worker; the runtime can enqueue only its own queue and act as only that invoker.
+No goals, source text or agent credentials are included in task payloads.
+
+A required hourly authenticated `/recover` request reconstructs missed committed
+state changes from the ledger, including supplied input and terminal runs. It also
+adds expiry timers for external runs once they are within 29 days, respecting
+[Cloud Tasks' 30-day limit](https://docs.cloud.google.com/tasks/docs/quotas).
+Empty recovery performs database checks and returns without importing the agent
+processor or calling models. Normal wakes use five-second slots to coalesce bursts;
+early deliveries leave a different replacement timer before acknowledgment.
+Enqueue failure from a delivered request returns 503 so Cloud Tasks retries. A
+post-commit API crash is recoverable at the next scheduled check, **up to one hour
+later**; deadlines continue to apply during that interruption. Monitor queue age
+and failed recovery rather than claiming guaranteed immediate execution.
+
+Set `LENSLAYER_PLATFORM_AGENT_WORKER_MODE=on_demand`, the canonical private
+`_AGENT_WORKER_URL`, full `_AGENT_WORKER_QUEUE`, and `_AGENT_WORKER_INVOKER_EMAIL`.
+The production build's first step refuses an unresolved/staging target, a paused
+or unbounded queue, missing/paused/misdirected recovery, public worker invocation,
+or an idle CPU/minimum-instance configuration. Provision and review these resources
+before running the pipeline. The build updates hourly recovery before switching
+the API. Use the [staging renderer](../../scripts/prepare-staging.py) to prepare
+pinned, separate staging commands; bootstrap the private service only to resolve
+its URL, then regenerate the plan with its actual URL before activation.
+
+Apply migrations before switching the API and preserve the durable ledger:
 
 ```sh
 python -m alembic -c backend/alembic.ini current
 python -m alembic -c backend/alembic.ini upgrade head
 python -m alembic -c backend/alembic.ini check
-python -m backend.app.worker
 ```
-
-Supervise/restart the continuous worker. Default poll interval is two seconds;
-each iteration claims at most one agent action and closes at most 1000 expired
-agent runs. Existing review/email/retention maintenance shares this process;
-long reviews can delay agent actions/expiry. Monitor queue age and use multiple
-workers for the intended load. This is not a real-time scheduler. `--once`,
-`--drain` and enqueue-triggered jobs do not replace continuous expiry/recovery.
 
 Migration `8f1a3c5e7b90` adds missing approval requested/resolved-user and lifecycle
 creator indexes and replaces three nonunique indexes with unique indexes. Existing
@@ -42,7 +82,9 @@ downgrade cannot undo remote events and would remove the recovery ledger.
 - `/health/live`: API liveness.
 - `/health/ready`: database, additive action schema and object storage; no live
   provider request, no proof that OIDC login works.
-- `/health/worker`: latest committed loop heartbeat, 503 if absent/stale.
+- `/health/worker`: in on-demand mode, healthy `idle`/`scheduled` without an idle
+  heartbeat; 503 when runnable work is overdue beyond the configured grace.
+  Continuous local mode uses the latest loop heartbeat, 503 if absent/stale.
   `LENSLAYER_PLATFORM_WORKER_HEALTH_MAX_AGE_SECONDS` defaults to 2400, allowing
   existing long reviews. Rows older than one day are purged. Freshness is not
   proof that a particular job/process is healthy; even `--once` leaves a fresh
@@ -51,7 +93,8 @@ downgrade cannot undo remote events and would remove the recovery ledger.
   run/action status, event counters, expired leases, retries, oldest queued age,
   and pending provider revocations. No credentials/source/goals/input metric labels.
 
-Alert on stale heartbeat, rising queue age/expired leases/retries, any
+Alert on overdue runnable work, failed queue/recovery deliveries, rising queue
+age/expired leases/retries, any
 `unknown_outcome` or `action.partial_effect`, and pending remote revocations.
 Inspect stable action/event IDs before restarting or reconciling. Separate human
 approval/input waits from queue backlog. Scope/credential failures require new
@@ -179,10 +222,10 @@ grant disconnect is attempted afterwards. The event is left for manual inspectio
 deletion. Never retry uncertainty with a new key. Capture sanitized IDs/outcomes,
 not codes/tokens. This real OAuth/provider harness was **not run** in the assignment.
 
-## Staging commands/checklist: pending, not executed here
+## Staging commands/checklist
 
 On an explicitly designated staging environment with real OIDC/operator-supplied
-configuration, run the migration/continuous-worker commands above. Then:
+configuration, use the private on-demand worker and bounded job commands above. Then:
 
 ```sh
 curl --fail "$STAGING_API/health/ready"
@@ -200,5 +243,6 @@ OIDC approval and then a sandbox Calendar roundtrip through the authenticated
 relay. In disposable staging data, terminate a worker after claim, recover the
 same action/output ID, and exercise cancellation/revocation during fake slow
 HTTP. Inspect ordered events/metrics and concrete read-back evidence, not planner
-claims. Archive migration head, sanitized IDs and actual command results. No
-staging deployment, provider consent or staging evidence was produced here.
+claims. Archive migration head, sanitized IDs and actual command results. The original staging evidence is recorded in [agent-staging-execution.md](agent-staging-execution.md).
+A new image and actual Cloud Tasks/private-service verification are required for
+the sleeping-worker change; previous continuous-pool evidence does not prove it.

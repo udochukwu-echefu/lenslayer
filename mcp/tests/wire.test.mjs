@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createServer } from "node:http";
+import { fileURLToPath } from "node:url";
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { StdioClientTransport } from "@modelcontextprotocol/client/stdio";
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
@@ -33,7 +34,7 @@ test("official SDK client -> real stdio -> injected HTTP ledger: initialize, dis
     res.writeHead(200, { "Content-Type": "application/json" }); res.end(JSON.stringify(data));
   });
   await new Promise((resolve) => http.listen(0, "127.0.0.1", resolve));
-  const transport = new StdioClientTransport({ command: process.execPath, args: [new URL("../dist/stdio.js", import.meta.url).pathname], env: { LENSLAYER_API_URL: `http://127.0.0.1:${http.address().port}`, LENSLAYER_AGENT_TOKEN: token }, stderr: "pipe" });
+  const transport = new StdioClientTransport({ command: process.execPath, args: [fileURLToPath(new URL("../dist/stdio.js", import.meta.url))], env: { LENSLAYER_API_URL: `http://127.0.0.1:${http.address().port}`, LENSLAYER_AGENT_TOKEN: token }, stderr: "pipe" });
   let stderr = "";
   transport.stderr?.on("data", (chunk) => { stderr += chunk; });
   const client = new Client({ name: "lenslayer-wire-test", version: "1.0.0" });

@@ -323,4 +323,6 @@ class AgentMetricsResponse(BaseModel):
 class WorkerHealthResponse(BaseModel):
     status: Literal["ready"]
     service: Literal["platform-worker"]
-    heartbeat_age_seconds: float
+    heartbeat_age_seconds: float | None
+    execution_mode: Literal["continuous", "on_demand"] = "continuous"
+    state: Literal["active", "idle", "scheduled"] = "active"

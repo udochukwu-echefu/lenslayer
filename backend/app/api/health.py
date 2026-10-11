@@ -12,6 +12,7 @@ from ..agent_schemas import WorkerHealthResponse
 from ..hosted_agent_models import HostedAgentTask
 from ..models import utcnow
 from ..service_domains.common import aware
+from ..agent_wake import next_agent_wake_at
 
 
 router = APIRouter()
@@ -45,7 +46,14 @@ def worker_ready(request: Request):
         with request.app.state.database.session_factory() as session:
             last_seen = session.scalar(select(func.max(AgentWorkerHeartbeat.last_seen_at)).where(
                 AgentWorkerHeartbeat.lane.in_(["agents", "mixed"])))
+            next_at = next_agent_wake_at(session) if request.app.state.settings.agent_worker_mode == "on_demand" else None
         age = (utcnow() - aware(last_seen)).total_seconds() if last_seen else None
+        if request.app.state.settings.agent_worker_mode == "on_demand":
+            lag = (utcnow() - next_at).total_seconds() if next_at else 0
+            if lag > request.app.state.settings.worker_health_max_age_seconds:
+                raise HTTPException(503, "Runnable agent work is overdue.")
+            return {"status": "ready", "service": "platform-worker", "heartbeat_age_seconds": max(0, age) if age is not None else None,
+                    "execution_mode": "on_demand", "state": "scheduled" if next_at else "idle"}
         if age is None or age > request.app.state.settings.worker_health_max_age_seconds:
             raise HTTPException(503, "No recent worker heartbeat.")
         return {"status": "ready", "service": "platform-worker", "heartbeat_age_seconds": max(0, age)}

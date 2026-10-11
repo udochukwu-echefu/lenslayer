@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Response, status
+from fastapi import APIRouter, BackgroundTasks, Request, Response, status
+from ..agent_wake import queue_agent_worker
 
 from ..schemas import (
     InvitationAcceptResponse,
@@ -110,10 +111,13 @@ def update_member_role(
     organization_id: str,
     membership_id: str,
     payload: MembershipRoleUpdate,
+    request: Request,
+    background_tasks: BackgroundTasks,
     service: ServiceDep,
     user: UserDep,
 ) -> MembershipResponse:
     membership = service.update_member_role(organization_id, membership_id, payload.role, user)
+    queue_agent_worker(background_tasks, request, organization_id=organization_id)
     return service.membership_response(membership)
 
 
@@ -125,10 +129,13 @@ def update_member_role(
 def remove_member(
     organization_id: str,
     membership_id: str,
+    request: Request,
+    background_tasks: BackgroundTasks,
     service: ServiceDep,
     user: UserDep,
 ) -> Response:
     service.remove_member(organization_id, membership_id, user)
+    queue_agent_worker(background_tasks, request, organization_id=organization_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

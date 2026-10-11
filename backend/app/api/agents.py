@@ -10,7 +10,7 @@ from ..agent_schemas import (
     ApprovalDecision, EvidenceRequest, EvidenceResponse, ToolResponse,
     AgentMetricsResponse, InputRequestCreate, InputRequestResponse, InputSupply, WorkflowActionCreate, WorkflowCreate,
 )
-from ..review_trigger import queue_review_worker
+from ..agent_wake import queue_agent_worker
 from .dependencies import ServiceDep, UserDep
 
 
@@ -42,8 +42,11 @@ def create_agent(organization_id: str, payload: AgentCreate, response: Response,
 
 
 @router.post("/organizations/{organization_id}/agents/{agent_id}/revoke", response_model=AgentResponse)
-def revoke_agent(organization_id: str, agent_id: str, service: ServiceDep, user: UserDep):
-    return service.agent_response(service.revoke_agent(organization_id, agent_id, user))
+def revoke_agent(organization_id: str, agent_id: str, request: Request, background_tasks: BackgroundTasks,
+                 service: ServiceDep, user: UserDep):
+    result = service.agent_response(service.revoke_agent(organization_id, agent_id, user))
+    queue_agent_worker(background_tasks, request, agent_id=agent_id)
+    return result
 
 
 @router.get("/organizations/{organization_id}/agent-runs", response_model=list[AgentRunResponse])
@@ -75,36 +78,44 @@ def workspace_run_evidence(organization_id: str, run_id: str, evidence_id: str, 
 
 
 @router.post("/organizations/{organization_id}/agent-runs/{run_id}/cancel", response_model=AgentRunResponse)
-def cancel_workspace_run(organization_id: str, run_id: str, service: ServiceDep, user: UserDep):
-    return service.agent_run_response(service.cancel_agent_run(run_id, organization_id=organization_id, user=user))
+def cancel_workspace_run(organization_id: str, run_id: str, request: Request, background_tasks: BackgroundTasks,
+                         service: ServiceDep, user: UserDep):
+    result = service.agent_run_response(service.cancel_agent_run(run_id, organization_id=organization_id, user=user))
+    queue_agent_worker(background_tasks, request, run_id=run_id)
+    return result
 
 
 @router.post("/organizations/{organization_id}/agent-runs/{run_id}/actions/{action_id}/approval", response_model=AgentActionResponse)
 def approve_action(organization_id: str, run_id: str, action_id: str, payload: ApprovalDecision,
                    request: Request, background_tasks: BackgroundTasks, service: ServiceDep, user: UserDep):
     action = service.approve_agent_action(organization_id, run_id, action_id, user, payload)
-    if action.status == "queued":
-        queue_review_worker(background_tasks, request.app.state.settings)
+    queue_agent_worker(background_tasks, request, run_id=run_id, fallback_review=action.status == "queued")
     return service.agent_action_response(action)
 
 
 @router.post("/agent/workflows", response_model=AgentRunResponse, status_code=201)
-def create_workflow(payload: WorkflowCreate, service: ServiceDep, agent: AgentDep):
-    return service.agent_run_response(service.create_agent_run(agent, payload))
+def create_workflow(payload: WorkflowCreate, request: Request, background_tasks: BackgroundTasks,
+                    service: ServiceDep, agent: AgentDep):
+    run = service.create_agent_run(agent, payload)
+    result = service.agent_run_response(run)
+    queue_agent_worker(background_tasks, request, run_id=run.id)
+    return result
 
 
 @router.post("/agent/runs/{run_id}/tool-actions", response_model=AgentActionResponse, status_code=202)
 def propose_tool_action(run_id: str, payload: WorkflowActionCreate, request: Request, background_tasks: BackgroundTasks,
                         service: ServiceDep, agent: AgentDep):
     action = service.propose_agent_action(agent, run_id, payload)
-    if action.status == "queued":
-        queue_review_worker(background_tasks, request.app.state.settings)
+    queue_agent_worker(background_tasks, request, run_id=run_id, fallback_review=action.status == "queued")
     return service.agent_action_response(action)
 
 
 @router.post("/agent/runs/{run_id}/input-requests", response_model=InputRequestResponse, status_code=201)
-def request_input(run_id: str, payload: InputRequestCreate, service: ServiceDep, agent: AgentDep):
-    return service.request_agent_input(agent, run_id, payload)
+def request_input(run_id: str, payload: InputRequestCreate, request: Request, background_tasks: BackgroundTasks,
+                  service: ServiceDep, agent: AgentDep):
+    result = service.request_agent_input(agent, run_id, payload)
+    queue_agent_worker(background_tasks, request, run_id=run_id)
+    return result
 
 
 @router.get("/agent/runs/{run_id}/input-requests", response_model=list[InputRequestResponse])
@@ -113,8 +124,11 @@ def list_inputs(run_id: str, service: ServiceDep, agent: AgentDep):
 
 
 @router.post("/agent/runs/{run_id}/input-requests/{request_id}/supply", response_model=InputRequestResponse)
-def supply_input(run_id: str, request_id: str, payload: InputSupply, service: ServiceDep, agent: AgentDep):
-    return service.supply_agent_input(run_id, request_id, payload, agent=agent)
+def supply_input(run_id: str, request_id: str, payload: InputSupply, request: Request, background_tasks: BackgroundTasks,
+                 service: ServiceDep, agent: AgentDep):
+    result = service.supply_agent_input(run_id, request_id, payload, agent=agent)
+    queue_agent_worker(background_tasks, request, run_id=run_id)
+    return result
 
 
 @router.get("/organizations/{organization_id}/agent-runs/{run_id}/input-requests", response_model=list[InputRequestResponse])
@@ -123,15 +137,18 @@ def workspace_inputs(organization_id: str, run_id: str, service: ServiceDep, use
 
 
 @router.post("/organizations/{organization_id}/agent-runs/{run_id}/input-requests/{request_id}/supply", response_model=InputRequestResponse)
-def workspace_supply(organization_id: str, run_id: str, request_id: str, payload: InputSupply, service: ServiceDep, user: UserDep):
-    return service.supply_agent_input(run_id, request_id, payload, organization_id=organization_id, user=user)
+def workspace_supply(organization_id: str, run_id: str, request_id: str, payload: InputSupply, request: Request,
+                     background_tasks: BackgroundTasks, service: ServiceDep, user: UserDep):
+    result = service.supply_agent_input(run_id, request_id, payload, organization_id=organization_id, user=user)
+    queue_agent_worker(background_tasks, request, run_id=run_id)
+    return result
 
 
 @router.post("/organizations/{organization_id}/agent-runs/{run_id}/actions/{action_id}/reconcile", response_model=AgentActionResponse, status_code=202)
 def reconcile(organization_id: str, run_id: str, action_id: str, request: Request, background_tasks: BackgroundTasks,
               service: ServiceDep, user: UserDep):
     action = service.reconcile_calendar_action(organization_id, run_id, action_id, user)
-    queue_review_worker(background_tasks, request.app.state.settings)
+    queue_agent_worker(background_tasks, request, run_id=run_id, fallback_review=True)
     return service.agent_action_response(action)
 
 
@@ -152,8 +169,12 @@ def list_runs(service: ServiceDep, agent: AgentDep, limit: ListLimit = 50):
 
 
 @router.post("/agent/runs", response_model=AgentRunResponse, status_code=201)
-def create_run(payload: AgentRunCreate, service: ServiceDep, agent: AgentDep):
-    return service.agent_run_response(service.create_agent_run(agent, payload))
+def create_run(payload: AgentRunCreate, request: Request, background_tasks: BackgroundTasks,
+               service: ServiceDep, agent: AgentDep):
+    run = service.create_agent_run(agent, payload)
+    result = service.agent_run_response(run)
+    queue_agent_worker(background_tasks, request, run_id=run.id)
+    return result
 
 
 @router.get("/agent/runs/{run_id}", response_model=AgentRunResponse)
@@ -173,8 +194,10 @@ def run_actions(run_id: str, service: ServiceDep, agent: AgentDep):
 
 
 @router.post("/agent/runs/{run_id}/cancel", response_model=AgentRunResponse)
-def cancel_run(run_id: str, service: ServiceDep, agent: AgentDep):
-    return service.agent_run_response(service.cancel_agent_run(run_id, agent=agent))
+def cancel_run(run_id: str, request: Request, background_tasks: BackgroundTasks, service: ServiceDep, agent: AgentDep):
+    result = service.agent_run_response(service.cancel_agent_run(run_id, agent=agent))
+    queue_agent_worker(background_tasks, request, run_id=run_id)
+    return result
 
 
 @router.post("/agent/runs/{run_id}/evidence", response_model=EvidenceResponse)
@@ -191,6 +214,5 @@ def read_evidence(run_id: str, evidence_id: str, service: ServiceDep, agent: Age
 def propose_action(run_id: str, payload: AgentActionCreate, request: Request, background_tasks: BackgroundTasks,
                    service: ServiceDep, agent: AgentDep):
     action = service.propose_agent_action(agent, run_id, payload)
-    if action.status == "queued":
-        queue_review_worker(background_tasks, request.app.state.settings)
+    queue_agent_worker(background_tasks, request, run_id=run_id, fallback_review=action.status == "queued")
     return service.agent_action_response(action)
