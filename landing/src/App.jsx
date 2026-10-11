@@ -64,8 +64,8 @@ function App() {
           </div>
         </div>
         <figure className="workspace-preview shell" id="product" data-motion="stage">
-          <img className="dashboard-capture" src="/lenslayer-dashboard@2x.jpg" width="1728" height="908" decoding="async" alt="Adebayo Foods sample workspace with IT support, packaging, office lease, hosting, campaign and payroll agreements" />
-          <figcaption className="workspace-caption">Adebayo Foods' sample contract register. The companies and agreements are fictional; this is a read-only demo.</figcaption>
+          <img className="dashboard-capture" src="/lenslayer-dashboard@2x.jpg" width="1728" height="908" decoding="async" alt="Relay Software sample workspace with IT support, hardware, office lease, hosting, website design and payroll agreements" />
+          <figcaption className="workspace-caption">Relay Software's sample contract register. The companies and agreements are fictional; this is a read-only demo.</figcaption>
         </figure>
       </section>
 

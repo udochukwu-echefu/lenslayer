@@ -6,7 +6,7 @@ import { LensMark } from "./brand"
 const layers = [
   { label: "Finding", title: "Service credits have no annual limit", body: "Clause 8.4 lets credits build up for each service and month. It does not state a total limit.", status: "Needs review", icon: CircleAlert, detail: "Clause 8.4 · Page 12", note: "Check the full agreement before relying on this finding." },
   { label: "Next move", title: "Ask for a limit of 15% of annual fees", body: "Propose a yearly limit on service credits. Keep the right to end the agreement if the service keeps falling short.", status: "Suggested position", icon: MessageSquareText, detail: "Negotiation note · Service levels", note: "Your team decides whether to propose this wording." },
-  { label: "Decision", title: "Aisha has asked for changes", body: "Aisha asked Chidi to send the revised clause to Helen at Barton. The note links back to Clause 8.4 so they can follow up on the same wording.", status: "Human decision", icon: ShieldCheck, detail: "Aisha Bello · Assigned to Chidi", note: "A fictional decision for this walkthrough." },
+  { label: "Decision", title: "Aisha has asked for changes", body: "Aisha asked Chidi to send the revised clause to Helen at Loopback. The note links back to Clause 8.4 so they can follow up on the same wording.", status: "Human decision", icon: ShieldCheck, detail: "Aisha Bello · Assigned to Chidi", note: "A fictional decision for this walkthrough." },
 ]
 
 export default function ReviewDemo({ sampleUrl }) {
@@ -26,10 +26,10 @@ export default function ReviewDemo({ sampleUrl }) {
     document.getElementById(`review-tab-${next}`)?.focus()
   }
   return <div className="review-demo">
-    <div className="demo-bar"><span><LensMark /> Adebayo Foods <ChevronRight aria-hidden="true" /> <strong>Barton IT support</strong></span><span className="demo-label">Interactive preview</span></div>
+    <div className="demo-bar"><span><LensMark /> Relay Software <ChevronRight aria-hidden="true" /> <strong>Loopback IT support</strong></span><span className="demo-label">Interactive preview</span></div>
     <div className="review-layout">
       <aside className="demo-sidebar" aria-label="Sample agreement overview">
-        <div className="workspace-name"><span className="workspace-avatar">B</span><div>Barton IT Services<small>IT support agreement</small></div></div>
+        <div className="workspace-name"><span className="workspace-avatar">L</span><div>Loopback IT<small>IT support agreement</small></div></div>
         <div className="sidebar-section">REVIEW</div>
         <div className="sidebar-item selected"><FileText aria-hidden="true" /> Overview</div>
         <div className="sidebar-item"><CircleAlert aria-hidden="true" /> Findings <span>6</span></div>
@@ -40,7 +40,7 @@ export default function ReviewDemo({ sampleUrl }) {
       <div className="document-area">
         <div className="document-toolbar"><span><FileText aria-hidden="true" /> Source document</span><span>12 of 28</span></div>
         <article className="document-paper">
-          <div className="paper-meta"><span>BARTON IT SERVICES LTD</span><span>IT SUPPORT AGREEMENT</span></div>
+          <div className="paper-meta"><span>LOOPBACK IT</span><span>IT SUPPORT AGREEMENT</span></div>
           <h3>8. Service levels<br /> and credits</h3>
           <p><span>8.3</span> Supplier will measure availability for each calendar month and report performance within five business days.</p>
           <div className="clause-highlight"><span className="clause-pin"><Link2 aria-hidden="true" /></span><p><span>8.4</span> Where a Service Level is not met, Customer may claim the applicable Service Credit for each affected service and reporting period.</p></div>

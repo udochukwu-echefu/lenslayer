@@ -23,7 +23,7 @@ export const demoAgent: Agent = {
 
 export const demoRun: AgentRun = {
   id: "synthetic-run", organization_id: DEMO_WORKSPACE_ID, agent_id: demoAgent.id,
-  idempotency_key: "synthetic-follow-up", goal: "Ask Chidi to confirm whether we are renewing Barton's IT support before the notice deadline.",
+  idempotency_key: "synthetic-follow-up", goal: "Ask Chidi to confirm whether we are renewing Loopback's IT support before the notice deadline.",
   execution_owner: "external_agent", contract_ids: ["demo-msa"], allowed_tools: demoAgent.allowed_tools,
   max_actions: 1, status: "succeeded",
   success_condition: { type: "workspace_task_created", contract_id: "demo-msa", assigned_to_user_id: "demo-chidi", due_at: dueAt },
@@ -34,7 +34,7 @@ export const demoRun: AgentRun = {
 
 export const demoAction: AgentAction = {
   id: "synthetic-action", run_id: demoRun.id, idempotency_key: "synthetic-task-create", tool: "workspace.tasks.create", tool_version: "1",
-  input: { contract_id: "demo-msa", assigned_to_user_id: "demo-chidi", title: "Confirm the Barton renewal decision with Aisha", description: "Check whether we want another year of IT support. If we decide to leave, Barton needs 60 days' written notice. Save the decision with the agreement.", due_at: dueAt, evidence_id: "synthetic-evidence", deadline_basis: null },
+  input: { contract_id: "demo-msa", assigned_to_user_id: "demo-chidi", title: "Confirm the Loopback renewal decision with Aisha", description: "Check whether we want another year of IT support. If we decide to leave, Loopback needs 60 days' written notice. Save the decision with the agreement.", due_at: dueAt, evidence_id: "synthetic-evidence", deadline_basis: null },
   input_sha256: "a".repeat(64), status: "succeeded", attempts: 1, approval_status: "approved",
   approved_by_user_id: "demo-aisha", approval_reason: "Chidi is handling this renewal. The follow-up date gives us time to decide before the notice deadline.", approval_expires_at: approvalExpiresAt,
   result: demoRun.result, error_code: "", created_at: createdAt, updated_at: demoRun.updated_at, completed_at: demoRun.completed_at,

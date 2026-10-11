@@ -70,7 +70,7 @@ export function WorkspaceGate({ children }: { children: React.ReactNode }) {
         <p>Set the shared boundary for agreements, evidence, reviewers, and activity history.</p>
         <div className="field">
           <label htmlFor="workspace-name">Workspace name</label>
-          <input id="workspace-name" className="input" value={name} onChange={(event) => setName(event.target.value)} placeholder="e.g. Adebayo Foods Ltd" minLength={2} maxLength={255} required autoFocus />
+          <input id="workspace-name" className="input" value={name} onChange={(event) => setName(event.target.value)} placeholder="e.g. Relay Software Ltd" minLength={2} maxLength={255} required autoFocus />
           <p className="field-help">This appears on reviews, audit activity, and future team invitations.</p>
         </div>
         {createWorkspace.error && <p className="form-error" role="alert">{createWorkspace.error.message}</p>}
