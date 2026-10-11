@@ -90,7 +90,7 @@ describe("agent administration and one-time credential", () => {
     workspace.isDemo = true;
     const { Wrapper } = agentQueryWrapper();
     render(<AgentRegistry />, { wrapper: Wrapper });
-    expect(screen.getByText(/Synthetic execution example/)).toBeInTheDocument();
+    expect(screen.getByText(/Fictional example/)).toBeInTheDocument();
     expect(await screen.findByText("Renewal assistant")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Create agent" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Revoke/ })).not.toBeInTheDocument();

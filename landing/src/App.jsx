@@ -64,8 +64,8 @@ function App() {
           </div>
         </div>
         <figure className="workspace-preview shell" id="product" data-motion="stage">
-          <img className="dashboard-capture" src="/lenslayer-dashboard@2x.jpg" width="2560" height="1600" decoding="async" alt="LensLayer workspace overview with contract statistics and a decision queue" />
-          <figcaption className="workspace-caption">The existing document workspace, shown with synthetic records. This capture is not an agent run or a live execution.</figcaption>
+          <img className="dashboard-capture" src="/lenslayer-dashboard@2x.jpg" width="1728" height="908" decoding="async" alt="Adebayo Foods sample workspace with IT support, packaging, office lease, hosting, campaign and payroll agreements" />
+          <figcaption className="workspace-caption">Adebayo Foods' sample contract register. The companies and agreements are fictional; this is a read-only demo.</figcaption>
         </figure>
       </section>
 

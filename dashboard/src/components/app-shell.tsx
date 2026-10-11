@@ -143,7 +143,7 @@ function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
               </DropdownMenu.Root>
             </div>
           </header>
-          <main id="main-content" className="main-content">{isDemo && <div className="demo-banner"><strong>Synthetic demo</strong><span>Read-only sample records, isolated from private customer workspaces.</span></div>}{children}</main>
+          <main id="main-content" className="main-content">{isDemo && <div className="demo-banner"><strong>Demo workspace</strong><span>Fictional companies and documents. Read-only, separate from your own workspace.</span></div>}{children}</main>
         </div>
 
         <Dialog.Root open={mobileOpen} onOpenChange={setMobileOpen}>

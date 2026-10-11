@@ -6,7 +6,7 @@ describe("document converter", () => {
   it("extracts normalized transaction rows from statement text", () => {
     const result = parseStatementText(sampleStatementText);
     expect(result.currency).toBe("NGN");
-    expect(result.institution).toBe("Harbor Bank");
+    expect(result.institution).toBe("Lagos Merchant Bank");
     expect(result.transactions).toHaveLength(5);
     expect(result.transactions[0]).toMatchObject({ debit: null, credit: null, balance: 1240000 });
     expect(result.transactions[1]).toMatchObject({ debit: 184500, balance: 1055500, reference: "TXN-88210" });

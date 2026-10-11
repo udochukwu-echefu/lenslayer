@@ -60,7 +60,7 @@ describe("run operator record", () => {
     workspace.activeRole = "owner";
     workspace.isDemo = true;
     rerender(<RunDetail runId="run-1" />);
-    expect(await screen.findByText(/Synthetic execution example/)).toBeInTheDocument();
+    expect(await screen.findByText(/Fictional example/)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Cancel run" })).not.toBeInTheDocument();
   });
   it("does not label a success without a verified server result", async () => {

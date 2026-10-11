@@ -16,5 +16,5 @@ export function AgentViewError({ error, retry, resource = "api" }: { error: Erro
 }
 
 export function AgentDemoNotice() {
-  return <p className="agent-notice"><strong>Synthetic execution example.</strong> These records illustrate the protocol only. No agent ran, no approval was granted, and no task was created.</p>;
+  return <p className="agent-notice"><strong>Fictional example.</strong> These sample records show how an agent uses a document, waits for approval and creates a follow-up. These steps have not run in a live workspace.</p>;
 }
