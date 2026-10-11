@@ -44,19 +44,23 @@ class StagingReviewTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             staging.validate_manifest(invalid)
 
-    def test_plan_pins_digest_and_secrets_and_keeps_worker_disabled(self):
+    def test_plan_pins_digest_secrets_and_request_based_worker_with_paused_queue(self):
         config = staging.validate_manifest(self.config)
         with tempfile.TemporaryDirectory() as directory, patch.object(staging.subprocess, "run") as execute:
-            plan = staging.render_plan(config, Path(directory), "sha256:" + "a" * 64)
+            plan = staging.render_plan(config, Path(directory), "sha256:" + "a" * 64, "https://worker-example.a.run.app")
             execute.assert_not_called()
             self.assertTrue(plan["prepared_only"])
             self.assertTrue(plan["image_digest_resolved"])
             commands = {item["id"]: item for item in plan["commands"]}
-            worker = commands["prepare-disabled-agent-worker"]["argv"]
-            self.assertIn("--instances=0", worker)
-            self.assertIn("--args=-m,backend.app.worker,--agents-only", worker)
-            self.assertTrue(commands["activate-agent-worker-after-review"]["separate_activation"])
-            for name in ("deploy-api", "deploy-review-job", "prepare-disabled-agent-worker", "configure-migration"):
+            worker = commands["deploy-on-demand-agent-worker"]["argv"]
+            for flag in ("--min-instances=0", "--min=0", "--max-instances=1", "--cpu-throttling", "--concurrency=1", "--no-allow-unauthenticated"):
+                self.assertIn(flag, worker)
+            self.assertFalse(any("worker-pools" in c["argv"] or "--instances=1" in c["argv"] for c in plan["commands"]))
+            self.assertIn("--documents-only", next(a for a in commands["deploy-review-job"]["argv"] if a.startswith("--args=")))
+            self.assertTrue(commands["enable-agent-queue-after-review"]["separate_activation"])
+            self.assertIn("pause", commands["pause-agent-queue"]["argv"])
+            self.assertTrue(plan["worker_origin_resolved"])
+            for name in ("deploy-api", "deploy-review-job", "bootstrap-private-agent-worker", "deploy-on-demand-agent-worker", "configure-migration"):
                 arguments = commands[name]["argv"]
                 self.assertIn("--image=europe-west1-docker.pkg.dev/lenslayer/lenslayer/platform-staging@sha256:" + "a" * 64, arguments)
                 binding = next(a for a in arguments if a.startswith("--set-secrets="))
@@ -68,6 +72,8 @@ class StagingReviewTests(unittest.TestCase):
             self.assertEqual(api_env["LENSLAYER_PLATFORM_ENVIRONMENT"], "production")
             self.assertEqual(api_env["LENSLAYER_PLATFORM_AUTO_CREATE_SCHEMA"], "false")
             self.assertEqual(api_env["LENSLAYER_PLATFORM_AUTH_MODE"], "oidc")
+            self.assertEqual(api_env["LENSLAYER_PLATFORM_AGENT_WORKER_MODE"], "on_demand")
+            self.assertEqual(api_env["LENSLAYER_PLATFORM_AGENT_WORKER_URL"], "https://worker-example.a.run.app")
             self.assertNotIn("LENSLAYER_PLATFORM_DATABASE_URL", api_env)
             self.assertFalse(any("secret" in v.lower() for v in api_env.values()))
 
@@ -75,6 +81,7 @@ class StagingReviewTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             plan = staging.render_plan(staging.validate_manifest(self.config), Path(directory))
         self.assertFalse(plan["image_digest_resolved"])
+        self.assertFalse(plan["worker_origin_resolved"])
         self.assertTrue(plan["unverified_dependencies"])
         self.assertTrue(any("BUILD_IMAGE_DIGEST_REQUIRED" in arg for item in plan["commands"] for arg in item["argv"]))
 

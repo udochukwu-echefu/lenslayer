@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, BackgroundTasks, Request, Response
+from ..agent_wake import queue_agent_worker
 
 from ..schemas import IntegrationConnectionResponse, IntegrationProviderResponse
 from ..agent_schemas import CalendarDisconnectResponse, CalendarOAuthStartResponse
@@ -26,5 +27,8 @@ def callback(organization_id: str, payload: CalendarOAuthCallback, response: Res
 
 
 @router.post("/organizations/{organization_id}/calendar/connections/{connection_id}/disconnect", response_model=CalendarDisconnectResponse)
-def disconnect(organization_id: str, connection_id: str, service: ServiceDep, user: UserDep):
-    return service.disconnect_calendar(organization_id, connection_id, user)
+def disconnect(organization_id: str, connection_id: str, request: Request, background_tasks: BackgroundTasks,
+               service: ServiceDep, user: UserDep):
+    result = service.disconnect_calendar(organization_id, connection_id, user)
+    queue_agent_worker(background_tasks, request, organization_id=organization_id)
+    return result

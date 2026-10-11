@@ -5,6 +5,7 @@ from unittest.mock import patch
 from tests import test_agent_infrastructure as infrastructure
 from tests import test_calendar_workflows as calendar
 from tests import test_hosted_agents as hosted
+from tests import test_on_demand_workers as on_demand
 from tests.postgres_support import DisposablePostgres, postgres_enabled
 
 
@@ -46,4 +47,9 @@ class PostgresCalendarTests(PostgresFixture, calendar.CalendarWorkflowTests):
 
 @unittest.skipUnless(postgres_enabled(), "PostgreSQL hosted-task checks not opted in")
 class PostgresHostedTests(PostgresFixture, hosted.HostedAgentTests):
+    pass
+
+
+@unittest.skipUnless(postgres_enabled(), "PostgreSQL on-demand wake/lease checks not opted in")
+class PostgresOnDemandTests(PostgresFixture, on_demand.OnDemandWorkerTests):
     pass

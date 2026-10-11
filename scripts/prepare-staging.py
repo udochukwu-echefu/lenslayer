@@ -35,12 +35,12 @@ CALENDAR_SECRETS = {
 EXCLUDED_DIRS = {
     ".git", ".agents", ".codex", ".aws", ".venv", "node_modules", ".next",
     ".open-next", ".wrangler", ".lenslayer", "__pycache__", ".pytest_cache",
-    "dist", "coverage", "landing-backups", "output", ".hosted-ui-qa",
+    "dist", "coverage", "landing-backups", "launch-video", "output", ".hosted-ui-qa",
     "playwright-report", "test-results",
 }
 FIELDS = {
     "schema_version", "project_id", "region", "artifact_repository", "image_name",
-    "api_service", "migration_job", "review_job", "agent_worker_pool",
+    "api_service", "migration_job", "review_job", "agent_worker_service", "agent_worker_queue", "agent_worker_invoker",
     "runtime_service_account", "dashboard_worker", "dashboard_origin",
     "oidc_issuer", "oidc_audience", "oidc_jwks_url", "r2_bucket", "r2_endpoint",
     "resend_from_email", "calendar_enabled", "model_enabled", "secret_versions",
@@ -60,7 +60,7 @@ def https_url(value: object, *, origin: bool = False) -> str:
 
 
 def validate_manifest(raw: object) -> dict:
-    if not isinstance(raw, dict) or set(raw) != FIELDS or raw["schema_version"] != 1:
+    if not isinstance(raw, dict) or set(raw) != FIELDS or raw["schema_version"] != 2:
         raise ValueError("Unexpected staging manifest fields/version")
     config = dict(raw)
     for key in ("project_id", "artifact_repository", "image_name"):
@@ -70,15 +70,19 @@ def validate_manifest(raw: object) -> dict:
         raise ValueError("Use the staging image namespace")
     if not re.fullmatch(r"[a-z]+-[a-z]+[0-9]", config["region"]):
         raise ValueError("Invalid region")
-    for key in ("api_service", "migration_job", "review_job", "agent_worker_pool",
+    for key in ("api_service", "migration_job", "review_job", "agent_worker_service", "agent_worker_queue",
                 "dashboard_worker", "r2_bucket"):
         value = config[key]
         if not isinstance(value, str) or not re.fullmatch(r"lenslayer-[a-z0-9-]+-staging", value):
             raise ValueError(f"{key} must name an isolated LensLayer staging resource")
-    if len({config[k] for k in ("api_service", "migration_job", "review_job", "agent_worker_pool")}) != 4:
+    if len({config[k] for k in ("api_service", "migration_job", "review_job", "agent_worker_service")}) != 4:
         raise ValueError("Staging API, migration, review and agent resources must be distinct")
     if not re.fullmatch(r"lenslayer-staging-[a-z][a-z0-9-]{0,12}", config["runtime_service_account"]):
         raise ValueError("Use a dedicated staging service account")
+    if not re.fullmatch(r"lenslayer-staging-[a-z][a-z0-9-]{0,12}", config["agent_worker_invoker"]):
+        raise ValueError("Use a dedicated staging worker invoker")
+    if config["agent_worker_invoker"] == config["runtime_service_account"]:
+        raise ValueError("Queue invocation must use a distinct identity")
     for key in ("dashboard_origin", "r2_endpoint"):
         config[key] = https_url(config[key], origin=True)
     for key in ("oidc_issuer", "oidc_audience", "oidc_jwks_url"):
@@ -124,7 +128,7 @@ def secret_ref(config: dict, suffix: str) -> str:
     return f"lenslayer-staging-{suffix}:{config['secret_versions'][suffix]}"
 
 
-def environment(config: dict) -> dict[str, str]:
+def environment(config: dict, worker_origin: str | None = None) -> dict[str, str]:
     return {
         # Staging uses the same fail-closed configuration checks as production.
         "LENSLAYER_PLATFORM_ENVIRONMENT": "production",
@@ -146,8 +150,13 @@ def environment(config: dict) -> dict[str, str]:
         "LENSLAYER_PLATFORM_MALWARE_SCAN_BACKEND": "cloudmersive",
         "LENSLAYER_PLATFORM_EMAIL_BACKEND": "resend",
         "LENSLAYER_PLATFORM_RESEND_FROM_EMAIL": config["resend_from_email"],
-        "LENSLAYER_PLATFORM_WORKER_HEALTH_MAX_AGE_SECONDS": "60",
+        "LENSLAYER_PLATFORM_WORKER_HEALTH_MAX_AGE_SECONDS": "300",
         "LENSLAYER_PLATFORM_WORKER_POLL_SECONDS": "2",
+        "LENSLAYER_PLATFORM_AGENT_WORKER_MODE": "on_demand",
+        "LENSLAYER_PLATFORM_AGENT_WORKER_URL": worker_origin or "WORKER_ORIGIN_REQUIRED",
+        "LENSLAYER_PLATFORM_AGENT_WORKER_QUEUE": f"projects/{config['project_id']}/locations/{config['region']}/queues/{config['agent_worker_queue']}",
+        "LENSLAYER_PLATFORM_AGENT_WORKER_INVOKER_EMAIL": f"{config['agent_worker_invoker']}@{config['project_id']}.iam.gserviceaccount.com",
+        "LENSLAYER_PLATFORM_AGENT_WORKER_DRAIN_SECONDS": "120",
         "LENSLAYER_PLATFORM_HOSTED_AGENTS_ENABLED": "true",
         "LENSLAYER_PLATFORM_HOSTED_MODEL_ENABLED": "false",
         "LENSLAYER_PLATFORM_HOSTED_AGENT_LEASE_SECONDS": "180",
@@ -159,9 +168,13 @@ def environment(config: dict) -> dict[str, str]:
     }
 
 
-def render_plan(config: dict, output: Path, image_digest: str | None = None) -> dict:
+def render_plan(config: dict, output: Path, image_digest: str | None = None, worker_origin: str | None = None) -> dict:
     if image_digest is not None and not re.fullmatch(r"sha256:[0-9a-f]{64}", image_digest):
         raise ValueError("Supply the actual built staging image sha256 digest")
+    if worker_origin:
+        worker_origin = https_url(worker_origin, origin=True)
+        if not urlsplit(worker_origin).hostname.endswith(".run.app"):
+            raise ValueError("Use the private staging worker's actual Cloud Run origin")
     source_id = "review-" + source_fingerprint()[:24]
     registry = f"{config['region']}-docker.pkg.dev/{config['project_id']}/{config['artifact_repository']}/{config['image_name']}"
     image = registry + "@" + (image_digest or "BUILD_IMAGE_DIGEST_REQUIRED")
@@ -171,9 +184,11 @@ def render_plan(config: dict, output: Path, image_digest: str | None = None) -> 
     if config["calendar_enabled"]:
         mapping.update(CALENDAR_SECRETS)
     bindings = ",".join(f"{env}={secret_ref(config, suffix)}" for suffix, env in sorted(mapping.items()))
-    env = environment(config)
+    env = environment(config, worker_origin)
     runtime_env = output / "runtime-env.json"
     api_env = output / "api-env.json"
+    bootstrap_env = output / "bootstrap-worker-env.json"
+    write_json(bootstrap_env, {**env, "LENSLAYER_PLATFORM_AGENT_WORKER_MODE": "continuous", "LENSLAYER_PLATFORM_HOSTED_AGENTS_ENABLED": "false"})
     api_values = {**env, "LENSLAYER_PLATFORM_REVIEW_WORKER_JOB":
                   f"projects/{config['project_id']}/locations/{config['region']}/jobs/{config['review_job']}"}
     write_json(runtime_env, env)
@@ -194,33 +209,74 @@ def render_plan(config: dict, output: Path, image_digest: str | None = None) -> 
             f"--project={config['project_id']}", f"--region={config['region']}", "--wait"]},
         {"id": "deploy-api", "cwd": str(ROOT), "argv": ["gcloud", "run", "deploy", config["api_service"], *common,
             f"--image={image}", "--allow-unauthenticated", "--min-instances=0", "--max-instances=1",
-            "--cpu=1", "--memory=1Gi", "--concurrency=20", "--timeout=300",
+            "--cpu=1", "--memory=1Gi", "--concurrency=20", "--timeout=300", "--cpu-throttling",
             f"--env-vars-file={api_env}", f"--set-secrets={bindings}", "--labels=environment=staging,application=lenslayer"]},
         {"id": "deploy-review-job", "cwd": str(ROOT), "argv": ["gcloud", "run", "jobs", "deploy", config["review_job"], *common,
-            f"--image={image}", "--command=python", "--args=-m,backend.app.worker,--drain",
+            f"--image={image}", "--command=python", "--args=-m,backend.app.worker,--documents-only,--drain",
             "--tasks=1", "--parallelism=1", "--max-retries=1", "--task-timeout=30m", "--cpu=1", "--memory=2Gi",
             f"--env-vars-file={runtime_env}", f"--set-secrets={bindings}", "--labels=environment=staging,application=lenslayer"]},
-        {"id": "prepare-disabled-agent-worker", "cwd": str(ROOT), "argv": ["gcloud", "run", "worker-pools", "deploy", config["agent_worker_pool"], *common,
-            f"--image={image}", "--instances=0", "--command=python", "--args=-m,backend.app.worker,--agents-only",
+        {"id": "bootstrap-private-agent-worker", "cwd": str(ROOT), "argv": ["gcloud", "run", "deploy", config["agent_worker_service"], *common,
+            f"--image={image}", "--no-allow-unauthenticated", "--min-instances=0", "--max-instances=1", "--min=0", "--max=1",
+            "--cpu-throttling", "--concurrency=1", "--timeout=300", "--command=python",
+            "--args=-m,uvicorn,backend.app.agent_worker_service:app,--host,0.0.0.0,--port,8080,--no-access-log",
+            "--cpu=1", "--memory=1Gi", f"--env-vars-file={bootstrap_env}", f"--set-secrets={bindings}",
+            "--labels=environment=staging,application=lenslayer"]},
+        {"id": "resolve-worker-origin", "cwd": str(ROOT), "argv": ["gcloud", "run", "services", "describe", config["agent_worker_service"],
+            f"--project={config['project_id']}", f"--region={config['region']}", "--format=value(status.url)"]},
+        {"id": "deploy-on-demand-agent-worker", "requires_worker_origin": True, "cwd": str(ROOT), "argv": ["gcloud", "run", "deploy", config["agent_worker_service"], *common,
+            f"--image={image}", "--no-allow-unauthenticated", "--min-instances=0", "--max-instances=1", "--min=0", "--max=1",
+            "--cpu-throttling", "--concurrency=1", "--timeout=300", "--command=python",
+            "--args=-m,uvicorn,backend.app.agent_worker_service:app,--host,0.0.0.0,--port,8080,--no-access-log",
             "--cpu=1", "--memory=1Gi", f"--env-vars-file={runtime_env}", f"--set-secrets={bindings}",
             "--labels=environment=staging,application=lenslayer"]},
+        {"id": "enable-cloud-tasks", "cwd": str(ROOT), "argv": ["gcloud", "services", "enable", "cloudtasks.googleapis.com", f"--project={config['project_id']}"]},
+        {"id": "create-worker-invoker", "cwd": str(ROOT), "argv": ["gcloud", "iam", "service-accounts", "create", config["agent_worker_invoker"], f"--project={config['project_id']}"]},
+        {"id": "create-agent-queue", "cwd": str(ROOT), "argv": ["gcloud", "tasks", "queues", "create", config["agent_worker_queue"],
+            f"--project={config['project_id']}", f"--location={config['region']}", "--max-concurrent-dispatches=1", "--max-dispatches-per-second=1",
+            "--max-attempts=8", "--min-backoff=10s", "--max-backoff=300s", "--max-retry-duration=86400s"]},
+        {"id": "pause-agent-queue", "cwd": str(ROOT), "argv": ["gcloud", "tasks", "queues", "pause", config["agent_worker_queue"],
+            f"--project={config['project_id']}", f"--location={config['region']}"]},
+        {"id": "allow-runtime-queue-enqueue", "cwd": str(ROOT), "argv": ["gcloud", "tasks", "queues", "add-iam-policy-binding", config["agent_worker_queue"],
+            f"--project={config['project_id']}", f"--location={config['region']}", f"--member=serviceAccount:{account}", "--role=roles/cloudtasks.enqueuer"]},
+        {"id": "allow-runtime-invoker-use", "cwd": str(ROOT), "argv": ["gcloud", "iam", "service-accounts", "add-iam-policy-binding",
+            f"{config['agent_worker_invoker']}@{config['project_id']}.iam.gserviceaccount.com", f"--project={config['project_id']}",
+            f"--member=serviceAccount:{account}", "--role=roles/iam.serviceAccountUser"]},
+        {"id": "allow-queue-private-invocation", "cwd": str(ROOT), "argv": ["gcloud", "run", "services", "add-iam-policy-binding", config["agent_worker_service"],
+            f"--project={config['project_id']}", f"--region={config['region']}",
+            f"--member=serviceAccount:{config['agent_worker_invoker']}@{config['project_id']}.iam.gserviceaccount.com", "--role=roles/run.invoker"]},
         {"id": "allow-staging-review-invocation", "cwd": str(ROOT), "argv": ["gcloud", "run", "jobs", "add-iam-policy-binding", config["review_job"],
             f"--project={config['project_id']}", f"--region={config['region']}", f"--member=serviceAccount:{account}", "--role=roles/run.invoker"]},
-        {"id": "activate-agent-worker-after-review", "cwd": str(ROOT), "separate_activation": True,
-            "argv": ["gcloud", "run", "worker-pools", "update", config["agent_worker_pool"],
-                f"--project={config['project_id']}", f"--region={config['region']}", "--instances=1"]},
-        {"id": "pause-agent-worker", "cwd": str(ROOT), "argv": ["gcloud", "run", "worker-pools", "update", config["agent_worker_pool"],
-            f"--project={config['project_id']}", f"--region={config['region']}", "--instances=0"]},
+        {"id": "enable-agent-queue-after-review", "cwd": str(ROOT), "separate_activation": True,
+            "argv": ["gcloud", "tasks", "queues", "resume", config["agent_worker_queue"],
+                f"--project={config['project_id']}", f"--location={config['region']}"]},
+        {"id": "schedule-hourly-agent-recovery", "cwd": str(ROOT), "separate_activation": True, "requires_worker_origin": True,
+            "argv": ["gcloud", "scheduler", "jobs", "create", "http", "lenslayer-agent-recovery-staging",
+                f"--project={config['project_id']}", f"--location={config['region']}", "--schedule=0 * * * *", "--time-zone=Africa/Lagos",
+                "--http-method=POST", f"--uri={worker_origin or 'WORKER_ORIGIN_REQUIRED'}/recover",
+                f"--oidc-service-account-email={config['agent_worker_invoker']}@{config['project_id']}.iam.gserviceaccount.com",
+                f"--oidc-token-audience={worker_origin or 'WORKER_ORIGIN_REQUIRED'}"]},
     ]
-    return {"schema_version": 1, "prepared_only": True, "source_id": source_id,
+    for command in commands:
+        if command["id"] in {"deploy-api", "deploy-review-job"}:
+            command["requires_worker_origin"] = True
+        if command["id"] == "bootstrap-private-agent-worker":
+            command["bootstrap_only"] = True
+    order = ["build-image", "resolve-image-digest", "enable-cloud-tasks", "create-worker-invoker", "create-agent-queue",
+        "pause-agent-queue", "bootstrap-private-agent-worker", "resolve-worker-origin", "allow-runtime-queue-enqueue",
+        "allow-runtime-invoker-use", "allow-queue-private-invocation", "deploy-on-demand-agent-worker", "configure-migration",
+        "migrate-empty-staging-database", "deploy-review-job", "allow-staging-review-invocation", "deploy-api",
+        "enable-agent-queue-after-review", "schedule-hourly-agent-recovery"]
+    commands.sort(key=lambda item: order.index(item["id"]))
+    return {"schema_version": 2, "prepared_only": True, "source_id": source_id,
             "image_digest_resolved": image_digest is not None, "project": config["project_id"],
+            "worker_origin_resolved": worker_origin is not None, "worker_execution_mode": "on_demand",
             "required_secret_names": sorted("lenslayer-staging-" + s for s in config["secret_versions"]),
             "commands": commands, "calendar_enabled": config["calendar_enabled"], "model_enabled": False,
             "dashboard_worker": config["dashboard_worker"], "dashboard_origin": config["dashboard_origin"],
             "unverified_dependencies": ["empty staging PostgreSQL database and dedicated DB credentials",
                 "private staging R2 bucket and bucket-scoped credentials", "staging runtime service account and secret/IAM grants",
                 "staging OIDC API audience, dashboard client and callback allowlist", "Cloudflare staging Worker secrets",
-                "provider scanning/email/analysis secret versions", "cloud budgets and worker activation approval"]}
+                "provider scanning/email/analysis secret versions", "private scale-to-zero agent service, queue and scoped invoker IAM"]}
 
 
 def write_json(path: Path, value: object) -> None:
@@ -254,6 +310,7 @@ def main() -> int:
     parser.add_argument("--manifest", type=Path, default=MANIFEST)
     parser.add_argument("--output-dir", required=True, type=Path)
     parser.add_argument("--image-digest", help="Actual built staging image sha256 digest; never a mutable tag")
+    parser.add_argument("--worker-origin", help="Actual private Cloud Run worker origin resolved after bootstrap")
     parser.add_argument("--check-cloud", action="store_true", help="Read names-only cloud inventory; no changes")
     args = parser.parse_args()
     try:
@@ -262,14 +319,15 @@ def main() -> int:
         if output == ROOT or ROOT in output.parents:
             raise ValueError("Put the generated review bundle outside source control")
         output.mkdir(parents=True, mode=0o700, exist_ok=True)
-        plan = render_plan(config, output, args.image_digest)
+        plan = render_plan(config, output, args.image_digest, args.worker_origin)
         if args.check_cloud:
             plan["inventory"] = cloud_inventory(config)
         write_json(output / "plan.json", plan)
         lines = ["# LensLayer staging deployment review", "", "Prepared only. No cloud mutation or secret value read.", "",
                  f"Source fingerprint: `{plan['source_id']}`. Image digest resolved: `{plan['image_digest_resolved']}`.", "",
                  "Provision the dependencies in docs/deployment/agent-staging-review.md before executing these commands.", "",
-                 "The agent worker is initially disabled. Activating one instance incurs continuous compute charges.", ""]
+                 "The worker uses request-based CPU and minimum instances zero. Cloud Tasks remains paused until its private worker and IAM are verified.", "",
+                 "Resolve the worker origin after bootstrap and regenerate before API/worker promotion. No always-on worker pool is created.", ""]
         for command in plan["commands"]:
             lines.extend(["## " + command["id"], "", "```sh", "cd " + shlex.quote(command["cwd"]),
                           shlex.join(command["argv"]), "```", ""])

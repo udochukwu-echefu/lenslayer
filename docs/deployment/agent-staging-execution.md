@@ -1,5 +1,9 @@
 # Staging execution — 9 October 2026
 
+The worker-pool commands/results below describe the original October 9 deployment.
+New deployments use the private, request-billed worker described in
+[agent-worker-operations.md](agent-worker-operations.md); the old pool stays at zero.
+
 **Status: deployed and verified for document tasks; ready for human staging review.**
 The user explicitly approved the isolated staging deployment and reuse of existing
 Cloudmersive, Resend and Groq keys for synthetic checks and notifications to their

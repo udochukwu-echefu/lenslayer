@@ -5,6 +5,7 @@ from pathlib import Path
 
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from .worker_config import validate_worker_wake_target
 
 
 class Settings(BaseSettings):
@@ -59,6 +60,11 @@ class Settings(BaseSettings):
     worker_max_attempts: int = Field(default=3, ge=1, le=10)
     worker_lease_seconds: int = Field(default=2100, ge=300, le=7200)
     review_worker_job: str = ""
+    agent_worker_mode: str = "continuous"
+    agent_worker_url: str = ""
+    agent_worker_queue: str = ""
+    agent_worker_invoker_email: str = ""
+    agent_worker_drain_seconds: int = Field(default=120, ge=10, le=120)
     agent_action_lease_seconds: int = Field(default=60, ge=10, le=600)
     agent_action_max_attempts: int = Field(default=3, ge=1, le=10)
     agent_max_evidence_receipts_per_run: int = Field(default=100, ge=1, le=1000)
@@ -87,6 +93,10 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_security(self) -> "Settings":
+        if self.agent_worker_mode not in {"continuous", "on_demand"}:
+            raise ValueError("agent_worker_mode must be continuous or on_demand")
+        if self.agent_worker_mode == "on_demand":
+            validate_worker_wake_target(self.agent_worker_url, self.agent_worker_queue, self.agent_worker_invoker_email)
         if self.hosted_agent_lease_seconds <= self.hosted_model_timeout_seconds * 2:
             raise ValueError("Hosted planner lease must exceed twice the model timeout")
         environment = self.environment.lower()

@@ -8,6 +8,7 @@ task. The immutable output ID is also stable across retry attempts.
 from __future__ import annotations
 
 from datetime import timedelta
+import time
 
 from fastapi import HTTPException
 from sqlalchemy import and_, exists, or_, select, update
@@ -195,7 +196,7 @@ def process_task_action(database: Database, settings: Settings, object_store: Ob
         # transaction. The previously committed lease remains reclaimable.
 
 
-def expire_agent_runs(database: Database, settings: Settings, object_store: ObjectStore) -> int:
+def expire_agent_runs(database: Database, settings: Settings, object_store: ObjectStore, *, stop_at=None) -> int:
     """Close abandoned/expired runs even when there is no action to dispatch."""
     now = utcnow()
     with database.session_factory() as session:
@@ -219,6 +220,8 @@ def expire_agent_runs(database: Database, settings: Settings, object_store: Obje
         ).order_by(AgentRun.created_at).limit(1000)).all()
     closed = 0
     for run_id in run_ids:
+        if stop_at is not None and time.monotonic() >= stop_at:
+            break
         with database.session_factory() as session:
             run = session.get(AgentRun, run_id)
             if run is None:

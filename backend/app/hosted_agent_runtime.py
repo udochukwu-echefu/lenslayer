@@ -201,7 +201,9 @@ def _fail(service, task, code):
 
 def _wait(task, settings, status):
     task.status = status
-    task.next_attempt_at = min(aware(task.deadline_at), utcnow() + timedelta(seconds=settings.hosted_agent_wait_seconds))
+    task.next_attempt_at = (aware(task.deadline_at)
+        if settings.agent_worker_mode == "on_demand"
+        else min(aware(task.deadline_at), utcnow() + timedelta(seconds=settings.hosted_agent_wait_seconds)))
 
 
 def _first_proposal(request):

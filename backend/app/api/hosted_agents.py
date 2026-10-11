@@ -1,10 +1,11 @@
 """Human product endpoints; agent bearer tokens never administer hosted tasks."""
 from typing import Annotated
 
-from fastapi import APIRouter, Query, Response
+from fastapi import APIRouter, BackgroundTasks, Query, Request, Response
 
 from ..hosted_agent_schemas import HostedCapabilities, HostedTaskCreate, HostedTaskResponse
 from ..hosted_agent_service import HostedAgentService
+from ..agent_wake import queue_agent_worker
 from .dependencies import ServiceDep, UserDep
 
 router = APIRouter(tags=["hosted-agents"])
@@ -16,10 +17,14 @@ def capabilities(organization_id: str, service: ServiceDep, user: UserDep):
 
 
 @router.post("/organizations/{organization_id}/hosted-agent-tasks", response_model=HostedTaskResponse, status_code=201)
-def create(organization_id: str, payload: HostedTaskCreate, response: Response, service: ServiceDep, user: UserDep):
+def create(organization_id: str, payload: HostedTaskCreate, response: Response, request: Request,
+           background_tasks: BackgroundTasks, service: ServiceDep, user: UserDep):
     response.headers["Cache-Control"] = "no-store"
     hosted = HostedAgentService(service)
-    return hosted.response(hosted.create(organization_id, user, payload))
+    task = hosted.create(organization_id, user, payload)
+    result = hosted.response(task)
+    queue_agent_worker(background_tasks, request, task_id=task.id)
+    return result
 
 
 @router.get("/organizations/{organization_id}/hosted-agent-tasks", response_model=list[HostedTaskResponse])
@@ -35,6 +40,10 @@ def get(organization_id: str, task_id: str, service: ServiceDep, user: UserDep):
 
 
 @router.post("/organizations/{organization_id}/hosted-agent-tasks/{task_id}/cancel", response_model=HostedTaskResponse)
-def cancel(organization_id: str, task_id: str, service: ServiceDep, user: UserDep):
+def cancel(organization_id: str, task_id: str, request: Request, background_tasks: BackgroundTasks,
+           service: ServiceDep, user: UserDep):
     hosted = HostedAgentService(service)
-    return hosted.response(hosted.cancel(organization_id, task_id, user))
+    task = hosted.cancel(organization_id, task_id, user)
+    result = hosted.response(task)
+    queue_agent_worker(background_tasks, request, task_id=task.id)
+    return result
