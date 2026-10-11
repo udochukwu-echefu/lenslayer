@@ -121,13 +121,13 @@ export function statementCsv(result: StatementResult) {
   return [headers.map(cells).join(","), ...result.transactions.map((row) => headers.map((key) => cells(row[key as keyof StatementTransaction] as string | number | null)).join(","))].join("\n");
 }
 
-export const sampleStatementText = `Harbor Bank
-Account Name: Northstar Services Ltd
+export const sampleStatementText = `Lagos Merchant Bank
+Account Name: Adebayo Foods Ltd
 Account Number: 0048291037
 Statement Period: 01/07/2026 - 31/07/2026
 Currency: NGN
 01/07/2026 Opening balance 1,240,000.00
-03/07/2026 Vendor payment REF TXN-88210 184,500.00 1,055,500.00
-08/07/2026 Client funding REF TXN-88391 650,000.00 1,705,500.00 CR
+03/07/2026 Musa Packaging invoice REF TXN-88210 184,500.00 1,055,500.00
+08/07/2026 Customer invoice payment REF TXN-88391 650,000.00 1,705,500.00 CR
 14/07/2026 Bank service fee 2,500.00 1,703,000.00
-22/07/2026 Office lease payment REF TXN-88942 420,000.00 1,283,000.00`;
+22/07/2026 Allen Avenue service charge REF TXN-88942 420,000.00 1,283,000.00`;

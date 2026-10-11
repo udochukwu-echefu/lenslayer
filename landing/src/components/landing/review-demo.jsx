@@ -4,9 +4,9 @@ import { ArrowRight, Check, ChevronRight, CircleAlert, FileText, Link2, ListChec
 import { LensMark } from "./brand"
 
 const layers = [
-  { label: "Finding", title: "Service credits have no cap", body: "Credits can accumulate across services and reporting periods. No aggregate limit was found in this clause.", status: "Needs review", icon: CircleAlert, detail: "Clause 8.4 · Page 12", note: "Automated finding. Verify against the full agreement." },
-  { label: "Next move", title: "Propose an annual limit", body: "Consider capping total service credits at 15% of annual fees, while preserving termination rights for repeated failure.", status: "Suggested position", icon: MessageSquareText, detail: "Negotiation priority · Service levels", note: "Suggested language. Your team decides what to propose." },
-  { label: "Decision", title: "Changes requested", body: "Maya assigned the proposed cap to Daniel for the next negotiation round. The source and rationale stay with the decision.", status: "Human decision", icon: ShieldCheck, detail: "Maya Chen · Assigned to Daniel", note: "Illustrative decision from a synthetic agreement." },
+  { label: "Finding", title: "Service credits have no annual limit", body: "Clause 8.4 lets credits build up for each service and month. It does not state a total limit.", status: "Needs review", icon: CircleAlert, detail: "Clause 8.4 · Page 12", note: "Check the full agreement before relying on this finding." },
+  { label: "Next move", title: "Ask for a limit of 15% of annual fees", body: "Propose a yearly limit on service credits. Keep the right to end the agreement if the service keeps falling short.", status: "Suggested position", icon: MessageSquareText, detail: "Negotiation note · Service levels", note: "Your team decides whether to propose this wording." },
+  { label: "Decision", title: "Aisha has asked for changes", body: "Aisha asked Chidi to send the revised clause to Helen at Barton. The note links back to Clause 8.4 so they can follow up on the same wording.", status: "Human decision", icon: ShieldCheck, detail: "Aisha Bello · Assigned to Chidi", note: "A fictional decision for this walkthrough." },
 ]
 
 export default function ReviewDemo({ sampleUrl }) {
@@ -26,21 +26,21 @@ export default function ReviewDemo({ sampleUrl }) {
     document.getElementById(`review-tab-${next}`)?.focus()
   }
   return <div className="review-demo">
-    <div className="demo-bar"><span><LensMark /> Your workspace <ChevronRight aria-hidden="true" /> <strong>Harborline agreement</strong></span><span className="demo-label">Interactive preview</span></div>
+    <div className="demo-bar"><span><LensMark /> Adebayo Foods <ChevronRight aria-hidden="true" /> <strong>Barton IT support</strong></span><span className="demo-label">Interactive preview</span></div>
     <div className="review-layout">
       <aside className="demo-sidebar" aria-label="Sample agreement overview">
-        <div className="workspace-name"><span className="workspace-avatar">H</span><div>Harborline<small>Supply agreement</small></div></div>
+        <div className="workspace-name"><span className="workspace-avatar">B</span><div>Barton IT Services<small>IT support agreement</small></div></div>
         <div className="sidebar-section">REVIEW</div>
         <div className="sidebar-item selected"><FileText aria-hidden="true" /> Overview</div>
         <div className="sidebar-item"><CircleAlert aria-hidden="true" /> Findings <span>6</span></div>
         <div className="sidebar-item"><MessageSquareText aria-hidden="true" /> Ask a question</div>
         <div className="sidebar-item"><ListChecks aria-hidden="true" /> Decisions</div>
-        <div className="sidebar-bottom"><span className="avatar">MC</span><div>Maya Chen<small>Reviewer</small></div><PanelLeft aria-hidden="true" /></div>
+        <div className="sidebar-bottom"><span className="avatar">AB</span><div>Aisha Bello<small>Reviewer</small></div><PanelLeft aria-hidden="true" /></div>
       </aside>
       <div className="document-area">
         <div className="document-toolbar"><span><FileText aria-hidden="true" /> Source document</span><span>12 of 28</span></div>
         <article className="document-paper">
-          <div className="paper-meta"><span>HARBORLINE</span><span>MASTER SERVICES AGREEMENT</span></div>
+          <div className="paper-meta"><span>BARTON IT SERVICES LTD</span><span>IT SUPPORT AGREEMENT</span></div>
           <h3>8. Service levels<br /> and credits</h3>
           <p><span>8.3</span> Supplier will measure availability for each calendar month and report performance within five business days.</p>
           <div className="clause-highlight"><span className="clause-pin"><Link2 aria-hidden="true" /></span><p><span>8.4</span> Where a Service Level is not met, Customer may claim the applicable Service Credit for each affected service and reporting period.</p></div>

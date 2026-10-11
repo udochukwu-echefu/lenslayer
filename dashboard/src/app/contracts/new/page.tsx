@@ -66,8 +66,8 @@ export default function NewContractPage() {
         </div></section>
 
         <section className="form-section"><div className="form-section-number">02</div><div className="form-section-body"><div className="form-section-head"><h2>Describe the deal</h2><p>Optional details make the contract register easier to scan.</p></div><div className="form-grid">
-          <div className="field full"><label htmlFor="title">Contract title</label><input className="input" id="title" name="title" placeholder="e.g. Acme software services agreement" /></div>
-          <div className="field"><label htmlFor="counterparty">Counterparty</label><input className="input" id="counterparty" name="counterparty" placeholder="e.g. Acme Ltd" /></div>
+          <div className="field full"><label htmlFor="title">Contract title</label><input className="input" id="title" name="title" placeholder="e.g. Barton IT support agreement" /></div>
+          <div className="field"><label htmlFor="counterparty">Counterparty</label><input className="input" id="counterparty" name="counterparty" placeholder="e.g. Barton IT Services Ltd" /></div>
           <div className="field"><label htmlFor="contract_type">Contract type</label><AppSelect id="contract_type" name="contract_type" defaultValue="Unknown" options={["Unknown", "Services", "Employment", "Lease", "NDA", "Supplier", "Loan", "Partnership", "Other"].map((value) => ({ value, label: value }))} /></div>
         </div></div></section>
 
