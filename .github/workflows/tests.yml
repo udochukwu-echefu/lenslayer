@@ -99,6 +99,8 @@ jobs:
 
       - name: Test dashboard
         working-directory: dashboard
+        env:
+          LENSLAYER_TEST_PYTHON: ${{ env.pythonLocation }}/bin/python
         run: npm test
 
       - name: Build dashboard

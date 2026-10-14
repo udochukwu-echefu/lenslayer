@@ -1,5 +1,6 @@
 import { webcrypto } from "node:crypto";
 import { spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { readTrustedSession, calendarAttestation } from "@/lib/calendar-session.server";
@@ -62,6 +63,9 @@ it("new login changes fingerprint and TypeScript attestation is verified by the 
   const claims = (value: string) => JSON.parse(Buffer.from(value.split(".")[1], "base64url").toString());
   expect(claims(attestation).fp).not.toBe(claims(fresh).fp);
   const root = resolve(process.cwd(), "..");
+  // CI installs Python through setup-python; local development uses the repo venv.
+  const localPython = resolve(root, ".venv/bin/python");
+  const pythonExecutable = process.env.LENSLAYER_TEST_PYTHON ?? (existsSync(localPython) ? localPython : "python3");
   const python = `import sys,json,os
 os.environ.clear()
 import dotenv
@@ -77,6 +81,7 @@ Base.metadata.create_all(engine)
 with Session(engine) as session:
   verify_session_proof(SimpleNamespace(calendar_session_binding_key=data['key']),session,SimpleNamespace(external_subject=data['subject']),'org-1','oauth/start',data['body'],data['proof'])
 print('verified')`;
-  const result = spawnSync(resolve(root, ".venv/bin/python"), ["-c", python], { cwd: root, env: { NODE_ENV: "test" }, input: JSON.stringify({ key, subject: session.subject, body: input, proof: attestation }), encoding: "utf8" });
+  const result = spawnSync(pythonExecutable, ["-c", python], { cwd: root, env: { PATH: process.env.PATH, NODE_ENV: "test" }, input: JSON.stringify({ key, subject: session.subject, body: input, proof: attestation }), encoding: "utf8" });
+  expect(result.error?.name).toBeUndefined();
   expect(result.status).toBe(0); expect(result.stdout.trim()).toBe("verified"); // no proof/secret logged on either side
 });
