@@ -49,7 +49,7 @@ export async function runFollowUp(client: LensLayerClient, planner: Planner, sto
     const action = actions.find((a) => a.idempotency_key === config.actionKey);
     if (action) {
       const a = action.input;
-      if (action.tool !== "workspace.tasks.create" || !("assigned_to_user_id" in a) || a.contract_id !== contractId || a.assigned_to_user_id !== assigneeId || Date.parse(a.due_at) !== Date.parse(dueAt) || a.title !== title || a.description !== description || (cp.evidenceId && a.evidence_id !== cp.evidenceId)) return stop("original_action_mismatch");
+      if (action.tool !== "workspace.tasks.create" || !("contract_id" in a) || !("assigned_to_user_id" in a) || a.contract_id !== contractId || a.assigned_to_user_id !== assigneeId || Date.parse(a.due_at) !== Date.parse(dueAt) || a.title !== title || a.description !== description || (cp.evidenceId && a.evidence_id !== cp.evidenceId)) return stop("original_action_mismatch");
       await save({ actionId: action.id, evidenceId: a.evidence_id, proposalReady: true, phase: action.status === "awaiting_approval" ? "awaiting_approval" : "queued" });
       return result(cp.phase); // never self-approve, never replan an accepted proposal.
     }
