@@ -4,7 +4,7 @@ import { ApiError } from "@/lib/api";
 
 export function AgentViewError({ error, retry, resource = "api" }: { error: Error; retry: () => void; resource?: "api" | "run" | "evidence" }) {
   const denied = error instanceof ApiError && [401, 403].includes(error.status);
-  const missing = error instanceof ApiError && error.status === 404;
+  const missing = error instanceof ApiError && [404, 410].includes(error.status);
   const unavailable = {
     api: { title: "Agent API unavailable", message: "This backend does not expose the agent API yet. No execution data has been substituted." },
     run: { title: "Run unavailable", message: "This run does not exist in the selected workspace, or you no longer have access." },

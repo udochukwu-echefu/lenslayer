@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "project_id": "lenslayer",
+  "region": "europe-west1",
+  "dashboard_origin": "https://lenslayer-dashboard.udboy361.workers.dev",
+  "oidc_issuer": "https://deveze.uk.auth0.com/",
+  "oidc_audience": "https://api.lenslayer.local",
+  "r2_endpoint": "https://9d03f4c51b061a0160b4e10c9765527b.r2.cloudflarestorage.com",
+  "secret_versions": {
+    "neon-direct-url": "4",
+    "neon-pooled-url": "4",
+    "r2-access-key-id": "2",
+    "r2-secret-access-key": "2",
+    "cloudmersive-api-key": "2",
+    "resend-api-key": "2",
+    "groq-api-key": "1"
+  }
+}

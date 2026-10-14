@@ -1,9 +1,12 @@
 # LensLayer agent infrastructure direction
 
-Status: bounded developer infrastructure and the user-assigned hosted service
-implemented and locally verified, 9 October 2026. Staging is prepared for review;
-deployment, live-provider/model checks and publication remain open. See
-[finish verification](agent-pivot-finish-verification.md).
+Status updated 14 October 2026. Bounded developer infrastructure and the hosted
+service are implemented; basic private staging and on-demand task execution have
+passed. The current expansion adds private context, task graphs and trusted
+Calendar sessions. The [real DeepSeek qualification](deepseek-live-evaluation-2026-10-14.md)
+passed; new staging acceptance, production promotion, live Calendar and SDK
+publication remain separate gates. Earlier [finish verification](agent-pivot-finish-verification.md)
+is historical evidence.
 
 ## Product direction
 
@@ -28,8 +31,10 @@ packable TypeScript SDK, official local stdio MCP adapter, external-client examp
 bounded task-planner CLI and developer guide are implemented. See
 [agent API v1](agent-api-v1.md) and [additive interfaces](agent-interface-changes.md).
 Hosted assignment/status pages and the dedicated planning/action worker lane are
-implemented. Live Calendar/model verification, SDK publication and deployment
-remain release work; none follows from local fake-provider checks.
+implemented. Private versioned context and immutable task graphs now broaden the
+developer API. Real Calendar, SDK publication and the expanded deployment remain
+release work; none follows from fake-provider checks. Model qualification uses
+the real funded DeepSeek API and remains bounded to supplied-fact decisions.
 
 The initial workflow should use the repository's existing strengths: document
 and contract operations. General infrastructure primitives should not require a
@@ -45,13 +50,13 @@ These are local implementation results, not a production deployment test.
 
 | Area | Locally implemented | Remaining |
 | --- | --- | --- |
-| Delegation | Agent principals, exact document/assignee/calendar scopes, revocation and expiry | Staging OIDC/session verification |
-| Context | Retained literal-phrase retrieval, source versions/hashes/offsets | Broader context sources and retrieval strategies |
+| Delegation | Explicit document/context/assignee/calendar scopes, revocation, expiry and context narrowing | New live role/revocation acceptance |
+| Context | Private versioned briefs, retention/erasure, lexical AND search, hashes and Unicode offsets | Semantic/indexed search, further sources and scale tuning |
 | Execution | Typed registry, task and Calendar tools, immutable approval, attempts/leases, read-back receipts | Additional customer-validated tools; provider-specific compensation |
-| Workflow | Up to 20 named `all` conditions, durable progress, factual input waits | General DAGs, timers, long-lived scheduling and richer goal types |
+| Workflow | Up to 20 context-task graph nodes, dependencies, approved boolean branches, not-before timers and durable completed/skipped checkpoints; existing named `all` conditions | Mixed-tool graphs, recurrence and longer approval-aware scheduling |
 | Connectors | Encrypted owned-Calendar OAuth, consent UI, stable IDs and GET-only recovery | Live sandbox round trip; additional live connectors |
 | Developer surface | Packable SDK, local stdio MCP, public guide, operator views, review-artifact CI definition | Authorized npm release, actual MCP-host integration, hosted CI run |
-| LensLayer planner | User-assigned hosted service, three fixed-fact goals, shared checkpoints, deterministic mode and opt-in decision-only model; separate task-only CLI | Real-model evaluation, staging OIDC and deployment |
+| LensLayer planner | Three supplied-fact goals, shared checkpoints, deterministic mode, real DeepSeek qualification and default-zero durable paid-call gate | One bounded private staging canary; an approved ongoing spending policy before paid production |
 | Operations | SQLite/PostgreSQL tests, migrations, lane-aware heartbeats, metrics, isolated staging plan and Cloudflare dry-run | Staging migration/load/restart/alerting and deployment |
 
 `WorkflowTask.status = done` currently records a user-supplied status change; it

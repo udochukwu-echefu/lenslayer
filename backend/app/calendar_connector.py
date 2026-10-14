@@ -34,7 +34,8 @@ def require_connector_config(settings: Settings) -> Fernet:
     valid_uri = (uri.scheme == "https" or (
         settings.environment in {"local", "test"} and uri.scheme == "http" and uri.hostname in {"localhost", "127.0.0.1"}
     )) and uri.hostname and not uri.fragment and not uri.username and not uri.query
-    if not all((settings.google_calendar_client_id, settings.google_calendar_client_secret,
+    if not all((settings.google_calendar_enabled, len(settings.calendar_session_binding_key) >= 32,
+                settings.google_calendar_client_id, settings.google_calendar_client_secret,
                 valid_uri, len(settings.connector_state_signing_key) >= 32)):
         raise HTTPException(503, "Calendar OAuth is not configured.")
     try:

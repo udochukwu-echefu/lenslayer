@@ -38,6 +38,8 @@ def create_worker_application(settings=None):
             if not enqueue_next_agent_wake(database, settings,
                     current_task_name=request.headers.get("X-CloudTasks-TaskName", "")):
                 raise HTTPException(503, "Work is saved; its next wake requires retry.")
+            from .agent_observability import observe_agent_worker
+            observe_agent_worker(database, settings)
             return {"status": "drained" if runnable else "idle"}
         finally:
             database.dispose()

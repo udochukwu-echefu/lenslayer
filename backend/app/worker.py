@@ -15,6 +15,7 @@ from sqlalchemy import and_, delete, or_, select
 from .config import Settings, get_settings
 from .agent_runtime import claim_next_agent_action, expire_agent_runs, process_agent_action
 from .agent_models import AgentWorkerHeartbeat
+from .agent_generalization_runtime import purge_expired_context, recover_workflow_graphs
 from .agent_wake import nudge_finished_hosted_tasks, nudge_hosted_action
 from .hosted_agent_runtime import claim_next_hosted_task, process_hosted_task
 from .database import Database
@@ -545,6 +546,10 @@ def run_worker(
                 purge_expired_contracts(database, object_store)
                 process_lifecycle_reminders(database, settings)
             expired_runs = 0 if documents_only else expire_agent_runs(database, settings, object_store, stop_at=stop_at)
+            expired_context = 0
+            if not documents_only:
+                expired_context = purge_expired_context(database)
+                recover_workflow_graphs(database, settings, object_store, stop_at=stop_at)
             if not documents_only and settings.agent_worker_mode == "on_demand":
                 nudge_finished_hosted_tasks(database)
                 from .agent_wake import recover_hosted_waits
@@ -578,7 +583,7 @@ def run_worker(
                 process_email(database, settings, email_id)
             if once:
                 return
-            if drain and not job_id and not email_id and not agent_claim and not hosted_claim and not expired_runs:
+            if drain and not job_id and not email_id and not agent_claim and not hosted_claim and not expired_runs and not expired_context:
                 return
             if drain:
                 continue

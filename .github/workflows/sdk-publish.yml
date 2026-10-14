@@ -1,0 +1,126 @@
+name: Publish reviewed SDK (human approval required)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact reviewed stable version; sdk-v<version> must already point at this main commit
+        required: true
+        type: string
+      review_run_id:
+        description: Successful SDK release artifact review run ID for this exact commit
+        required: true
+        type: string
+      sha256:
+        description: Reviewed tarball SHA-256 (not the artifact ZIP digest)
+        required: true
+        type: string
+      confirmation:
+        description: 'Type: publish @lenslayer/agent-sdk@<version>'
+        required: true
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: sdk-npm-publication
+  cancel-in-progress: false
+
+env:
+  EXPECTED_VERSION: ${{ inputs.version }}
+  REVIEW_RUN_ID: ${{ inputs.review_run_id }}
+  EXPECTED_SHA256: ${{ inputs.sha256 }}
+  CONFIRMATION: ${{ inputs.confirmation }}
+  PUBLISH_ENABLED: ${{ vars.SDK_NPM_PUBLISH_ENABLED }}
+
+jobs:
+  verify:
+    if: github.repository == 'udochukwu-echefu/lenslayer' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24.15.0'
+          package-manager-cache: false
+      - name: Bind successful review workflow, attempt, canonical main source and version tag
+        id: policy
+        run: node sdk/scripts/release-policy.mjs github publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          artifact-ids: ${{ steps.policy.outputs.artifact_id }}
+          run-id: ${{ inputs.review_run_id }}
+          github-token: ${{ github.token }}
+          path: sdk-release-review
+          merge-multiple: true
+      - name: Verify reviewed bytes and metadata
+        run: node sdk/scripts/release-artifact.mjs verify sdk-release-review
+        env:
+          REVIEW_RUN_ATTEMPT: ${{ steps.policy.outputs.review_run_attempt }}
+      - run: npm --prefix sdk ci --ignore-scripts --no-audit --no-fund
+      - run: npm --prefix sdk run release:check
+      - name: Install and type-check the downloaded, reviewed tarball
+        working-directory: sdk
+        run: node tests/package-check.mjs ../sdk-release-review/lenslayer-agent-sdk-${EXPECTED_VERSION}.tgz
+
+  publish:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Release owner configures human approval and main-only branches; independent review is optional stronger protection.
+    environment: sdk-npm
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24.15.0'
+          package-manager-cache: false
+      - name: Recheck source and review after human environment approval
+        id: policy
+        run: node sdk/scripts/release-policy.mjs github publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          artifact-ids: ${{ steps.policy.outputs.artifact_id }}
+          run-id: ${{ inputs.review_run_id }}
+          github-token: ${{ github.token }}
+          path: sdk-release-review
+          merge-multiple: true
+      - name: Verify original reviewed artifact again; never rebuild or repack here
+        run: node sdk/scripts/release-artifact.mjs verify sdk-release-review
+        env:
+          REVIEW_RUN_ATTEMPT: ${{ steps.policy.outputs.review_run_attempt }}
+      - name: Publish exact reviewed bytes via package-scoped trusted OIDC and provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(npm --version)" = '11.12.1'
+          test -z "${NODE_AUTH_TOKEN:-}"
+          test -z "${NPM_TOKEN:-}"
+          npm publish "sdk-release-review/lenslayer-agent-sdk-${EXPECTED_VERSION}.tgz" --ignore-scripts --access public --provenance --tag latest --registry https://registry.npmjs.org/
+      - name: Verify registry integrity matches the reviewed tarball
+        run: node sdk/scripts/verify-registry.mjs sdk-release-review
+      - name: Retain published-byte evidence (not a second pack)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: published-sdk-${{ inputs.version }}-${{ github.run_id }}
+          path: sdk-release-review/
+          if-no-files-found: error
+          retention-days: 90

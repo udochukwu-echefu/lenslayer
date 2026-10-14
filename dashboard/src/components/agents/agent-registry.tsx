@@ -12,6 +12,7 @@ import { StatusBadge } from "../ui/status-badge";
 import { AgentCreateForm } from "./agent-create-form";
 import { AgentDemoNotice, AgentViewError } from "./agent-view-state";
 import { useBoundaryClock } from "./use-boundary-clock";
+import { ContextScopeNarrowing } from "./context-scope";
 import "./agent-workspace.css";
 
 export function AgentRegistry() {
@@ -49,6 +50,8 @@ function AgentRecord({ agent, canManage }: { agent: Agent; canManage: boolean })
   return <article className="agent-record">
     <header><div><h3>{agent.name}</h3><code>{agent.id}</code></div><StatusBadge status={agent.status} label={agent.status === "active" && Date.parse(agent.expires_at) <= now ? "Expiry elapsed" : undefined} /></header>
     <dl className="agent-facts"><div><dt>Tools</dt><dd>{agent.allowed_tools.map((tool) => <code key={tool}>{tool}</code>)}</dd></div><div><dt>Contracts</dt><dd>{agent.contract_ids.length ? agent.contract_ids.map((id) => <Link href={`/contracts/${encodeURIComponent(id)}`} key={id}>{id}</Link>) : "None delegated"}</dd></div><div><dt>Permitted assignees</dt><dd>{agent.assignee_ids.length ? agent.assignee_ids.map((id) => <code key={id}>{id}</code>) : "None delegated"}</dd></div><div><dt>Calendar targets</dt><dd>{agent.calendar_targets?.length ? agent.calendar_targets.map((target) => <span key={`${target.connection_id}:${target.calendar_id}`}><code>{target.connection_id}</code><code>{target.calendar_id}</code></span>) : "None delegated"}</dd></div><div><dt>Approval policy</dt><dd>{agent.require_approval ? "Human approval for every action" : "No human approval required"}</dd></div><div><dt>Expiry</dt><dd><time dateTime={agent.expires_at}>{exactDateTime(agent.expires_at)}</time></dd></div><div><dt>Action limit</dt><dd>{agent.max_actions_per_run} per run</dd></div><div><dt>Delegated by</dt><dd>{agent.delegated_by_user_id}</dd></div></dl>
+    <dl className="agent-facts"><div className="agent-wide"><dt>Workspace context</dt><dd>{agent.context_ids?.length ? agent.context_ids.map((id) => <Link href={`/context/${encodeURIComponent(id)}`} key={id}>{id}</Link>) : "None delegated"}</dd></div></dl>
+    {canManage && agent.status === "active" && Date.parse(agent.expires_at) > now && <ContextScopeNarrowing key={(agent.context_ids ?? []).join(":")} agent={agent} />}
     {canManage && agent.status !== "revoked" && <div className="agent-controls">{confirming ? <><p>Revoke access and cancel unfinished runs? Already-created tasks remain.</p><button className="button danger" type="button" disabled={mutation.isPending} onClick={() => mutation.mutate()}>{mutation.isPending ? "Revoking…" : "Confirm revocation"}</button><button className="button secondary" type="button" disabled={mutation.isPending} onClick={() => setConfirming(false)}>Keep access</button></> : <button className="button secondary" type="button" onClick={() => setConfirming(true)}>Revoke {agent.name}</button>}</div>}
     {mutation.error && <p className="form-error" role="alert">{mutation.error.message}</p>}
   </article>;

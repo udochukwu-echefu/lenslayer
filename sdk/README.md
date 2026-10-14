@@ -2,9 +2,10 @@
 
 A server-side TypeScript client for the implemented `/api/v1/agent` API. No runtime
 dependencies or framework. Requires Node 20.3+ (the repository uses Node 24.15).
-Version 0.1.0 is prepared locally and **not published to npm**. Package terms are
-`UNLICENSED` (all rights reserved); no open-source grant is invented. Rights,
-npm scope ownership and release provenance require the release owner's approval.
+Version 0.1.0 is prepared locally and **not published to npm**. This SDK package
+alone is licensed under the [MIT License](LICENSE), copyright 2026 LensLayer.
+This does not relicense MCP, the backend, or the repository. npm scope ownership,
+trusted publishing setup and human release approval remain release-owner gates.
 
 ```sh
 cd sdk
@@ -16,6 +17,7 @@ npm run release:check
 ```ts
 import { LensLayerClient } from "@lenslayer/agent-sdk";
 
+// Obtain a scoped ll_agent_ credential from an owner/admin; never use a user JWT.
 const client = new LensLayerClient({
   baseUrl: process.env.LENSLAYER_API_URL!,
   token: process.env.LENSLAYER_AGENT_TOKEN!,
@@ -41,6 +43,12 @@ agent self-approval, OAuth provisioning or reconciliation method: those are huma
 operations. Framework-neutral public exports include wire types, client options,
 poll/event options, `isTerminalRun` and safe error classes. ESM-only; no CommonJS
 or browser credential client is promised.
+
+Bounded-v2 additions: `searchContext` (pre-run planning hits, never write authority),
+`createWorkflowGraph`, `graph`, `retrieveContextEvidence`, `readContextEvidence`.
+They freshly check version-1 context grants and keep planning hits distinct from
+durable evidence receipts. See the source [context/graph guide](https://github.com/udochukwu-echefu/lenslayer/blob/main/sdk/GENERALIZATION.md)
+for exact routes, boolean branches, dependencies, scheduling and acceptance limits.
 
 The unchanged `createRun`/`proposeAction` use task-only v1 routes. Generalized
 calendar/composite workflows use `/agent/workflows` and `/tool-actions` via the
@@ -77,6 +85,8 @@ run succeeded or was cancelled. Approvals may outlast your polling window.
 
 In the source checkout, see `docs/developer-agent-quickstart.md`,
 `docs/developer-release-checklist.md` and `examples/agents/renewal-follow-up.mjs`.
-The repository documentation and examples are deliberately not bundled into the
-npm artifact. Official publishing/provenance reference:
+The source-only [distribution guide](https://github.com/udochukwu-echefu/lenslayer/blob/main/sdk/DISTRIBUTION.md)
+documents the manual review/publish workflow, exact source/version/tag binding,
+SHA-256 and npm integrity verification. The repository documentation and examples
+are deliberately not bundled into the npm artifact. Official provenance reference:
 https://docs.npmjs.com/generating-provenance-statements

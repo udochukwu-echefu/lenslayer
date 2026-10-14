@@ -43,11 +43,15 @@ def check_cloud_worker(project, region, service, queue, origin, invoker):
     worker = read(["run", "services", "describe", service, f"--region={region}"])
     annotations = worker.get("spec", {}).get("template", {}).get("metadata", {}).get("annotations", {})
     service_annotations = worker.get("metadata", {}).get("annotations", {})
+    revision_spec = worker.get("spec", {}).get("template", {}).get("spec", {})
     if (worker.get("status", {}).get("url") != origin
             or annotations.get("autoscaling.knative.dev/minScale", "0") != "0"
             or service_annotations.get("run.googleapis.com/minScale", "0") != "0"
+            or annotations.get("autoscaling.knative.dev/maxScale") != "1"
+            or service_annotations.get("run.googleapis.com/maxScale", "1") != "1"
+            or revision_spec.get("containerConcurrency") != 1
             or annotations.get("run.googleapis.com/cpu-throttling", "true") != "true"):
-        raise ValueError("Request-billed zero-minimum worker is required")
+        raise ValueError("Request-billed zero-minimum, bounded worker is required")
     policy = read(["run", "services", "get-iam-policy", service, f"--region={region}"])
     members = {member for binding in policy.get("bindings", []) if binding.get("role") == "roles/run.invoker"
         for member in binding.get("members", [])}

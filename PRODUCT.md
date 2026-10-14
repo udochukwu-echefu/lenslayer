@@ -6,11 +6,11 @@ product
 
 ## Users
 
-People reviewing consequential documents before making or recording a decision. LensLayer serves legal, procurement, compliance, finance, and operations teams reviewing agreements before signing, negotiating, reporting, or speaking with qualified counsel.
+Developers building agents that need private context, permission to act and durable proof of completion. Operators assign work, inspect evidence and approve exact actions through the dashboard. Agreement review remains a supported workflow for legal, procurement, compliance, finance and operations teams.
 
 ## Product Purpose
 
-LensLayer is an evidence-led document intelligence platform. It provides first-pass agreement triage, negotiation preparation, playbook-based deviation review, attributable human decisions, portfolio search, financial-document conversion, and professional-review handoff. It does not provide legal advice.
+LensLayer provides agent infrastructure for retrieving scoped evidence, proposing typed actions, waiting for input or approval, recovering execution and verifying exact outcomes. External agents use the API, SDK and MCP adapter; LensLayer's hosted runner uses the same execution records for bounded user assignments. Private context and document review supply evidence for this work. The document workflows provide first-pass triage and professional-review handoff, without claiming legal advice.
 
 ## Brand Personality
 
@@ -25,14 +25,16 @@ Calm, rigorous, direct. The interface should feel like a focused review desk: hi
 
 ## Design Principles
 
-1. Evidence before assertion: every material conclusion should point back to the document.
-2. Action after explanation: findings should lead to questions, negotiation steps, or professional review.
+1. Evidence before assertion: material conclusions and proposed actions should point back to a retained source and version.
+2. Action after explanation: show the exact target, supplied facts, permissions and intended outcome before asking for approval.
 3. Honest uncertainty: say what was not found, what could not be parsed, and what needs human review.
 4. Privacy in context: explain document handling at the point of upload and provide deletion controls.
 5. Progressive depth: make the first screen scannable, then let users inspect clauses and supporting detail.
 6. Human decision ownership: automation may recommend, but consequential approvals and rejections must remain inspectable and attributable.
 7. Confidence is not risk: extraction reliability, evidence coverage, and review status must be displayed as separate signals.
 8. Minimise retained data: persist the useful report by default, retain source text only with explicit user choice, and make retention and hard deletion visible.
+9. Completion needs a receipt: distinguish a verified task or event being created from the business work subsequently being performed.
+10. Waiting should be quiet: human approval and future timers preserve progress without an idle worker loop.
 
 ## Accessibility & Inclusion
 

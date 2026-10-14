@@ -40,7 +40,8 @@ class ProductionWorkerGuardTests(unittest.TestCase):
                 "httpMethod": "POST", "oidcToken": {"audience": values['origin'],
                 "serviceAccountEmail": "lenslayer-agent-wake@lenslayer.iam.gserviceaccount.com"}}},
             {"status": {"url": values['origin']}, "spec": {"template": {"metadata": {"annotations": {
-                "autoscaling.knative.dev/minScale": "0", "run.googleapis.com/cpu-throttling": "true"}}}}},
+                "autoscaling.knative.dev/minScale": "0", "autoscaling.knative.dev/maxScale": "1",
+                "run.googleapis.com/cpu-throttling": "true"}}, "spec": {"containerConcurrency": 1}}}},
             {"bindings": [{"role": "roles/run.invoker", "members": ["serviceAccount:lenslayer-agent-wake@lenslayer.iam.gserviceaccount.com"]}]},
         ]
         def run_case(data):
@@ -54,6 +55,12 @@ class ProductionWorkerGuardTests(unittest.TestCase):
             with self.subTest(key=key, value=value), self.assertRaises(ValueError): run_case(changed)
         changed = copy.deepcopy(state)
         changed[2]['spec']['template']['metadata']['annotations']['autoscaling.knative.dev/minScale'] = '1'
+        with self.assertRaises(ValueError): run_case(changed)
+        changed = copy.deepcopy(state)
+        changed[2]['spec']['template']['spec']['containerConcurrency'] = 2
+        with self.assertRaises(ValueError): run_case(changed)
+        changed = copy.deepcopy(state)
+        changed[2]['spec']['template']['metadata']['annotations']['autoscaling.knative.dev/maxScale'] = '2'
         with self.assertRaises(ValueError): run_case(changed)
         changed = copy.deepcopy(state); changed[3]['bindings'][0]['members'].append('allUsers')
         with self.assertRaises(ValueError): run_case(changed)

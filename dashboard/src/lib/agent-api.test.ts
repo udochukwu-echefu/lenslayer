@@ -6,7 +6,7 @@ vi.mock("next-auth/react", () => ({ getSession: vi.fn() }));
 beforeEach(() => {
   vi.resetModules();
   vi.stubEnv("NEXT_PUBLIC_LENSLAYER_PUBLIC_ACCESS", "true");
-  vi.mocked(getSession).mockReset().mockResolvedValue({ accessToken: "human-jwt-test-only", expires: "2099-01-01" });
+  vi.mocked(getSession).mockReset().mockResolvedValue({ user: { id: "auth0|human-test" }, expires: "2099-01-01" });
 });
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
@@ -18,7 +18,7 @@ describe("human agent API transport", () => {
     const controller = new AbortController();
     await api.agents("org-1", controller.signal);
     expect(fetchMock.mock.calls[0][0]).toBe("/api/platform/api/v1/organizations/org-1/agents");
-    expect(fetchMock.mock.calls[0][1].headers.get("Authorization")).toBe("Bearer human-jwt-test-only");
+    expect(fetchMock.mock.calls[0][1].headers.has("Authorization")).toBe(false);
     expect(fetchMock.mock.calls[0][1].signal).toBe(controller.signal);
   });
   it("serializes exact creation scope with no browser-side agent authorization", async () => {
@@ -73,6 +73,6 @@ describe("human agent API transport", () => {
     expect(fetchMock.mock.calls[2][0]).toContain("/actions/action%2F1/reconcile");
     expect(fetchMock.mock.calls[2][1].method).toBe("POST");
     expect(fetchMock.mock.calls[2][1].body).toBeUndefined();
-    for (const [, options] of fetchMock.mock.calls) expect(options.headers.get("Authorization")).toBe("Bearer human-jwt-test-only");
+    for (const [, options] of fetchMock.mock.calls) expect(options.headers.has("Authorization")).toBe(false);
   });
 });

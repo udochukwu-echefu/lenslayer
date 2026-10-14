@@ -31,6 +31,7 @@ CALENDAR_SECRETS = {
     "google-calendar-client-secret": "LENSLAYER_PLATFORM_GOOGLE_CALENDAR_CLIENT_SECRET",
     "connector-encryption-key": "LENSLAYER_PLATFORM_CONNECTOR_ENCRYPTION_KEY",
     "connector-state-signing-key": "LENSLAYER_PLATFORM_CONNECTOR_STATE_SIGNING_KEY",
+    "calendar-session-binding-key": "LENSLAYER_PLATFORM_CALENDAR_SESSION_BINDING_KEY",
 }
 EXCLUDED_DIRS = {
     ".git", ".agents", ".codex", ".aws", ".venv", "node_modules", ".next",
@@ -159,6 +160,8 @@ def environment(config: dict, worker_origin: str | None = None) -> dict[str, str
         "LENSLAYER_PLATFORM_AGENT_WORKER_DRAIN_SECONDS": "120",
         "LENSLAYER_PLATFORM_HOSTED_AGENTS_ENABLED": "true",
         "LENSLAYER_PLATFORM_HOSTED_MODEL_ENABLED": "false",
+        "LENSLAYER_PLATFORM_HOSTED_MODEL_LIFETIME_CALL_LIMIT": "0",
+        "LENSLAYER_PLATFORM_GOOGLE_CALENDAR_ENABLED": "true" if config["calendar_enabled"] else "false",
         "LENSLAYER_PLATFORM_HOSTED_AGENT_LEASE_SECONDS": "180",
         "LENSLAYER_PLATFORM_HOSTED_AGENT_WAIT_SECONDS": "15",
         "GROQ_MODEL": "openai/gpt-oss-120b",

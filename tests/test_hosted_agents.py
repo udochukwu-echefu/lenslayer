@@ -34,6 +34,10 @@ class HostedAgentTests(unittest.TestCase):
         self.fixture.setUp()
         self.route = self.base + "/hosted-agent-tasks"
         self.model_requests = []
+        # Legacy phase-one fake OpenAI workflow scenarios need multiple cases per
+        # disposable DB. This test-only registry patch is NOT a paid-provider claim.
+        self.budget_patch = patch("backend.app.hosted_model_budget.budget_provider", return_value=True)
+        self.budget_patch.start()
 
     def __getattr__(self, name):
         fixture = self.__dict__.get("fixture")
@@ -42,15 +46,26 @@ class HostedAgentTests(unittest.TestCase):
         return getattr(fixture, name)
 
     def tearDown(self):
+        self.budget_patch.stop()
         self.fixture.tearDown()
 
     def payload(self, **overrides):
+        if overrides.get("planner_mode") == "model":
+            from backend.app.hosted_model_providers import select_provider
+            provider = select_provider(self.settings.hosted_model_provider)
+            overrides = {"expected_model_provider": provider.name, "expected_model_id": provider.model,
+                         "expected_model_reasoning_effort": "high", **overrides}
         return {"idempotency_key": "hosted-1", "goal_type": "retained-document-follow-up",
             "goal": "Create exactly the follow-up I supplied", "deadline_at": (utcnow() + timedelta(hours=2)).isoformat(),
             "contract_id": self.contract, "assignee_id": self.owner, "due_at": self.due,
             "task_title": "Keep my exact title", "task_description": "Keep my exact description.", **overrides}
 
     def calendar_payload(self, combined=False, **overrides):
+        if overrides.get("planner_mode") == "model":
+            from backend.app.hosted_model_providers import select_provider
+            provider = select_provider(self.settings.hosted_model_provider)
+            overrides = {"expected_model_provider": provider.name, "expected_model_id": provider.model,
+                         "expected_model_reasoning_effort": "high", **overrides}
         connection = self.connection()
         event = {"type": "calendar_event_created", "connection_id": connection["id"], "calendar_id": "sandbox@example.com",
             "summary": "Fixed appointment", "start_at": self.due, "end_at": "2026-12-01T10:00:00Z"}
@@ -118,10 +133,12 @@ class HostedAgentTests(unittest.TestCase):
                  "content": [{"type": "output_text", "text": json.dumps({"decision": decision})}]}]}
             return httpx.Response(200, json=body)
         original = hosted_agent_model.decide
-        return patch.object(hosted_agent_model, "decide", lambda settings, request, excerpt:
-            original(settings, request, excerpt, transport=httpx.MockTransport(handle)))
+        return patch.object(hosted_agent_model, "decide", lambda settings, request, excerpt, **kwargs:
+            original(settings, request, excerpt, transport=httpx.MockTransport(handle), **kwargs))
 
     def enable_model(self):
+        self.settings.hosted_model_provider = "openai"
+        self.settings.hosted_model_lifetime_call_limit = 100  # test fixture only, exceeds production config validator
         self.settings.hosted_model_enabled = True
         self.settings.hosted_model_api_key = "fake-separate-product-key"
 
@@ -129,7 +146,8 @@ class HostedAgentTests(unittest.TestCase):
         payload = self.payload()
         task = self.create(payload)
         self.assertEqual(set(task), {"id", "organization_id", "created_by_user_id", "goal_type", "goal", "planner_mode",
-            "status", "phase", "run_id", "agent_id", "error_code", "deadline_at", "created_at", "updated_at", "completed_at"})
+            "status", "phase", "run_id", "agent_id", "error_code", "deadline_at", "created_at", "updated_at", "completed_at",
+            "model_provider", "model_id", "model_reasoning_effort"})
         self.assertIsNone(task["agent_id"])
         self.assertEqual(task["status"], "queued")
         self.assertNotIn("token", json.dumps(task))
@@ -324,6 +342,7 @@ class HostedAgentTests(unittest.TestCase):
     def test_disabled_model_is_explicit_and_deterministic_remains_available(self):
         response = self.client.get(self.base + "/hosted-agent-capabilities", headers=self.alice)
         self.assertEqual(response.json()["planner_modes"], ["deterministic"])
+        self.settings.hosted_model_provider = "openai"  # explicit selection but still disabled
         self.assertEqual(self.client.post(self.route, headers=self.alice, json=self.payload(planner_mode="model")).status_code, 503)
         self.assertEqual(self.planned()["status"], "awaiting_approval")
 

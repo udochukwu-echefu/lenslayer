@@ -93,8 +93,8 @@ downgrade cannot undo remote events and would remove the recovery ledger.
   run/action status, event counters, expired leases, retries, oldest queued age,
   and pending provider revocations. No credentials/source/goals/input metric labels.
 
-Alert on overdue runnable work, failed queue/recovery deliveries, rising queue
-age/expired leases/retries, any
+Alert on overdue runnable work, failed queue/recovery deliveries, expired
+leases/retries, any
 `unknown_outcome` or `action.partial_effect`, and pending remote revocations.
 Inspect stable action/event IDs before restarting or reconciling. Separate human
 approval/input waits from queue backlog. Scope/credential failures require new
@@ -183,6 +183,44 @@ RISC push revocation, automated encryption-key rotation and background remote
 revocation retry are not implemented. Retry disconnect explicitly; use a reviewed
 re-encryption procedure for key rotation. Replacing the master key alone makes
 old credentials unavailable.
+
+The server bridge also requires an independent high-entropy key:
+`CALENDAR_SESSION_BINDING_KEY` on the dashboard and the exact same value in
+`LENSLAYER_PLATFORM_CALENDAR_SESSION_BINDING_KEY` on the backend. It must differ
+from connector encryption, state-signing and model keys. A cryptographic private
+login-session identity is held only in the encrypted server session. The bridge
+signs a short-lived one-use proof bound to user, organization, operation, body and
+login-session fingerprint. Relogin invalidates old OAuth state; token refresh
+preserves the initiating session. Missing proof/key fails closed. Browser session
+JSON must not contain provider bearer/refresh tokens or the private session ID.
+
+Calendar defaults to disabled (`LENSLAYER_PLATFORM_GOOGLE_CALENDAR_ENABLED=false`).
+The optional model also defaults to disabled with a zero lifetime call allowance;
+see the [provider and spending rules](../hosted-model-providers.md).
+
+## October roadmap migrations and operational release
+
+`b14e6f8a9023` adds retained private context and dependency/conditional/timed graph
+records. `bf84e2c19a67` follows it with immutable model selection, durable global
+spending reservations and Calendar session proofs. Readiness checks the required
+tables and columns before accepting the new revision. Preserve ledger data and
+backups before applying either migration. The two spent-budget tables deliberately
+survive downgrade/reupgrade; rolling back source does not refund paid calls.
+
+Use `scripts/prepare-production.py` to render the immutable source/digest release
+plan, with private acceptance and traffic promotion as separate steps. It does
+not deploy or migrate. `scripts/prepare-agent-monitoring.py` renders five policies
+per environment: worker HTTP failures, ledger attention/unavailability, hourly
+recovery failure, post-commit wake enqueue failure and at least three unsuccessful
+Cloud Tasks attempts within fifteen minutes. It ignores ordinary future timers
+and human approval waits. Policies stay disabled until an approved notification
+channel is supplied; inspect existing names before creating duplicates.
+
+Worker observations are emitted only during existing drain/enqueue requests.
+Hourly recovery detects missed commits without keeping an idle process alive.
+There is no claim of immediate detection while a service has no request. Read the
+[current acceptance record](../architecture/agent-roadmap-acceptance-2026-10-14.md)
+before enabling a queue or advertising external provider/SDK acceptance.
 
 ## Opt-in disposable verification
 

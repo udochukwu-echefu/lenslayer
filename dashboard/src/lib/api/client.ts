@@ -6,9 +6,8 @@ export function resolvePlatformApiPrefix(platformApiUrl?: string) {
   return origin ? `${origin}/api/v1` : "/api/platform/api/v1";
 }
 
-export const API_PREFIX = resolvePlatformApiPrefix(
-  process.env.NEXT_PUBLIC_PLATFORM_API_URL,
-);
+// Human API credentials stay server-side; private traffic always uses the BFF.
+export const API_PREFIX = "/api/platform/api/v1";
 let sessionRequest: ReturnType<typeof getSession> | null = null;
 let cachedSession: Awaited<ReturnType<typeof getSession>> = null;
 let sessionCachedAt = 0;
@@ -16,7 +15,7 @@ const SESSION_CACHE_MS = 30_000;
 
 function authenticatedSession() {
   if (
-    cachedSession?.accessToken &&
+    cachedSession?.user?.id && !cachedSession.error &&
     Date.now() - sessionCachedAt < SESSION_CACHE_MS
   ) {
     return Promise.resolve(cachedSession);
@@ -24,7 +23,7 @@ function authenticatedSession() {
   if (!sessionRequest) {
     sessionRequest = getSession()
       .then((session) => {
-        if (session?.accessToken) {
+        if (session?.user?.id && !session.error) {
           cachedSession = session;
           sessionCachedAt = Date.now();
         }
@@ -45,7 +44,7 @@ export async function resolveAuthenticatedSession(
   pause = waitForSessionHydration,
 ) {
   const session = await getCurrentSession();
-  if (session?.accessToken) return session;
+  if (session?.user?.id && !session.error) return session;
 
   // NextAuth can report an authenticated UI one tick before the access token is
   // readable through getSession(). Give mutating requests one short grace retry.
@@ -113,16 +112,15 @@ export async function request<T>(
   }
   const headers = new Headers(init?.headers);
   const method = init?.method?.toUpperCase() ?? "GET";
+  if (!["GET", "HEAD"].includes(method)) headers.set("X-LensLayer-Platform-CSRF", "1");
   const session = sessionPolicy === "fresh"
     ? await resolveAuthenticatedSession(getSession)
     : method === "GET"
       ? await authenticatedSession()
       : await resolveAuthenticatedSession();
   init?.signal?.throwIfAborted();
-  if (sessionPolicy === "fresh" && (!session?.accessToken || session.error))
+  if (sessionPolicy === "fresh" && (!session?.user?.id || session.error))
     throw new ApiError("Sign in to a private workspace to assign or inspect hosted agent tasks.", 401);
-  if (session?.accessToken)
-    headers.set("Authorization", `Bearer ${session.accessToken}`);
   const response = await fetch(`${API_PREFIX}${path}`, {
     ...init,
     headers,
@@ -149,10 +147,9 @@ export async function request<T>(
 
 export async function download(path: string, filename: string) {
   const session = await resolveAuthenticatedSession();
-  if (!session?.accessToken)
+  if (!session?.user?.id || session.error)
     throw new ApiError("Sign in to download this file.", 401);
   const response = await fetch(path, {
-    headers: { Authorization: `Bearer ${session.accessToken}` },
     cache: "no-store",
   });
   if (!response.ok)

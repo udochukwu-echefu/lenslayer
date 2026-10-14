@@ -8,6 +8,7 @@ import { api, ApiError } from "@/lib/api";
 import { assignmentInput } from "@/lib/hosted-agent-assignment";
 import { calendarGrants, goalLabels, plannerLabels, retainedContract } from "@/lib/hosted-agent-state";
 import type { HostedAgentCapabilities, HostedAgentTask, HostedAgentTaskCreate, HostedGoalType, HostedPlannerMode } from "@/lib/hosted-agent-types";
+import { hostedModelDisclosure } from "@/lib/hosted-model-disclosure";
 
 export function HostedTaskForm({ organizationId, scopeKey, capabilities, assigned, savedRequest, saveRequest }: {
   organizationId: string; scopeKey: string; capabilities: HostedAgentCapabilities; assigned: (task: HostedAgentTask) => void;
@@ -32,6 +33,7 @@ export function HostedTaskForm({ organizationId, scopeKey, capabilities, assigne
   const loading = (document && (contracts.isPending || members.isPending)) || (calendar && connections.isPending);
   const grants = calendarGrants(connections.data ?? [], organizationId);
   const locked = busy || Boolean(frozen);
+  const modelDisclosure = hostedModelDisclosure(capabilities);
 
   useEffect(() => {
     alive.current = true;
@@ -46,7 +48,7 @@ export function HostedTaskForm({ organizationId, scopeKey, capabilities, assigne
 
   async function send(input: HostedAgentTaskCreate) {
     if (pending.current) return;
-    if (!capabilities.enabled || !capabilities.goal_types.includes(input.goal_type) || !capabilities.planner_modes.includes(input.planner_mode ?? "deterministic")) {
+    if (!capabilities.enabled || !capabilities.goal_types.includes(input.goal_type) || !capabilities.planner_modes.includes(input.planner_mode ?? "deterministic") || (input.planner_mode === "model" && !modelDisclosure)) {
       setError("The saved goal or planning mode is no longer enabled. Inspect history and capabilities; no substitute planning mode was selected."); return;
     }
     const controller = new AbortController(); pending.current = controller;
@@ -81,10 +83,10 @@ export function HostedTaskForm({ organizationId, scopeKey, capabilities, assigne
       <fieldset className="agent-form-fields" disabled={locked}>
         <div className="agent-form-grid">
           <div className="field"><label htmlFor="hosted-goal-type">Outcome to create</label><NativeSelect id="hosted-goal-type" className="input" name="goal_type" required value={goalType} onChange={(event) => setGoalType(event.target.value as HostedGoalType)}><option value="" disabled>Select an outcome</option>{Object.entries(goalLabels).filter(([type]) => capabilities.goal_types.includes(type as HostedGoalType)).map(([type, label]) => <option key={type} value={type}>{label}</option>)}</NativeSelect></div>
-          <div className="field"><label htmlFor="hosted-planner">Planning mode</label><NativeSelect id="hosted-planner" className="input" name="planner_mode" value={mode} onChange={(event) => setMode(event.target.value as HostedPlannerMode)}><option value="deterministic" disabled={!capabilities.planner_modes.includes("deterministic")}>{plannerLabels.deterministic}</option>{capabilities.planner_modes.includes("model") && <option value="model">{plannerLabels.model}</option>}</NativeSelect><p className="field-help">{mode === "deterministic" ? "Fixed workflow planning uses your explicit facts. It does not call a model or interpret legal meaning." : "Optional model assistance cannot change your title, facts, targets or approval policy."}{!capabilities.planner_modes.includes("model") && " Model assistance is not enabled by this service."}</p></div>
+          <div className="field"><label htmlFor="hosted-planner">Planning mode</label><NativeSelect id="hosted-planner" className="input" name="planner_mode" value={mode} onChange={(event) => setMode(event.target.value as HostedPlannerMode)}><option value="deterministic" disabled={!capabilities.planner_modes.includes("deterministic")}>{plannerLabels.deterministic}</option>{modelDisclosure && <option value="model">{plannerLabels.model}</option>}</NativeSelect><p className="field-help">{mode === "deterministic" ? "Fixed workflow planning uses your explicit facts. It does not call a model or interpret legal meaning." : "Optional model assistance cannot change your title, facts, targets or approval policy."}{!modelDisclosure && " Model assistance is not enabled by this service."}</p></div>
         </div>
-        {capabilities.planner_modes.includes("model") && <p className="field-help">Choosing model assistance shares your goal, scoped facts and any retrieved document excerpt with OpenAI GPT-6.1 Sol at high effort, using separate server product API access. Fixed workflow planning does not send this context to a model.</p>}
-        {mode === "model" && <label className="agent-policy-choice"><input type="checkbox" name="excerpt_consent" required /><span><strong>Share this scoped context with the product model provider</strong><small>Your human-authored goal, scoped facts and any retrieved document excerpt will be sent to OpenAI GPT-6.1 Sol at high effort using separate server product API access. Never include secrets. This is not a zero-retention guarantee or legal review. Approval is still required.</small></span></label>}
+        {modelDisclosure && <p className="field-help">{modelDisclosure} Fixed workflow planning does not send this context to a model.</p>}
+        {mode === "model" && modelDisclosure && <label className="agent-policy-choice"><input type="checkbox" name="excerpt_consent" required /><span><strong>Share this scoped context with the product model provider</strong><small>{modelDisclosure} Never include secrets.</small></span></label>}
         <div className="field"><label htmlFor="hosted-goal">Your goal</label><textarea className="textarea" id="hosted-goal" name="goal" required maxLength={4000} placeholder="Describe what this exact follow-up or event should help you review." /><p className="field-help">Goal text is context, not permission for additional actions. All identities, dates, titles and targets below are your explicit facts.</p></div>
         {document && <section className="hosted-facts" aria-labelledby="document-facts-heading"><h3 id="document-facts-heading">Document follow-up facts</h3>
           <div className="agent-form-grid">
@@ -107,7 +109,7 @@ export function HostedTaskForm({ organizationId, scopeKey, capabilities, assigne
         <div className="field"><label htmlFor="hosted-deadline">Execution deadline (with timezone)</label><input className="input" id="hosted-deadline" name="deadline_at" required placeholder="YYYY-MM-DDTHH:mm:ssZ or ±HH:MM" aria-describedby="hosted-deadline-help hosted-times-help" /><p id="hosted-deadline-help" className="field-help">Future deadline, at most {Math.min(7, capabilities.max_deadline_days)} days. This is the execution/approval limit, separate from the follow-up due time or event time.</p></div>
         <p id="hosted-times-help" className="field-help">Supply ISO timestamps with Z (UTC) or an explicit offset. Your browser timezone is never assumed. Times normalize to UTC.</p>
         <p className="agent-notice"><strong>Human approval always required.</strong> Assignment creates an internal delegation limited to these exact facts and deadline. No bearer credential enters the browser. Approve proposals in Runs; completion requires matching server read-back receipts.</p>
-        <button type="submit" className="button" disabled={!goalType || loading || Boolean(sourceError) || !capabilities.planner_modes.includes(mode)}>Assign to LensLayer agent</button>
+        <button type="submit" className="button" disabled={!goalType || loading || Boolean(sourceError) || !capabilities.planner_modes.includes(mode) || (mode === "model" && !modelDisclosure)}>Assign to LensLayer agent</button>
       </fieldset>
     </form>
     {loading && !frozen && <p role="status" className="field-help">Loading private scope choices…</p>}

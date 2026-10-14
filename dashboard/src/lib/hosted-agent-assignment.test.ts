@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { assignmentInput } from "./hosted-agent-assignment";
 import { calendarGrants, hostedTaskPollInterval } from "./hosted-agent-state";
 import { contractFixture, memberFixture } from "@/test/agent-fixtures";
-import { calendarConnectionFixture, hostedCapabilities, hostedTaskFixture } from "@/test/hosted-fixtures";
+import { calendarConnectionFixture, hostedCapabilities, hostedTaskFixture, deepseekCapabilities } from "@/test/hosted-fixtures";
 
 function values(overrides: Record<string, string> = {}) {
   const form = new FormData();
@@ -37,7 +37,7 @@ describe("hosted assignment facts and exact scope", () => {
   });
   it("capability disables unsupported model and requires excerpt disclosure consent", () => {
     expect(() => assignmentInput(values({ planner_mode: "model" }), scope, "key")).toThrow(/not enabled/);
-    const modelScope = { ...scope, capabilities: { ...hostedCapabilities, planner_modes: ["deterministic", "model"] as const } };
+    const modelScope = { ...scope, capabilities: deepseekCapabilities };
     expect(() => assignmentInput(values({ planner_mode: "model" }), { ...modelScope, capabilities: { ...modelScope.capabilities, planner_modes: [...modelScope.capabilities.planner_modes] } }, "key")).toThrow(/sharing/);
   });
   it("lists only active encrypted original calendar grants and stops terminal/deadline polling", () => {

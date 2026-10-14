@@ -1,4 +1,4 @@
-import type { Agent, AgentAction, AgentCreate, AgentCreated, AgentRun, ApprovalDecision, EvidenceReceipt, InputRequest, InputSupply, RunEvent } from "../agent-types";
+import type { Agent, AgentAction, AgentCreate, AgentCreated, AgentRun, ApprovalDecision, EvidenceReceipt, InputRequest, InputSupply, RunEvent, ContextEvidenceReceipt, ContextScope, WorkflowGraph } from "../agent-types";
 import { isDemoWorkspace } from "../workspace-mode";
 import { ApiError, jsonRequest, request } from "./client";
 
@@ -19,6 +19,12 @@ function requirePrivateWorkspace(org: string) {
 }
 
 export const agentsApi = {
+  narrowAgentContext: (org: string, agent: string, input: ContextScope, signal?: AbortSignal) => {
+    requirePrivateWorkspace(org);
+    return jsonRequest<Agent>(`${organizationPath(org)}/agents/${encodeURIComponent(agent)}/context-scope`, "POST", input, false, signal);
+  },
+  agentRunGraph: (org: string, run: string, signal?: AbortSignal) => demoOrRequest<WorkflowGraph>(org, `${runPath(org, run)}/graph`, signal),
+  agentRunContextEvidence: (org: string, run: string, evidence: string, signal?: AbortSignal) => demoOrRequest<ContextEvidenceReceipt>(org, `${runPath(org, run)}/context-evidence/${encodeURIComponent(evidence)}`, signal),
   agents: (org: string, signal?: AbortSignal) => demoOrRequest<Agent[]>(org, `${organizationPath(org)}/agents`, signal),
   createAgent: (org: string, input: AgentCreate, signal?: AbortSignal) => {
     requirePrivateWorkspace(org);

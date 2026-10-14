@@ -8,12 +8,33 @@ from .agent_resources import CalendarResource
 from .hosted_agent_models import HostedAgentTask
 from .hosted_agent_schemas import GOAL_TYPES, HostedCapabilities, HostedTaskResponse
 from .models import Membership, Organization, utcnow
+from .hosted_model_providers import HostedModelError, select_provider
+from .hosted_model_budget import admission_available, reserve_admission
 from .service_domains.agents import TERMINAL_RUN_STATES, canonical_json, digest
 from .service_domains.common import aware, normalized_role
 
 
 def model_available(settings):
-    return settings.hosted_model_enabled and bool(settings.hosted_model_api_key.strip())
+    try:
+        select_provider(settings.hosted_model_provider)
+    except HostedModelError:
+        return False
+    return (settings.hosted_model_enabled and bool(settings.hosted_model_api_key.strip())
+            and not any(c.isspace() for c in settings.hosted_model_api_key)
+            and 0 < settings.hosted_model_timeout_seconds <= 30
+            and settings.hosted_agent_lease_seconds > 3 * settings.hosted_model_timeout_seconds + 15
+            and 1 <= settings.hosted_model_max_output_tokens <= 4096)
+
+
+def selection_digest(request_sha256, provider, model_id, effort):
+    return digest(canonical_json({"request_sha256": request_sha256, "provider": provider, "model_id": model_id, "effort": effort}))
+
+
+def disclosure(provider):
+    label = "DeepSeek" if provider.name == "deepseek" else "OpenAI"
+    return (f"Model assistance sends your goal, supplied scoped facts and up to 1,000 characters of a retrieved retained-source excerpt "
+            f"to {label} ({provider.model}, high reasoning effort), using separate server-side product API access. "
+            "This is not a zero-retention guarantee or legal review. Immutable human approval and independent completion checks remain required.")
 
 
 class HostedAgentService:
@@ -30,8 +51,12 @@ class HostedAgentService:
 
     def capabilities(self, organization_id, user):
         self.admin(organization_id, user)
+        available = self.settings.hosted_agents_enabled and model_available(self.settings) and admission_available(self.session, self.settings)
+        provider = select_provider(self.settings.hosted_model_provider) if available else None
         return HostedCapabilities(enabled=self.settings.hosted_agents_enabled, goal_types=GOAL_TYPES,
-            planner_modes=["deterministic"] + (["model"] if model_available(self.settings) else []))
+            planner_modes=["deterministic"] + (["model"] if available else []),
+            model_provider=provider.name if provider else None, model_id=provider.model if provider else None,
+            model_reasoning_effort="high" if provider else None, model_disclosure=disclosure(provider) if provider else None)
 
     def create(self, organization_id, user, request):
         # Serialize tenant idempotency creation/replay on SQLite and PostgreSQL.
@@ -50,6 +75,10 @@ class HostedAgentService:
             raise HTTPException(503, "Hosted tasks are disabled.")
         if request.planner_mode == "model" and not model_available(self.settings):
             raise HTTPException(503, "Hosted model mode is unavailable; use deterministic mode.")
+        if request.planner_mode == "model":
+            selected = select_provider(self.settings.hosted_model_provider)
+            if (request.expected_model_provider, request.expected_model_id, request.expected_model_reasoning_effort) != (selected.name, selected.model, "high"):
+                raise HTTPException(409, "Model configuration changed since disclosure; refresh and confirm the exact provider.")
         if not utcnow() < request.deadline_at <= utcnow() + timedelta(days=7):
             raise HTTPException(422, "Hosted deadline must be future and within seven days.")
         if request.contract_id:
@@ -62,8 +91,14 @@ class HostedAgentService:
         task = HostedAgentTask(organization_id=organization_id, created_by_user_id=user.id,
             idempotency_key=request.idempotency_key, request_json=serialized, request_sha256=digest(serialized),
             goal_type=request.goal_type, goal=request.goal, planner_mode=request.planner_mode, deadline_at=request.deadline_at)
+        if request.planner_mode == "model":
+            provider = select_provider(self.settings.hosted_model_provider)
+            task.model_provider, task.model_id, task.model_reasoning_effort = provider.name, provider.model, "high"
+            task.model_selection_sha256 = selection_digest(task.request_sha256, provider.name, provider.model, "high")
         self.session.add(task)
         self.session.flush()
+        if request.planner_mode == "model":
+            reserve_admission(self.session, self.settings, task)
         self.platform._audit(organization_id, user.id, "hosted_task.created", detail={"hosted_task_id": task.id})
         self.session.commit()
         return task
@@ -115,8 +150,14 @@ class HostedAgentService:
 
     @staticmethod
     def response(task):
+        # Never serialize corrupt/unrecognized selection strings as an asserted
+        # provider. Worker rejects their binding; public metadata stays safe.
+        valid_selection = ((task.model_provider, task.model_id, task.model_reasoning_effort) in {
+            ("deepseek", "deepseek-flash", "high"), ("openai", "gpt-6.1-sol", "high")})
         return HostedTaskResponse(id=task.id, organization_id=task.organization_id, created_by_user_id=task.created_by_user_id,
             goal_type=task.goal_type, goal=task.goal, planner_mode=task.planner_mode, status=task.status,
+            model_provider=task.model_provider if valid_selection else None, model_id=task.model_id if valid_selection else None,
+            model_reasoning_effort=task.model_reasoning_effort if valid_selection else None,
             phase=task.phase, run_id=task.run_id, agent_id=task.agent_id, error_code=task.error_code,
             deadline_at=aware(task.deadline_at), created_at=aware(task.created_at), updated_at=aware(task.updated_at),
             completed_at=aware(task.completed_at) if task.completed_at else None)

@@ -36,4 +36,12 @@ describe("developer onboarding access boundaries", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("Workspace access could not be loaded");
     expect(screen.getByRole("heading", { name: "5. Check the verified receipt" })).toBeInTheDocument();
   });
+  it("documents pre-run hits, immutable context graphs and factual/scheduling limits without a human create form", () => {
+    const { container } = render(<DeveloperGuide />);
+    expect(screen.getByRole("heading", { name: "Context-backed workflow graphs" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Search before fixing a plan" })).toBeInTheDocument();
+    expect(screen.getByText(/Planning hits include a context\/version\/hash/)).toBeInTheDocument();
+    expect(screen.getByText(/no graph-creation form or invented human creation route/)).toBeInTheDocument();
+    expect(container.querySelector("input, textarea")).toBeNull();
+  });
 });

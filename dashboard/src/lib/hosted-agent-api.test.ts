@@ -5,7 +5,7 @@ import { hostedTaskFixture } from "@/test/hosted-fixtures";
 vi.mock("next-auth/react", () => ({ getSession: vi.fn() }));
 beforeEach(() => {
   vi.resetModules(); vi.stubEnv("NEXT_PUBLIC_LENSLAYER_PUBLIC_ACCESS", "true");
-  vi.mocked(getSession).mockReset().mockResolvedValue({ accessToken: "human-session-test", expires: "2099-01-01" });
+  vi.mocked(getSession).mockReset().mockResolvedValue({ user: { id: "auth0|human-test" }, expires: "2099-01-01" });
 });
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
@@ -31,7 +31,7 @@ it("uses exact human hosted routes with no credential body, cache or implicit pr
   expect(JSON.parse(fetchMock.mock.calls[3][1].body)).toEqual(input);
   expect(fetchMock.mock.calls[4][1].method).toBe("POST"); expect(fetchMock.mock.calls[4][1].body).toBeUndefined();
   for (const [, options] of fetchMock.mock.calls) {
-    expect(options.headers.get("Authorization")).toBe("Bearer human-session-test"); expect(options.cache).toBe("no-store"); expect(options.signal).toBe(controller.signal);
+    expect(options.headers.has("Authorization")).toBe(false); expect(options.cache).toBe("no-store"); expect(options.signal).toBe(controller.signal);
   }
 });
 it("uses existing private contract/member/connection routes despite public-access build settings", async () => {
@@ -63,7 +63,7 @@ it("an abort during session hydration prevents a late network write", async () =
   vi.mocked(getSession).mockImplementation(() => new Promise((done) => { resolve = done; }));
   const fetchMock = vi.fn(); vi.stubGlobal("fetch", fetchMock); const { api } = await import("./api");
   const controller = new AbortController(); const response = api.cancelHostedAgentTask("org-1", "task", controller.signal);
-  controller.abort(); resolve({ accessToken: "late-session", expires: "2099-01-01" });
+  controller.abort(); resolve({ user: { id: "auth0|late-human" }, expires: "2099-01-01" });
   await expect(response).rejects.toMatchObject({ name: "AbortError" }); expect(fetchMock).not.toHaveBeenCalled();
 });
 it("does not automatically retry ambiguous or forbidden hosted writes", async () => {

@@ -15,6 +15,7 @@ class CalendarCredential(Base):
     encrypted_json: Mapped[str] = mapped_column(Text)
     scopes_json: Mapped[str] = mapped_column(Text)
     calendar_ids_json: Mapped[str] = mapped_column(Text)
+    session_fingerprint: Mapped[str | None] = mapped_column(String(64), nullable=True)
     revision: Mapped[int] = mapped_column(Integer, default=0)
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     revoke_pending: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -28,5 +29,14 @@ class CalendarOAuthState(Base):
     organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id", ondelete="CASCADE"), index=True)
     user_id: Mapped[str] = mapped_column(ForeignKey("platform_users.id"))
     request_json: Mapped[str] = mapped_column(Text)
+    session_fingerprint: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    binding_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     consumed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class CalendarSessionProof(Base):
+    __tablename__ = "calendar_session_proofs"
+    nonce_sha256: Mapped[str] = mapped_column(String(64), primary_key=True)
+    organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id", ondelete="CASCADE"), index=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)

@@ -95,6 +95,9 @@ class CalendarWorkflowTests(unittest.TestCase):
         self.fixture = fixtures.AgentInfrastructureTests(methodName="runTest")
         self.fixture.setUp()
         self.settings.google_calendar_client_id = "fake-client"
+        self.settings.google_calendar_enabled = True
+        from tests.calendar_test_session import TEST_SESSION_KEY, attach_test_session
+        self.settings.calendar_session_binding_key = TEST_SESSION_KEY
         self.settings.google_calendar_client_secret = "fake-client-secret"
         self.settings.google_calendar_redirect_uri = "http://localhost:3000/calendar/oauth-return"
         self.settings.connector_encryption_key = Fernet.generate_key().decode()
@@ -102,7 +105,8 @@ class CalendarWorkflowTests(unittest.TestCase):
         self.fake = FakeGoogle()
         factory = lambda settings: GoogleCalendarHTTP(settings, transport=httpx.MockTransport(self.fake.handle))
         self.patches = [patch("backend.app.service_domains.calendar.GoogleCalendarHTTP", factory),
-                        patch("backend.app.calendar_runtime.GoogleCalendarHTTP", factory)]
+                        patch("backend.app.calendar_runtime.GoogleCalendarHTTP", factory),
+                        patch.object(self.client, "request", attach_test_session(self.client, self.settings))]
         for item in self.patches:
             item.start()
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -15,6 +16,7 @@ class Settings(BaseSettings):
         env_file=".env",
         env_prefix="LENSLAYER_PLATFORM_",
         extra="ignore",
+        hide_input_in_errors=True,
     )
 
     app_name: str = "LensLayer Platform API"
@@ -69,19 +71,23 @@ class Settings(BaseSettings):
     agent_action_max_attempts: int = Field(default=3, ge=1, le=10)
     agent_max_evidence_receipts_per_run: int = Field(default=100, ge=1, le=1000)
     google_calendar_client_id: str = ""
+    google_calendar_enabled: bool = False
     google_calendar_client_secret: str = Field(default="", repr=False)
     google_calendar_redirect_uri: str = ""
     connector_encryption_key: str = Field(default="", repr=False)
     connector_state_signing_key: str = Field(default="", repr=False)
+    calendar_session_binding_key: str = Field(default="", repr=False)
     connector_http_timeout_seconds: float = Field(default=5, ge=1, le=10)
     hosted_agents_enabled: bool = True
     hosted_agent_lease_seconds: int = Field(default=180, ge=30, le=600)
     hosted_agent_max_attempts: int = Field(default=12, ge=6, le=30)
     hosted_agent_wait_seconds: int = Field(default=15, ge=5, le=60)
     hosted_model_enabled: bool = False
+    hosted_model_lifetime_call_limit: int = Field(default=0, ge=0, le=1)
+    hosted_model_provider: Literal["deepseek", "openai"] | None = None
     hosted_model_api_key: str = Field(default="", repr=False)
-    hosted_model_timeout_seconds: float = Field(default=30, ge=1, le=60)
-    hosted_model_max_output_tokens: int = Field(default=2048, ge=512, le=4096)
+    hosted_model_timeout_seconds: float = Field(default=30, ge=1, le=30)
+    hosted_model_max_output_tokens: int = Field(default=2048, ge=1, le=4096)
 
     @property
     def allowed_extension_set(self) -> set[str]:
@@ -97,8 +103,14 @@ class Settings(BaseSettings):
             raise ValueError("agent_worker_mode must be continuous or on_demand")
         if self.agent_worker_mode == "on_demand":
             validate_worker_wake_target(self.agent_worker_url, self.agent_worker_queue, self.agent_worker_invoker_email)
-        if self.hosted_agent_lease_seconds <= self.hosted_model_timeout_seconds * 2:
-            raise ValueError("Hosted planner lease must exceed twice the model timeout")
+        if self.hosted_model_enabled and self.hosted_agent_lease_seconds <= self.hosted_model_timeout_seconds * 3 + 15:
+            raise ValueError("Hosted planner lease must exceed three model timeouts plus 15 seconds of transaction headroom")
+        if self.hosted_model_enabled and self.hosted_model_provider is None:
+            raise ValueError("Enabled product model requires explicit provider selection")
+        if self.calendar_session_binding_key:
+            if len(self.calendar_session_binding_key) < 32 or self.calendar_session_binding_key in {
+                    self.connector_state_signing_key, self.connector_encryption_key, self.hosted_model_api_key}:
+                raise ValueError("Calendar session binding requires a separate server HMAC key of at least 32 characters")
         environment = self.environment.lower()
         auth_mode = self.auth_mode.lower()
         storage_backend = self.object_storage_backend.lower()

@@ -1,6 +1,7 @@
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  envDir: false,
   test: { environment: "jsdom", setupFiles: ["./src/test/setup.ts"], css: false },
   resolve: { alias: { "@": `${import.meta.dirname}/src` } },
 });

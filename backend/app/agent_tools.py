@@ -5,7 +5,8 @@ from typing import Any, Callable
 from fastapi import HTTPException
 from pydantic import BaseModel
 
-from .agent_schemas import CalendarActionInput, EvidenceRequest, TaskActionInput
+from .agent_schemas import CalendarActionInput, ContextTaskActionInput, EvidenceRequest, TaskActionInput
+from .agent_generalization_schemas import ContextSearch
 from .service_domains.common import aware, json_load
 
 
@@ -34,6 +35,19 @@ def _verify_calendar(actual, expected):
     return GoogleCalendarHTTP.verify(actual, expected)
 
 
+def verify_context_task(task, condition, payload, reference, organization_id, delegator_id):
+    actual = json_load(task.source_reference_json, {})
+    return (task.organization_id == organization_id and task.contract_id is None
+            and condition.context_id == payload.context_id == reference.get("context_id")
+            and task.assigned_to_user_id == condition.assigned_to_user_id
+            and task.due_at is not None and aware(task.due_at) == condition.due_at
+            and task.title == condition.title == payload.title
+            and task.description == condition.description == payload.description
+            and task.created_by_user_id == delegator_id and task.status == "open"
+            and task.category == "follow_up" and task.priority == "normal" and task.source_kind == "manual"
+            and isinstance(actual, dict) and actual == reference)
+
+
 @dataclass(frozen=True)
 class ToolDefinition:
     name: str
@@ -55,6 +69,13 @@ class ToolDefinition:
 
 
 TOOLS = {
+    ("context.retrieve", "1"): ToolDefinition(
+        "context.retrieve", "1", ContextSearch, ("context",), "retrieve_context_evidence",
+        "retained_context", "source_hash", "Lexical retrieval over explicitly scoped private context.", False),
+    ("workspace.context_tasks.create", "1"): ToolDefinition(
+        "workspace.context_tasks.create", "1", ContextTaskActionInput, ("context",), "validate_context_task_input",
+        "database_task", "database_read_back", "Create an exact, context-backed assigned follow-up.",
+        execute=_execute_task, check_completion=verify_context_task),
     ("documents.retrieve", "1"): ToolDefinition(
         "documents.retrieve", "1", EvidenceRequest, ("contract",), "retrieve_agent_evidence",
         "retained_document", "source_hash", "Retrieve retained source evidence.", False),
@@ -78,6 +99,8 @@ def get_tool(name: str, version: str = "1") -> ToolDefinition:
 
 
 def conditions(value: dict) -> dict[str, dict]:
+    if value["type"] == "graph":
+        return {entry["id"]: entry["condition"] for entry in value["nodes"]}
     return {entry["id"]: entry["condition"] for entry in value["conditions"]} if value["type"] == "all" else {"__single__": value}
 
 

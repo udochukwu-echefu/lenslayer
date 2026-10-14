@@ -71,6 +71,7 @@ function CalendarConnectionForm({ organizationId, authorize, userId, canManage }
       <button className="button secondary" type="submit">{busy ? "Working…" : "Continue to Google consent"}</button>
     </fieldset></form> : <p>Only an owner or administrator in a signed-in private workspace can connect a calendar.</p>}
     <p className="field-help">Disconnect blocks LensLayer writes immediately. Google revocation may also affect grants for the same account and OAuth project. Existing events remain.</p>
+    <p className="field-help">Consent is tied to your authenticated browser login through the server bridge. This connection identifies an OAuth grant, not a verified Google account or independently verified calendar ownership. The product requests only calendar.events.owned.</p>
     {error && <p className="form-error" role="alert">{error}</p>}
     {canManage && connections.error && <p role="alert">Calendar connection records could not load.</p>}
     <div className="calendar-connections">{canManage && connections.data?.filter((item) => item.provider === "google_calendar").map((item) => <article key={item.id}>

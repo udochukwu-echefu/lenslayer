@@ -4,7 +4,12 @@ import { LensLayerClient } from "@lenslayer/agent-sdk";
 import { createAgentServer } from "./server.js";
 
 try {
-  const client = new LensLayerClient({ baseUrl: process.env.LENSLAYER_API_URL ?? "http://127.0.0.1:8000", token: process.env.LENSLAYER_AGENT_TOKEN ?? "" });
+  // Require an explicit target: a missing staging URL must not silently hit a local API.
+  const baseUrl = process.env.LENSLAYER_API_URL;
+  const token = process.env.LENSLAYER_AGENT_TOKEN;
+  delete process.env.LENSLAYER_AGENT_TOKEN;
+  if (!baseUrl || !token) throw new Error("Missing process configuration");
+  const client = new LensLayerClient({ baseUrl, token });
   serveStdio(() => createAgentServer(client), {
     transport: new StdioServerTransport(process.stdin, process.stdout, { maxBufferSize: 65536 }),
     onerror: () => console.error('{"event":"protocol_error"}'),

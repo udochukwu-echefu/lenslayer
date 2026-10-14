@@ -15,7 +15,9 @@ from .agent_schemas import EvidenceRequest, InputRequestCreate
 from .hosted_agent_models import HostedAgentTask
 from .hosted_agent_plan import delegation, proposal, workflow
 from .hosted_agent_schemas import HostedTaskCreate
-from .hosted_agent_service import TERMINAL_RUN_STATES, model_available
+from .hosted_agent_service import TERMINAL_RUN_STATES, model_available, selection_digest
+from .hosted_model_providers import HostedModelError, select_provider
+from .hosted_model_budget import reservation_valid
 from .models import Membership, User, new_id, utcnow
 from .service_domains.agents import canonical_json, digest
 from .service_domains.common import aware, json_load, normalized_role
@@ -93,6 +95,18 @@ def _request(task):
     if (request.goal_type != task.goal_type or request.goal != task.goal or request.planner_mode != task.planner_mode
             or request.deadline_at != aware(task.deadline_at)):
         raise HostedPolicyError("request_binding_changed")
+    fields = (task.model_provider, task.model_id, task.model_reasoning_effort, task.model_selection_sha256)
+    if request.planner_mode == "model":
+        try:
+            provider = select_provider(task.model_provider)
+        except HostedModelError:
+            raise HostedPolicyError("model_binding_changed") from None
+        if (task.model_id != provider.model or task.model_reasoning_effort != "high"
+                or (request.expected_model_provider, request.expected_model_id, request.expected_model_reasoning_effort) != (provider.name, provider.model, "high")
+                or task.model_selection_sha256 != selection_digest(task.request_sha256, provider.name, provider.model, "high")):
+            raise HostedPolicyError("model_binding_changed")
+    elif any(value is not None for value in fields):
+        raise HostedPolicyError("model_binding_changed")
     return request
 
 
@@ -149,6 +163,13 @@ def _context(service, task, request):
     # dispatch. Do not turn a timely success into failure merely due to poll lag.
     if run and run.status in TERMINAL_RUN_STATES:
         return agent, run
+    if request.planner_mode == "model":
+        if not model_available(service.settings):
+            raise HostedPolicyError("model_unavailable")
+        if task.model_provider != service.settings.hosted_model_provider:
+            raise HostedPolicyError("model_configuration_changed")
+        if not reservation_valid(service.session, service.settings, task):
+            raise HostedPolicyError("model_lifetime_budget_unavailable")
     if not service.settings.hosted_agents_enabled:
         raise HostedPolicyError("hosted_disabled")
     if request.deadline_at <= utcnow():
@@ -242,7 +263,7 @@ def _advance(service, task):
         excerpt = service.read_agent_evidence(run, task.evidence_id).excerpt if request.contract_id else ""
         task.model_calls, task.model_state = 1, "charged"
         service._event(run, "hosted.model_charged", {"hosted_task_id": task.id, "model_call_number": 1})
-        return request, excerpt  # charge commits before any network call
+        return request, excerpt, task.model_provider  # immutable selection and charge commit before HTTP
     elif task.phase == "confirm_input":
         record = service.session.get(AgentInputRequest, task.input_request_id)
         if not record or record.run_id != run.id:
@@ -290,11 +311,21 @@ def process_hosted_task(database, settings, store, task_id, token):
             _fence_commit(session, task, token, release=model_input is None)
         if model_input is None:
             return True
-        request, excerpt = model_input
+        request, excerpt, bound_provider = model_input
         decision, error = None, None
         try:
-            decision = hosted_agent_model.decide(settings, request, excerpt)
-        except hosted_agent_model.HostedModelError as exc:
+            if not model_available(settings) or settings.hosted_model_provider != bound_provider:
+                raise hosted_agent_model.HostedModelError("model_configuration_changed")
+            with database.session_factory() as session:
+                current = _locked(session, task_id, token)
+                current_request = _request(current)
+                service = PlatformService(session, settings, store)
+                _context(service, current, current_request)
+                if current.model_state != "charged" or current.model_calls != 1:
+                    raise HostedPolicyError("model_binding_changed")
+                session.rollback()  # no transaction/lock spans the provider HTTP
+            decision = hosted_agent_model.decide(settings, request, excerpt, provider=bound_provider)
+        except (hosted_agent_model.HostedModelError, HostedPolicyError) as exc:
             error = exc.code
         # Always revalidate source/authority/lease after HTTP, including cancellation.
         with database.session_factory() as session:

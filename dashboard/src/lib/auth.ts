@@ -30,6 +30,8 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({ grant_type: "refresh_token", client_id: clientId, client_secret: clientSecret, refresh_token: token.refreshToken }),
       cache: "no-store",
+      redirect: "manual",
+      signal: AbortSignal.timeout(15_000),
     });
     const refreshed = await response.json() as { access_token?: string; expires_in?: number; refresh_token?: string; error?: string };
     if (!response.ok || !refreshed.access_token) throw new Error(refreshed.error ?? `Token refresh failed (${response.status})`);
@@ -40,13 +42,14 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
       refreshToken: refreshed.refresh_token ?? token.refreshToken,
       error: undefined,
     };
-  } catch (error) {
-    console.error("Auth0 access-token refresh failed", error);
+  } catch {
+    console.error("Auth0 access-token refresh failed");
     return { ...token, error: "RefreshAccessTokenError" };
   }
 }
 
 export const authOptions: NextAuthOptions = {
+  logger: { error() { console.error("Authentication failed"); }, warn() { console.warn("Authentication configuration warning"); }, debug() {} },
   secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: "jwt", maxAge: 8 * 60 * 60 },
   providers: oidcConfigured ? [{
@@ -74,9 +77,10 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, account }) {
       if (account?.access_token) {
+        token.browserSessionId = crypto.randomUUID(); // encrypted server JWT only; every login is a new session
         token.accessToken = account.access_token;
         token.accessTokenExpires = (account.expires_at ?? Math.floor(Date.now() / 1000) + 3600) * 1000;
-        token.refreshToken = account.refresh_token ?? token.refreshToken;
+        token.refreshToken = account.refresh_token; // a new login cannot inherit an old login's grant
         token.error = undefined;
         return token;
       }
@@ -84,7 +88,7 @@ export const authOptions: NextAuthOptions = {
       return refreshAccessToken(token);
     },
     async session({ session, token }) {
-      session.accessToken = typeof token.accessToken === "string" ? token.accessToken : undefined;
+      delete session.accessToken; // API bearer never enters /api/auth/session or browser state
       session.error = token.error;
       if (session.user && token.sub) session.user.id = token.sub;
       return session;

@@ -17,6 +17,7 @@ import { governanceApi } from "./api/governance";
 import { agentsApi } from "./api/agents";
 import { calendarApi } from "./api/calendar";
 import { hostedAgentsApi } from "./api/hosted-agents";
+import { contextApi } from "./api/context";
 
 export const api = {
   ...workspaceApi,
@@ -30,4 +31,5 @@ export const api = {
   ...agentsApi,
   ...calendarApi,
   ...hostedAgentsApi,
+  ...contextApi,
 };

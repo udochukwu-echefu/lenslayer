@@ -8,14 +8,18 @@ import httpx
 from pydantic import ValidationError
 
 from backend.app.config import Settings
-from backend.app.hosted_agent_model import MODEL, MODEL_URL, HostedModelError, decide
+from backend.app.hosted_agent_model import MODEL, MODEL_URL, HostedModelError, decide as explicit_decide
 from backend.app.hosted_agent_schemas import HostedTaskCreate
 from backend.app.models import utcnow
 
 
+def decide(settings, request, excerpt, **kwargs):
+    return explicit_decide(settings, request, excerpt, provider="openai", **kwargs)
+
+
 class HostedModelTests(unittest.TestCase):
     def setUp(self):
-        self.settings = Settings(_env_file=None, hosted_model_enabled=True, hosted_model_api_key="fake-product-secret")
+        self.settings = Settings(_env_file=None, hosted_model_enabled=True, hosted_model_provider="openai", hosted_model_api_key="fake-product-secret")
         self.request = HostedTaskCreate(idempotency_key="fake", goal_type="calendar-event", goal="Fixed human plan",
             deadline_at=utcnow() + timedelta(hours=1), calendar={"connection_id": "fake", "calendar_id": "fake@example.test",
             "summary": "Exact summary", "start_at": "2026-12-01T09:00:00Z", "end_at": "2026-12-01T10:00:00Z"})
@@ -80,7 +84,8 @@ class HostedModelTests(unittest.TestCase):
         self.assertEqual(str(error.exception), "model_unavailable")
         self.assertNotIn("fake-product-secret", repr(self.settings))
         with self.assertRaises(ValidationError):
-            Settings(_env_file=None, hosted_agent_lease_seconds=60, hosted_model_timeout_seconds=30)
+            Settings(_env_file=None, hosted_agent_lease_seconds=60, hosted_model_timeout_seconds=30,
+                     hosted_model_enabled=True, hosted_model_provider="deepseek")
 
     def test_reasoning_is_discarded_and_slow_stream_is_bounded(self):
         body = self.response()

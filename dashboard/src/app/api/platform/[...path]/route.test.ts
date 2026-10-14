@@ -1,9 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "./route";
+import { readTrustedSession, trustedSessionMutationAllowed } from "@/lib/trusted-session.server";
+vi.mock("@/lib/trusted-session.server", () => ({ readTrustedSession: vi.fn().mockResolvedValue(null), trustedSessionMutationAllowed: vi.fn().mockReturnValue(true) }));
 
 beforeEach(() => {
   vi.stubEnv("NODE_ENV", "development");
   vi.stubEnv("PLATFORM_API_URL", "http://127.0.0.1:8000");
+  vi.mocked(readTrustedSession).mockReset().mockResolvedValue(null);
+  vi.mocked(trustedSessionMutationAllowed).mockReset().mockReturnValue(true);
 });
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.restoreAllMocks(); });
 
@@ -11,6 +15,15 @@ const context = { params: Promise.resolve({ path: ["api", "v1", "organizations",
 const request = () => new Request("http://localhost:3000/api/platform/api/v1/organizations/org-1/agents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: "Agent" }) });
 
 describe("credential response proxy", () => {
+  it("bridges server cookie credentials without changing API paths; rejects cookie CSRF", async () => {
+    vi.mocked(readTrustedSession).mockResolvedValue({ subject: "auth0|fixture", sessionId: "server-session", accessToken: "server-human-bearer" });
+    const fetcher = vi.fn().mockImplementation(() => Promise.resolve(Response.json({ id: "safe-response" })));
+    vi.stubGlobal("fetch", fetcher);
+    expect((await POST(request(), context)).status).toBe(200);
+    expect(fetcher.mock.calls[0][1].headers.get("Authorization")).toBe("Bearer server-human-bearer");
+    vi.mocked(trustedSessionMutationAllowed).mockReturnValue(false);
+    expect((await POST(request(), context)).status).toBe(403); expect(fetcher).toHaveBeenCalledTimes(1);
+  });
   it("never makes one-time credential responses cacheable", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ agent: { id: "agent-1" }, token: "ll_agent_proxy_test_only" }, { status: 201 })));
     const response = await POST(request(), context);

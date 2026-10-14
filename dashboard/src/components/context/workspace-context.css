@@ -1,0 +1,17 @@
+.context-page { max-width: 1180px; }
+.context-intro { max-width: 72ch; color: var(--ink-muted); }
+.context-register { list-style: none; margin: 24px 0; padding: 0; }
+.context-register li { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px 28px; padding: 20px 0; border-bottom: 1px solid var(--line); }
+.context-register li > * { min-width: 0; max-width: 100%; }
+.context-register a { display: inline-flex; align-items: center; min-height: 44px; max-width: 100%; overflow-wrap: anywhere; font-weight: 650; }
+.context-register p { color: var(--ink-muted); margin: 0; }
+.context-editor, .context-detail, .context-source, .context-delete { padding: 24px 0; border-top: 1px solid var(--line); margin-top: 24px; }
+.context-page .field, .context-editor form { max-width: 74ch; }
+.context-page :is(input, textarea, select, button) { min-height: 44px; }
+.context-page :is(pre, code, p, h2, h3, dd) { overflow-wrap: anywhere; }
+.context-source pre { white-space: pre-wrap; font: inherit; line-height: 1.65; max-width: 74ch; }
+.context-source input[type="number"] { max-width: 10rem; }
+.context-editor :is(label, textarea), .context-delete :is(label, input) { display: block; margin: 12px 0; }
+.context-delete p { max-width: 70ch; }
+.context-delete .input { max-width: 24rem; }
+@media (max-width: 600px) { .context-page .agent-controls { align-items: stretch; } .context-page .agent-controls > button { white-space: normal; } }

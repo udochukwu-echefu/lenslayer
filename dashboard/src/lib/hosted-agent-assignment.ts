@@ -1,6 +1,7 @@
 import type { Contract, IntegrationConnection, Membership } from "./types";
 import type { HostedAgentCapabilities, HostedAgentTaskCreate, HostedGoalType, HostedPlannerMode } from "./hosted-agent-types";
 import { calendarGrants, explicitInstant, retainedContract } from "./hosted-agent-state";
+import { hostedModelDisclosure } from "./hosted-model-disclosure";
 
 export function assignmentInput(form: FormData, context: {
   organizationId: string; capabilities: HostedAgentCapabilities;
@@ -12,13 +13,15 @@ export function assignmentInput(form: FormData, context: {
   const mode = field("planner_mode") as HostedPlannerMode;
   if (!capabilities.enabled || !capabilities.goal_types.includes(goalType)) throw new Error("This goal is not enabled by the hosted agent service.");
   if (!capabilities.planner_modes.includes(mode)) throw new Error("This planning mode is not enabled. Refresh capabilities before assigning.");
+  if (mode === "model" && !hostedModelDisclosure(capabilities)) throw new Error("The exact model provider and data-sharing disclosure could not be confirmed.");
   if (mode === "model" && form.get("excerpt_consent") !== "on") throw new Error("Acknowledge sharing your goal, scoped facts and any retained excerpt with the product model provider.");
   const goal = field("goal").trim();
   if (!goal || goal.length > 4000) throw new Error("Describe the exact goal in 1–4000 characters.");
   const deadline = explicitInstant(field("deadline_at"), "Execution deadline");
   const days = Math.min(7, capabilities.max_deadline_days);
   if (!Number.isFinite(days) || days <= 0 || Date.parse(deadline) <= Date.now() || Date.parse(deadline) > Date.now() + days * 86400000) throw new Error(`Choose a future execution deadline within ${days} days.`);
-  const base = { idempotency_key: key, goal, deadline_at: deadline, planner_mode: mode };
+  const base = { idempotency_key: key, goal, deadline_at: deadline, planner_mode: mode,
+    ...(mode === "model" ? { expected_model_provider: capabilities.model_provider!, expected_model_id: capabilities.model_id!, expected_model_reasoning_effort: capabilities.model_reasoning_effort! } : {}) };
   const document = goalType !== "calendar-event";
   let facts;
   if (document) {

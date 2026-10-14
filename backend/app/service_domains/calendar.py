@@ -1,7 +1,7 @@
 """Tenant OAuth and encrypted credential lifecycle; no tokens in public records."""
 from datetime import timedelta
 
-import jwt
+import secrets
 from fastapi import HTTPException
 from pydantic import Field
 from sqlalchemy import delete, func, select, update
@@ -11,6 +11,7 @@ from ..schemas import IntegrationProviderResponse
 from ..calendar_connector import (CALENDAR_SCOPE, ConnectorError, GoogleCalendarHTTP,
                                   decrypt_credentials, encrypt_credentials, require_connector_config)
 from ..connector_models import CalendarCredential, CalendarOAuthState
+from ..calendar_session import verify_session_proof
 from ..models import IntegrationConnection, new_id, utcnow
 from .agents import canonical_json, digest
 from .common import json_dump
@@ -33,6 +34,10 @@ class CalendarServiceMixin:
             CalendarCredential.organization_id == organization_id, CalendarCredential.revoked_at.is_(None),
             CalendarCredential.encrypted_json != "", IntegrationConnection.organization_id == organization_id,
             IntegrationConnection.status == "active").limit(1))
+        try:
+            require_connector_config(self.settings)
+        except HTTPException:
+            configured = False
         return IntegrationProviderResponse(provider="google_calendar", display_name="Google Calendar", category="calendar",
             capabilities=["events.create", "events.get"], connection_mode="oauth", configured=bool(configured))
 
@@ -40,9 +45,14 @@ class CalendarServiceMixin:
         self.workspace.require_roles(organization_id, user, {"owner", "admin"},
                                      "Only owners/admins can configure calendar connections.")
 
-    def start_calendar_oauth(self, organization_id, user, payload):
+    def _calendar_oauth_binding(self):
+        return digest(canonical_json({"client": self.settings.google_calendar_client_id,
+            "redirect": self.settings.google_calendar_redirect_uri, "state_key_hash": digest(self.settings.connector_state_signing_key)}))
+
+    def start_calendar_oauth(self, organization_id, user, payload, *, session_proof=None):
         self._calendar_admin(organization_id, user)
         require_connector_config(self.settings)
+        fingerprint = verify_session_proof(self.settings, self.session, user, organization_id, "oauth/start", payload.model_dump(), session_proof)
         # No caller-controlled redirect URI. The frontend relays Google's code
         # to the authenticated callback API, then clears the browser URL.
         from urllib.parse import urlencode
@@ -52,34 +62,26 @@ class CalendarServiceMixin:
         if count >= 20:
             raise HTTPException(409, "Too many pending OAuth attempts.")
         expiry = utcnow() + timedelta(minutes=10)
-        state = jwt.encode({"jti": new_id(), "org": organization_id, "uid": user.id,
-                            "aud": "lenslayer-calendar", "exp": expiry,
-                            "client": self.settings.google_calendar_client_id,
-                            "redirect": self.settings.google_calendar_redirect_uri},
-                           self.settings.connector_state_signing_key, algorithm="HS256")
+        # Browser sees only an opaque provider nonce, never the session attestation
+        # or fingerprint. Legacy states without session binding cannot complete.
+        state = secrets.token_urlsafe(32)
         self.session.add(CalendarOAuthState(state_hash=digest(state), organization_id=organization_id,
-                                          user_id=user.id, request_json=canonical_json(payload.model_dump()), expires_at=expiry))
+            user_id=user.id, request_json=canonical_json(payload.model_dump()), expires_at=expiry,
+            session_fingerprint=fingerprint, binding_sha256=self._calendar_oauth_binding()))
         self.session.commit()
         return {"authorization_url": "https://accounts.google.com/o/oauth2/v2/auth?" + urlencode({
             "client_id": self.settings.google_calendar_client_id, "redirect_uri": self.settings.google_calendar_redirect_uri,
             "response_type": "code", "scope": CALENDAR_SCOPE, "access_type": "offline", "prompt": "consent",
             "include_granted_scopes": "false", "state": state}), "expires_at": expiry.isoformat()}
 
-    def complete_calendar_oauth(self, organization_id, user, payload):
+    def complete_calendar_oauth(self, organization_id, user, payload, *, session_proof=None):
         self._calendar_admin(organization_id, user)
         require_connector_config(self.settings)
-        try:
-            claims = jwt.decode(payload.state, self.settings.connector_state_signing_key, algorithms=["HS256"],
-                                audience="lenslayer-calendar", options={"require": ["exp", "jti", "org", "uid", "client", "redirect"]})
-            if any(claims[k] != v for k, v in {"org": organization_id, "uid": user.id,
-                    "client": self.settings.google_calendar_client_id, "redirect": self.settings.google_calendar_redirect_uri}.items()):
-                raise ValueError()
-        except (jwt.PyJWTError, ValueError):
-            raise HTTPException(400, "Invalid or expired OAuth state.") from None
+        fingerprint = verify_session_proof(self.settings, self.session, user, organization_id, "oauth/callback", payload.model_dump(), session_proof)
         record = self.session.scalar(select(CalendarOAuthState).where(
             CalendarOAuthState.state_hash == digest(payload.state), CalendarOAuthState.organization_id == organization_id,
             CalendarOAuthState.user_id == user.id))
-        if record is None:
+        if (record is None or record.session_fingerprint != fingerprint or record.binding_sha256 != self._calendar_oauth_binding()):
             raise HTTPException(400, "Invalid OAuth state.")
         changed = self.session.execute(update(CalendarOAuthState).where(
             CalendarOAuthState.id == record.id, CalendarOAuthState.consumed_at.is_(None),
@@ -101,18 +103,20 @@ class CalendarServiceMixin:
         connection = IntegrationConnection(id=connection_id, organization_id=organization_id, created_by_user_id=user.id,
             provider="google_calendar", display_name=request.display_name, external_account_id="oauth-grant:" + connection_id, status="active",
             capabilities_json=json_dump(["events.create", "events.get"]),
-            settings_json=json_dump({"calendar_ids": [request.calendar_id], "credential_mode": "encrypted"}))
+            settings_json=json_dump({"calendar_ids": [request.calendar_id], "credential_mode": "encrypted",
+                "identity_kind": "oauth_grant", "provider_account_verified": False, "calendar_ownership_verified": False}))
         self.session.add(connection)
         self.session.flush()
         self.session.add(CalendarCredential(connection_id=connection.id, organization_id=organization_id,
             encrypted_json=encrypt_credentials(self.settings, connection.id, organization_id, tokens),
-            scopes_json=json_dump([CALENDAR_SCOPE]), calendar_ids_json=json_dump([request.calendar_id])))
+            scopes_json=json_dump([CALENDAR_SCOPE]), calendar_ids_json=json_dump([request.calendar_id]), session_fingerprint=fingerprint))
         self._audit(organization_id, user.id, "calendar.connected", detail={"connection_id": connection.id})
         self.session.commit()
         return self.integration_connection_response(connection)
 
-    def disconnect_calendar(self, organization_id, connection_id, user):
+    def disconnect_calendar(self, organization_id, connection_id, user, *, session_proof=None):
         self._calendar_admin(organization_id, user)
+        verify_session_proof(self.settings, self.session, user, organization_id, "connections/disconnect", {"connection_id": connection_id}, session_proof)
         connection = self.session.scalar(select(IntegrationConnection).where(
             IntegrationConnection.id == connection_id, IntegrationConnection.organization_id == organization_id,
             IntegrationConnection.provider == "google_calendar").with_for_update())

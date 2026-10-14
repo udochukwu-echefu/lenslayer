@@ -1,7 +1,7 @@
 {
   "name": "@lenslayer/agent-sdk",
   "version": "0.1.0",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "description": "Server-side client for LensLayer's bounded external-agent API",
   "repository": {
     "type": "git",
@@ -12,7 +12,8 @@
   "homepage": "https://github.com/udochukwu-echefu/lenslayer",
   "type": "module",
   "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
-  "files": ["dist", "LICENSE", "CHANGELOG.md"],
+  "files": ["dist/index.js", "dist/index.d.ts", "dist/client.js", "dist/client.d.ts", "dist/transport.js", "dist/transport.d.ts", "dist/types.js", "dist/types.d.ts", "dist/errors.js", "dist/errors.d.ts", "dist/events.js", "dist/events.d.ts", "dist/polling.js", "dist/polling.d.ts", "LICENSE", "CHANGELOG.md"],
+  "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/", "provenance": true },
   "engines": { "node": ">=20.3.0" },
   "scripts": {
     "build": "tsc -p tsconfig.json",

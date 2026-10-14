@@ -7,9 +7,11 @@ from ..config import Settings
 from ..database import Database
 from ..object_storage import ObjectStore
 from ..schemas import HealthResponse
-from ..agent_models import AgentAction, AgentWorkerHeartbeat
+from ..agent_models import AgentAction, AgentPrincipal, AgentRun, AgentWorkerHeartbeat
+from ..agent_generalization_models import ContextRecord, ContextVersion, ContextEvidence, WorkflowGraph, WorkflowGraphNode
+from ..connector_models import CalendarCredential, CalendarOAuthState, CalendarSessionProof
 from ..agent_schemas import WorkerHealthResponse
-from ..hosted_agent_models import HostedAgentTask
+from ..hosted_agent_models import HostedAgentTask, HostedModelLifetimeBudget, HostedModelReservation
 from ..models import utcnow
 from ..service_domains.common import aware
 from ..agent_wake import next_agent_wake_at
@@ -31,8 +33,14 @@ def ready(request: Request) -> HealthResponse:
     try:
         with database.session_factory() as session:
             session.execute(text("SELECT 1"))
-            session.execute(select(AgentAction.dispatch_intent_json).limit(0))
-            session.execute(select(HostedAgentTask.revision).limit(0))
+            required = (AgentAction.dispatch_intent_json, AgentPrincipal.context_ids_json, AgentRun.context_ids_json,
+                        ContextRecord.revision, ContextVersion.source_sha256, ContextEvidence.source_sha256,
+                        WorkflowGraph.plan_sha256, WorkflowGraphNode.action_id, HostedAgentTask.model_selection_sha256,
+                        HostedModelLifetimeBudget.reserved_calls, HostedModelReservation.selection_sha256,
+                        CalendarCredential.session_fingerprint, CalendarOAuthState.binding_sha256, CalendarSessionProof.nonce_sha256)
+            # One round trip, no source/credential rows read. Each zero-row
+            # scalar subquery still requires its relation/column to exist.
+            session.execute(select(*(select(column).limit(0).scalar_subquery() for column in required)))
     except Exception as exc:
         raise HTTPException(status_code=503, detail="Database is unavailable.") from exc
     if not object_store.healthy():

@@ -4,6 +4,7 @@ from fastapi import APIRouter
 
 from . import (
     agents,
+    agent_generalization,
     calendar,
     collaboration,
     contracts,
@@ -22,6 +23,7 @@ from .health import router as health_router
 
 router = APIRouter()
 router.include_router(agents.router)
+router.include_router(agent_generalization.router)
 router.include_router(hosted_agents.router)
 router.include_router(calendar.router)
 router.include_router(workspace.router)

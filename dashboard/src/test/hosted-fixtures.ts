@@ -2,6 +2,9 @@ import type { HostedAgentCapabilities, HostedAgentTask } from "@/lib/hosted-agen
 import type { IntegrationConnection } from "@/lib/types";
 
 export const hostedCapabilities: HostedAgentCapabilities = { enabled: true, goal_types: ["retained-document-follow-up", "calendar-event", "follow-up-and-calendar"], planner_modes: ["deterministic"], max_deadline_days: 7 };
+export const deepseekCapabilities: HostedAgentCapabilities = { ...hostedCapabilities, planner_modes: ["deterministic", "model"],
+  model_provider: "deepseek", model_id: "deepseek-flash", model_reasoning_effort: "high", model_excerpt_max_chars: 1000,
+  model_disclosure: "Model assistance sends your goal, scoped facts and up to 1,000 characters of a retrieved retained-source excerpt to DeepSeek (deepseek-flash, high reasoning effort), using separate server-side product API access. This is not a zero-retention guarantee. Human approval remains required." };
 export const hostedTaskFixture: HostedAgentTask = {
   id: "assignment-1", organization_id: "org-1", created_by_user_id: "user-1", goal_type: "retained-document-follow-up", goal: "Prepare my explicit document follow-up", planner_mode: "deterministic", status: "queued", phase: "pending", run_id: null, agent_id: null, error_code: "", deadline_at: "2099-11-01T00:00:00Z", created_at: "2026-10-09T09:00:00Z", updated_at: "2026-10-09T09:00:00Z", completed_at: null,
 };

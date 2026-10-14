@@ -24,6 +24,7 @@ const navigationGroups = [
     { href: "/", label: "Overview", icon: LayoutDashboard },
     { href: "/inbox", label: "Inbox", icon: Inbox },
     { href: "/tasks", label: "Tasks", icon: CheckSquare2 },
+    { href: "/context", label: "Workspace context", icon: BookOpen },
     { href: "/calendar", label: "Calendar", icon: CalendarDays },
     { href: "/agent-tasks", label: "Agent tasks", icon: Bot },
   ] },

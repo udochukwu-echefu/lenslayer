@@ -9,12 +9,20 @@ export interface HostedAgentCapabilities {
   goal_types: HostedGoalType[];
   planner_modes: HostedPlannerMode[];
   max_deadline_days: number;
+  model_provider?: "deepseek" | "openai" | null;
+  model_id?: "deepseek-flash" | "gpt-6.1-sol" | null;
+  model_reasoning_effort?: "high" | null;
+  model_excerpt_max_chars?: 1000;
+  model_disclosure?: string | null;
 }
 interface HostedTaskBase {
   idempotency_key: string;
   goal: string;
   deadline_at: string;
   planner_mode?: HostedPlannerMode;
+  expected_model_provider?: "deepseek" | "openai";
+  expected_model_id?: "deepseek-flash" | "gpt-6.1-sol";
+  expected_model_reasoning_effort?: "high";
 }
 interface DocumentFacts {
   contract_id: string;
@@ -37,6 +45,9 @@ export interface HostedAgentTask {
   goal_type: HostedGoalType;
   goal: string;
   planner_mode: HostedPlannerMode;
+  model_provider?: "deepseek" | "openai" | null;
+  model_id?: "deepseek-flash" | "gpt-6.1-sol" | null;
+  model_reasoning_effort?: "high" | null;
   status: HostedTaskStatus;
   phase: string;
   run_id: string | null;

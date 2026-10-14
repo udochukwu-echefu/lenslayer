@@ -1,12 +1,16 @@
 # Developer/product release checklist
 
-Developer infrastructure and the bounded user-assigned hosted service are
-implemented and independently checked. **Isolated document-task staging is deployed
-and verified; the continuous worker is paused, and human review precedes production.**
-The actual scanner, email and document-analysis providers were used for synthetic
-checks. Calendar and the hosted product planner model remain disabled; nothing was
-merged, deployed to production or published to npm. Unchecked items are broader
-release verification or subsequent product work. Live evidence is in the
+Updated 14 October 2026. Developer infrastructure and the bounded hosted service
+are implemented; the current expansion adds private context, dependency/conditional/
+scheduled task graphs, trusted Calendar sessions and a durable default-zero model
+allowance. PRs 1–4 are merged. **Basic document-task staging is deployed and verified;
+the newer expansion still needs staging acceptance and production promotion.**
+Continuous workers stay at zero; on-demand queues/recovery are paused between
+supervised staging checks. Scanner/email/document-analysis checks used synthetic
+data. Ten real DeepSeek decision-adapter cases passed within the approved US$5;
+real Calendar consent and npm publication remain open. Current test counts and
+all five release gates are in the [14 October acceptance record](architecture/agent-roadmap-acceptance-2026-10-14.md).
+Live evidence from the earlier rollout is in the
 [staging execution report](deployment/agent-staging-execution.md); local combined
 evidence is in [finish verification](architecture/agent-pivot-finish-verification.md);
 the earlier [integration record](architecture/agent-pivot-integration-verification.md)
@@ -57,10 +61,10 @@ Commands/setup: [quickstart](developer-agent-quickstart.md),
 
 ## SDK distribution and provenance — release owner
 
-- [ ] Confirm copyright ownership and lawful distribution/use terms. This package
-  is `UNLICENSED` / all rights reserved; do not call it open source. If an approved
-  license is chosen, update package metadata, LICENSE, README and release checks
-  together. `private` was removed to allow packaging, not to authorize publication.
+- [x] Apply the user's MIT choice to the SDK alone: canonical license, metadata,
+  lockfile, README and packed-package checks agree. The MCP/backend are not
+  relicensed. See [distribution setup](../sdk/DISTRIBUTION.md) for the reviewed
+  artifact and owner-controlled publication procedure.
 - [ ] Verify control of the `@lenslayer` npm scope, intended package visibility,
   maintainer identities, package version, access policy and MFA/trusted publishing.
 - [x] Confirm public canonical repository `udochukwu-echefu/lenslayer` and set
@@ -158,16 +162,21 @@ Commands/setup: [quickstart](developer-agent-quickstart.md),
   initialize/current discovery, revocation and missing/unsupported tool versions.
 - [ ] Keep MCP local stdio unless a separately designed/authenticated/authorized
   remote service is implemented. Do not advertise remote MCP OAuth or hosted URLs.
-- [ ] Approve separate product API access and costs; never use OpenCode subscription
-  credentials. Explicitly opt in to `gpt-6.1-sol`, high effort, with no fallback.
-  Development model selection does not prove this identifier is accepted by the
-  product API; actual compatibility and credential access must be verified.
+- [x] Obtain separate funded DeepSeek product API access and aggregate US$5
+  evaluation approval. `deepseek-flash` / DeepSeek V4.1 Flash / high effort were
+  positively verified. OpenCode uses the user's subscriptions only for development;
+  those credentials never enter the product. No fallback or unpriced OpenAI product
+  calls are enabled. Production defaults to disabled and zero lifetime calls.
 - [ ] Approve excerpt transfer/data processing and provider retention policy;
   `store:false` alone is not a zero-retention guarantee. Keep keys/config server-only.
-- [ ] Run real-model evaluation separately: grounding, missing facts, adversarial
-  source/tool output, refusals/truncation, literal span offsets, latency/cost and
-  bounded retries. Injected evaluation establishes infrastructure safeguards, not
-  model accuracy, legal reasoning or robustness to all prompt injection.
+- [x] Run ten real synthetic model cases for decisions, missing/conflicting facts,
+  adversarial containment, offsets and truncation; retain metadata-only cost/latency
+  evidence. [Actual qualification](architecture/deepseek-live-evaluation-2026-10-14.md)
+  records limits and the nonrefundable US$3.1678476 reservation. It does not prove
+  legal reasoning or general prompt-injection immunity.
+- [ ] Run one supervised staging product canary through the durable global
+  one-call gate and real private assignment/approval/receipt path. Reserve another
+  US$0.319488; never reset or refund the ledger, and disable model mode afterward.
 - [x] Keep the TypeScript reference CLI task-only with fixed action text. The
   separate Python hosted service implements three fixed-fact goals with shared
   checkpoints and decision-only model output. Changed facts/source need a new
@@ -206,6 +215,10 @@ Commands/setup: [quickstart](developer-agent-quickstart.md),
 - [x] Deploy bounded document tasks and complete real staging OIDC/worker/scanner/
   document-analysis acceptance through hosted and developer clients. Calendar and
   hosted product-model acceptance remain separate gates above.
-- [ ] Add further customer-validated goal types and connectors. Hosted planning
-  covers document/Calendar/combined fixed-fact goals; the registry is closed and
-  workflows are bounded named `all` conditions rather than general DAGs.
+- [x] Implement private retained context, explicit context delegation, lexical
+  planning/evidence retrieval and context-backed task graphs with dependencies,
+  approved boolean branches and not-before timers. Bounded graphs only create
+  assigned follow-ups; mixed Calendar/document graphs and arbitrary execution are
+  future scope. Hosted planning still covers three supplied-fact goal types.
+- [ ] Select further goal types/connectors from customer workflows. These are
+  subsequent product choices, not proof supplied by the current acceptance tests.
