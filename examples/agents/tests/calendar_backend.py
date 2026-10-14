@@ -20,6 +20,7 @@ from backend.app.config import Settings
 from backend.app.document_intelligence import build_review_workflow
 from backend.app.worker import run_worker
 from tests.test_calendar_workflows import FakeGoogle
+from tests.calendar_test_session import TEST_SESSION_KEY
 
 
 _patches = []
@@ -37,10 +38,11 @@ def test_settings():
     return Settings(_env_file=None, environment="test", auth_mode="local", auto_create_schema=True,
         database_url=f"sqlite:///{root / 'calendar-agent-check.db'}", object_storage_root=root / "objects",
         email_backend="disabled", malware_scan_backend="signature", review_worker_job="",
+        google_calendar_enabled=True,
         google_calendar_client_id="synthetic-calendar-client", google_calendar_client_secret="synthetic-client-secret",
         google_calendar_redirect_uri="http://127.0.0.1:3000/calendar/oauth-return",
         connector_encryption_key=key_path.read_text(), connector_state_signing_key="synthetic-state-signing-key-for-local-tests-only",
-        hosted_agent_wait_seconds=5)
+        calendar_session_binding_key=TEST_SESSION_KEY, hosted_agent_wait_seconds=5)
 
 
 def fixture_workflow():
