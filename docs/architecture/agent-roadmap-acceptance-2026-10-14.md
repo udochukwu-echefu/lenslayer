@@ -10,7 +10,7 @@ that the new source is already running in production.
 | Track | Implemented and verified in source | External acceptance still required |
 | --- | --- | --- |
 | Production execution and operations | Private request-driven worker, bounded drain, scoped wake/recovery, metadata-only observations, immutable-image release plan and deployment guard | Backup/restore exercise, exact source image, staging acceptance, reviewed promotion, final worker-only invoker grant and queue activation |
-| Developer SDK and MCP | SDK-only MIT license, 18-file ESM/types artifact, reviewed-byte OIDC release workflow, scoped context/graph SDK and MCP interfaces | Canonical main release review, npm bootstrap/trusted publisher/publication, registry signatures/provenance, actual OpenCode host tool execution |
+| Developer SDK and MCP | SDK-only MIT license, 18-file ESM/types artifact, reviewed-byte OIDC release workflow, scoped context/graph SDK and MCP interfaces; actual OpenCode legacy reads/tenant denial/revocation against a disposable API | Canonical main release review, npm bootstrap/trusted publisher/publication, registry signatures/provenance, staged host acceptance and auto-protocol compatibility |
 | Calendar | Session-bound one-use OAuth relay, encrypted grants, stable event identity, refresh/revocation handling and disposable live acceptance harness | Real owner consent, empty owned secondary calendar, one private event and independent read-back, refresh/disconnect/reconnect, real OIDC/browser session checks |
 | Optional product model | Explicit provider/model/effort disclosure, fixed DeepSeek Responses adapter, immutable facts, durable zero-default lifetime admission gate | One bounded staged product canary and browser disclosure/consent check; production remains model-disabled |
 | Broader agent workflows | Private versioned context, scoped lexical retrieval with original offsets, context-backed typed task tool, dependency/conditional/not-before graphs, SDK/MCP/example/UI | Deployed private context/graph end-to-end checks, replay/revocation/retention and narrow-screen browser checks |
@@ -37,17 +37,34 @@ code.
   install, ESM imports and TypeScript declarations.
 - MCP: **7 passed** through the official client and spawned stdio adapter.
   Examples: **15 passed** against disposable/fake integrations.
+- Hosted planner: **23 passed**, including rejecting incompatible context-task
+  input on restart without replanning or duplicating an effect. The combined
+  disposable HTTP/worker integration passed document and fake-provider Calendar
+  workflows, exact human approval, replay, restart and uncertain-outcome readback.
 - Dashboard: **243 passed across 37 files**; lint, Next 16.4.1 build, OpenNext
   staging build and Wrangler staging dry run passed. No deployment is implied.
 - Production dependency audit: **zero vulnerabilities** after compatible updates.
   The unpatched `braces` development dependency remains in lint tooling; the
   all-dependency audit is not claimed clean.
 
-OpenCode's native host currently returns an empty MCP catalog despite the local
-server configuration. No completed LensLayer host tool trace has been observed.
-Official-client wire tests are not a substitute for that acceptance gate. The
-OpenCode agent is diagnosing this using GPT 6.1 Sol high, with all helpers pinned
-to the same model. Astra was not used.
+On 15 October, actual OpenCode **2.0.18** legacy-protocol tool traces proved a
+successful delegated run read, a different-tenant `http_404`, and a same-host
+`http_401` after owner revocation. These used the real disposable API with
+synthetic data, not live staging, and no worker or funded product model ran.
+Model/helpers were pinned to GPT 6.1 Sol high; Astra was not used. The private
+loopback host was stopped and its port closed. A cold standalone catalog remains
+empty until native same-host runtime activation. Auto protocol connected but
+produced no tool trace, so its compatibility is not claimed.
+
+[Draft PR #5](https://github.com/udochukwu-echefu/lenslayer/pull/5) contains the
+integrated implementation. CI exposed and received fixes for the hosted planner
+union, trusted Calendar fixture proofs, and a cross-language dashboard test's
+local-only Python path. The complete GitHub workflow is **green** for source
+`27311a610ebb730acb77a426bdf34ac5963cc13a`:
+[run 38654924859](https://github.com/udochukwu-echefu/lenslayer/actions/runs/38654924859).
+Cloud Build `d699950f-f710-483f-9b68-6acfdffffbea` built that exact Git archive into
+staging digest `sha256:aea8b8f82bfbfe325bb00f66affa206061a58fc06e35f6bb0f0acb8d0d2cc6fa`.
+The archive omitted local secrets and the user's untracked video document.
 
 ## Paid model evidence and remaining budget
 
@@ -75,10 +92,19 @@ and migration rollback. Production must remain model-disabled.
 - Existing staging API/worker remain on the prior deployment, with the agent
   queue and recovery schedule paused and the continuous pool at zero. New source
   must be deployed and accepted before promotion.
+- Staging recovery branch `br-muddy-hill-b2u9np34`, named
+  `pre-roadmap-f3644b20-20261014`, was created in the staging Neon project only.
+  Its compute was visibly **SUSPENDED** on 15 October. It expires at
+  **16 October 2026 00:00:52 Africa/Lagos**; branch creation is not a completed
+  restore exercise or a production recovery point.
 - The explicitly approved `lenslayer-calendar-sandbox` project is **ACTIVE**
   (project number `602675316360`), and only the Calendar API was enabled. No
-  compute or billing upgrade was created. OAuth credentials and real acceptance
-  are still pending.
+  compute or billing upgrade was created. Testing-mode OAuth branding is complete;
+  a web client is prepared with the staging callback and AI-agent declaration.
+  Two empty staging credential secret containers and blank entry forms are ready
+  for the user's credential handoff. OAuth credentials and real acceptance are
+  still pending. An independent inspector must use a different OAuth project
+  because Google's revocation affects all grants within the product project.
 - The approved operations email channel and **ten enabled policies** (five each
   for staging and production) were created and read back. They cover worker HTTP
   failures, ledger attention, failed hourly recovery, lost post-commit wakes and
@@ -86,10 +112,12 @@ and migration rollback. Production must remain model-disabled.
   metadata, not document or task content. The single approved synthetic test log
   has been dispatched; incident/inbox delivery must be recorded before claiming
   email acceptance.
-- npm is signed in as `udochukwuchibueze`, and the owner confirmed ownership of
-  `@lenslayer`. Chrome currently blocks the organization settings page. No SDK
-  package has been published, and no trusted publisher or GitHub release
-  environment has yet been configured or verified.
+- The free **`@lenslayer` npm organization was created**, with signed-in
+  `udochukwuchibueze` verified as its sole owner/member and zero packages. Its
+  member page shows two-factor authentication disabled. Owner MFA, canonical
+  artifact review, package bootstrap and the trusted publisher remain release
+  gates. No SDK package has been published, and no GitHub release environment
+  has yet been configured or verified.
 
 ## Release order
 

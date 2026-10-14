@@ -1,8 +1,12 @@
 # OpenCode V2 local stdio setup and coordinator acceptance
 
-Status: source-installed and wire-tested with local fake APIs. **Interactive host
-acceptance is not performed.** No OpenCode CLI, staging API or model was invoked
-in this implementation pass. Nothing here installs a remote/cloud MCP provider.
+Status: source-installed and wire-tested with local fake APIs. On 15 October
+2026, the actual OpenCode 2.0.18 native host also completed a legacy-protocol
+model-mediated read against a real disposable local API, denied a different
+tenant's run (`http_404`), and denied a same-host read after owner revocation
+(`http_401`). GPT 6.1 Sol/high was verified on the tool traces. Staging-host
+acceptance and auto-protocol tool execution remain unqualified. Nothing here
+installs a remote/cloud MCP provider.
 The SDK alone is MIT; this private MCP package remains `UNLICENSED`.
 
 ### OpenCode 2.0.18 compatibility warning
@@ -13,15 +17,25 @@ website: top-level `policies`, `integration.use` and `tool.use` are not supporte
 there. It accepts `experimental.policies` with actions `provider.use` and
 `permission`. Do not assume current website policy examples protect 2.0.18.
 
-Native `mcp.servers` configuration is accepted, but the tested
+Native `mcp.servers` configuration is accepted, but the tested cold
 `opencode api --standalone mcp.list --param location.directory=...` returned an
 empty catalog and did not spawn a credential-free, official-client-verified MCP
 fixture. Git initialization, `protocol: auto` and explicit built-in plugin
-selection did not establish discovery. **No working 2.0.18 host-discovery recipe
-is claimed.** Do not retry model prompts or interpret a model's unavailable-tool
-answer as acceptance. See the [acceptance record](../docs/architecture/agent-roadmap-acceptance-2026-10-14.md)
-for the remaining same-host activation check. This does not invalidate the separate
-official-client stdio tests.
+selection did not establish discovery. The subsequent native host check connected
+LensLayer through `PUT /api/experimental/mcp/lenslayer`, with the smoke directory
+as `location[directory]` and the local entry as the JSON `config`. This must be
+the same foreground host used for the session. Its observed HTTP challenge uses
+Basic authentication with username `opencode`; the generated server password
+stayed in coordinator process memory and the loopback host was stopped afterward.
+Never put that password in CLI arguments, saved logs or configuration.
+
+The accepted local entry used the existing absolute Node executable and
+`environment: {}`; the explicitly injected process environment supplied the API
+URL and scoped synthetic token to the child. Confirm executable paths exist.
+The legacy protocol produced real tool traces. Switching that host to `auto`
+connected its catalog but produced no model tool trace, so use the qualified
+legacy path until auto compatibility is resolved. See the
+[acceptance record](../docs/architecture/agent-roadmap-acceptance-2026-10-14.md).
 
 ## Build and configure
 
@@ -50,7 +64,7 @@ uses initialize negotiation; repeat with `protocol: auto` to probe current
 acceptance easier to inspect. Normal production Code Mode is also supported by
 the adapter; it does not consume/trust the OpenCode `_meta` session ID.
 
-Supported coordinator commands (not executed by this change):
+Interactive coordinator commands (separate from the tested native API path):
 
 ```sh
 opencode --standalone /absolute/path/to/smoke-directory
@@ -115,8 +129,9 @@ permit only its already approved `openai` provider (append a `provider.use`
 agents/helpers (`title`, `summary`, `compaction` as applicable) to that same model
 and variant. V2 agent `model` selectors support `openai/gpt-6.1-sol#high`; confirm
 the exact catalog entry exists before use. Root `model` alone does not retain a
-variant and an unavailable default can fall back. **If unavailable or quota is
-exhausted, stop and report QUOTA; never substitute a model/account.** Keep warming
+variant and an unavailable default can fall back. **Do not substitute models. If
+quota is exhausted, another saved account requires the coordinator's prior
+authorization; otherwise stop and report QUOTA.** Keep warming
 and automatic compaction off, do not invoke subagents, and verify helper settings
 before sending even the first prompt. Model costs and this acceptance remain
 coordinator-owned, not part of `npm test`.
@@ -212,8 +227,10 @@ only the intended normalized tools, for example `lenslayer_context_search` for
 pre-run read-only planning and `lenslayer_runs_graph` for readback. Graph creation
 is `lenslayer_workflow_graphs_create`; it needs separate mutation authorization.
 No planning hit can substitute for a durable evidence receipt. Local real-stdio
-tests cover these shapes and fresh grants; interactive host acceptance is still
-unrun. Do not start workers/model loops for blocked or future graph nodes.
+tests cover these shapes and fresh grants. The actual host acceptance above covers
+legacy reads, tenant denial and revocation; context/graph tool execution through
+the host and live staging acceptance remain unrun. Do not start workers/model
+loops for blocked or future graph nodes.
 
 References (read 2026-10-14): OpenCode V2
 [MCP](https://opencode.ai/v2/docs/mcp-servers),
