@@ -425,6 +425,42 @@ run_worker(settings, drain=True, agents_only=True)
                         Membership.user_id == admin_id)).role = "admin"
                     session.commit()
 
+    def test_context_evidence_read_rechecks_grant_changed_after_authentication(self):
+        original = PlatformService.read_context_evidence
+        for mutation, expected_status in (("narrow", 403), ("revoke", 401)):
+            with self.subTest(mutation=mutation):
+                _, headers = self.context_agent()
+                run = self.graph(headers)
+                evidence_id = self.actions(headers, run)["follow-up"]["input"]["evidence_id"]
+                url = f"/api/v1/agent/runs/{run['id']}/context-evidence/{evidence_id}"
+                self.assertEqual(self.client.get(url, headers=headers).status_code, 200)
+                interleaved = []
+
+                def change_grant(service, scoped_run, receipt_id, *, agent=None):
+                    # Pause after the real bearer authentication/run lookup, then
+                    # commit a real administrative request in another session.
+                    # Do not mock the authorization or retained-source checks.
+                    self.assertIsNotNone(agent)
+                    route = self.base + f"/agents/{agent.id}/"
+                    response = (self.client.post(route + "context-scope", headers=self.alice,
+                        json={"context_ids": []}) if mutation == "narrow" else
+                        self.client.post(route + "revoke", headers=self.alice))
+                    self.assertEqual(response.status_code, 200, response.text)
+                    interleaved.append(mutation)
+                    return original(service, scoped_run, receipt_id, agent=agent)
+
+                with patch.object(PlatformService, "read_context_evidence", change_grant):
+                    response = self.client.get(url, headers=headers)
+                self.assertEqual(interleaved, [mutation])
+                self.assertEqual(response.status_code, expected_status, response.text)
+                self.assertNotIn(self.text, response.text)
+                # Revoking an agent does not revoke human workspace membership
+                # or erase retained historical evidence.
+                human = self.client.get(self.base + f"/agent-runs/{run['id']}/context-evidence/{evidence_id}",
+                    headers=self.alice)
+                self.assertEqual(human.status_code, 200, human.text)
+                self.assertEqual(human.json()["excerpt"], self.text)
+
     def test_expired_or_deleted_sources_erase_text_fail_wait_and_have_no_effect(self):
         _, headers = self.context_agent()
         run = self.graph(headers)

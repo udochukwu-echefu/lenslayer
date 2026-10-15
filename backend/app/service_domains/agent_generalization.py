@@ -218,6 +218,13 @@ class AgentGeneralizationServiceMixin:
         return receipt, version
 
     def read_context_evidence(self, run, evidence_id, *, agent=None):
+        if agent:
+            # Authentication may predate a committed revoke/scope narrowing.
+            # Serialize the read with grant changes, without requiring a live run:
+            # retained historical evidence remains readable under a current grant.
+            agent = self._lock_agent(agent.id)
+            self._agent_is_active(agent, lock_authority=True)
+            run = self._lock_run(run.id)
         receipt, version = self._retained_context_evidence(run, evidence_id)
         if agent:
             self._context_scope(agent, run, [receipt.context_id])

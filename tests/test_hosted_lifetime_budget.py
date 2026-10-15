@@ -157,6 +157,34 @@ class LifetimeBudgetTests(unittest.TestCase):
         self.assertEqual(self.used(), 1)
         self.assertEqual(self.create_response(idempotency_key="after-crash").status_code, 503)
 
+    def test_revocation_after_charge_before_preflight_never_dispatches_model(self):
+        from backend.app import hosted_agent_runtime
+        f = self.f
+        task = self.create_response().json()
+        f.step(); f.step()  # initialize/retrieve, before the charged checkpoint
+        original = hosted_agent_runtime._fence_commit
+        revocations = []
+
+        def revoke_after_charge(session, row, token, *, release=True):
+            original(session, row, token, release=release)
+            if not release:
+                # The charge is durable, but provider preflight has not run.
+                # Revoke through the real API, committing cancellation of the
+                # underlying run without cancelling the hosted-task lease.
+                result = f.client.post(f.base + f"/agents/{row.agent_id}/revoke", headers=f.alice)
+                self.assertEqual(result.status_code, 200, result.text)
+                revocations.append(row.agent_id)
+
+        with patch.object(hosted_agent_runtime, "_fence_commit", revoke_after_charge), \
+                f.fake_model(response=response()):
+            f.step()
+        self.assertEqual(len(revocations), 1)
+        self.assertEqual(len(f.model_requests), 0)
+        self.assertEqual(f.read(task)["status"], "failed")
+        self.assertEqual(f.read(task)["error_code"], "run_finished_during_model")
+        self.assertEqual(self.used(), 1)  # no refund, despite no HTTP dispatch
+        self.assertEqual(self.create_response(idempotency_key="after-preflight-revoke").status_code, 503)
+
     def test_cancel_task_org_deletion_and_restart_do_not_replenish_lifetime_counter(self):
         f = self.f
         task = self.create_response().json()

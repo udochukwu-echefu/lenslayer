@@ -320,7 +320,11 @@ def process_hosted_task(database, settings, store, task_id, token):
                 current = _locked(session, task_id, token)
                 current_request = _request(current)
                 service = PlatformService(session, settings, store)
-                _context(service, current, current_request)
+                _, current_run = _context(service, current, current_request)
+                # Terminal runs may be observed historically, but cannot admit
+                # a new provider dispatch after cancellation or revocation.
+                if current_run.status in TERMINAL_RUN_STATES:
+                    raise HostedPolicyError("run_finished_during_model")
                 if current.model_state != "charged" or current.model_calls != 1:
                     raise HostedPolicyError("model_binding_changed")
                 session.rollback()  # no transaction/lock spans the provider HTTP
