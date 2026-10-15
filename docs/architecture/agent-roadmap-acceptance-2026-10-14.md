@@ -41,8 +41,13 @@ code.
   input on restart without replanning or duplicating an effect. The combined
   disposable HTTP/worker integration passed document and fake-provider Calendar
   workflows, exact human approval, replay, restart and uncertain-outcome readback.
-- Dashboard: **243 passed across 37 files**; lint, Next 16.4.1 build, OpenNext
-  staging build and Wrangler staging dry run passed. No deployment is implied.
+- Dashboard: **243 passed across 37 files**; lint, Next/OpenNext builds and
+  staging dry run passed. Actual deployment exposed an OpenNext 1.20.11 manifest
+  incompatibility with Next 16.4.1. Next and eslint-config-next are pinned to
+  **16.3.8**; its explicit public-access build passed all 243 tests, production
+  dependency audit, and actual workerd HTTP/browser hydration checks for
+  `/context`, `/agent-tasks` and `/contracts/new`. Live staging verification
+  remains required after deployment.
 - Production dependency audit: **zero vulnerabilities** after compatible updates.
   The unpatched `braces` development dependency remains in lint tooling; the
   all-dependency audit is not claimed clean.
@@ -89,9 +94,16 @@ and migration rollback. Production must remain model-disabled.
   were approved, applied and verified. The approved worker-only Invoker grant
   awaits creation of the private production worker resource. No production
   database migration or traffic promotion has occurred.
-- Existing staging API/worker remain on the prior deployment, with the agent
-  queue and recovery schedule paused and the continuous pool at zero. New source
-  must be deployed and accepted before promotion.
+- Staging migration succeeded through `bf84e2c19a67`. API revision
+  `lenslayer-api-staging-00003-cxj` and private worker revision
+  `lenslayer-agent-worker-staging-00003-6ph` use the exact digest above. API
+  liveness/readiness returned 200; anonymous human/agent routes returned 401 and
+  the private worker returned 403. The queue and recovery schedule remain paused,
+  with the continuous pool at zero. Worker service/revision minima are zero,
+  maxima one, concurrency one, request-based CPU and a bounded 120-second drain.
+  Calendar and the optional product model remain disabled. The dashboard was
+  restored to working version `53a3cfc5-ce02-4ce6-8443-8d15aa0efdb4` after the
+  failed 16.4.1 deployment; the tested 16.3.8 fix is prepared for staging.
 - Staging recovery branch `br-muddy-hill-b2u9np34`, named
   `pre-roadmap-f3644b20-20261014`, was created in the staging Neon project only.
   Its compute was visibly **SUSPENDED** on 15 October. It expires at
@@ -100,10 +112,14 @@ and migration rollback. Production must remain model-disabled.
 - The explicitly approved `lenslayer-calendar-sandbox` project is **ACTIVE**
   (project number `602675316360`), and only the Calendar API was enabled. No
   compute or billing upgrade was created. Testing-mode OAuth branding is complete;
-  a web client is prepared with the staging callback and AI-agent declaration.
-  Two empty staging credential secret containers and blank entry forms are ready
-  for the user's credential handoff. OAuth credentials and real acceptance are
-  still pending. An independent inspector must use a different OAuth project
+  the web client uses the staging callback and AI-agent declaration. The user
+  saved its client ID and secret as enabled version 1 in the two dedicated
+  staging secrets. On 15 October, the explicitly approved three independent
+  server keys were created as version 1, and Secret Accessor was granted to only
+  the staging runtime on those three plus the two client credential secrets. No
+  project-wide or production grant was added. The shared session key still needs
+  its approved staging Worker binding. Real provider acceptance remains pending.
+  An independent inspector must use a different OAuth project
   because Google's revocation affects all grants within the product project.
 - The approved operations email channel and **ten enabled policies** (five each
   for staging and production) were created and read back. They cover worker HTTP
