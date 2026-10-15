@@ -795,12 +795,23 @@ class GeneralizationMigrationTests(unittest.TestCase):
                         {"hash": "1" * 64, "expires": utcnow() + timedelta(days=1), "now": utcnow()})
                     session.flush()
                     session.commit()
-                command.upgrade(config, "head")
-                self.assertEqual(compare_metadata(MigrationContext.configure(connection), Base.metadata), [])
+                # Exercise the reversible agent history before entering the
+                # intentionally forward-only production compatibility merge.
+                command.upgrade(config, "bf84e2c19a67")
                 self.assertEqual(connection.execute(text("SELECT context_ids_json FROM agent_principals WHERE id='legacy-agent'")).scalar(), "[]")
                 command.downgrade(config, "ab3d5e7f9012")
                 self.assertEqual(connection.execute(text("SELECT name FROM organizations WHERE id='legacy-org'")).scalar(), "Legacy")
+                self.assertEqual(connection.execute(text("SELECT token_hash FROM agent_principals WHERE id='legacy-agent'")).scalar(), "1" * 64)
+                command.upgrade(config, "bf84e2c19a67")
+                self.assertEqual(connection.execute(text("SELECT context_ids_json FROM agent_principals WHERE id='legacy-agent'")).scalar(), "[]")
+                # Current Base includes the preserved legacy columns. Compare it
+                # only after both branches have converged at the actual head.
                 command.upgrade(config, "head")
+                self.assertEqual(compare_metadata(MigrationContext.configure(connection), Base.metadata), [])
+                command.check(config)
+                self.assertEqual(connection.execute(text("SELECT context_ids_json FROM agent_principals WHERE id='legacy-agent'")).scalar(), "[]")
+                self.assertEqual(connection.execute(text("SELECT name FROM organizations WHERE id='legacy-org'")).scalar(), "Legacy")
+                self.assertEqual(connection.execute(text("SELECT token_hash FROM agent_principals WHERE id='legacy-agent'")).scalar(), "1" * 64)
             database.dispose()
 
 

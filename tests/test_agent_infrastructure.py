@@ -540,39 +540,75 @@ class AgentInfrastructureTests(unittest.TestCase):
 
 class AgentMigrationTests(unittest.TestCase):
     def test_migration_round_trip_matches_agent_models_and_preserves_existing_data(self):
+        from alembic import command
+        from alembic.config import Config
+        from sqlalchemy import MetaData, Table, inspect
+
         with tempfile.TemporaryDirectory() as temporary:
             settings = Settings(_env_file=None, environment="test", auth_mode="local", auto_create_schema=False,
-                                database_url=f"sqlite:///{Path(temporary) / 'migrated.db'}")
-            environment = {**os.environ, "LENSLAYER_PLATFORM_DATABASE_URL": settings.database_url,
-                           "LENSLAYER_PLATFORM_ENVIRONMENT": "test", "LENSLAYER_PLATFORM_AUTH_MODE": "local"}
-            root = Path(__file__).resolve().parents[1]
+                                database_url=f"sqlite:///{Path(temporary) / 'migrated.db'}",
+                                object_storage_root=Path(temporary) / "objects")
+            database = Database(settings)
+            config = Config(str(Path(__file__).resolve().parents[1] / "backend/alembic.ini"))
 
             def migrate(direction, target):
-                result = subprocess.run([sys.executable, "-m", "alembic", "-c", "backend/alembic.ini", direction, target],
-                                         cwd=root, env=environment, capture_output=True, text=True)
-                self.assertEqual(result.returncode, 0, result.stderr)
+                with patch("backend.app.config.get_settings", return_value=settings), database.engine.begin() as connection:
+                    config.attributes["connection"] = connection
+                    getattr(command, direction)(config, target)
 
-            migrate("upgrade", "head")
-            database = Database(settings)
             try:
-                with database.engine.connect() as connection:
-                    context = MigrationContext.configure(connection, opts={
-                        "include_object": lambda obj, name, kind, reflected, comparison: (
-                            name.startswith("agent_") if kind == "table" else True
-                        ),
-                    })
-                    self.assertEqual(compare_metadata(context, Base.metadata), [])
-                with TestClient(create_app(settings)) as client:
-                    created = client.post("/api/v1/organizations", json={"name": "Preserved", "slug": "preserved"})
-                    self.assertEqual(created.status_code, 201, created.text)
+                migrate("upgrade", "4d2c8f1a9e77")
+                # Reflect only the historical columns: current Membership has
+                # email_notifications, which this old schema does not yet have.
+                metadata = MetaData()
+                with database.engine.begin() as connection:
+                    users = Table("platform_users", metadata, autoload_with=connection)
+                    organizations = Table("organizations", metadata, autoload_with=connection)
+                    memberships = Table("organization_memberships", metadata, autoload_with=connection)
+                    now = utcnow()
+                    connection.execute(users.insert().values(id="legacy-user", external_subject="migration-roundtrip-user",
+                        email="legacy@example.test", display_name="Legacy", created_at=now, updated_at=now))
+                    connection.execute(organizations.insert().values(id="legacy-org", name="Preserved", slug="preserved",
+                        created_at=now, updated_at=now))
+                    connection.execute(memberships.insert().values(id="legacy-membership", organization_id="legacy-org",
+                        user_id="legacy-user", role="owner", created_at=now))
+                    original = {table.name: connection.execute(select(table)).all()
+                                for table in (users, organizations, memberships)}
+
+                def assert_legacy_rows():
+                    with database.engine.connect() as connection:
+                        for table in (users, organizations, memberships):
+                            self.assertEqual(connection.execute(select(table)).all(), original[table.name])
+
+                migrate("upgrade", "6e8a2b4d9c10")
+                self.assertIn("agent_principals", inspect(database.engine).get_table_names())
+                assert_legacy_rows()
                 migrate("downgrade", "4d2c8f1a9e77")
+                self.assertNotIn("agent_principals", inspect(database.engine).get_table_names())
+                assert_legacy_rows()
+                migrate("upgrade", "6e8a2b4d9c10")
+                assert_legacy_rows()
+                # Only now enter the forward-only compatibility head. Current
+                # models and real API requests must never run on the old schema.
                 migrate("upgrade", "head")
-                with TestClient(create_app(settings)) as client:
+                assert_legacy_rows()
+                with database.engine.connect() as connection:
+                    context = MigrationContext.configure(connection, opts={"compare_type": True})
+                    self.assertEqual(compare_metadata(context, Base.metadata), [])
+                    self.assertTrue(connection.scalar(select(Membership.email_notifications).where(Membership.id == "legacy-membership")))
+                with patch("backend.app.config.get_settings", return_value=settings), database.engine.begin() as connection:
+                    config.attributes["connection"] = connection
+                    command.check(config)
+                headers = {"X-LensLayer-User": "migration-roundtrip-user", "X-LensLayer-Email": "legacy@example.test"}
+                with TestClient(create_app(settings), headers=headers) as client:
                     organizations = client.get("/api/v1/organizations").json()
                     self.assertEqual(organizations[0]["name"], "Preserved")
+                    self.assertEqual(organizations[0]["id"], "legacy-org")
                     agents = client.get(f"/api/v1/organizations/{organizations[0]['id']}/agents")
                     self.assertEqual(agents.status_code, 200)
                     self.assertEqual(agents.json(), [])
+                    created = client.post("/api/v1/organizations", json={"name": "Current API", "slug": "current-api"})
+                    self.assertEqual(created.status_code, 201, created.text)
             finally:
                 database.dispose()
 
