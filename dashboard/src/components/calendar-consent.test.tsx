@@ -147,7 +147,101 @@ it("shows pending provider revocation separately from immediate local disconnect
   render(<CalendarConnection organizationId="org-1" />, { wrapper: Wrapper });
   fireEvent.click(await screen.findByRole("button", { name: "Disconnect calendar" }));
   expect(await screen.findByText(/Provider revocation is pending/)).toBeInTheDocument();
+  expect(screen.getByText("Locally revoked. LensLayer writes are blocked.")).toBeInTheDocument();
+  expect(screen.getByText(/Retry disconnect or revoke the app in the Google account/)).toBeInTheDocument();
+  expect(screen.getByText(/Google revocation may also affect grants for the same account and OAuth project/)).toBeInTheDocument();
+  const retry = await screen.findByRole("button", { name: "Retry provider revocation" });
+  await waitFor(() => expect(retry).toBeEnabled());
+  expect(api.disconnectCalendar).toHaveBeenCalledTimes(1);
+  expect(screen.queryByRole("button", { name: "Disconnect calendar" })).toBeNull();
+  fireEvent.click(retry);
+  await waitFor(() => expect(api.disconnectCalendar).toHaveBeenCalledTimes(2));
   expect(api.disconnectCalendar).toHaveBeenCalledWith("org-1", connection.id, expect.any(AbortSignal));
+});
+
+it("shows no provider revocation pending only after a false server result and removes unnecessary retry", async () => {
+  vi.mocked(api.integrations).mockResolvedValue([connection]);
+  vi.mocked(api.disconnectCalendar).mockResolvedValue({ connection_id: connection.id, status: "revoked", provider_revocation_pending: false });
+  const { Wrapper } = agentQueryWrapper();
+  const view = render(<CalendarConnection organizationId="org-1" />, { wrapper: Wrapper });
+  fireEvent.click(await screen.findByRole("button", { name: "Disconnect calendar" }));
+  expect(await screen.findByRole("status")).toHaveTextContent("The server reports no provider revocation pending for this connection.");
+  expect(screen.getByText("Locally revoked. LensLayer writes are blocked.")).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Retry provider revocation" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Disconnect calendar" })).toBeNull();
+  expect(screen.queryByText(/Provider revocation is pending/)).toBeNull();
+  view.rerender(<CalendarConnection organizationId="org-1" />);
+  await act(async () => {});
+  expect(api.disconnectCalendar).toHaveBeenCalledTimes(1);
+  expect(api.startCalendarConsent).not.toHaveBeenCalled();
+  expect(api.completeCalendarConsent).not.toHaveBeenCalled();
+});
+
+it("treats revoked connection metadata after reload as unknown, not pending or provider completion", async () => {
+  vi.mocked(api.integrations).mockResolvedValue([{ ...connection, status: "revoked" }]);
+  const { Wrapper } = agentQueryWrapper();
+  render(<StrictMode><CalendarConnection organizationId="org-1" /></StrictMode>, { wrapper: Wrapper });
+  expect(await screen.findByRole("status")).toHaveTextContent("Provider revocation status is unknown in this session. Local revocation blocks LensLayer writes; check the app’s access in the Google account before deciding whether further action is needed.");
+  expect(screen.getByText("Locally revoked. LensLayer writes are blocked.")).toBeInTheDocument();
+  expect(screen.queryByText(/server reports no provider revocation pending/)).toBeNull();
+  expect(screen.queryByText(/Provider revocation is pending/)).toBeNull();
+  expect(screen.queryByRole("button", { name: "Retry provider revocation" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Disconnect calendar" })).toBeNull();
+  await act(async () => {});
+  expect(api.disconnectCalendar).not.toHaveBeenCalled();
+});
+
+it("does not persist a no-pending result across remount or infer it from revoked list metadata", async () => {
+  vi.mocked(api.integrations).mockResolvedValue([connection]);
+  vi.mocked(api.disconnectCalendar).mockResolvedValue({ connection_id: connection.id, status: "revoked", provider_revocation_pending: false });
+  const first = agentQueryWrapper();
+  const view = render(<CalendarConnection organizationId="org-1" />, { wrapper: first.Wrapper });
+  fireEvent.click(await screen.findByRole("button", { name: "Disconnect calendar" }));
+  expect(await screen.findByText(/server reports no provider revocation pending/)).toBeInTheDocument();
+  view.unmount();
+  vi.mocked(api.integrations).mockResolvedValue([{ ...connection, status: "revoked" }]);
+  const second = agentQueryWrapper();
+  render(<CalendarConnection organizationId="org-1" />, { wrapper: second.Wrapper });
+  expect(await screen.findByText(/Provider revocation status is unknown in this session/)).toBeInTheDocument();
+  expect(screen.queryByText(/server reports no provider revocation pending/)).toBeNull();
+  expect(api.disconnectCalendar).toHaveBeenCalledTimes(1);
+});
+
+it("clears the retry prompt when an explicitly requested pending-revocation retry returns false", async () => {
+  vi.mocked(api.integrations).mockResolvedValue([{ ...connection, status: "revoked" }]).mockResolvedValueOnce([connection]);
+  vi.mocked(api.disconnectCalendar)
+    .mockResolvedValueOnce({ connection_id: connection.id, status: "revoked", provider_revocation_pending: true })
+    .mockResolvedValueOnce({ connection_id: connection.id, status: "revoked", provider_revocation_pending: false });
+  const { Wrapper } = agentQueryWrapper();
+  render(<CalendarConnection organizationId="org-1" />, { wrapper: Wrapper });
+  fireEvent.click(await screen.findByRole("button", { name: "Disconnect calendar" }));
+  const retry = await screen.findByRole("button", { name: "Retry provider revocation" });
+  await waitFor(() => expect(retry).toBeEnabled());
+  expect(api.disconnectCalendar).toHaveBeenCalledTimes(1);
+  fireEvent.click(retry);
+  expect(await screen.findByText(/server reports no provider revocation pending/)).toBeInTheDocument();
+  expect(screen.queryByText(/Provider revocation is pending/)).toBeNull();
+  expect(screen.queryByRole("button", { name: "Retry provider revocation" })).toBeNull();
+  await act(async () => {});
+  expect(api.disconnectCalendar).toHaveBeenCalledTimes(2);
+});
+
+it("does not turn a failed disconnect into success or automatically retry", async () => {
+  vi.mocked(api.integrations).mockResolvedValue([{ ...connection, status: "revoked" }]);
+  vi.mocked(api.disconnectCalendar).mockResolvedValueOnce({ connection_id: connection.id, status: "revoked", provider_revocation_pending: true }).mockRejectedValueOnce(new Error("unavailable"));
+  // Start from active metadata to obtain a genuine same-session pending result.
+  vi.mocked(api.integrations).mockResolvedValueOnce([connection]);
+  const { Wrapper } = agentQueryWrapper();
+  render(<CalendarConnection organizationId="org-1" />, { wrapper: Wrapper });
+  fireEvent.click(await screen.findByRole("button", { name: "Disconnect calendar" }));
+  const retry = await screen.findByRole("button", { name: "Retry provider revocation" });
+  await waitFor(() => expect(retry).toBeEnabled());
+  fireEvent.click(retry);
+  expect(await screen.findByRole("alert")).toHaveTextContent("Disconnect could not be confirmed. Inspect the connection before retrying.");
+  expect(screen.getByText(/Provider revocation is pending/)).toBeInTheDocument();
+  expect(screen.queryByText(/server reports no provider revocation pending/)).toBeNull();
+  await act(async () => {});
+  expect(api.disconnectCalendar).toHaveBeenCalledTimes(2);
 });
 
 it("changing workspace aborts a pending start and cannot redirect or save stale consent", async () => {

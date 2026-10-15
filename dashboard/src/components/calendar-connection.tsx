@@ -74,11 +74,19 @@ function CalendarConnectionForm({ organizationId, authorize, userId, canManage }
     <p className="field-help">Consent is tied to your authenticated browser login through the server bridge. This connection identifies an OAuth grant, not a verified Google account or independently verified calendar ownership. The product requests only calendar.events.owned.</p>
     {error && <p className="form-error" role="alert">{error}</p>}
     {canManage && connections.error && <p role="alert">Calendar connection records could not load.</p>}
-    <div className="calendar-connections">{canManage && connections.data?.filter((item) => item.provider === "google_calendar").map((item) => <article key={item.id}>
-      <h4>{item.display_name}</h4><p>{item.status === "active" ? "Consent stored; access is verified during dispatch." : "Locally revoked."}</p>
+    <div className="calendar-connections">{canManage && connections.data?.filter((item) => item.provider === "google_calendar").map((item) => {
+      // List metadata cannot establish provider completion after a reload. Only
+      // this session's actual disconnect response supplies the pending boolean.
+      const providerPending = revocation[item.id];
+      const locallyRevoked = item.status === "revoked" || typeof providerPending === "boolean";
+      return <article key={item.id}>
+      <h4>{item.display_name}</h4><p>{locallyRevoked ? "Locally revoked. LensLayer writes are blocked." : item.status === "active" ? "Consent stored; access is verified during dispatch." : `Connection status: ${item.status}.`}</p>
       <dl><div><dt>Connection ID</dt><dd><code>{item.id}</code></dd></div><div><dt>Delegated calendar IDs</dt><dd><code>{Array.isArray(item.settings.calendar_ids) ? item.settings.calendar_ids.join(", ") : "Unavailable"}</code></dd></div></dl>
-      {revocation[item.id] === true && <p role="status">Provider revocation is pending. Retry disconnect or revoke the app in the Google account.</p>}
-      {canManage && <button className="button secondary" type="button" disabled={busy} onClick={() => void disconnect(item.id)}>{item.status === "active" ? "Disconnect calendar" : "Retry provider revocation"}</button>}
-    </article>)}</div>
+      {providerPending === true && <p role="status">Provider revocation is pending. Retry disconnect or revoke the app in the Google account.</p>}
+      {providerPending === false && <p role="status">The server reports no provider revocation pending for this connection.</p>}
+      {locallyRevoked && typeof providerPending !== "boolean" && <p role="status">Provider revocation status is unknown in this session. Local revocation blocks LensLayer writes; check the app’s access in the Google account before deciding whether further action is needed.</p>}
+      {(providerPending === true || (!locallyRevoked && item.status === "active")) && <button className="button secondary" type="button" disabled={busy} onClick={() => void disconnect(item.id)}>{providerPending === true ? "Retry provider revocation" : "Disconnect calendar"}</button>}
+    </article>;
+    })}</div>
   </section>;
 }
