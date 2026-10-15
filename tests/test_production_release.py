@@ -65,6 +65,8 @@ class ProductionReleaseTests(unittest.TestCase):
                     self.assertIn("--max-instances=1", argv)
                 if command["id"] in {"bootstrap-private-worker", "deploy-sleeping-worker"}:
                     self.assertIn("--no-allow-unauthenticated", argv)
+                    self.assertIn("--invoker-iam-check", argv)
+                    self.assertIn("--scaling=auto", argv)
                     self.assertIn("--concurrency=1", argv)
                 if command["id"] == "deploy-bounded-review-job":
                     self.assertIn("--args=-m,backend.app.worker,--documents-only,--drain", argv)

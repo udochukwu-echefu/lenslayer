@@ -9,7 +9,7 @@ export const goalLabels: Record<HostedGoalType, string> = {
 };
 export const plannerLabels: Record<HostedPlannerMode, string> = {
   deterministic: "Fixed workflow · no model",
-  model: "Model-assisted · GPT-6.1 Sol, high effort",
+  model: "Model-assisted · high effort",
 };
 export const statusNotes: Record<HostedAgentTask["status"], string> = {
   queued: "Assignment recorded. No action has executed yet.",

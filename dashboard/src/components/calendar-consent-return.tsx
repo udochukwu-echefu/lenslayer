@@ -49,15 +49,16 @@ export function CalendarConsentReturn() {
     const original = capture.current.input;
     if (Date.parse(original.expiresAt) <= Date.now()) { capture.current.input = null; setView("restart"); return; }
     capture.current.input = null; // Never retry a one-time code or keep it in a mutation cache.
-    pending.current = new AbortController(); setView("sending");
+    const controller = new AbortController(); pending.current = controller; setView("sending");
     try {
-      const connected = await api.completeCalendarConsent(original.organizationId, { code: original.code, state: original.state }, pending.current.signal);
-      if (pending.current.signal.aborted) return;
+      const connected = await api.completeCalendarConsent(original.organizationId, { code: original.code, state: original.state }, controller.signal);
+      if (controller.signal.aborted) return;
       setConnectionId(connected.id); workspace.selectOrganization(original.organizationId);
       await client.invalidateQueries({ queryKey: ["integrations", original.organizationId] });
       await client.invalidateQueries({ queryKey: ["integration-providers", original.organizationId] });
       setView("connected");
-    } catch { if (!pending.current.signal.aborted) setView("restart"); }
+    } catch { if (!controller.signal.aborted) setView("restart"); }
+    finally { if (pending.current === controller) pending.current = null; }
   }
   return <main className="calendar-callback"><Link href="/developers" aria-label="LensLayer developer guide"><BrandMark /></Link><h1>Complete Calendar connection</h1>
     {view === "loading" || (view === "ready" && workspace.isLoading) ? <p role="status">Checking the initiating workspace and signed-in user…</p> : view === "connected" ? <><p role="status">Calendar consent is stored. LensLayer will verify access and approved event fields during dispatch.</p><p>Connection ID: <code>{connectionId}</code></p><Link className="button" href="/agents">Delegate calendar access</Link></> : view === "sending" ? <p role="status">Exchanging the one-time consent code…</p> : view === "ready" && canComplete ? <><p>Complete the connection for <strong>{organization?.name}</strong> as the same person who started consent. The API checks the one-time provider state, trusted browser-session attestation and exact provider grant.</p><button type="button" className="button" onClick={() => void complete()}>Complete connection</button></> : <><p role="alert">Consent could not be completed in this session. Inspect existing connections, then restart consent in Settings while signed in as the initiating workspace owner or administrator.</p><Link className="button secondary" href="/settings#calendar-connection">Return to Calendar settings</Link></>}

@@ -53,7 +53,7 @@ class StagingReviewTests(unittest.TestCase):
             self.assertTrue(plan["image_digest_resolved"])
             commands = {item["id"]: item for item in plan["commands"]}
             worker = commands["deploy-on-demand-agent-worker"]["argv"]
-            for flag in ("--min-instances=0", "--min=0", "--max-instances=1", "--cpu-throttling", "--concurrency=1", "--no-allow-unauthenticated"):
+            for flag in ("--min-instances=0", "--min=0", "--max-instances=1", "--cpu-throttling", "--concurrency=1", "--no-allow-unauthenticated", "--invoker-iam-check", "--scaling=auto"):
                 self.assertIn(flag, worker)
             self.assertFalse(any("worker-pools" in c["argv"] or "--instances=1" in c["argv"] for c in plan["commands"]))
             self.assertIn("--documents-only", next(a for a in commands["deploy-review-job"]["argv"] if a.startswith("--args=")))

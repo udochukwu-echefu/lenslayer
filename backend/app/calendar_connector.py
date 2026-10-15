@@ -108,7 +108,7 @@ class GoogleCalendarHTTP:
                 raise ValueError()
             result = {"access_token": body["access_token"], "refresh_token": refresh,
                       "expires_at": (utcnow() + timedelta(seconds=expires)).isoformat()}
-            if body.get("refresh_token_expires_in"):
+            if "refresh_token_expires_in" in body:
                 lifetime = body["refresh_token_expires_in"]
                 if type(lifetime) is not int or not 0 < lifetime <= 10 * 365 * 86400:
                     raise ValueError()

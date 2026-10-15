@@ -152,6 +152,7 @@ def render_plan(config, output: Path, commit: str, digest=None, worker_origin=No
         f"--project={project}", f"--member=serviceAccount:{runtime}", "--role=roles/iam.serviceAccountUser"])
     worker_args = ["run", "deploy", "lenslayer-agent-worker", *base, f"--service-account={runtime}",
         f"--image={image}", "--no-allow-unauthenticated", "--min-instances=0", "--max-instances=1", "--min=0", "--max=1",
+        "--invoker-iam-check", "--scaling=auto",
         "--cpu-throttling", "--cpu=1", "--memory=1Gi", "--concurrency=1", "--timeout=300", "--command=python",
         "--args=-m,uvicorn,backend.app.agent_worker_service:app,--host,0.0.0.0,--port,8080,--no-access-log",
         f"--set-secrets={secrets}"]

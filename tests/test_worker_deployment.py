@@ -50,6 +50,11 @@ class ProductionWorkerGuardTests(unittest.TestCase):
                 check_cloud_worker(**values)
                 self.assertTrue(all('describe' in c.args[0] or 'get-iam-policy' in c.args[0] for c in run.call_args_list))
         run_case(state)
+        explicit = copy.deepcopy(state)
+        explicit[2]['metadata'] = {'annotations': {
+            'run.googleapis.com/invoker-iam-disabled': 'false',
+            'run.googleapis.com/scalingMode': 'automatic'}}
+        run_case(explicit)
         for i, key, value in ((0, 'state', 'PAUSED'), (1, 'state', 'PAUSED'), (1, 'schedule', '* * * * *')):
             changed = copy.deepcopy(state); changed[i][key] = value
             with self.subTest(key=key, value=value), self.assertRaises(ValueError): run_case(changed)
@@ -64,6 +69,18 @@ class ProductionWorkerGuardTests(unittest.TestCase):
         with self.assertRaises(ValueError): run_case(changed)
         changed = copy.deepcopy(state); changed[3]['bindings'][0]['members'].append('allUsers')
         with self.assertRaises(ValueError): run_case(changed)
+
+        # A narrow IAM policy does not make a service private if the independent
+        # invoker check is disabled. Zero minScale also does not undo manual mode.
+        for annotations in ({'run.googleapis.com/invoker-iam-disabled': 'true'},
+                            {'run.googleapis.com/scalingMode': 'manual',
+                             'run.googleapis.com/manualInstanceCount': '1'},
+                            {'run.googleapis.com/scalingMode': 'manual',
+                             'run.googleapis.com/manualInstanceCount': '0'}):
+            changed = copy.deepcopy(state)
+            changed[2]['metadata'] = {'annotations': annotations}
+            with self.subTest(annotations=annotations), self.assertRaises(ValueError):
+                run_case(changed)
 
 
 if __name__ == "__main__":

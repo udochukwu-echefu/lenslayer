@@ -55,6 +55,14 @@ the API. Use the [staging renderer](../../scripts/prepare-staging.py) to prepare
 pinned, separate staging commands; bootstrap the private service only to resolve
 its URL, then regenerate the plan with its actual URL before activation.
 
+Private invocation requires both a narrow IAM policy and an enabled Cloud Run
+Invoker IAM check. The service-level `run.googleapis.com/invoker-iam-disabled`
+annotation must be absent or `false`; removing `allUsers` alone is insufficient.
+Keep `run.googleapis.com/scalingMode` absent or `automatic`: manual scaling can
+pin idle instances or disable dispatch even with both minimums set to zero.
+Worker deployment commands explicitly set `--invoker-iam-check --scaling=auto`;
+verify the effective service settings and unauthenticated rejection after rollout.
+
 Apply migrations before switching the API and preserve the durable ledger:
 
 ```sh
@@ -216,7 +224,10 @@ Cloud Tasks attempts within fifteen minutes. It ignores ordinary future timers
 and human approval waits. Policies stay disabled until an approved notification
 channel is supplied; inspect existing names before creating duplicates.
 
-Worker observations are emitted only during existing drain/enqueue requests.
+Worker health observations are emitted before recovery/draining and again after
+runnable work drains and enqueues successfully, within the existing request.
+This preserves overdue backlog/expired-lease signals even when recovery clears
+them successfully.
 Hourly recovery detects missed commits without keeping an idle process alive.
 There is no claim of immediate detection while a service has no request. Read the
 [current acceptance record](../architecture/agent-roadmap-acceptance-2026-10-14.md)

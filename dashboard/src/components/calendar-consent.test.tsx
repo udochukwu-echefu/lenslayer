@@ -48,6 +48,51 @@ it("completes only on an explicit same-human click and never caches code/state",
   expect(workspace.selectOrganization).toHaveBeenCalledWith("org-1");
 });
 
+it("keeps a confirmed connection visible after the original OAuth state expires", async () => {
+  vi.useFakeTimers({ toFake: ["Date", "setTimeout", "clearTimeout"] });
+  try {
+    vi.setSystemTime(new Date("2026-10-15T09:00:00Z"));
+    seedCallback();
+    window.sessionStorage.setItem(CALENDAR_CONSENT_KEY, JSON.stringify({ ...pending, expiresAt: "2026-10-15T09:10:00Z" }));
+    showReturn(true);
+    await act(async () => {});
+    fireEvent.click(screen.getByRole("button", { name: "Complete connection" }));
+    await act(async () => {});
+    expect(screen.getByText(/Calendar consent is stored/)).toBeInTheDocument();
+    const signal = vi.mocked(api.completeCalendarConsent).mock.calls[0][2]!;
+
+    await act(async () => { vi.advanceTimersByTime(10 * 60 * 1000 + 1); });
+
+    expect(screen.getByText(/Calendar consent is stored/)).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(signal.aborted).toBe(false);
+    expect(api.completeCalendarConsent).toHaveBeenCalledTimes(1);
+  } finally { vi.useRealTimers(); }
+});
+
+it("still aborts an unconfirmed exchange at state expiry and ignores its late response", async () => {
+  vi.useFakeTimers({ toFake: ["Date", "setTimeout", "clearTimeout"] });
+  try {
+    vi.setSystemTime(new Date("2026-10-15T09:00:00Z"));
+    let resolve!: (value: IntegrationConnection) => void;
+    vi.mocked(api.completeCalendarConsent).mockReturnValue(new Promise((done) => { resolve = done; }));
+    seedCallback();
+    window.sessionStorage.setItem(CALENDAR_CONSENT_KEY, JSON.stringify({ ...pending, expiresAt: "2026-10-15T09:10:00Z" }));
+    showReturn(true);
+    await act(async () => {});
+    fireEvent.click(screen.getByRole("button", { name: "Complete connection" }));
+    const signal = vi.mocked(api.completeCalendarConsent).mock.calls[0][2]!;
+
+    await act(async () => { vi.advanceTimersByTime(10 * 60 * 1000 + 1); });
+    expect(signal.aborted).toBe(true);
+    expect(screen.getByRole("alert")).toHaveTextContent(/Inspect existing connections/);
+    await act(async () => { resolve(connection); });
+    expect(screen.queryByText(/Calendar consent is stored/)).toBeNull();
+    expect(workspace.selectOrganization).not.toHaveBeenCalled();
+    expect(api.completeCalendarConsent).toHaveBeenCalledTimes(1);
+  } finally { vi.useRealTimers(); }
+});
+
 it.each([["another person", "human-2", "owner"], ["viewer", "human-1", "viewer"], ["reviewer", "human-1", "reviewer"]])("%s cannot exchange the code", async (_label, userId, role) => {
   seedCallback(); workspace.user = { id: userId }; workspace.organizations[0].role = role; showReturn();
   expect(await screen.findByRole("alert")).toHaveTextContent(/initiating workspace/);

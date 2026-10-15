@@ -54,7 +54,7 @@ def run_sandbox():
             connector_state_signing_key=os.urandom(48).hex(), agent_action_lease_seconds=180,
             email_backend="disabled", malware_scan_backend="signature", review_worker_job="")
         require_connector_config(settings)
-        print("Use a separately consented read-only inspector grant (different OAuth client), for the SAME sandbox owner.")
+        print("Use a separately consented read-only inspector grant from a DIFFERENT OAuth PROJECT, for the SAME sandbox owner.")
         inspector = CalendarAcceptanceInspector(settings, getpass.getpass("Independent read-only inspection access token (hidden): "))
         try:
             inspector.owned_secondary(calendar_id)

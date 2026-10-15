@@ -44,7 +44,12 @@ def check_cloud_worker(project, region, service, queue, origin, invoker):
     annotations = worker.get("spec", {}).get("template", {}).get("metadata", {}).get("annotations", {})
     service_annotations = worker.get("metadata", {}).get("annotations", {})
     revision_spec = worker.get("spec", {}).get("template", {}).get("spec", {})
+    # IAM policy alone is not authoritative when the independent invoker check
+    # is disabled. Manual scaling also overrides zero autoscaling minimums.
+    if service_annotations.get("run.googleapis.com/invoker-iam-disabled", "false") != "false":
+        raise ValueError("Worker invocation must enforce IAM authentication")
     if (worker.get("status", {}).get("url") != origin
+            or service_annotations.get("run.googleapis.com/scalingMode", "automatic") != "automatic"
             or annotations.get("autoscaling.knative.dev/minScale", "0") != "0"
             or service_annotations.get("run.googleapis.com/minScale", "0") != "0"
             or annotations.get("autoscaling.knative.dev/maxScale") != "1"

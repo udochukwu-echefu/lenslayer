@@ -11,7 +11,7 @@ from contextlib import redirect_stdout
 
 import httpx
 
-from backend.app.calendar_connector import GoogleCalendarHTTP
+from backend.app.calendar_connector import ConnectorError, GoogleCalendarHTTP
 from backend.app.calendar_sandbox import _SandboxSettings, run_sandbox
 from backend.app.calendar_sandbox_acceptance import CalendarAcceptanceInspector, callback_payload
 from tests.test_calendar_workflows import FakeGoogle
@@ -105,14 +105,17 @@ class CalendarInspectorTests(unittest.TestCase):
 
 
 class CalendarLocalHarnessTests(unittest.TestCase):
-    def run_fake(self, *, approve=True, uncertain=False, owner=True):
+    def run_fake(self, *, approve=True, uncertain=False, owner=True, same_project=False):
         fake = FakeGoogle()
         fake.unreadable_after_write = uncertain
         output = io.StringIO()
         inspector_calls = []
+        inspector_revoked = False
         def inspect(request):
             inspector_calls.append((request.method, request.url.path))
             self.assertEqual(request.method, "GET")
+            if inspector_revoked:
+                return httpx.Response(401)
             if "/calendarList/" in request.url.path:
                 return httpx.Response(200, json={"id": CALENDAR, "accessRole": "owner" if owner else "writer"})
             if request.url.path.endswith("/events"):
@@ -124,7 +127,13 @@ class CalendarLocalHarnessTests(unittest.TestCase):
             url = [line for line in output.getvalue().splitlines() if line.startswith("https://accounts.google.com/")][-1]
             state = parse_qs(urlparse(url).query)["state"][0]
             return REDIRECT + "?" + urlencode({"code": "fake-code", "state": state})
-        factory = lambda settings: GoogleCalendarHTTP(settings, transport=httpx.MockTransport(fake.handle))
+        def product(request):
+            nonlocal inspector_revoked
+            response = fake.handle(request)
+            if same_project and request.url.path == "/revoke" and response.status_code == 200:
+                inspector_revoked = True
+            return response
+        factory = lambda settings: GoogleCalendarHTTP(settings, transport=httpx.MockTransport(product))
         factory.verify = GoogleCalendarHTTP.verify  # constructor replacement preserves the runtime's static completion check
         inspector_factory = lambda settings, token: CalendarAcceptanceInspector(settings, token, transport=httpx.MockTransport(inspect))
         env = {"LENSLAYER_SANDBOX_GOOGLE_ACK": "write_one_event_to_disposable_calendar",
@@ -140,7 +149,7 @@ class CalendarLocalHarnessTests(unittest.TestCase):
                 patch("backend.app.calendar_connector.GoogleCalendarHTTP", factory):
             try:
                 run_sandbox()
-            except ValueError as exc:
+            except (ValueError, ConnectorError) as exc:
                 error = exc
         return fake, inspector_calls, output.getvalue(), error
 
@@ -173,4 +182,13 @@ class CalendarLocalHarnessTests(unittest.TestCase):
         fake, _, output, error = self.run_fake(uncertain=True)
         self.assertIsNotNone(error)
         self.assertEqual(fake.posts, 1)
+        self.assertNotIn('"calendar_live_checks_passed": true', output)
+
+    def test_project_wide_revocation_of_inspector_stops_acceptance_without_second_write(self):
+        # Models Google's documented project-wide revocation, not live proof of
+        # which project a real opaque inspection token belongs to.
+        fake, _, output, error = self.run_fake(same_project=True)
+        self.assertIsNotNone(error)
+        self.assertEqual(fake.posts, 1)
+        self.assertEqual(sum(path.endswith("/revoke") for _, path in fake.calls), 2)
         self.assertNotIn('"calendar_live_checks_passed": true', output)
