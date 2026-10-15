@@ -63,9 +63,13 @@ describe("hosted task assignment", () => {
     expect(container.querySelector('input[name*="token"]')).toBeNull();
   });
   it.each(["calendar-event", "follow-up-and-calendar"])("uses exact Calendar grants for %s and no irrelevant scope", async (goal) => {
-    show(); await fill(goal); submit(); await waitFor(() => expect(api.createHostedAgentTask).toHaveBeenCalledTimes(1));
+    show(); await fill(goal);
+    expect(screen.getByRole("option", { name: "Owned sandbox calendar — sandbox@example.test (connection-1)" })).toHaveValue(JSON.stringify(["connection-1", "sandbox@example.test"]));
+    expect(screen.getByText("Human approval always required.")).toBeInTheDocument();
+    submit(); await waitFor(() => expect(api.createHostedAgentTask).toHaveBeenCalledTimes(1));
     const input = vi.mocked(api.createHostedAgentTask).mock.calls[0][1];
-    expect(input).toMatchObject({ goal_type: goal, calendar: { type: "calendar_event_created", connection_id: "connection-1", calendar_id: "sandbox@example.test", summary: "Human-authored appointment" } });
+    expect(input).toMatchObject({ goal_type: goal, planner_mode: "deterministic", calendar: { type: "calendar_event_created", connection_id: "connection-1", calendar_id: "sandbox@example.test", summary: "Human-authored appointment" } });
+    expect(input).not.toHaveProperty("token"); expect(input).not.toHaveProperty("require_approval");
     if (goal === "calendar-event") { expect(input).not.toHaveProperty("contract_id"); expect(api.contracts).not.toHaveBeenCalled(); expect(api.members).not.toHaveBeenCalled(); }
     else expect(input).toHaveProperty("contract_id", "contract-1");
   });
