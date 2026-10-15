@@ -20,7 +20,9 @@ export function checkMetadata(pkg, version) {
   assert.equal(pkg.dependencies, undefined);
   assert.equal(pkg.repository.url, `git+https://github.com/${repository}.git`);
   assert.equal(pkg.repository.directory, "sdk");
-  assert.deepEqual(pkg.publishConfig, { access: "public", registry: "https://registry.npmjs.org/", provenance: true });
+  // Automatic generation and --provenance-file are mutually exclusive in npm.
+  // Controlled publication must explicitly select one; never put false here.
+  assert.deepEqual(pkg.publishConfig, { access: "public", registry: "https://registry.npmjs.org/" });
   assert.deepEqual(pkg.exports, { ".": { types: "./dist/index.d.ts", import: "./dist/index.js" } });
   assert.deepEqual([...pkg.files, "package.json", "README.md"].sort(), packageFiles);
 }

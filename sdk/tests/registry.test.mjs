@@ -41,8 +41,10 @@ const statement = { _type: "https://in-toto.io/Statement/v1", predicateType: "ht
 };
 const audit = (payload = statement) => ({ invalid: [], missing: [], verified: [{ name: packageName, version: review.version,
   registry: "https://registry.npmjs.org/", attestationBundles: [{ predicateType: statement.predicateType,
-    bundle: { verificationMaterial: { certificate: { rawBytes: certificate } },
-      dsseEnvelope: { payload: Buffer.from(JSON.stringify(payload)).toString("base64") } } }] }] });
+    bundle: { mediaType: "application/vnd.dev.sigstore.bundle.v0.3+json",
+      verificationMaterial: { certificate: { rawBytes: certificate }, tlogEntries: [{ fixtureOnly: true }] },
+      dsseEnvelope: { payloadType: "application/vnd.in-toto+json", payload: Buffer.from(JSON.stringify(payload)).toString("base64"),
+        signatures: [{ keyid: "", sig: Buffer.from("synthetic-audit-policy-only").toString("base64") }] } } }] }] });
 
 test("registry policy requires reviewed integrity, signature presence and canonical registry URLs", () => {
   checkRegistryPackage(pkg, review);
@@ -83,7 +85,9 @@ test("audit policy rejects missing/invalid crypto results and absence of positiv
   wrongSigner.verified[0].attestationBundles[0].bundle.verificationMaterial.certificate.rawBytes = wrongCertificate;
   assert.throws(() => checkSignatureAudit(wrongSigner, review), /signing certificate/);
   const legacyCertificate = audit();
-  legacyCertificate.verified[0].attestationBundles[0].bundle.verificationMaterial = { x509CertificateChain: { certificates: [{ rawBytes: certificate }] } };
+  const legacyBundle = legacyCertificate.verified[0].attestationBundles[0].bundle;
+  legacyBundle.mediaType = "application/vnd.dev.sigstore.bundle+json;version=0.2";
+  legacyBundle.verificationMaterial = { x509CertificateChain: { certificates: [{ rawBytes: certificate }] }, tlogEntries: [{ fixtureOnly: true }] };
   checkSignatureAudit(legacyCertificate, review);
 });
 
@@ -103,5 +107,29 @@ test("verified provenance policy binds package, bytes, canonical main commit, wo
     const changed = structuredClone(statement);
     mutate(changed);
     assert.throws(() => checkSignatureAudit(audit(changed), review));
+  }
+});
+
+test("registry provenance requires the exact expected signing invocation when supplied", () => {
+  checkSignatureAudit(audit(), review, { runId: "42", runAttempt: "1" });
+  assert.throws(() => checkSignatureAudit(audit(), review, { runId: "43", runAttempt: "1" }));
+  assert.throws(() => checkSignatureAudit(audit(), review, { runId: "42", runAttempt: "2" }));
+});
+
+test("generic npm audit success cannot qualify ambiguous or version-confused certificate material", () => {
+  const mutations = [
+    (b) => { b.verificationMaterial.x509CertificateChain = { certificates: [{ rawBytes: wrongCertificate }] }; },
+    (b) => { b.verificationMaterial.publicKey = { hint: "decoy" }; },
+    (b) => { b.verificationMaterial.publicKey = null; },
+    (b) => { b.verificationMaterial.x509CertificateChain = null; },
+    (b) => { b.messageSignature = null; },
+    (b) => { b.mediaType = "application/vnd.dev.sigstore.bundle+json;version=0.2"; },
+    (b) => { b.mediaType += ";unvalidated-suffix"; },
+    (b) => { b.verificationMaterial.certificate = null; },
+  ];
+  for (const mutate of mutations) {
+    const value = audit();
+    mutate(value.verified[0].attestationBundles[0].bundle);
+    assert.throws(() => checkSignatureAudit(value, review));
   }
 });

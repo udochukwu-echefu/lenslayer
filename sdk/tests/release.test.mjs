@@ -63,6 +63,10 @@ test("SDK metadata is MIT, exact-file-allowlisted and runtime-dependency-free; l
   assert.equal(lock.version, pkg.version);
   assert.deepEqual(lock.packages[""].devDependencies, pkg.devDependencies);
   assert.match(pkg.devDependencies.typescript, /^\d+\.\d+\.\d+$/);
+  assert.equal(pkg.devDependencies.sigstore, "4.1.1");
+  for (const [path, entry] of Object.entries(lock.packages)) {
+    if (path) assert.equal(entry.dev, true, `${path} must remain development-only`);
+  }
   assert.throws(() => checkMetadata({ ...pkg, files: [...pkg.files, "dist/unreviewed.js"] }, pkg.version));
   assert.throws(() => checkMetadata({ ...pkg, license: "UNLICENSED" }, pkg.version));
 });
@@ -80,7 +84,7 @@ test("SDK workflow source retains manual main review, environment approval, exac
     for (const [, action] of workflow.matchAll(/uses: (\S+)/g)) assert.match(action, /^actions\/[\w-]+@[a-f0-9]{40}$/);
   }
   assert.doesNotMatch(review, /id-token:|npm publish|secrets\./);
-  const privileged = publish.split("\n  publish:\n")[1];
+  const privileged = publish.split("\n  publish:\n")[1].split("\n  detached-provenance:\n")[0];
   assert.ok(privileged);
   assert.match(privileged, /environment: sdk-npm/);
   assert.match(privileged, /id-token: write/);
@@ -90,7 +94,43 @@ test("SDK workflow source retains manual main review, environment approval, exac
   assert.match(privileged, /test "\$\(npm --version\)" = '11\.12\.1'/);
   assert.match(privileged, /test -z "\$\{NODE_AUTH_TOKEN:-\}"/);
   assert.match(privileged, /test -z "\$\{NPM_TOKEN:-\}"/);
+  assert.match(privileged, /test -z "\$\{NPM_ID_TOKEN:-\}"/);
+  assert.match(privileged, /test -z "\$\{SIGSTORE_ID_TOKEN:-\}"/);
   assert.match(privileged, /--userconfig "\$RUNNER_TEMP\/sdk-publish-user\.npmrc" --globalconfig/);
   assert.match(privileged, /node sdk\/scripts\/verify-registry\.mjs sdk-release-review sdk-registry-evidence/);
   assert.doesNotMatch(privileged, /npm (?:ci|install|pack)|release-artifact\.mjs pack|secrets\./);
+});
+
+test("detached operation is explicit and does not change default OIDC or confirmation", () => {
+  checkDispatch({ ...env, RELEASE_OPERATION: "publish" }, pkg.version, true);
+  const detached = { ...env, GITHUB_RUN_ATTEMPT: "1", RELEASE_OPERATION: "detached-provenance", CONFIRMATION: `sign ${packageName}@${pkg.version}` };
+  checkDispatch(detached, pkg.version, true);
+  assert.throws(() => checkDispatch({ ...detached, CONFIRMATION: env.CONFIRMATION }, pkg.version, true));
+  assert.throws(() => checkDispatch({ ...env, RELEASE_OPERATION: "fallback" }, pkg.version, true));
+  assert.throws(() => checkDispatch({ ...detached, PUBLISH_ENABLED: "false" }, pkg.version, true));
+  assert.throws(() => checkDispatch({ ...detached, GITHUB_RUN_ATTEMPT: "2" }, pkg.version, true), /attempt 1/);
+  assert.throws(() => checkMetadata({ ...pkg, publishConfig: { ...pkg.publishConfig, provenance: false } }, pkg.version));
+  assert.throws(() => checkMetadata({ ...pkg, publishConfig: { ...pkg.publishConfig, provenance: true } }, pkg.version));
+  const workflow = readFileSync(new URL("../../.github/workflows/sdk-publish.yml", import.meta.url), "utf8");
+  assert.match(workflow, /default: publish/);
+  assert.match(workflow, /if: inputs\.operation == 'publish'/);
+  const sign = workflow.split("\n  detached-provenance:\n")[1];
+  for (const pattern of [/if: inputs\.operation == 'detached-provenance'/, /needs: verify/, /environment: sdk-npm/,
+    /id-token: write/, /release-policy\.mjs github publish/, /release-artifact\.mjs verify/, /sign-handoff\.mjs/,
+    /npm --prefix sdk ci --ignore-scripts/, /sdk-bootstrap-\$\{\{ inputs.version \}\}/]) assert.match(sign, pattern);
+  assert.doesNotMatch(sign, /npm (?:publish|stage)|release-artifact\.mjs pack|secrets\.|continue-on-error/);
+  assert.equal(pkg.publishConfig.provenance, undefined);
+  assert.match(pkg.scripts.prepublishOnly, /^node scripts\/release-intent\.mjs &&/);
+});
+
+test("both final external-action boundaries freshly recheck policy with the original downloaded review binding", () => {
+  const workflow = readFileSync(new URL("../../.github/workflows/sdk-publish.yml", import.meta.url), "utf8");
+  const direct = workflow.split("      - name: Publish exact reviewed bytes")[1].split("      - name: Verify registry bytes")[0];
+  assert.match(direct, /node sdk\/scripts\/release-policy\.mjs github publish\s+ npm publish/);
+  for (const key of ["GH_TOKEN", "REVIEW_RUN_ATTEMPT", "REVIEW_ARTIFACT_ID"]) assert.match(direct, new RegExp(`${key}:`));
+  const sign = workflow.split("      - name: Sign and cryptographically verify")[1].split("      - name: Retain signed handoff")[0];
+  for (const key of ["GH_TOKEN", "REVIEW_RUN_ATTEMPT", "REVIEW_ARTIFACT_ID"]) assert.match(sign, new RegExp(`${key}:`));
+  const helper = readFileSync(new URL("../scripts/sign-handoff.mjs", import.meta.url), "utf8");
+  assert.match(helper, /await checkReleaseBoundary\(env\);\s+const bundle = await attest/);
+  assert.doesNotMatch(workflow, /variables: read|secrets\./);
 });

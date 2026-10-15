@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { X509Certificate } from "node:crypto";
-import { packageName, repository } from "./artifact.mjs";
+import { packageName } from "./artifact.mjs";
+import { checkProvenance } from "./provenance.mjs";
 
 export function checkRegistryPackage(pkg, review) {
   assert.equal(pkg.name, packageName);
@@ -22,7 +22,7 @@ export function checkRegistryInstall(lock, review) {
 
 // Call ONLY on successful `npm audit signatures --json --include-attestations`
 // output. Parsing a DSSE payload alone is NOT cryptographic verification.
-export function checkSignatureAudit(audit, review) {
+export function checkSignatureAudit(audit, review, expectedSigning) {
   assert.deepEqual(audit.invalid, []);
   assert.deepEqual(audit.missing, []);
   assert.equal(audit.verified.length, 1, "One registry-installed SDK with verified attestations is required");
@@ -32,24 +32,8 @@ export function checkSignatureAudit(audit, review) {
   assert.equal(verified.registry, "https://registry.npmjs.org/");
   const provenance = verified.attestationBundles.filter((entry) => entry.predicateType === "https://slsa.dev/provenance/v1");
   assert.equal(provenance.length, 1, "A verified provenance attestation (not only publish attestation) is required");
-  const material = provenance[0].bundle.verificationMaterial;
-  const certificate = material.certificate?.rawBytes ?? material.x509CertificateChain?.certificates[0]?.rawBytes;
-  const signer = new X509Certificate(Buffer.from(certificate, "base64"));
-  assert.equal(signer.subjectAltName, `URI:https://github.com/${repository}/.github/workflows/sdk-publish.yml@refs/heads/main`,
-    "Verified signing certificate must identify the canonical main publish workflow");
-  const statement = JSON.parse(Buffer.from(provenance[0].bundle.dsseEnvelope.payload, "base64").toString("utf8"));
-  assert.equal(statement._type, "https://in-toto.io/Statement/v1");
-  assert.equal(statement.predicateType, provenance[0].predicateType);
-  assert.deepEqual(statement.subject, [{ name: `pkg:npm/%40lenslayer/agent-sdk@${review.version}`,
-    digest: { sha512: Buffer.from(review.integrity.slice("sha512-".length), "base64").toString("hex") } }]);
-  const build = statement.predicate.buildDefinition;
-  assert.equal(build.buildType, "https://slsa-framework.github.io/github-actions-buildtypes/workflow/v1");
-  assert.deepEqual(build.externalParameters.workflow, {
-    ref: "refs/heads/main", repository: `https://github.com/${repository}`, path: ".github/workflows/sdk-publish.yml",
-  });
-  assert.equal(build.internalParameters.github.event_name, "workflow_dispatch");
-  assert.deepEqual(build.resolvedDependencies, [{ uri: `git+https://github.com/${repository}@refs/heads/main`, digest: { gitCommit: review.sourceSha } }]);
-  assert.equal(statement.predicate.runDetails.builder.id, "https://github.com/actions/runner/github-hosted");
-  assert.match(statement.predicate.runDetails.metadata.invocationId,
-    /^https:\/\/github\.com\/udochukwu-echefu\/lenslayer\/actions\/runs\/[1-9]\d*\/attempts\/[1-9]\d*$/);
+  // npm's generic cryptographic audit retains raw JSON and does not enforce
+  // LensLayer identity. Shared strict oneof/version validation in this policy
+  // ensures its leaf is the SAME representation selected by the crypto parser.
+  checkProvenance(provenance[0].bundle, review, expectedSigning);
 }

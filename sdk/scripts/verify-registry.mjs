@@ -5,9 +5,15 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { digest, integrity, packageName } from "./artifact.mjs";
 import { checkRegistryInstall, checkRegistryPackage, checkSignatureAudit } from "./registry-check.mjs";
+import { invocation } from "./provenance.mjs";
 
 // Read-only registry verification, intended ONLY after an authorized publication.
 const review = JSON.parse(readFileSync(join(process.argv[2], "review.json")));
+// Owner-side first publication supplies the real CI SIGNING invocation, not a
+// fictitious CI upload. Actions direct publication uses its actual invocation.
+const signing = { runId: process.argv[4] || process.env.GITHUB_RUN_ID,
+  runAttempt: process.argv[5] || process.env.GITHUB_RUN_ATTEMPT };
+invocation(signing.runId, signing.runAttempt); // Fail before any registry request.
 assert.match(review.version, /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
 const metadata = await fetch(`https://registry.npmjs.org/@lenslayer%2fagent-sdk/${review.version}`, { redirect: "error", signal: AbortSignal.timeout(30000) });
 assert.equal(metadata.status, 200);
@@ -36,13 +42,14 @@ try {
   // Nonzero status (invalid/missing signatures, invalid attestations or network
   // failure) throws. Also require positive provenance evidence, not just exit 0.
   const audit = JSON.parse(execFileSync("npm", ["audit", "signatures", "--json", "--include-attestations", ...flags], options));
-  checkSignatureAudit(audit, review);
+  checkSignatureAudit(audit, review, signing);
   if (process.argv[3]) {
     const evidence = resolve(process.argv[3]);
     mkdirSync(evidence, { recursive: true });
     writeFileSync(join(evidence, "registry-verification.json"), `${JSON.stringify({
       name: packageName, version: review.version, sha256: review.sha256, integrity: review.integrity,
-      sourceSha: review.sourceSha, npm: execFileSync("npm", ["--version", ...flags], options).trim(), lock, audit,
+      sourceSha: review.sourceSha, signingRunId: signing.runId, signingRunAttempt: signing.runAttempt,
+      npm: execFileSync("npm", ["--version", ...flags], options).trim(), lock, audit,
     }, null, 2)}\n`);
   }
 } finally { rmSync(root, { recursive: true, force: true }); }

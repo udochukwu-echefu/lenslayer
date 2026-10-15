@@ -10,10 +10,15 @@ export function checkDispatch(env, version, publishing = false) {
   assert.match(env.GITHUB_SHA, /^[a-f0-9]{40}$/);
   assert.match(version, /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
   if (publishing) {
-    assert.equal(env.PUBLISH_ENABLED, "true", "Release owner must enable SDK_NPM_PUBLISH_ENABLED");
+    const operation = env.RELEASE_OPERATION || "publish";
+    assert.ok(["publish", "detached-provenance"].includes(operation), "Unknown release operation");
+    if (operation === "detached-provenance") {
+      assert.equal(env.GITHUB_RUN_ATTEMPT, "1", "Detached signing requires attempt 1; create a fresh workflow dispatch after any rerun");
+    }
+    assert.equal(env.PUBLISH_ENABLED, "true", "Release dispatch/job enable snapshot must be true; closure also requires disabling workflow and cancelling in-flight runs");
     assert.match(env.REVIEW_RUN_ID, /^[1-9]\d*$/);
     assert.match(env.EXPECTED_SHA256, /^[a-f0-9]{64}$/);
-    assert.equal(env.CONFIRMATION, `publish @lenslayer/agent-sdk@${version}`);
+    assert.equal(env.CONFIRMATION, `${operation === "publish" ? "publish" : "sign"} @lenslayer/agent-sdk@${version}`);
   }
 }
 
@@ -45,25 +50,64 @@ export function selectReviewArtifact(artifacts, env, attempt) {
   return matching[0].id;
 }
 
+export function checkLiveEnable(variable) {
+  // Owner-side managed gh may read this live variable. CI cannot: its existing
+  // GITHUB_TOKEN has no documented Variables:read capability.
+  assert.ok(variable && typeof variable === "object" && !Array.isArray(variable), "Live release switch must be a repository variable object");
+  assert.equal(variable.name, "SDK_NPM_PUBLISH_ENABLED", "Wrong live release switch");
+  assert.equal(variable.value, "true", "Owner has closed the live release window");
+}
+
+export function checkWorkflowEnabled(workflow) {
+  assert.ok(workflow && typeof workflow === "object" && !Array.isArray(workflow), "Self-workflow metadata must be an object");
+  assert.ok(Number.isSafeInteger(workflow.id) && workflow.id > 0, "Self-workflow ID missing or malformed");
+  assert.equal(workflow.path, ".github/workflows/sdk-publish.yml", "Wrong canonical self-workflow");
+  assert.equal(workflow.state, "active", "Release workflow is disabled or unavailable; no external release action permitted");
+}
+
+// Only the existing managed Actions token is used with documented Actions:read
+// and Contents:read resources. Repository-variable reads are intentionally NOT
+// allowed here: CI's enable flag is a snapshot, not a live revocation control.
+export async function releaseMetadata(path, env) {
+  assert.match(path, /^(?:actions\/workflows\/sdk-publish\.yml|git\/ref\/heads\/main|actions\/runs\/[1-9]\d*(?:\/artifacts\?per_page=100)?)$/);
+  assert.ok(typeof env.GH_TOKEN === "string" && env.GH_TOKEN.length > 0, "Managed GitHub metadata authentication unavailable");
+  const response = await fetch(`https://api.github.com/repos/${repository}/${path}`, {
+    method: "GET", redirect: "error", cache: "no-store", signal: AbortSignal.timeout(30000),
+    headers: { Authorization: `Bearer ${env.GH_TOKEN}`, Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28", "Cache-Control": "no-cache", Pragma: "no-cache" },
+  });
+  assert.equal(response.status, 200, "Release workflow/source metadata unreadable; no external release action permitted");
+  return response.json();
+}
+
+export async function checkReleaseBoundary(env) {
+  checkDispatch(env, env.EXPECTED_VERSION, true);
+  // Fresh Actions:read workflow-state observation, not a fresh variable read.
+  // Disabling the workflow must be accompanied by owner cancellation of all
+  // in-flight runs. Neither this GET nor a snapshot locks or revokes an action.
+  checkWorkflowEnabled(await releaseMetadata("actions/workflows/sdk-publish.yml", env));
+  const tagSha = execFileSync("git", ["rev-parse", `refs/tags/sdk-v${env.EXPECTED_VERSION}^{commit}`], { encoding: "utf8" }).trim();
+  assert.equal(tagSha, env.GITHUB_SHA, "Release tag must bind the reviewed main commit");
+  checkCurrentMain(await releaseMetadata("git/ref/heads/main", env), env);
+  const run = await releaseMetadata(`actions/runs/${env.REVIEW_RUN_ID}`, env);
+  checkReviewRun(run, env);
+  const artifacts = await releaseMetadata(`actions/runs/${env.REVIEW_RUN_ID}/artifacts?per_page=100`, env);
+  const artifactId = selectReviewArtifact(artifacts.artifacts, env, run.run_attempt);
+  // At the final boundary, bind the just-rechecked review to the already
+  // downloaded bundle, rather than silently switching to a new review attempt.
+  if (env.REVIEW_RUN_ATTEMPT !== undefined) assert.equal(String(run.run_attempt), env.REVIEW_RUN_ATTEMPT, "Review attempt changed after download");
+  if (env.REVIEW_ARTIFACT_ID !== undefined) assert.equal(String(artifactId), env.REVIEW_ARTIFACT_ID, "Review artifact changed after download");
+  checkCurrentMain(await releaseMetadata("git/ref/heads/main", env), env);
+  checkWorkflowEnabled(await releaseMetadata("actions/workflows/sdk-publish.yml", env));
+  return { artifactId, reviewRunAttempt: run.run_attempt };
+}
+
 if (process.argv[2] === "github") {
   const env = process.env;
   const publishing = process.argv[3] === "publish";
   checkDispatch(env, env.EXPECTED_VERSION, publishing);
   if (publishing) {
-    const tagSha = execFileSync("git", ["rev-parse", `refs/tags/sdk-v${env.EXPECTED_VERSION}^{commit}`], { encoding: "utf8" }).trim();
-    assert.equal(tagSha, env.GITHUB_SHA, "Release tag must bind the reviewed main commit");
-    const get = async (path) => {
-      const response = await fetch(`https://api.github.com/repos/${repository}/${path}`, {
-        headers: { Authorization: `Bearer ${env.GH_TOKEN}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" },
-      });
-      assert.equal(response.status, 200, "Release metadata unavailable");
-      return response.json();
-    };
-    checkCurrentMain(await get("git/ref/heads/main"), env);
-    const run = await get(`actions/runs/${env.REVIEW_RUN_ID}`);
-    checkReviewRun(run, env);
-    const artifacts = await get(`actions/runs/${env.REVIEW_RUN_ID}/artifacts?per_page=100`);
-    const artifactId = selectReviewArtifact(artifacts.artifacts, env, run.run_attempt);
-    appendFileSync(env.GITHUB_OUTPUT, `artifact_id=${artifactId}\nreview_run_attempt=${run.run_attempt}\n`);
+    const { artifactId, reviewRunAttempt } = await checkReleaseBoundary(env);
+    appendFileSync(env.GITHUB_OUTPUT, `artifact_id=${artifactId}\nreview_run_attempt=${reviewRunAttempt}\n`);
   }
 }
