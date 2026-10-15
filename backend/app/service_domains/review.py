@@ -9,6 +9,7 @@ from sqlalchemy import select
 
 from ..models import ContractVersion, User
 from .common import json_load, safe_filename
+from ..source_retention import require_source_available
 
 
 class ReviewServiceMixin:
@@ -19,6 +20,7 @@ class ReviewServiceMixin:
         user: User,
     ) -> tuple[bytes, str]:
         contract = self.contracts.get_contract(organization_id, contract_id, user)
+        require_source_available(contract)
         review = self.contracts.get_review(organization_id, contract_id, user)
         version = self.session.scalar(select(ContractVersion).where(
             ContractVersion.organization_id == organization_id,
@@ -49,6 +51,8 @@ class ReviewServiceMixin:
         user: User,
         question: str,
     ) -> tuple[str, list[dict[str, str]], str]:
+        contract = self.contracts.get_contract(organization_id, contract_id, user)
+        require_source_available(contract)
         review = self.contracts.get_review(organization_id, contract_id, user)
         source_text = (review.source_text or "").strip()
         if not source_text:

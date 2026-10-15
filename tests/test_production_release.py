@@ -43,6 +43,7 @@ class ProductionReleaseTests(unittest.TestCase):
             self.assertTrue(plan["renders_only"])
             self.assertTrue(commands["migrate-with-recovery-point"]["requires_verified_backup"])
             self.assertTrue(commands["migrate-with-recovery-point"]["requires_staging_acceptance"])
+            self.assertTrue(commands["migrate-with-recovery-point"]["requires_migration_path_review"])
             self.assertTrue(commands["activate-queue"]["requires_private_worker_acceptance"])
             self.assertTrue(commands["switch-api-after-health-and-oidc"]["requires_exact_release_revision"])
             self.assertTrue(commands["switch-api-after-health-and-oidc"]["requires_oidc_acceptance"])
@@ -80,13 +81,72 @@ class ProductionReleaseTests(unittest.TestCase):
         for origin in ["https://lenslayer-agent-worker-staging-th7nw37zha-ew.a.run.app",
                        "https://lenslayer-agent-worker-fake.run.app.attacker.invalid",
                        "https://secret@lenslayer-agent-worker-th7nw37zha-ew.a.run.app",
-                       "https://lenslayer-agent-worker-th7nw37zha-ew.a.run.app/?key=secret"]:
+                       "https://lenslayer-agent-worker-th7nw37zha-ew.a.run.app/?key=secret",
+                       "https://lenslayer-agent-worker-th7nw37zha-ew.a.run.app:8443",
+                       "https://lenslayer-agent-worker-th7nw37zha-ew.a.run.app:443",
+                       "https://lenslayer-agent-worker-th7nw37zha-ew.a.run.app:",
+                       ""]:
             with self.subTest(origin=origin), tempfile.TemporaryDirectory() as temp:
                 with self.assertRaises(ValueError):
                     release.render_plan(self.config, Path(temp), "a" * 40, worker_origin=origin)
         with tempfile.TemporaryDirectory() as temp:
             with self.assertRaises(ValueError):
                 release.render_plan(self.config, Path(temp), "a" * 40, digest="latest")
+
+    def test_existing_queue_is_parked_then_reconciled_not_assumed_bounded(self):
+        with tempfile.TemporaryDirectory() as temp:
+            plan = release.render_plan(self.config, Path(temp), "a" * 40)
+        commands = {c["id"]: c for c in plan["commands"]}
+        ids = [c["id"] for c in plan["commands"]]
+        self.assertLess(ids.index("park-queue-before-rollout"), ids.index("update-existing-bounded-queue"))
+        update = commands["update-existing-bounded-queue"]
+        self.assertTrue(update["requires_paused_queue"])
+        self.assertNotIn("skip_if_exists", update)
+        for flag in ["--max-concurrent-dispatches=1", "--max-dispatches-per-second=1",
+                     "--max-attempts=8", "--min-backoff=10s", "--max-backoff=300s", "--max-retry-duration=86400s"]:
+            self.assertIn(flag, update["argv"])
+        self.assertNotIn("resume", update["argv"])
+
+    def test_existing_recovery_is_retargeted_and_reviewed_before_explicit_activation(self):
+        origin = "https://lenslayer-agent-worker-th7nw37zha-ew.a.run.app"
+        with tempfile.TemporaryDirectory() as temp:
+            plan = release.render_plan(self.config, Path(temp), "a" * 40, "sha256:" + "b" * 64, origin)
+        commands = {c["id"]: c for c in plan["commands"]}
+        update = commands["update-existing-hourly-recovery"]
+        self.assertTrue(update["requires_existing_recovery_review"])
+        self.assertNotIn("skip_if_exists", update)
+        for flag in ["--uri=" + origin + "/recover", "--oidc-token-audience=" + origin,
+                     "--oidc-service-account-email=lenslayer-agent-wake@lenslayer.iam.gserviceaccount.com",
+                     "--schedule=0 * * * *", "--time-zone=Africa/Lagos", "--http-method=POST", "--attempt-deadline=300s"]:
+            self.assertIn(flag, update["argv"])
+        self.assertTrue(commands["activate-reviewed-recovery"]["requires_recovery_target_readback"])
+        self.assertTrue(commands["activate-reviewed-recovery"]["skip_if_enabled"])
+        ids = list(commands)
+        self.assertLess(ids.index("update-existing-hourly-recovery"), ids.index("activate-reviewed-recovery"))
+        for command in plan["commands"]:
+            if command["phase"] == "activate":
+                self.assertTrue(command["requires_authorized_activation"])
+            else:
+                self.assertNotIn("resume", command["argv"])
+
+    def test_frozen_plan_records_versions_and_one_digest_for_every_runtime(self):
+        digest = "sha256:" + "b" * 64
+        with tempfile.TemporaryDirectory() as temp:
+            plan = release.render_plan(self.config, Path(temp), "a" * 40, digest)
+        self.assertEqual(plan["secret_versions"], self.config["secret_versions"])
+        images = [arg for c in plan["commands"] for arg in c["argv"] if arg.startswith("--image=")]
+        self.assertEqual(len(images), 5)
+        self.assertEqual(set(images), {"--image=" + plan["image"]})
+        self.assertTrue(plan["image"].endswith("@" + digest))
+
+    def test_root_slash_is_normalized_without_changing_worker_audience(self):
+        origin = "https://lenslayer-agent-worker-th7nw37zha-ew.a.run.app"
+        with tempfile.TemporaryDirectory() as temp:
+            plan = release.render_plan(self.config, Path(temp), "a" * 40, worker_origin=origin + "/")
+        self.assertEqual(plan["worker_origin"], origin)
+        recovery = next(c for c in plan["commands"] if c["id"] == "update-existing-hourly-recovery")
+        self.assertIn("--uri=" + origin + "/recover", recovery["argv"])
+        self.assertIn("--oidc-token-audience=" + origin, recovery["argv"])
 
 
 if __name__ == "__main__":

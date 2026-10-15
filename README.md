@@ -105,6 +105,16 @@ Run `make check` from the repository root after installing Python dependencies a
 running `npm ci` in `dashboard`, `landing`, `sdk`, `mcp`, and `hosted-agent`.
 The PostgreSQL tests require explicit disposable-database opt-in; skipped tests
 are not PostgreSQL validation. See the operations guide and `make check-agent-postgres`.
+Production-lineage tests use the two non-secret, source-bound inputs in
+`tests/fixtures/production-migration/`; no private root-level migration-history
+directory is required. See [lineage review](docs/deployment/production-migration-lineage.md)
+for the supported DAG and [retention review](docs/deployment/source-retention-review.md)
+for the separately qualified runtime behavior. Historical/private audit patches
+are not fixture or production build inputs.
+The focused combined runner is `scripts/test-code-complete-local.py` (optional
+`--postgres` creates its own disposable local cluster). Final local integration
+results and exact-byte limits are recorded in `CODE-COMPLETE.md`; no live release
+or registry availability is implied.
 Individual commands:
 
 ```bash

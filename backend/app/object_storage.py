@@ -55,6 +55,7 @@ class S3ObjectStore:
     def __init__(self, settings: Settings):
         try:
             import boto3
+            from botocore.config import Config
         except ImportError as exc:
             raise RuntimeError("Install boto3 to use S3-compatible object storage.") from exc
         self.bucket = settings.s3_bucket
@@ -64,6 +65,9 @@ class S3ObjectStore:
             region_name=settings.s3_region,
             aws_access_key_id=settings.s3_access_key_id or None,
             aws_secret_access_key=settings.s3_secret_access_key or None,
+            # Keep per-asset deletion locks bounded by SDK I/O timeouts; durable
+            # purge_pending state, rather than opaque SDK retries, owns retries.
+            config=Config(connect_timeout=5, read_timeout=10, retries={"total_max_attempts": 1}),
         )
 
     def put(self, key: str, data: bytes, content_type: str) -> None:

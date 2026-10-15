@@ -68,6 +68,7 @@ export async function checkLiveHandoff(handoff, review, get = githubGet) {
   assert.equal(String(latestSigning.workflow_runs[0].id), handoff.signingRunId, "A newer release dispatch superseded the handoff");
   assert.equal(String(latestReview.workflow_runs[0].id), review.runId, "A newer review dispatch requires renewed review");
   assert.equal(environment.name, "sdk-npm");
+  assert.equal(environment.can_admins_bypass, false, "Environment admin bypass must be explicitly disabled");
   assert.deepEqual(environment.deployment_branch_policy, { protected_branches: false, custom_branch_policies: true });
   assert.equal(branches.total_count, 1);
   assert.equal(branches.branch_policies.length, 1);

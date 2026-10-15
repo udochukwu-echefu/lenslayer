@@ -10,7 +10,7 @@ from collections.abc import Callable
 from datetime import timedelta
 from pathlib import Path
 
-from sqlalchemy import and_, delete, or_, select
+from sqlalchemy import and_, delete, or_, select, update
 
 from .config import Settings, get_settings
 from .agent_runtime import claim_next_agent_action, expire_agent_runs, process_agent_action
@@ -42,9 +42,14 @@ from .models import (
 )
 from .object_storage import ObjectStore, build_object_store
 from .service_domains.common import json_dump, json_load
+from .webhook_delivery import send_webhook
+from .source_retention import (delete_pending_sources, purge_expired_sources,
+                               serialize_sqlite_maintenance, source_expired)
 
 
 logger = logging.getLogger(__name__)
+WEBHOOK_MAX_ATTEMPTS = 5
+WEBHOOK_RETRY_SECONDS = 300
 
 
 def public_review_error(exc: Exception) -> str:
@@ -105,7 +110,8 @@ def claim_next_email(database: Database, settings: Settings) -> str | None:
             select(EmailDelivery)
             .where(
                 or_(
-                    EmailDelivery.status.in_(["pending", "failed"]),
+                    EmailDelivery.status == "pending",
+                    and_(EmailDelivery.status == "failed", EmailDelivery.updated_at < utcnow() - timedelta(seconds=300)),
                     and_(EmailDelivery.status == "sending", EmailDelivery.updated_at < stale_before),
                 ),
                 EmailDelivery.attempts < settings.email_max_attempts,
@@ -135,13 +141,15 @@ def process_email(database: Database, settings: Settings, delivery_id: str) -> N
             delivery.provider_message_id = message_id
             delivery.last_error = ""
             delivery.sent_at = utcnow()
+            if delivery.kind == "invitation_created":
+                delivery.text_body = delivery.html_body = delivery.action_url = ""
             session.commit()
     except Exception as exc:
         with database.session_factory() as session:
             delivery = session.get(EmailDelivery, delivery_id)
             if delivery is not None:
                 delivery.status = "failed"
-                delivery.last_error = str(exc)[:2000]
+                delivery.last_error = "email_delivery_failed"
                 session.commit()
 
 
@@ -167,8 +175,74 @@ def enqueue_webhook_deliveries(session, organization_id: str, event_type: str, c
         )
 
 
+def claim_next_webhook(database: Database) -> tuple[str, int] | None:
+    with database.session_factory() as session:
+        retry_before = utcnow() - timedelta(seconds=WEBHOOK_RETRY_SECONDS)
+        query = (select(WebhookDelivery).join(WebhookSubscription).where(
+            WebhookSubscription.status == "active",
+            WebhookDelivery.attempts < WEBHOOK_MAX_ATTEMPTS,
+            or_(WebhookDelivery.status == "pending",
+                and_(WebhookDelivery.status.in_(["failed", "sending"]), WebhookDelivery.updated_at < retry_before)),
+        ).order_by(WebhookDelivery.created_at.asc()).limit(1))
+        if database.engine.dialect.name == "postgresql":
+            query = query.with_for_update(skip_locked=True, of=WebhookDelivery)
+        delivery = session.scalar(query)
+        if delivery is None:
+            return None
+        identifier, attempt = delivery.id, delivery.attempts + 1
+        # The conditional increment also fences competing SQLite/nonlocking
+        # claimers. PostgreSQL retains its existing SKIP LOCKED claim behavior.
+        changed = session.execute(update(WebhookDelivery).where(
+            WebhookDelivery.id == identifier,
+            WebhookDelivery.status == delivery.status,
+            WebhookDelivery.attempts == delivery.attempts,
+        ).values(status="sending", attempts=attempt, updated_at=utcnow())
+            .execution_options(synchronize_session=False)).rowcount
+        session.commit()
+        return (identifier, attempt) if changed == 1 else None
+
+
+def process_webhook(database: Database, delivery_id: str, claimed_attempt: int) -> None:
+    if type(claimed_attempt) is not int or not 1 <= claimed_attempt <= WEBHOOK_MAX_ATTEMPTS:
+        return
+    with database.session_factory() as session:
+        delivery = session.get(WebhookDelivery, delivery_id)
+        if delivery is None or delivery.status != "sending" or delivery.attempts != claimed_attempt:
+            return
+        subscription = delivery.subscription
+        subscription_id = subscription.id
+        outbound = None
+        if subscription.status != "active":
+            result = {"status": "cancelled", "last_error": "webhook_revoked"}
+        elif not subscription.signing_secret:
+            result = {"status": "failed", "last_error": "webhook_signing_secret_missing"}
+        else:
+            outbound = (subscription.target_url, subscription.signing_secret, delivery.event_type,
+                        delivery.id, delivery.payload_json.encode("utf-8"))
+    # No transaction or mutable ORM snapshot spans the external request. This is
+    # at-least-once delivery: a response loss may still require a same-ID retry.
+    if outbound is not None:
+        try:
+            send_webhook(*outbound)
+        except Exception:
+            # Never persist provider response text, URLs, headers or secrets.
+            result = {"status": "failed", "last_error": "webhook_delivery_failed"}
+        else:
+            result = {"status": "delivered", "last_error": "", "delivered_at": utcnow()}
+    with database.session_factory() as session:
+        changed = session.execute(update(WebhookDelivery).where(
+            WebhookDelivery.id == delivery_id, WebhookDelivery.status == "sending",
+            WebhookDelivery.attempts == claimed_attempt,
+        ).values(**result).execution_options(synchronize_session=False)).rowcount
+        if changed == 1 and result["status"] == "delivered":
+            session.execute(update(WebhookSubscription).where(WebhookSubscription.id == subscription_id)
+                            .values(last_delivery_at=result["delivered_at"]))
+        session.commit()
+
+
 def claim_next_job(database: Database, settings: Settings) -> str | None:
     with database.session_factory() as session:
+        serialize_sqlite_maintenance(session, database)
         stale_before = utcnow() - timedelta(seconds=settings.worker_lease_seconds)
         query = (
             select(ProcessingJob)
@@ -196,42 +270,19 @@ def claim_next_job(database: Database, settings: Settings) -> str | None:
 
 
 def purge_expired_contracts(database: Database, object_store: ObjectStore) -> int:
-    keys: list[str] = []
-    with database.session_factory() as session:
-        contracts = list(
-            session.scalars(
-                select(Contract).where(
-                    Contract.expires_at.is_not(None),
-                    Contract.expires_at <= utcnow(),
-                )
-            ).all()
-        )
-        for contract in contracts:
-            keys.extend(asset.storage_key for asset in contract.assets)
-            session.add(
-                PlatformAuditEvent(
-                    organization_id=contract.organization_id,
-                    actor_user_id=None,
-                    contract_id=None,
-                    action="contract.expired",
-                    detail_json=json_dump({"contract_id": contract.id, "title": contract.title}),
-                )
-            )
-            session.delete(contract)
-        session.commit()
-    for key in keys:
-        object_store.delete(key)
-    return len(contracts)
+    return purge_expired_sources(database, object_store)
 
 
 def process_lifecycle_reminders(database: Database, settings: Settings) -> int:
     now = utcnow()
     created = 0
     with database.session_factory() as session:
+        serialize_sqlite_maintenance(session, database)
+        query = select(LifecycleItem).where(LifecycleItem.status == "active").order_by(LifecycleItem.id)
+        if database.engine.dialect.name == "postgresql":
+            query = query.with_for_update(skip_locked=True)
         items = list(
-            session.scalars(
-                select(LifecycleItem).where(LifecycleItem.status == "active")
-            ).all()
+            session.scalars(query).all()
         )
         for item in items:
             due_at = item.due_at if item.due_at.tzinfo else item.due_at.replace(tzinfo=now.tzinfo)
@@ -320,15 +371,21 @@ def process_job(
     temp_path: str | None = None
     storage_key = ""
     retain_document = True
+    claimed_started_at = None
     try:
         with database.session_factory() as session:
             job = session.get(ProcessingJob, job_id)
             if job is None:
                 return
+            if job.status != "running":
+                return
+            claimed_started_at = job.started_at
             contract = session.get(Contract, job.contract_id)
             asset = session.get(DocumentAsset, job.document_asset_id)
             if contract is None or asset is None:
                 raise RuntimeError("The queued job references a missing contract or document.")
+            if source_expired(contract) or asset.status != "available":
+                return
             storage_key = asset.storage_key
             retain_document = contract.retain_document
             data = object_store.get(storage_key)
@@ -344,7 +401,7 @@ def process_job(
 
         with database.session_factory() as session:
             job = session.get(ProcessingJob, job_id)
-            if job is None:
+            if job is None or job.status != "running" or job.started_at != claimed_started_at:
                 return
             job.progress_step = "Analysing clauses and obligations"
             session.commit()
@@ -354,18 +411,22 @@ def process_job(
             contract = session.get(Contract, job.contract_id) if job else None
             if job is None or contract is None:
                 return
+            if job.status != "running" or job.started_at != claimed_started_at or source_expired(contract):
+                return
             context = json.loads(contract.review_context_json or "{}")
 
         report = workflow.analyze_contract(full_text, context)
 
-        if not retain_document:
-            object_store.delete(storage_key)
-
         with database.session_factory() as session:
+            serialize_sqlite_maintenance(session, database)
             job = session.get(ProcessingJob, job_id)
-            contract = session.get(Contract, job.contract_id) if job else None
+            contract = session.scalar(select(Contract).where(Contract.id == job.contract_id).with_for_update()) if job else None
             asset = session.get(DocumentAsset, job.document_asset_id) if job else None
             if job is None or contract is None or asset is None:
+                return
+            session.refresh(job)
+            if (job.status != "running" or job.started_at != claimed_started_at
+                    or source_expired(contract) or asset.status != "available"):
                 return
             review = session.scalar(select(ContractReview).where(ContractReview.contract_id == contract.id))
             if review is None:
@@ -391,7 +452,7 @@ def process_job(
             job.progress_step = "Review ready"
             job.completed_at = utcnow()
             if not retain_document:
-                asset.status = "deleted"
+                asset.status = "purge_pending"
             import_record = session.scalar(select(IntegrationImport).where(IntegrationImport.contract_id == contract.id))
             if import_record is not None:
                 import_record.status = "ready"
@@ -436,15 +497,47 @@ def process_job(
                         action_url=f"/contracts/{contract.id}",
                     )
             if not contract.retain_document:
-                asset.status = "deleted"
+                asset.status = "purge_pending"
             session.commit()
+        if not retain_document:
+            delete_pending_sources(database, object_store, asset_ids=[asset.id])
 
     except Exception as exc:
-        logger.exception("Review job %s failed", job_id)
+        logger.error("Review job failed; provider details omitted.", extra={"job_id": job_id})
         public_error = public_review_error(exc)
         with database.session_factory() as session:
+            serialize_sqlite_maintenance(session, database)
             job = session.get(ProcessingJob, job_id)
-            contract = session.get(Contract, job.contract_id) if job else None
+            contract = session.scalar(select(Contract).where(Contract.id == job.contract_id).with_for_update()) if job else None
+            if job is not None:
+                session.refresh(job)
+            if job is None or job.status != "running" or job.started_at != claimed_started_at:
+                return
+            if contract is None:
+                return
+            asset = session.get(DocumentAsset, job.document_asset_id)
+            expired = source_expired(contract)
+            if expired or asset is None or asset.status != "available":
+                # Mirror the success boundary before any ordinary failure effects.
+                # Claim changes remain a no-op; a current but unusable source is
+                # terminal, without restoring source or consuming deletion intent.
+                reason = ("The source retention deadline has elapsed." if expired
+                          else "The source document is no longer available.")
+                job.status = "failed"
+                job.progress_step = "Source retention expired" if expired else "Source unavailable"
+                job.error_code = "SourceRetentionExpired" if expired else "SourceUnavailable"
+                job.error_message = reason
+                job.completed_at = utcnow()
+                if contract.status == "processing":
+                    contract.status = "failed"
+                    contract.updated_at = utcnow()
+                    import_record = session.scalar(select(IntegrationImport).where(IntegrationImport.contract_id == contract.id))
+                    if import_record is not None:
+                        import_record.status = "failed"
+                        import_record.error_message = reason
+                        import_record.updated_at = utcnow()
+                session.commit()
+                return
             if job:
                 job.status = "failed"
                 job.progress_step = "Review failed"
@@ -581,13 +674,16 @@ def run_worker(
             email_id = None if agents_only else claim_next_email(database, settings)
             if email_id:
                 process_email(database, settings, email_id)
+            webhook_claim = None if agents_only else claim_next_webhook(database)
+            if webhook_claim:
+                process_webhook(database, *webhook_claim)
             if once:
                 return
-            if drain and not job_id and not email_id and not agent_claim and not hosted_claim and not expired_runs and not expired_context:
+            if drain and not job_id and not email_id and not webhook_claim and not agent_claim and not hosted_claim and not expired_runs and not expired_context:
                 return
             if drain:
                 continue
-            if not job_id and not email_id and not agent_claim and not hosted_claim:
+            if not job_id and not email_id and not webhook_claim and not agent_claim and not hosted_claim:
                 time.sleep(settings.worker_poll_seconds)
     finally:
         database.dispose()

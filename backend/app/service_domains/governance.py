@@ -36,6 +36,7 @@ from ..schemas import (
     ReportWorkloadItem,
 )
 from .common import aware, json_dump, json_load, normalized_role
+from ..source_retention import source_expired
 
 
 class GovernanceServiceMixin:
@@ -85,7 +86,7 @@ class GovernanceServiceMixin:
             PortfolioDocument(
                 contract_id=contract.id,
                 title=contract.title,
-                text=review.source_text or json_dump(json_load(review.analysis_json, {})),
+                text=(review.source_text if not source_expired(contract) else None) or json_dump(json_load(review.analysis_json, {})),
             )
             for contract, review in reviews
         ]

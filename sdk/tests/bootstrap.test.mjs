@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { execFileSync } from "node:child_process";
-import { chmodSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { bootstrapFixture } from "./bootstrap-fixtures.mjs";
 import { readHandoff, checkHandoff, handoffLifetimeMs, makeHandoff } from "../scripts/handoff.mjs";
 import { checkLiveHandoff, checkSigningRun, githubGet } from "../scripts/github-read.mjs";
@@ -130,6 +132,9 @@ test("actual REST-policy bindings reject moved main/tag, disabled enable, wrong/
     (m) => { m["actions/runs/99/approvals"][0].state = "rejected"; },
     (m) => { m["actions/runs/99/approvals"][0].user.login = "not-owner"; },
     (m) => { m["environments/sdk-npm"].protection_rules = []; },
+    (m) => { m["environments/sdk-npm"].can_admins_bypass = true; },
+    (m) => { delete m["environments/sdk-npm"].can_admins_bypass; },
+    (m) => { m["environments/sdk-npm"].can_admins_bypass = "false"; },
     (m) => { m["environments/sdk-npm"].deployment_branch_policy = null; },
     (m) => { m["environments/sdk-npm/deployment-branch-policies?per_page=100"].branch_policies[0].name = "*"; },
     (m) => { m[`git/ref/tags/sdk-v${f.review.version}`].object.sha = "b".repeat(40); },
@@ -234,9 +239,16 @@ test("signing context fails outside actual approved canonical workflow; pure dat
 
 test("source publish intent refuses missing/false/file-only provenance instead of unsigned default", () => {
   const script = new URL("../scripts/release-intent.mjs", import.meta.url);
-  const run = (env) => execFileSync(process.execPath, [script.pathname], { env, stdio: "pipe" });
-  run({ npm_config_provenance: "true" });
-  assert.throws(() => run({}));
-  assert.throws(() => run({ npm_config_provenance: "false" }));
-  assert.throws(() => run({ npm_config_provenance_file: "placeholder.sigstore.json" }));
+  const root = mkdtempSync(join(tmpdir(), "sdk release intent with spaces "));
+  try {
+    const spaced = join(root, "release intent.mjs");
+    writeFileSync(spaced, readFileSync(script));
+    for (const url of [script, pathToFileURL(spaced)]) {
+      const run = (env) => execFileSync(process.execPath, [fileURLToPath(url)], { env, stdio: "pipe" });
+      run({ npm_config_provenance: "true" });
+      assert.throws(() => run({}));
+      assert.throws(() => run({ npm_config_provenance: "false" }));
+      assert.throws(() => run({ npm_config_provenance_file: "placeholder.sigstore.json" }));
+    }
+  } finally { rmSync(root, { recursive: true, force: true }); }
 });

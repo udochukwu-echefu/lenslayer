@@ -78,7 +78,7 @@ export function bootstrapFixture() {
     "actions/workflows/sdk-publish.yml/runs?event=workflow_dispatch&branch=main&per_page=100": { workflow_runs: [run] },
     "actions/workflows/sdk-release-review.yml/runs?event=workflow_dispatch&branch=main&per_page=100": { workflow_runs: [{ id: 42 }] },
     "actions/runs/99/approvals": [{ state: "approved", environments: [{ id: 7, name: "sdk-npm" }], user: { login: "udochukwu-echefu" } }],
-    "environments/sdk-npm": { id: 7, name: "sdk-npm", deployment_branch_policy: { protected_branches: false, custom_branch_policies: true },
+    "environments/sdk-npm": { id: 7, name: "sdk-npm", can_admins_bypass: false, deployment_branch_policy: { protected_branches: false, custom_branch_policies: true },
       protection_rules: [{ type: "required_reviewers", reviewers: [{ type: "User", reviewer: { login: "udochukwu-echefu" } }] }] },
     "environments/sdk-npm/deployment-branch-policies?per_page=100": { total_count: 1, branch_policies: [{ name: "main", type: "branch" }] },
     [`git/ref/tags/sdk-v${review.version}`]: { ref: `refs/tags/sdk-v${review.version}`, object: { type: "commit", sha: review.sourceSha } },

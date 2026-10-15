@@ -47,13 +47,18 @@ and failed recovery rather than claiming guaranteed immediate execution.
 
 Set `LENSLAYER_PLATFORM_AGENT_WORKER_MODE=on_demand`, the canonical private
 `_AGENT_WORKER_URL`, full `_AGENT_WORKER_QUEUE`, and `_AGENT_WORKER_INVOKER_EMAIL`.
-The production build's first step refuses an unresolved/staging target, a paused
+The legacy `deploy/gcp/cloudbuild.yaml` pipeline's first step refuses an unresolved/staging target, a paused
 or unbounded queue, missing/paused/misdirected recovery, public worker invocation,
 or an idle CPU/minimum-instance configuration. Provision and review these resources
 before running the pipeline. The build updates hourly recovery before switching
 the API. Use the [staging renderer](../../scripts/prepare-staging.py) to prepare
 pinned, separate staging commands; bootstrap the private service only to resolve
 its URL, then regenerate the plan with its actual URL before activation.
+Those active-queue prerequisites are not permission to unpause production. Use
+the separate build-only pipeline and individually gated
+[production preflight](production-release-preflight.md); keep dispatch/recovery
+paused through review, backup/restore, migration and private acceptance. The
+renderer executes nothing; gate labels do not enforce authorization.
 
 Private invocation requires both a narrow IAM policy and an enabled Cloud Run
 Invoker IAM check. The service-level `run.googleapis.com/invoker-iam-disabled`
@@ -215,6 +220,22 @@ tables and columns before accepting the new revision. Preserve ledger data and
 backups before applying either migration. The two spent-budget tables deliberately
 survive downgrade/reupgrade; rolling back source does not refund paid calls.
 
+The subsequent candidate `c7a4e9d2b630` merges that staging history with recovered
+production revision `6b1d3e8f2c57`, preserving the original webhook signing key and
+member email-preference columns. It is **forward-only**, not deployed or PG18.6
+clone-qualified. See [lineage/compatibility review](production-migration-lineage.md).
+The bounded document job now also contains signed webhook delivery; the private
+agents-only HTTP worker still must never send document email/webhooks or idle poll.
+
+The subsequent [source-retention follow-up](source-retention-review.md) preserves
+contracts and ledgers at expiry and commits per-asset `purge_pending` deletion
+intent before object I/O. Only `purged` acknowledges object deletion; failures
+remain retryable on the next authorized bounded maintenance invocation. Do not
+clear expired deadlines or treat the audit event as proof of physical erasure.
+No new migration/head, scheduler or idle polling. This runtime source needs
+independent review/exact-image PG18.6 qualification; historical migration34+5 and
+staging-image evidence do not qualify it automatically.
+
 Use `scripts/prepare-production.py` to render the immutable source/digest release
 plan, with private acceptance and traffic promotion as separate steps. It does
 not deploy or migrate. `scripts/prepare-agent-monitoring.py` renders five policies
@@ -222,7 +243,9 @@ per environment: worker HTTP failures, ledger attention/unavailability, hourly
 recovery failure, post-commit wake enqueue failure and at least three unsuccessful
 Cloud Tasks attempts within fifteen minutes. It ignores ordinary future timers
 and human approval waits. Policies stay disabled until an approved notification
-channel is supplied; inspect existing names before creating duplicates.
+channel is supplied; inspect existing names before creating duplicates. This is
+the renderer default, not current live status: saved acceptance records ten
+enabled policies and actual receipt of the staging ledger-attention alert only.
 
 Worker health observations are emitted before recovery/draining and again after
 runnable work drains and enqueues successfully, within the existing request.

@@ -37,3 +37,13 @@ production IAM scope. The user then approved all three grants in the table.
 The queue-enqueue and invocation-identity-use grants have been applied. The
 worker-invocation grant will be applied to the private service after it is
 created. The queue remains paused pending acceptance.
+
+The [production preflight](production-release-preflight.md) records frozen-image/
+secret-reference checks, parked-state commands and an isolated PG18.6 restore
+rehearsal. The approved worker Invoker grant is resource-blocked, not awaiting
+renewed broad IAM approval. Deployment/activation remain separate review gates.
+Production schema `6b1d3e8f2c57` has now been recovered unchanged and joined to
+staging by candidate merge `c7a4e9d2b630`. See the
+[lineage review](production-migration-lineage.md). Do not migrate until root
+reviews the candidate and qualifies the exact image on the approved PG18.6
+recovery clone. Never stamp or downgrade to bypass review.

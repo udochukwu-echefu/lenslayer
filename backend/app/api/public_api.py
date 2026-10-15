@@ -118,6 +118,15 @@ def revoke_webhook(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
+@router.post("/organizations/{organization_id}/webhooks/{webhook_id}/rotate-secret",
+             response_model=WebhookSubscriptionCreatedResponse, tags=["webhooks"])
+def rotate_webhook_secret(organization_id: str, webhook_id: str, service: ServiceDep,
+                          user: UserDep) -> WebhookSubscriptionCreatedResponse:
+    webhook, secret = service.rotate_webhook_secret(organization_id, webhook_id, user)
+    return WebhookSubscriptionCreatedResponse(subscription=service.webhook_subscription_response(webhook),
+                                               signing_secret=secret)
+
+
 @router.get(
     "/organizations/{organization_id}/webhook-deliveries",
     response_model=list[WebhookDeliveryResponse],

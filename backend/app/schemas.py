@@ -81,6 +81,10 @@ class MembershipResponse(BaseModel):
     created_at: datetime
 
 
+class NotificationPreferences(BaseModel):
+    email_notifications: bool
+
+
 class MembershipRoleUpdate(BaseModel):
     role: RoleName
 

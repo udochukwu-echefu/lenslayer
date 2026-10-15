@@ -72,9 +72,11 @@ def render_plan(config, output: Path, commit: str, digest=None, worker_origin=No
         raise ValueError("Pin the exact reviewed source commit")
     if digest is not None and not re.fullmatch(r"sha256:[0-9a-f]{64}", digest):
         raise ValueError("Use the built image digest, never a mutable tag")
-    if worker_origin:
+    if worker_origin is not None:
         worker_origin = clean_https(worker_origin, origin=True)
-        if not re.fullmatch(r"lenslayer-agent-worker-[a-z0-9]+-[a-z0-9]+\.a\.run\.app", urlsplit(worker_origin).hostname):
+        worker_url = urlsplit(worker_origin)
+        if (worker_url.netloc != worker_url.hostname
+                or not re.fullmatch(r"lenslayer-agent-worker-[a-z0-9]+-[a-z0-9]+\.a\.run\.app", worker_url.hostname)):
             raise ValueError("Use the canonical production private-worker origin")
     if previous_revision and not re.fullmatch(r"lenslayer-api-[0-9]{5}-[a-z0-9]+", previous_revision):
         raise ValueError("Previous traffic must name an actual production API revision")
@@ -132,6 +134,8 @@ def render_plan(config, output: Path, commit: str, digest=None, worker_origin=No
     commands = []
 
     def add(name, phase, args, **gates):
+        if phase == "activate":
+            gates["requires_authorized_activation"] = True
         commands.append({"id": name, "phase": phase, "argv": ["gcloud", *args], **gates})
 
     add("build-reviewed-archive", "build", ["builds", "submit", f"--project={project}",
@@ -146,6 +150,10 @@ def render_plan(config, output: Path, commit: str, digest=None, worker_origin=No
         "--max-attempts=8", "--min-backoff=10s", "--max-backoff=300s", "--max-retry-duration=86400s"], skip_if_exists=True)
     add("park-queue-before-rollout", "provision", ["tasks", "queues", "pause", queue,
         f"--project={project}", f"--location={region}"])
+    add("update-existing-bounded-queue", "provision", ["tasks", "queues", "update", queue, f"--project={project}",
+        f"--location={region}", "--max-concurrent-dispatches=1", "--max-dispatches-per-second=1",
+        "--max-attempts=8", "--min-backoff=10s", "--max-backoff=300s", "--max-retry-duration=86400s"],
+        requires_paused_queue=True)
     add("queue-only-enqueue", "provision", ["tasks", "queues", "add-iam-policy-binding", queue,
         f"--project={project}", f"--location={region}", f"--member=serviceAccount:{runtime}", "--role=roles/cloudtasks.enqueuer"])
     add("use-only-worker-identity", "provision", ["iam", "service-accounts", "add-iam-policy-binding", invoker,
@@ -168,7 +176,7 @@ def render_plan(config, output: Path, commit: str, digest=None, worker_origin=No
         "--set-secrets=LENSLAYER_PLATFORM_DATABASE_URL=lenslayer-neon-direct-url:" + config["secret_versions"]["neon-direct-url"],
         "--tasks=1", "--parallelism=1", "--max-retries=0", "--task-timeout=10m"], requires_image_digest=True)
     add("migrate-with-recovery-point", "migrate", ["run", "jobs", "execute", "lenslayer-migrate", *base, "--wait"],
-        requires_verified_backup=True, requires_staging_acceptance=True)
+        requires_verified_backup=True, requires_staging_acceptance=True, requires_migration_path_review=True)
     add("deploy-sleeping-worker", "deploy", [*worker_args, f"--env-vars-file={output/'runtime-env.json'}"],
         requires_worker_origin=True, requires_image_digest=True)
     add("deploy-api-without-traffic", "deploy", ["run", "deploy", "lenslayer-api", *base, f"--service-account={runtime}",
@@ -183,6 +191,14 @@ def render_plan(config, output: Path, commit: str, digest=None, worker_origin=No
         f"--project={project}", f"--location={region}", "--schedule=0 * * * *", "--time-zone=Africa/Lagos", "--http-method=POST",
         f"--uri={origin}/recover", f"--oidc-service-account-email={invoker}", f"--oidc-token-audience={origin}",
         "--attempt-deadline=300s"], requires_worker_origin=True, requires_private_worker_acceptance=True, skip_if_exists=True)
+    add("update-existing-hourly-recovery", "activate", ["scheduler", "jobs", "update", "http", "lenslayer-agent-recovery",
+        f"--project={project}", f"--location={region}", "--schedule=0 * * * *", "--time-zone=Africa/Lagos", "--http-method=POST",
+        f"--uri={origin}/recover", f"--oidc-service-account-email={invoker}", f"--oidc-token-audience={origin}",
+        "--attempt-deadline=300s"], requires_worker_origin=True, requires_private_worker_acceptance=True,
+        requires_existing_recovery_review=True)
+    add("activate-reviewed-recovery", "activate", ["scheduler", "jobs", "resume", "lenslayer-agent-recovery",
+        f"--project={project}", f"--location={region}"], requires_private_worker_acceptance=True,
+        requires_recovery_target_readback=True, skip_if_enabled=True)
     add("activate-queue", "activate", ["tasks", "queues", "resume", queue, f"--project={project}", f"--location={region}"],
         requires_private_worker_acceptance=True)
     add("switch-api-after-health-and-oidc", "activate", ["run", "services", "update-traffic", "lenslayer-api", *base,
@@ -195,13 +211,15 @@ def render_plan(config, output: Path, commit: str, digest=None, worker_origin=No
         rollback.append(["gcloud", "run", "services", "update-traffic", "lenslayer-api", *base,
                          f"--to-revisions={previous_revision}=100"])
     plan = {"schema_version": 1, "source_commit": commit, "image": image, "worker_origin": origin,
+             "secret_versions": dict(config["secret_versions"]),
             "renders_only": True, "calendar_enabled": False, "model_enabled": False,
             "commands": commands, "emergency_park": rollback[:2],
             "rollback_before_new_feature_data_only": rollback,
             "rollback_warning": "Never downgrade the ledger or replay Calendar uncertainty. The old API supports unlinked tasks but lacks the new context/agent routes. After new-feature use, park dispatch and inspect effects before rolling traffic and dashboard back or applying a forward fix."}
     write_json(output / "plan.json", plan)
     text = ["# Reviewed production commands (rendered only)", "", f"Source: `{commit}`", f"Image: `{image}`", "",
-            "Run gated steps only after the named evidence exists. Re-render unresolved coordinates. Build from an exact Git archive, never the working directory.", ""]
+            "Run gated steps only after the named evidence exists. Re-render unresolved coordinates. Build from an exact Git archive, never the working directory.",
+            "Gate labels are review requirements, not execution enforcement. Do not batch-run this document. Keep queue/recovery paused until separately authorized activation. Inspect existing recovery before create/update; skip-if-exists does not qualify its configuration.", ""]
     for command in commands:
         gates = [k for k,v in command.items() if k.startswith("requires_") and v]
         text.extend([f"## {command['phase']}: {command['id']}", "", "Gates: " + (", ".join(gates) or "none"), "", "```sh", shlex.join(command["argv"]), "```", ""])

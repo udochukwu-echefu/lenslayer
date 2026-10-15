@@ -13,6 +13,12 @@ real signing/bootstrap, trusted publisher configuration and registry acceptance
 remain external gates.** Leave `SDK_NPM_PUBLISH_ENABLED` unset until the owner
 expressly authorizes the applicable signing/publication window.
 
+For exact read-only coordinator checks and the hash-pinned owner command generator,
+see [release preflight](RELEASE-PREFLIGHT.md). The owner handoff verifier now also
+requires the live environment's `can_admins_bypass` to be explicitly **false**;
+missing, true or malformed values fail closed. These source changes require fresh
+main CI/artifact approval; earlier c926 CI is not evidence for the new delta.
+
 This guide supersedes older **SDK distribution** instructions that describe
 `UNLICENSED`. Existing release/roadmap records are left unchanged intentionally.
 
