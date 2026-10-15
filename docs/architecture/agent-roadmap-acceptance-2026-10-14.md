@@ -10,7 +10,7 @@ that the new source is already running in production.
 | Track | Implemented and verified in source | External acceptance still required |
 | --- | --- | --- |
 | Production execution and operations | Private request-driven worker, bounded drain, scoped wake/recovery, metadata-only observations, immutable-image release plan and deployment guard | Backup/restore exercise, exact source image, staging acceptance, reviewed promotion, final worker-only invoker grant and queue activation |
-| Developer SDK and MCP | SDK-only MIT license, 18-file ESM/types artifact, reviewed-byte OIDC release workflow, scoped context/graph SDK and MCP interfaces; actual OpenCode legacy reads/tenant denial/revocation against a disposable API | Canonical main release review, npm bootstrap/trusted publisher/publication, registry signatures/provenance, staged host acceptance and auto-protocol compatibility |
+| Developer SDK and MCP | SDK-only MIT license, 18-file ESM/types artifact, reviewed-byte OIDC release workflow, scoped context/graph SDK and MCP interfaces; actual OpenCode legacy reads/tenant denial/revocation against a disposable API | Canonical main release review, npm bootstrap/trusted publisher/publication, registry signatures/provenance, staged host acceptance and in-place protocol-switch compatibility |
 | Calendar | Session-bound one-use OAuth relay, encrypted grants, stable event identity, refresh/revocation handling and disposable live acceptance harness | Real owner consent, empty owned secondary calendar, one private event and independent read-back, refresh/disconnect/reconnect, real OIDC/browser session checks |
 | Optional product model | Explicit provider/model/effort disclosure, fixed DeepSeek Responses adapter, immutable facts, durable zero-default lifetime admission gate | One bounded staged product canary and browser disclosure/consent check; production remains model-disabled |
 | Broader agent workflows | Private versioned context, scoped lexical retrieval with original offsets, context-backed typed task tool, dependency/conditional/not-before graphs, SDK/MCP/example/UI | Deployed private context/graph end-to-end checks, replay/revocation/retention and narrow-screen browser checks |
@@ -33,9 +33,9 @@ code.
 - Separate real local PostgreSQL 17.11 run: **142 passed**, including migration
   drift, graph dependencies, strict predicates, receipt binding, lease recovery,
   Calendar session proofs and concurrent lifetime-budget admission.
-- SDK: **47 passed**, including the actual 18-file MIT tarball, offline consumer
+- SDK: **53 passed**, including the actual 18-file MIT tarball, offline consumer
   install, ESM imports and TypeScript declarations.
-- MCP: **7 passed** through the official client and spawned stdio adapter.
+- MCP: **10 passed** through the official client and spawned stdio adapter.
   Examples: **15 passed** against disposable/fake integrations.
 - Hosted planner: **23 passed**, including rejecting incompatible context-task
   input on restart without replanning or duplicating an effect. The combined
@@ -57,9 +57,15 @@ successful delegated run read, a different-tenant `http_404`, and a same-host
 `http_401` after owner revocation. These used the real disposable API with
 synthetic data, not live staging, and no worker or funded product model ran.
 Model/helpers were pinned to GPT 6.1 Sol high; Astra was not used. The private
-loopback host was stopped and its port closed. A cold standalone catalog remains
-empty until native same-host runtime activation. Auto protocol connected but
-produced no tool trace, so its compatibility is not claimed.
+loopback host was stopped and its port closed. A cold standalone server list
+remains empty until native same-host runtime activation. The initial in-place
+auto switch produced no tool trace. A subsequent fresh host started directly
+in auto mode with the full `codemode: false` entry; after a bounded one-second
+registry settling period, actual model tool traces passed the same read,
+cross-tenant 404 and same-host revocation 401 checks. That host also stopped with
+its port closed. Fresh-host auto is qualified against the disposable API; in-place
+switching, Code Mode and live staging-host acceptance remain pending. No cause is
+claimed for the earlier switch failure.
 
 [Draft PR #5](https://github.com/udochukwu-echefu/lenslayer/pull/5) contains the
 integrated implementation. CI exposed and received fixes for the hosted planner
@@ -95,15 +101,19 @@ and migration rollback. Production must remain model-disabled.
   awaits creation of the private production worker resource. No production
   database migration or traffic promotion has occurred.
 - Staging migration succeeded through `bf84e2c19a67`. API revision
-  `lenslayer-api-staging-00003-cxj` and private worker revision
-  `lenslayer-agent-worker-staging-00003-6ph` use the exact digest above. API
+  `lenslayer-api-staging-00004-vxz` and private worker revision
+  `lenslayer-agent-worker-staging-00004-4t9` use the exact digest above. API
   liveness/readiness returned 200; anonymous human/agent routes returned 401 and
   the private worker returned 403. The queue and recovery schedule remain paused,
   with the continuous pool at zero. Worker service/revision minima are zero,
   maxima one, concurrency one, request-based CPU and a bounded 120-second drain.
-  Calendar and the optional product model remain disabled. The dashboard was
-  restored to working version `53a3cfc5-ce02-4ce6-8443-8d15aa0efdb4` after the
-  failed 16.4.1 deployment; the tested 16.3.8 fix is prepared for staging.
+  The optional product model remains disabled with a zero lifetime call limit.
+  Calendar is enabled only in staging with the five pinned version-1 secrets;
+  no Google user grant or provider event has been created. The tested Next 16.3.8
+  dashboard was deployed (`b80cddcf-d001-471d-848a-e9c58a18ddec`, followed by the
+  approved session-key binding). Live browser hydration, fresh owner OIDC login
+  and authenticated context creation/source read passed. Full graph execution
+  and provider/session acceptance remain required.
 - Staging recovery branch `br-muddy-hill-b2u9np34`, named
   `pre-roadmap-f3644b20-20261014`, was created in the staging Neon project only.
   Its compute was visibly **SUSPENDED** on 15 October. It expires at
@@ -117,8 +127,12 @@ and migration rollback. Production must remain model-disabled.
   staging secrets. On 15 October, the explicitly approved three independent
   server keys were created as version 1, and Secret Accessor was granted to only
   the staging runtime on those three plus the two client credential secrets. No
-  project-wide or production grant was added. The shared session key still needs
-  its approved staging Worker binding. Real provider acceptance remains pending.
+  project-wide or production grant was added. The shared session key was bound
+  through stdin only to the staging Worker, with names-only readback. The client
+  matched sandbox project 602675316360 and independent key shapes were validated
+  in memory. The testing audience contains only the owner; the declaration
+  requests only `calendar.events.owned`. Actual Google user consent and real
+  provider acceptance remain pending.
   An independent inspector must use a different OAuth project
   because Google's revocation affects all grants within the product project.
 - The approved operations email channel and **ten enabled policies** (five each

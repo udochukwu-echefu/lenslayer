@@ -7,6 +7,8 @@
 - Stable-key retries, redirect refusal and credential-safe errors.
 - Additive workflow/calendar/composite contracts, typed factual input request/read/
   supply methods and awaiting-input/unknown-outcome/partial-effect semantics.
+- Version-1 context search, workflow graphs and context evidence methods with
+  strict scope/shape checks; planning hits are not durable evidence receipts.
 - Explicit package allowlist, build-on-pack and installed-tarball smoke checks.
 
 No npm publication, hosted endpoint or external connector availability is implied.

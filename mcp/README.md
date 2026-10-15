@@ -22,7 +22,8 @@ npm --prefix mcp run build
 `{env:NAME}` substitutions. It is not the V1/generic `mcpServers` format.
 Set both paths absolutely. See [OpenCode host setup and acceptance](OPENCODE.md)
 for process-only credentials, supported commands, isolation and a repeatable
-coordinator-owned staging check. No OpenCode process was invoked in this pass.
+coordinator-owned staging check. Actual native legacy and fresh-host auto reads
+passed against a disposable API; staging and protocol switching remain pending.
 The process requires explicit `LENSLAYER_API_URL` and `LENSLAYER_AGENT_TOKEN`;
 there is no implicit localhost fallback and no `.env` loading. It removes the
 token from its own environment after constructing the private bearer client.
@@ -106,6 +107,12 @@ also cover missing/unsupported versions, fresh-call revocation, synthetic API
 scope denial, no idle requests, safe startup failures and goal/source/token-free
 stderr. These are **official-client wire tests, not interactive OpenCode host
 acceptance or proof of the backend's tenant isolation**.
+
+The [OpenCode 2.0.18 auto investigation](OPENCODE-AUTO-DIAGNOSTIC.md) additionally
+tests pinned MCP client/core 2.0.0 versus 2.3.1 over real stdio in legacy, auto and
+pinned-modern modes. It includes a credential-free parent discovery fixture;
+these client tests are separate from the coordinator's subsequent successful
+fresh native auto-host tool traces. In-place switching remains unqualified.
 
 `tests/local-backend-smoke.mjs` additionally exercises the disposable original-v1
 backend, real SQLite persistence and worker, with a real human API approval. It

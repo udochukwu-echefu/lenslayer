@@ -1,11 +1,11 @@
 # OpenCode V2 local stdio setup and coordinator acceptance
 
 Status: source-installed and wire-tested with local fake APIs. On 15 October
-2026, the actual OpenCode 2.0.18 native host also completed a legacy-protocol
-model-mediated read against a real disposable local API, denied a different
+2026, the actual OpenCode 2.0.18 native host completed both legacy and fresh-host auto-protocol
+model-mediated reads against a real disposable local API, denied a different
 tenant's run (`http_404`), and denied a same-host read after owner revocation
-(`http_401`). GPT 6.1 Sol/high was verified on the tool traces. Staging-host
-acceptance and auto-protocol tool execution remain unqualified. Nothing here
+(`http_401`). GPT 6.1 Sol/high was pinned for the model and all helpers.
+Staging-host acceptance and in-place protocol switching remain unqualified. Nothing here
 installs a remote/cloud MCP provider.
 The SDK alone is MIT; this private MCP package remains `UNLICENSED`.
 
@@ -19,7 +19,7 @@ there. It accepts `experimental.policies` with actions `provider.use` and
 
 Native `mcp.servers` configuration is accepted, but the tested cold
 `opencode api --standalone mcp.list --param location.directory=...` returned an
-empty catalog and did not spawn a credential-free, official-client-verified MCP
+empty server list and did not spawn a credential-free, official-client-verified MCP
 fixture. Git initialization, `protocol: auto` and explicit built-in plugin
 selection did not establish discovery. The subsequent native host check connected
 LensLayer through `PUT /api/experimental/mcp/lenslayer`, with the smoke directory
@@ -33,9 +33,20 @@ The accepted local entry used the existing absolute Node executable and
 `environment: {}`; the explicitly injected process environment supplied the API
 URL and scoped synthetic token to the child. Confirm executable paths exist.
 The legacy protocol produced real tool traces. Switching that host to `auto`
-connected its catalog but produced no model tool trace, so use the qualified
-legacy path until auto compatibility is resolved. See the
+connected its catalog but produced no model tool trace. A later fresh host
+started directly in `auto`, retained the complete `codemode: false` entry and
+allowed the debounced registry one second to settle. Its actual tool traces
+passed the same read, tenant denial and revocation checks. This qualifies that
+cold auto path; it does not diagnose or qualify the earlier protocol switch. See the
 [acceptance record](../docs/architecture/agent-roadmap-acceptance-2026-10-14.md).
+
+The [2026-10-15 auto investigation](OPENCODE-AUTO-DIAGNOSTIC.md) adds real-stdio
+parity tests using OpenCode 2.0.18's pinned MCP client 2.0.0, plus a credential-free
+parent fixture and bounded metadata-only procedure. No wire failure reproduced.
+The subsequent coordinator-owned fresh-host auto acceptance is recorded there. A native PUT replaces the whole entry:
+preserve `codemode: false` when switching protocol. Omitting it enables Code Mode,
+whose `execute` tool is denied by the restrictive smoke permissions below.
+Connected status alone does not prove the host's debounced tool registry is ready.
 
 ## Build and configure
 
@@ -61,8 +72,9 @@ absolute paths. It uses native V2 `mcp.servers`, not V1 `mcp` or generic
 `mcpServers`. OpenCode substitutes `{env:NAME}`, not `$NAME`. `protocol: legacy`
 uses initialize negotiation; repeat with `protocol: auto` to probe current
 2026-07-28 discovery. `codemode: false` exposes tools directly and makes host
-acceptance easier to inspect. Normal production Code Mode is also supported by
-the adapter; it does not consume/trust the OpenCode `_meta` session ID.
+acceptance easier to inspect. Code Mode is host-side and requires separate host
+qualification/permissions; the adapter does not consume/trust the OpenCode `_meta`
+session ID.
 
 Interactive coordinator commands (separate from the tested native API path):
 

@@ -2,15 +2,23 @@
 
 Only `@lenslayer/agent-sdk` is MIT licensed (2026 LensLayer). The repository,
 backend and private MCP adapter have **not** been relicensed. Version 0.1.0 is
-still unpublished. No workflow, registry access, OIDC exchange or host/provider
-acceptance has been exercised by this source-only implementation.
+still unpublished. No release workflow, SDK registry crypto/provenance verification,
+OIDC exchange or host/provider acceptance has been exercised by this source audit.
+
+Owner-provided status (2026-10-15): the free **`@lenslayer` npm organization
+exists**, owner `udochukwuchibueze`, one member, zero packages; MFA is disabled.
+PR #5 is still draft/unmerged. This audit did not query account settings. Scope
+creation is no longer a blocker; **MFA, canonical main/source/artifact owner review,
+bootstrap, trusted publisher configuration and real registry verification remain
+blockers**. Leave `SDK_NPM_PUBLISH_ENABLED` unset.
 
 This guide supersedes older **SDK distribution** instructions that describe
 `UNLICENSED`. Existing release/roadmap records are left unchanged intentionally.
 
 ## Local verification
 
-With Node 24.15.0 / npm 11.12.1, from the checkout root:
+With Node 24.15.0 / npm 11.12.1, Git, tar and OpenSSL available, from the checkout
+root (the tests generate disposable self-signed certificate policy fixtures):
 
 ```sh
 npm --prefix sdk ci --ignore-scripts --no-audit --no-fund
@@ -49,9 +57,11 @@ node --input-type=module -e 'import {readFileSync} from "node:fs"; import {creat
 
 These are external prerequisites, **not configured by this source change**:
 
-1. Confirm `@lenslayer` scope ownership, intended maintainers, public package and
-   public canonical repository `udochukwu-echefu/lenslayer`; review the version and
-   source, including SDK changelog accuracy. The MCP package remains private.
+1. Reconfirm the owner-provided scope/member status, intended maintainers, public
+   package and public canonical repository `udochukwu-echefu/lenslayer`. Enable
+   owner MFA before any bootstrap or publication. Review/merge PR #5 and review
+   the version, SDK-only MIT license, source and changelog. Runtime/MCP remain
+   unlicensed; the MCP package remains private.
 2. Protect `main`, the two release workflow files and `sdk/scripts/` with appropriate
    owner review. Restrict creation/update/deletion of `sdk-v*` tags to
    release owners. GitHub administrators can bypass code protections; this design
@@ -67,13 +77,40 @@ These are external prerequisites, **not configured by this source change**:
    environment `sdk-npm`. Enable direct `npm publish`, not dist-tag management.
    Use 2FA and disallow token-based publishing. No PAT, npm token or
    `NODE_AUTH_TOKEN` secret is required or accepted by this workflow.
-5. If npm cannot configure a trusted publisher before the first package exists,
-   stop and resolve the registry's supported bootstrap process as a separate
-   owner-approved operation. This workflow has no token/manual-publish fallback.
+5. Resolve first-package bootstrap as a **separate owner-approved operation**;
+   see below. This direct-publish workflow cannot create a preconfigured trust
+   relationship for a nonexistent package and has no token/manual-publish fallback.
    New trusted-publisher configurations currently expire if unused for two days;
    coordinate setup and approval accordingly.
 6. Only then set repository variable **`SDK_NPM_PUBLISH_ENABLED=true`**. Leave it
    unset otherwise. The workflow fails closed unless it is exactly `true`.
+
+### First-package bootstrap is not implemented or authorized here
+
+Official npm docs distinguish **ordinary OIDC publishing: npm >=11.5.1** from
+**staged publishing: npm >=11.15.0** (both require Node >=22.14.0). The pinned
+Node 24.15.0 / npm 11.12.1 workflow supports the former, **not** `npm stage`.
+Do not simply replace `npm publish` with `npm stage publish` on that toolchain.
+The current workflow intentionally stays direct-publish only; a staging workflow
+would need a separately reviewed npm pin, stage-result handling and approval flow.
+
+npm now documents staging a new package: it creates a **public `0.0.0-stage`
+placeholder**, while the submitted version/contents stay private until a
+maintainer approves with 2FA. Staging itself is a registry mutation, not a dry run.
+The initial authorization/trust setup for this zero-package organization has not
+been exercised. The owner must resolve that chicken-and-egg step with npm's
+supported process (or npm support); no token fallback is added to CI here.
+
+Any separately approved bootstrap plan must use **only the exact downloaded,
+owner-reviewed main CI tarball**, not `npm stage publish` with no package argument
+(which packs the current directory), a dirty/local bundle or a repack. Record
+the run/attempt/commit/hash and verify the staged download matches before any
+2FA approval. Do not disable provenance to force a local bootstrap through: a
+local staged upload does not establish GitHub provenance. If a placeholder is
+needed to configure trust, its creation, treatment of the pending staged version,
+and a subsequent provenance-bearing OIDC release need explicit owner decisions.
+Do not approve an unprovenanced bootstrap as the SDK release. This unresolved
+bootstrap plan is a release blocker, not a claim that the workflow can bootstrap.
 
 ## Human review then explicit publication
 
@@ -96,18 +133,40 @@ These are external prerequisites, **not configured by this source change**:
 5. The non-OIDC verify job checks the successful review workflow identity/event,
    canonical repository, branch, commit, attempt, tag, manifest and actual archive.
    It tests the source and installs/imports/type-checks the **downloaded** tarball.
+   Both jobs also query the live main tip and reject a moved main at that check.
    A separate environment-gated publish job repeats the bindings and checks after
    approval. Its only extra permission is `id-token: write`; it installs no
-   dependencies, runs no package lifecycle scripts, and never rebuilds/re-packs.
+   build dependencies, runs no package lifecycle scripts, and never rebuilds/re-packs.
+   Publishing uses empty job-local npm user/global configuration and rejects npm
+   token environment variables rather than falling back to stored credentials.
 6. Review the environment approval against the recorded values. Approval publishes
    **those exact bytes**, publicly under `latest`, via GitHub-hosted OIDC with
    `--provenance`. All Actions are commit-pinned. Only stable versions are accepted.
 7. The post-publish step compares registry SHA-512 integrity and downloaded registry
-   bytes' SHA-256 to the review, and requires an advertised provenance attestation.
-   It does not itself cryptographically verify the attestation. Independently
-   inspect npm provenance (source repository/commit and publish workflow) and use
-   `npm audit signatures` in a clean registry-installed consumer before claiming
-   release acceptance. The published-byte review bundle is retained for 90 days.
+   bytes' SHA-256 to the review, then installs **the exact registry version** in a
+   fresh consumer/cache with lifecycle scripts disabled. It checks the lockfile
+   integrity and runs `npm audit signatures --json --include-attestations` for
+   cryptographic registry-signature and Sigstore attestation verification. Missing
+   or invalid signatures, absent verified provenance, wrong signing-certificate
+   workflow identity, or mismatched package/digest/repository/main commit/publish
+   workflow/hosted builder fail the job. An advertised attestation alone is not
+   accepted. Retained `sdk-registry-evidence/registry-verification.json` records
+   the successful audit and lockfile alongside the original bundle for 90 days.
+   The owner must inspect this **real** registry evidence and the npm provenance
+   UI (including workflow invocation) before claiming acceptance; fixture tests
+   do not establish live publication or provenance.
+
+After an authorized publication, the read-only check can be rerun without
+republishing (first validate the original reviewed bundle as above):
+
+```sh
+node sdk/scripts/verify-registry.mjs /absolute/path/to/review /absolute/path/to/evidence
+```
+
+Main/tag protections, GitHub environment approval and npm publishing policy are
+external configuration, not proved by YAML or local tests. Main checks are
+point-in-time, not a lock against a subsequent commit. Stop and obtain renewed
+review if source or approval evidence changes.
 
 Publication is irreversible as an ordinary retry. If publication succeeded but a
 later verification/upload failed, **inspect the registry first**; do not bump or
@@ -117,5 +176,8 @@ review. Do not advertise `npm install @lenslayer/agent-sdk` as available until t
 coordinator verifies actual publication and provenance. Workflow execution itself
 is still an unresolved external acceptance gate.
 
-References (read 2026-10-14): [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/),
-[npm provenance](https://docs.npmjs.com/generating-provenance-statements/).
+References (read 2026-10-15): [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/),
+[staged publishing](https://docs.npmjs.com/staged-publishing/),
+[`npm stage`](https://docs.npmjs.com/cli/v11/commands/npm-stage),
+[npm provenance](https://docs.npmjs.com/generating-provenance-statements/),
+[registry signature verification](https://docs.npmjs.com/verifying-registry-signatures/).

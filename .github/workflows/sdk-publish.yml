@@ -111,16 +111,24 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Direct OIDC publishing needs >=11.5.1. This is NOT a first-package
+          # staging bootstrap (npm stage requires >=11.15.0 and a separate plan).
           test "$(npm --version)" = '11.12.1'
           test -z "${NODE_AUTH_TOKEN:-}"
           test -z "${NPM_TOKEN:-}"
-          npm publish "sdk-release-review/lenslayer-agent-sdk-${EXPECTED_VERSION}.tgz" --ignore-scripts --access public --provenance --tag latest --registry https://registry.npmjs.org/
-      - name: Verify registry integrity matches the reviewed tarball
-        run: node sdk/scripts/verify-registry.mjs sdk-release-review
+          test ! -e .npmrc
+          # Empty job-local config files, never a developer/runner auth store.
+          : > "$RUNNER_TEMP/sdk-publish-user.npmrc"
+          : > "$RUNNER_TEMP/sdk-publish-global.npmrc"
+          npm publish "sdk-release-review/lenslayer-agent-sdk-${EXPECTED_VERSION}.tgz" --ignore-scripts --access public --provenance --tag latest --registry https://registry.npmjs.org/ --userconfig "$RUNNER_TEMP/sdk-publish-user.npmrc" --globalconfig "$RUNNER_TEMP/sdk-publish-global.npmrc"
+      - name: Verify registry bytes, cryptographic signatures and provenance source binding
+        run: node sdk/scripts/verify-registry.mjs sdk-release-review sdk-registry-evidence
       - name: Retain published-byte evidence (not a second pack)
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: published-sdk-${{ inputs.version }}-${{ github.run_id }}
-          path: sdk-release-review/
+          path: |
+            sdk-release-review/
+            sdk-registry-evidence/
           if-no-files-found: error
           retention-days: 90

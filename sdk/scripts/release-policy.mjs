@@ -30,6 +30,12 @@ export function checkReviewRun(run, env) {
   assert.ok(Number.isSafeInteger(run.run_attempt) && run.run_attempt > 0);
 }
 
+export function checkCurrentMain(ref, env) {
+  assert.equal(ref.ref, "refs/heads/main");
+  assert.equal(ref.object.type, "commit");
+  assert.equal(ref.object.sha, env.GITHUB_SHA, "Main advanced since dispatch/review; review the new main commit");
+}
+
 export function selectReviewArtifact(artifacts, env, attempt) {
   const expectedName = `lenslayer-agent-sdk-${env.GITHUB_SHA}-${attempt}`;
   const matching = artifacts.filter((artifact) => artifact.name === expectedName && !artifact.expired);
@@ -53,6 +59,7 @@ if (process.argv[2] === "github") {
       assert.equal(response.status, 200, "Release metadata unavailable");
       return response.json();
     };
+    checkCurrentMain(await get("git/ref/heads/main"), env);
     const run = await get(`actions/runs/${env.REVIEW_RUN_ID}`);
     checkReviewRun(run, env);
     const artifacts = await get(`actions/runs/${env.REVIEW_RUN_ID}/artifacts?per_page=100`);

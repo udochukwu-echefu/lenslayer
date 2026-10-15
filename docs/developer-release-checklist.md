@@ -65,15 +65,20 @@ Commands/setup: [quickstart](developer-agent-quickstart.md),
   lockfile, README and packed-package checks agree. The MCP/backend are not
   relicensed. See [distribution setup](../sdk/DISTRIBUTION.md) for the reviewed
   artifact and owner-controlled publication procedure.
-- [ ] Verify control of the `@lenslayer` npm scope, intended package visibility,
-  maintainer identities, package version, access policy and MFA/trusted publishing.
+- [x] Owner reports free `@lenslayer` organization exists (2026-10-15), owner
+  `udochukwuchibueze`, one member, zero packages. Not re-queried by source audit.
+- [ ] Enable owner MFA (reported disabled), verify intended public visibility,
+  package version/access policy and configure package-scoped trusted publishing.
+- [ ] Review/merge draft PR #5 to canonical main, independently review its exact
+  CI artifact, and approve a supported first-package bootstrap plan. The current
+  direct-OIDC workflow is not a zero-package bootstrap; staging needs npm >=11.15.
 - [x] Confirm public canonical repository `udochukwu-echefu/lenslayer` and set
   actual repository/bugs/homepage metadata. No npm release is implied.
 - [x] Inspect the exact 18-file allowlist and tarball metadata/content; record
   SHA-256 and npm integrity in a private review bundle. Automated credential
   patterns are a guardrail, not a complete secret scanner.
 - [x] Install a checked packed artifact in a clean local Node client; ESM/types
-  smoke and 33 tests include abort/timeout/idempotency. Document ESM-only support.
+  smoke and SDK tests cover abort/timeout/idempotency. Document ESM-only support.
 - [x] Add a manual artifact-review CI workflow that runs release checks, packs,
   records integrity and uploads the artifact without publishing. GitHub Actions
   execution of this dedicated manual artifact-review workflow remains unverified;
@@ -83,7 +88,9 @@ Commands/setup: [quickstart](developer-agent-quickstart.md),
   https://docs.npmjs.com/generating-provenance-statements.
 - [ ] Only after explicit owner authorization, run the approved publish job with
   intended access and provenance. `prepublishOnly` runs local checks but is not
-  legal approval or authorization. Verify registry artifact/integrity afterwards.
+  legal approval or authorization. Verify real registry bytes/integrity and retain
+  successful `npm audit signatures` crypto/provenance evidence afterwards; an
+  advertised attestation or synthetic test is not acceptance.
 - [ ] Only then change local-install docs/CTAs to claim an npm release is available.
 
 ## Merge and staging integration — coordinator/platform owner

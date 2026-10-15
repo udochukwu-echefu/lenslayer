@@ -4,8 +4,9 @@ A server-side TypeScript client for the implemented `/api/v1/agent` API. No runt
 dependencies or framework. Requires Node 20.3+ (the repository uses Node 24.15).
 Version 0.1.0 is prepared locally and **not published to npm**. This SDK package
 alone is licensed under the [MIT License](LICENSE), copyright 2026 LensLayer.
-This does not relicense MCP, the backend, or the repository. npm scope ownership,
-trusted publishing setup and human release approval remain release-owner gates.
+This does not relicense MCP, the backend, or the repository. The free `@lenslayer`
+organization exists per owner status; MFA, first-package bootstrap, trusted
+publishing setup and main/artifact release approval remain release-owner gates.
 
 ```sh
 cd sdk
@@ -28,8 +29,9 @@ const tools = await client.tools();
 For an installed-artifact check, run `npm pack --pack-destination /your/private/package-directory`
 from `sdk/`, then `npm install /your/private/package-directory/lenslayer-agent-sdk-0.1.0.tgz`
 in a server-side client project. `prepack` builds declarations and ESM exports;
-the allowlist contains only `dist/`, package metadata, README, LICENSE and changelog.
-`release:check` runs regression tests, dry-run contents/credential-pattern checks,
+the allowlist contains only seven named ESM modules/declarations, package metadata,
+README, LICENSE and changelog (18 files total).
+`release:check` runs regression tests, actual archive/credential-pattern checks,
 packs a tarball and installs/imports it in a disposable directory. This is not a
 publication or a guarantee that an arbitrary future file contains no secrets.
 Never import the client into a browser; credentials belong on a server.
