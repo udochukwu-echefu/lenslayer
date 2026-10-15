@@ -1,3 +1,5 @@
+import { readTrustedSession, trustedSessionMutationAllowed } from "@/lib/trusted-session.server";
+
 const FORWARDED_HEADERS = ["authorization", "content-type"];
 
 function upstreamUrl(request: Request, path: string[]) {
@@ -7,7 +9,7 @@ function upstreamUrl(request: Request, path: string[]) {
   return `${base}/${safePath}${incoming.search}`;
 }
 
-async function proxy(request: Request, context: RouteContext<"/api/platform/[...path]">) {
+async function proxy(request: Request, context: { params: Promise<{ path: string[] }> }) {
   const { path } = await context.params;
   const headers = new Headers();
   for (const name of FORWARDED_HEADERS) {
@@ -20,11 +22,19 @@ async function proxy(request: Request, context: RouteContext<"/api/platform/[...
   const isPublicRequest = isPublicInvitationPreview || isPublicSharedReview;
 
   if (!headers.has("authorization") && !isPublicRequest) {
-    if (process.env.NODE_ENV !== "production") {
-      headers.set("X-LensLayer-User", process.env.LENSLAYER_LOCAL_USER_ID ?? "local-reviewer");
-      headers.set("X-LensLayer-Email", process.env.LENSLAYER_LOCAL_USER_EMAIL ?? "reviewer@lenslayer.local");
-      headers.set("X-LensLayer-Name", process.env.LENSLAYER_LOCAL_USER_NAME ?? "Local Reviewer");
-    } else return Response.json({ detail: "Sign in to continue." }, { status: 401 });
+    let session;
+    try { session = await readTrustedSession(); } catch { return Response.json({ detail: "Sign in to continue." }, { status: 401 }); }
+    if (session) {
+      if (!["GET", "HEAD"].includes(request.method) && !trustedSessionMutationAllowed(request)) return Response.json({ detail: "Request origin could not be verified." }, { status: 403 });
+      headers.set("Authorization", `Bearer ${session.accessToken}`);
+    }
+    else {
+      if (process.env.NODE_ENV !== "production") {
+        headers.set("X-LensLayer-User", process.env.LENSLAYER_LOCAL_USER_ID ?? "local-reviewer");
+        headers.set("X-LensLayer-Email", process.env.LENSLAYER_LOCAL_USER_EMAIL ?? "reviewer@lenslayer.local");
+        headers.set("X-LensLayer-Name", process.env.LENSLAYER_LOCAL_USER_NAME ?? "Local Reviewer");
+      } else return Response.json({ detail: "Sign in to continue." }, { status: 401 });
+    }
   }
 
   const method = request.method.toUpperCase();

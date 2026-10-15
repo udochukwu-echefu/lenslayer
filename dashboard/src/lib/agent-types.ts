@@ -4,6 +4,10 @@ export type {
   AgentAction, ActionStatus, ApprovalDecision, TaskActionInput,
   TaskSuccessCondition, CalendarTarget, CalendarActionInput, CalendarSuccessCondition, CompositeSuccessCondition, SuccessCondition,
   InputRequest, InputSupply, RunEvent, EvidenceReceipt, ToolName,
+  ContextRecord, ContextRecordCreate, ContextVersion, ContextVersionCreate, ContextScope,
+  ContextEvidenceReceipt, ContextTaskCondition, ContextTaskActionInput, FactualPredicate,
+  WorkflowGraph, WorkflowGraphCreate, GraphSuccessCondition, GraphNode,
+  ContextSearchHit, ContextTaskReceipt, GraphResult,
 } from "../../../sdk/src/types";
 
 /** Human dashboard extension; SDK stays compatible with its released surface. */

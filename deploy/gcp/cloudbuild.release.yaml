@@ -1,0 +1,33 @@
+# Build only. Database migration, IAM, traffic and activation are separate,
+# reviewable steps in scripts/prepare-production.py.
+substitutions:
+  _REGION: europe-west1
+  _ARTIFACT_REPOSITORY: lenslayer
+  _SOURCE_COMMIT: REVIEW_REQUIRED
+options:
+  logging: CLOUD_LOGGING_ONLY
+steps:
+  - id: validate-release-identity
+    name: python:3.12-slim
+    entrypoint: python
+    args:
+      - -c
+      - "import re; assert re.fullmatch('[0-9a-f]{40}', '${_SOURCE_COMMIT}'), 'Pin a reviewed source commit'"
+  - id: build-runtime
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file
+      - backend/Dockerfile
+      - --label
+      - org.opencontainers.image.revision=${_SOURCE_COMMIT}
+      - --tag
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/platform:release-${_SOURCE_COMMIT}
+      - .
+  - id: push-runtime
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/platform:release-${_SOURCE_COMMIT}
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/platform:release-${_SOURCE_COMMIT}

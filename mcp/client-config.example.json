@@ -1,11 +1,18 @@
 {
-  "mcpServers": {
-    "lenslayer": {
-      "command": "node",
-      "args": ["/absolute/path/to/lenslayer/mcp/dist/stdio.js"],
-      "env": {
-        "LENSLAYER_API_URL": "http://127.0.0.1:8000",
-        "LENSLAYER_AGENT_TOKEN": "REPLACE_WITH_SCOPED_SERVER_SECRET"
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "servers": {
+      "lenslayer": {
+        "type": "local",
+        "command": ["/absolute/path/to/node", "/absolute/path/to/lenslayer/mcp/dist/stdio.js"],
+        "environment": {
+          "LENSLAYER_API_URL": "{env:LENSLAYER_API_URL}",
+          "LENSLAYER_AGENT_TOKEN": "{env:LENSLAYER_AGENT_TOKEN}"
+        },
+        "protocol": "legacy",
+        "codemode": false,
+        "disabled": false,
+        "timeout": { "startup": 30000, "catalog": 30000, "execution": 50000 }
       }
     }
   }

@@ -1,6 +1,6 @@
-import type { AgentAction, AgentRun, RunEvent } from "./agent-types";
+import type { AgentAction, AgentRun, RunEvent, WorkflowGraph } from "./agent-types";
 import type { Role } from "./types";
-import { actionMatchesCondition } from "./agent-shapes";
+import { actionMatchesCondition, isWorkflowGraph } from "./agent-shapes";
 
 export function isTerminalRun(status: AgentRun["status"]) {
   return status === "succeeded" || status === "failed" || status === "cancelled";
@@ -14,8 +14,9 @@ export function executionOwnerLabel(owner: string) {
   return owner === "lenslayer_hosted_agent" ? "LensLayer hosted agent" : owner === "external_agent" ? "External agent" : "Unknown execution owner";
 }
 
-export function canDecideAction(role: Role | null, isDemo: boolean, run: AgentRun, action: AgentAction, now = Date.now()) {
-  return canAdministerAgents(role, isDemo) && (run.status === "running" || run.status === "awaiting_approval") && actionMatchesCondition(run, action) && Date.parse(run.deadline_at) > now && action.status === "awaiting_approval" && action.approval_status === "pending" && action.approval_expires_at !== null && Date.parse(action.approval_expires_at) > now;
+export function canDecideAction(role: Role | null, isDemo: boolean, run: AgentRun, action: AgentAction, now = Date.now(), graph?: WorkflowGraph) {
+  const graphBound = run.success_condition?.type !== "graph" || Boolean(isWorkflowGraph(graph) && graph.run_id === run.id && "plan_sha256" in action.input && action.input.plan_sha256 === graph.plan_sha256 && graph.nodes.some((node) => node.id === action.input.condition_id && node.action_id === action.id));
+  return graphBound && action.run_id === run.id && canAdministerAgents(role, isDemo) && (run.status === "running" || run.status === "awaiting_approval") && actionMatchesCondition(run, action) && Date.parse(run.deadline_at) > now && action.status === "awaiting_approval" && action.approval_status === "pending" && action.approval_expires_at !== null && Date.parse(action.approval_expires_at) > now;
 }
 
 export function runPollInterval(run: AgentRun | undefined, isDemo: boolean, now = Date.now()): number | false {
@@ -48,6 +49,8 @@ const errorNotes: Record<string, string> = {
   provider_event_conflict: "A conflicting provider object cannot be overwritten or treated as completion. Inspect the immutable input and receipt.",
   model_outcome_unknown: "The optional model call was charged but its outcome could not be recovered. It is not automatically called again. Inspect the assignment and run before starting new work.",
   plan_declined: "The bounded plan was declined. Factual confirmation is separate from action approval and cannot change the fixed assignment facts.",
+  branch_false: "This approved factual predicate was false. The original action is cancelled with zero dispatch attempts; the node is skipped and no task was created for it.",
+  invalid_completion_receipt: "A recorded completion receipt did not match the original action, evidence or plan. No verified completion is assumed; inspect the immutable ledger rather than creating replacement tasks.",
 };
 
 export function agentErrorNote(code: string) {

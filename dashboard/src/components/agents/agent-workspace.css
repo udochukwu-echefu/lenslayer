@@ -69,6 +69,14 @@
 .agent-events li h3 { font-size: 15px; }
 .agent-events li p { display: flex; flex-wrap: wrap; gap: 12px; margin: 7px 0 0; font-size: 13px; color: var(--ink-muted); }
 .agent-events > .field-help { margin-top: 16px; }
+.agent-graph > p { max-width: 72ch; color: var(--ink-muted); line-height: 1.6; }
+.agent-graph-list, .agent-condition-list { list-style: none; padding: 0; margin: 20px 0; }
+.agent-graph-list > li, .agent-condition-list > li { padding: 24px 0; border-bottom: 1px solid var(--line); }
+.agent-graph-state { font-size: 14px; font-weight: 600; }
+.agent-graph-list dd ol { margin: 0; padding-inline-start: 20px; }
+.agent-context-scope { margin-top: 20px; }
+.agent-run-context:has(.agent-condition-list) { grid-template-columns: 1fr; }
+.agent-graph-list li, .agent-condition-list li { min-width: 0; overflow-wrap: anywhere; }
 @media (max-width: 760px) {
   .agent-page { gap: 24px; }
   .agent-form-grid, .agent-run-context { grid-template-columns: 1fr; }

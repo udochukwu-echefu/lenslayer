@@ -2,36 +2,45 @@ name: SDK release artifact review
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: Exact stable SDK package version to review (no v prefix)
+        required: true
+        type: string
 
 permissions:
   contents: read
 
 jobs:
   artifact:
+    if: github.repository == 'udochukwu-echefu/lenslayer' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      EXPECTED_VERSION: ${{ inputs.version }}
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
-          node-version: "22"
-          cache: npm
-          cache-dependency-path: sdk/package-lock.json
-      - name: Install locked dependencies
-        run: npm --prefix sdk ci
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24.15.0'
+          package-manager-cache: false
+      - name: Require canonical manual main release source
+        run: node sdk/scripts/release-policy.mjs github review
+      - name: Install locked dependencies without lifecycle scripts
+        run: npm --prefix sdk ci --ignore-scripts --no-audit --no-fund
       - name: Check packed artifact, install, exports and types
         run: npm --prefix sdk run release:check
-      - name: Pack exact review artifact and record integrity
+      - name: Pack exact review artifact with SHA-256, npm integrity and source manifest
+        run: node sdk/scripts/release-artifact.mjs pack sdk-release-review
+      - name: Install and type-check the exact review artifact
         working-directory: sdk
-        run: |
-          mkdir -p ../sdk-release-review
-          npm pack --json --pack-destination ../sdk-release-review > ../sdk-release-review/pack.json
-          cd ../sdk-release-review
-          sha256sum *.tgz > SHA256SUMS
+        run: node tests/package-check.mjs ../sdk-release-review/lenslayer-agent-sdk-${EXPECTED_VERSION}.tgz
       - name: Save review artifact; this job never publishes
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: lenslayer-agent-sdk-${{ github.sha }}
+          name: lenslayer-agent-sdk-${{ github.sha }}-${{ github.run_attempt }}
           path: sdk-release-review/
           if-no-files-found: error
           retention-days: 7

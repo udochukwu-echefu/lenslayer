@@ -7,6 +7,7 @@ import { join } from "node:path";
 import { Client } from "@modelcontextprotocol/client";
 import { StdioClientTransport } from "@modelcontextprotocol/client/stdio";
 import { LensLayerClient } from "@lenslayer/agent-sdk";
+import { calendarSessionHeaders } from "../../examples/agents/tests/calendar-session.mjs";
 
 // Explicit loopback, disposable fake-provider integration only. No live APIs.
 const baseUrl = process.env.LENSLAYER_AGENT_TEST_API_URL;
@@ -19,7 +20,7 @@ await readFile(join(testRoot, "calendar-fixture-ack"));
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const identity = { "X-LensLayer-User": "workflow-check-owner", "X-LensLayer-Email": "workflow@example.test", Connection: "close" };
 async function human(path, method = "GET", body) {
-  const input = new Request(`${baseUrl}/api/v1${path}`, { method, headers: { ...identity, ...(body && !(body instanceof FormData) ? { "Content-Type": "application/json" } : {}) }, ...(body ? { body: body instanceof FormData ? body : JSON.stringify(body) } : {}) });
+  const input = new Request(`${baseUrl}/api/v1${path}`, { method, headers: { ...identity, ...calendarSessionHeaders(path, method, body, identity["X-LensLayer-User"]), ...(body && !(body instanceof FormData) ? { "Content-Type": "application/json" } : {}) }, ...(body ? { body: body instanceof FormData ? body : JSON.stringify(body) } : {}) });
   const bytes = body ? Buffer.from(await input.arrayBuffer()) : undefined;
   // Separate sockets avoid borrowing idle fetch sockets while execFileSync blocks
   // the test event loop. Mutating human calls are never automatically replayed.

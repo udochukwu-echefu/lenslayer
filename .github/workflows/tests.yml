@@ -14,7 +14,7 @@ jobs:
     timeout-minutes: 25
     services:
       postgres:
-        image: postgres:17
+        image: postgres:18.6
         env:
           POSTGRES_USER: lenslayer_test
           POSTGRES_DB: lenslayer_agent_test
@@ -39,7 +39,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: "22"
+          node-version: "24.15.0"
           cache: npm
           cache-dependency-path: |
             dashboard/package-lock.json
@@ -68,6 +68,11 @@ jobs:
           LENSLAYER_TEST_POSTGRES_ACK: create_disposable_schema
           LENSLAYER_TEST_POSTGRES_URL: postgresql+psycopg://lenslayer_test@127.0.0.1:5432/lenslayer_agent_test
         run: python -m unittest discover -s tests -v
+
+      - name: Check staging acceptance helpers without live services
+        run: |
+          env -u NODE_OPTIONS node --test operator/staging-acceptance/acceptance.test.mjs
+          python -B -m unittest discover -s operator/staging-acceptance -p 'test_*.py' -v
 
       - name: Verify database migrations
         env:
@@ -99,6 +104,8 @@ jobs:
 
       - name: Test dashboard
         working-directory: dashboard
+        env:
+          LENSLAYER_TEST_PYTHON: ${{ env.pythonLocation }}/bin/python
         run: npm test
 
       - name: Build dashboard

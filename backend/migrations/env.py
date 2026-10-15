@@ -11,13 +11,16 @@ from backend.app import models  # noqa: F401
 from backend.app import agent_models  # noqa: F401
 from backend.app import connector_models  # noqa: F401
 from backend.app import hosted_agent_models  # noqa: F401
+from backend.app import agent_generalization_models  # noqa: F401
 
 
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name, disable_existing_loggers=False)
 
-config.set_main_option("sqlalchemy.url", get_settings().database_url)
+# ConfigParser treats percent-encoded URL components as interpolation syntax.
+# Escape them here; get_main_option reconstructs the original SQLAlchemy URL.
+config.set_main_option("sqlalchemy.url", get_settings().database_url.replace("%", "%%"))
 target_metadata = Base.metadata
 
 

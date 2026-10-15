@@ -31,6 +31,7 @@ CALENDAR_SECRETS = {
     "google-calendar-client-secret": "LENSLAYER_PLATFORM_GOOGLE_CALENDAR_CLIENT_SECRET",
     "connector-encryption-key": "LENSLAYER_PLATFORM_CONNECTOR_ENCRYPTION_KEY",
     "connector-state-signing-key": "LENSLAYER_PLATFORM_CONNECTOR_STATE_SIGNING_KEY",
+    "calendar-session-binding-key": "LENSLAYER_PLATFORM_CALENDAR_SESSION_BINDING_KEY",
 }
 EXCLUDED_DIRS = {
     ".git", ".agents", ".codex", ".aws", ".venv", "node_modules", ".next",
@@ -159,6 +160,8 @@ def environment(config: dict, worker_origin: str | None = None) -> dict[str, str
         "LENSLAYER_PLATFORM_AGENT_WORKER_DRAIN_SECONDS": "120",
         "LENSLAYER_PLATFORM_HOSTED_AGENTS_ENABLED": "true",
         "LENSLAYER_PLATFORM_HOSTED_MODEL_ENABLED": "false",
+        "LENSLAYER_PLATFORM_HOSTED_MODEL_LIFETIME_CALL_LIMIT": "0",
+        "LENSLAYER_PLATFORM_GOOGLE_CALENDAR_ENABLED": "true" if config["calendar_enabled"] else "false",
         "LENSLAYER_PLATFORM_HOSTED_AGENT_LEASE_SECONDS": "180",
         "LENSLAYER_PLATFORM_HOSTED_AGENT_WAIT_SECONDS": "15",
         "GROQ_MODEL": "openai/gpt-oss-120b",
@@ -217,6 +220,7 @@ def render_plan(config: dict, output: Path, image_digest: str | None = None, wor
             f"--env-vars-file={runtime_env}", f"--set-secrets={bindings}", "--labels=environment=staging,application=lenslayer"]},
         {"id": "bootstrap-private-agent-worker", "cwd": str(ROOT), "argv": ["gcloud", "run", "deploy", config["agent_worker_service"], *common,
             f"--image={image}", "--no-allow-unauthenticated", "--min-instances=0", "--max-instances=1", "--min=0", "--max=1",
+            "--invoker-iam-check", "--scaling=auto",
             "--cpu-throttling", "--concurrency=1", "--timeout=300", "--command=python",
             "--args=-m,uvicorn,backend.app.agent_worker_service:app,--host,0.0.0.0,--port,8080,--no-access-log",
             "--cpu=1", "--memory=1Gi", f"--env-vars-file={bootstrap_env}", f"--set-secrets={bindings}",
@@ -225,6 +229,7 @@ def render_plan(config: dict, output: Path, image_digest: str | None = None, wor
             f"--project={config['project_id']}", f"--region={config['region']}", "--format=value(status.url)"]},
         {"id": "deploy-on-demand-agent-worker", "requires_worker_origin": True, "cwd": str(ROOT), "argv": ["gcloud", "run", "deploy", config["agent_worker_service"], *common,
             f"--image={image}", "--no-allow-unauthenticated", "--min-instances=0", "--max-instances=1", "--min=0", "--max=1",
+            "--invoker-iam-check", "--scaling=auto",
             "--cpu-throttling", "--concurrency=1", "--timeout=300", "--command=python",
             "--args=-m,uvicorn,backend.app.agent_worker_service:app,--host,0.0.0.0,--port,8080,--no-access-log",
             "--cpu=1", "--memory=1Gi", f"--env-vars-file={runtime_env}", f"--set-secrets={bindings}",

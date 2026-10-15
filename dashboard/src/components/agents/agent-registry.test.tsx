@@ -6,12 +6,13 @@ import type { Role } from "@/lib/types";
 import { agentFixture, contractFixture, memberFixture } from "@/test/agent-fixtures";
 import { agentQueryWrapper } from "@/test/agent-query-wrapper";
 import { AgentRegistry } from "./agent-registry";
+import { contextFixture } from "@/test/context-fixtures";
 
 const workspace = vi.hoisted(() => ({ activeOrganization: { id: "org-1" }, activeRole: "owner" as Role | null, isDemo: false }));
 vi.mock("../workspace-provider", () => ({ useWorkspace: () => workspace }));
 vi.mock("@/lib/api", async () => {
   const { ApiError } = await import("@/lib/api/client");
-  return { ApiError, api: { agents: vi.fn(), createAgent: vi.fn(), revokeAgent: vi.fn(), contracts: vi.fn(), members: vi.fn() } };
+  return { ApiError, api: { agents: vi.fn(), createAgent: vi.fn(), revokeAgent: vi.fn(), contracts: vi.fn(), members: vi.fn(), contextRecords: vi.fn(), narrowAgentContext: vi.fn() } };
 });
 
 const token = "ll_agent_component_test_only";
@@ -24,6 +25,7 @@ beforeEach(() => {
   vi.mocked(api.revokeAgent).mockReset().mockResolvedValue({ ...agentFixture, status: "revoked" });
   vi.mocked(api.contracts).mockReset().mockResolvedValue([contractFixture]);
   vi.mocked(api.members).mockReset().mockResolvedValue([memberFixture]);
+  vi.mocked(api.contextRecords).mockReset().mockResolvedValue([]);
   Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: vi.fn().mockResolvedValue(undefined) } });
 });
 afterEach(() => vi.restoreAllMocks());
@@ -38,6 +40,31 @@ async function fillCreation() {
 }
 
 describe("agent administration and one-time credential", () => {
+  it("creates context-only delegation with the exact two context tools and explicit IDs", async () => {
+    vi.mocked(api.contextRecords).mockResolvedValue([contextFixture]);
+    const { Wrapper } = agentQueryWrapper(); render(<AgentRegistry />, { wrapper: Wrapper });
+    fireEvent.click(await screen.findByRole("button", { name: "Create agent" }));
+    fireEvent.click(await screen.findByRole("checkbox", { name: /Northstar IT onboarding brief/ }));
+    fireEvent.click(screen.getByRole("checkbox", { name: /Workspace owner/ }));
+    fireEvent.click(screen.getByRole("checkbox", { name: /Retrieve retained source evidence/ }));
+    fireEvent.click(screen.getByRole("checkbox", { name: /Create an assigned follow-up task/ }));
+    fireEvent.click(screen.getByRole("checkbox", { name: /Retrieve workspace context evidence/ }));
+    fireEvent.click(screen.getByRole("checkbox", { name: /Create context-backed follow-up tasks/ }));
+    fireEvent.change(screen.getByLabelText("Agent name"), { target: { value: "Northstar support assistant" } });
+    fireEvent.change(screen.getByLabelText("Expiry (your local time)"), { target: { value: new Date(Date.now() + 86400000).toISOString().slice(0, 16) } });
+    fireEvent.click(screen.getByRole("button", { name: "Create agent credential" }));
+    await waitFor(() => expect(api.createAgent).toHaveBeenCalledWith("org-1", expect.objectContaining({ context_ids: ["context-1"], contract_ids: [], assignee_ids: ["user-1"], allowed_tools: ["context.retrieve", "workspace.context_tasks.create"], require_approval: true }), expect.any(AbortSignal)));
+  });
+  it("narrows existing context scope only after confirmation, including removal of every record", async () => {
+    vi.mocked(api.agents).mockResolvedValue([{ ...agentFixture, context_ids: ["context-1"] }]);
+    vi.mocked(api.narrowAgentContext).mockResolvedValue({ ...agentFixture, context_ids: [] });
+    const { Wrapper } = agentQueryWrapper(); render(<AgentRegistry />, { wrapper: Wrapper });
+    fireEvent.click(await screen.findByRole("button", { name: "Narrow context access" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "context-1" }));
+    expect(api.narrowAgentContext).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Confirm narrower context scope" }));
+    await waitFor(() => expect(api.narrowAgentContext).toHaveBeenCalledWith("org-1", "agent-1", { context_ids: [] }, expect.any(AbortSignal)));
+  });
   it("creates calendar-only scope without task targets and shows exact calendar grants", async () => {
     vi.mocked(api.agents).mockResolvedValue([{ ...agentFixture, contract_ids: [], assignee_ids: [], allowed_tools: ["google_calendar.events.create"], calendar_targets: [{ connection_id: "connection-1", calendar_id: "sandbox@example.test" }] }]);
     const { Wrapper } = agentQueryWrapper(); render(<AgentRegistry />, { wrapper: Wrapper });

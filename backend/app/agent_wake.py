@@ -6,6 +6,7 @@ and a recovery request can reconstruct a missed wake from committed work.
 from __future__ import annotations
 
 import hashlib
+import json
 import logging
 import math
 from datetime import datetime, timedelta, timezone
@@ -15,6 +16,8 @@ from fastapi import BackgroundTasks
 from sqlalchemy import and_, case, exists, func, or_, select, update
 
 from .agent_models import AgentAction, AgentInputRequest, AgentPrincipal, AgentRun
+from .agent_generalization_models import ContextRecord, ContextVersion, ContextEvidence, WorkflowGraphNode
+from .agent_generalization_runtime import graph_wake_at
 from .hosted_agent_models import HostedAgentTask
 from .models import Membership, utcnow
 from .review_trigger import queue_review_worker
@@ -63,7 +66,17 @@ def next_agent_wake_at(session, *, now=None):
         case((HostedAgentTask.lease_expires_at > HostedAgentTask.next_attempt_at,
               HostedAgentTask.lease_expires_at), else_=HostedAgentTask.next_attempt_at)),
         else_=HostedAgentTask.next_attempt_at))).where(HostedAgentTask.status.not_in(TERMINAL)))
-    add(select(func.min(AgentAction.updated_at)).where(AgentAction.status == "queued"))
+    graph_node = exists(select(WorkflowGraphNode.node_id).where(WorkflowGraphNode.action_id == AgentAction.id))
+    add(select(func.min(AgentAction.updated_at)).where(AgentAction.status == "queued", ~graph_node))
+    graph_at = graph_wake_at(session, now)
+    if graph_at is not None:
+        candidates.append(graph_at)
+    add(select(func.min(ContextRecord.expires_at)).where(exists(select(ContextVersion.id).where(
+        ContextVersion.record_id == ContextRecord.id, ContextVersion.text.is_not(None)))))
+    invalid_context = session.scalar(select(ContextEvidence.id).join(ContextRecord).join(AgentRun).where(
+        AgentRun.status.not_in(TERMINAL), or_(ContextRecord.deleted_at.is_not(None), ContextRecord.expires_at <= now)).limit(1))
+    if invalid_context:
+        candidates.append(now)
     add(select(func.min(AgentAction.lease_expires_at)).where(AgentAction.status == "running"))
     live_run = AgentRun.status.not_in(TERMINAL)
     add(select(func.min(AgentRun.deadline_at)).where(live_run))
@@ -159,6 +172,8 @@ def enqueue_next_agent_wake(database, settings, *, transport=None, current_task_
     except Exception:
         # Provider exceptions may contain headers/bodies. Never log them.
         logger.error("Agent worker wake was not scheduled; committed work requires recovery.")
+        print(json.dumps({"kind": "lenslayer_agent_wake_failure", "severity": "ERROR"},
+                         separators=(",", ":")), flush=True)
         return False
 
 

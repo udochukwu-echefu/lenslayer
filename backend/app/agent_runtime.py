@@ -15,6 +15,8 @@ from sqlalchemy import and_, exists, or_, select, update
 
 from .agent_models import AgentAction, AgentInputRequest, AgentPrincipal, AgentRun
 from .agent_schemas import TaskActionInput, TaskSuccessCondition
+from .agent_schemas import ContextTaskActionInput, ContextTaskCondition
+from .agent_generalization_runtime import graph_action_eligible
 from .agent_tools import get_tool, selected_condition
 from .config import Settings
 from .database import Database
@@ -31,9 +33,9 @@ class LeaseLost(Exception):
 
 def claim_next_agent_action(database: Database, settings: Settings) -> tuple[str, str] | None:
     now = utcnow()
-    eligible = or_(AgentAction.status == "queued", and_(
+    eligible = and_(graph_action_eligible(now), or_(AgentAction.status == "queued", and_(
         AgentAction.status == "running", AgentAction.lease_expires_at <= now,
-    ))
+    )))
     with database.session_factory() as session:
         # Compare-and-swap works on both SQLite and PostgreSQL. Never keep a
         # claimed action's transaction open while acquiring principal/run locks.
@@ -99,7 +101,8 @@ def process_task_action(database: Database, settings: Settings, object_store: Ob
             service._run_is_live(run)
             if action.attempts > settings.agent_action_max_attempts:
                 raise HTTPException(status_code=409, detail="Dispatch retry limit exceeded.")
-            if action.tool != "workspace.tasks.create" or action.tool_version != "1":
+            is_context = action.tool == "workspace.context_tasks.create"
+            if action.tool not in {"workspace.tasks.create", "workspace.context_tasks.create"} or action.tool_version != "1":
                 raise HTTPException(status_code=422, detail="Unsupported action tool or version.")
             if digest(action.input_json) != action.input_sha256:
                 raise HTTPException(status_code=409, detail="Invalid action input binding.")
@@ -116,16 +119,26 @@ def process_task_action(database: Database, settings: Settings, object_store: Ob
                 ).with_for_update())
                 if approver is None or approver.role not in {"owner", "admin"}:
                     raise HTTPException(status_code=403, detail="The approver no longer has approval authority.")
-            payload = TaskActionInput.model_validate_json(action.input_json)
-            evidence = service.validate_agent_task_input(agent, run, payload)
-            condition = TaskSuccessCondition.model_validate(selected_condition(run, payload))
+            payload = (ContextTaskActionInput if is_context else TaskActionInput).model_validate_json(action.input_json)
+            definition = get_tool(action.tool, action.tool_version)
+            evidence = definition.validate_scope(service, agent, run, payload)
+            condition = (ContextTaskCondition if is_context else TaskSuccessCondition).model_validate(selected_condition(run, payload))
+            if is_context:
+                from .agent_generalization_models import WorkflowGraphNode
+                node = session.get(WorkflowGraphNode, (run.id, payload.condition_id))
+                if (node.action_id != action.id or node.status != "ready" or aware(node.not_before_at) > now
+                        or (payload.when and payload.when.value != payload.when.equals)):
+                    raise HTTPException(409, "Graph node is not approved and dependency/timer ready.")
             reference = {
                 "agent_id": agent.id, "run_id": run.id, "action_id": action.id,
                 "evidence_id": evidence.id, "version_id": evidence.version_id,
                 "source_sha256": evidence.source_sha256, "start_offset": evidence.start_offset,
                 "end_offset": evidence.end_offset,
             }
-            if payload.deadline_basis:
+            if is_context:
+                reference.update(context_id=payload.context_id, plan_sha256=payload.plan_sha256,
+                                 node_id=payload.condition_id)
+            if not is_context and payload.deadline_basis:
                 reference["deadline_basis"] = payload.deadline_basis.model_dump(mode="json")
                 reference["deadline_basis_origin"] = "caller_supplied"
             # The savepoint removes the task if verification fails while allowing
@@ -135,10 +148,10 @@ def process_task_action(database: Database, settings: Settings, object_store: Ob
                 if task is None:
                     task = WorkflowTask(
                         id=action.output_id, organization_id=run.organization_id,
-                        contract_id=payload.contract_id, created_by_user_id=agent.delegated_by_user_id,
+                        contract_id=None if is_context else payload.contract_id, created_by_user_id=agent.delegated_by_user_id,
                         assigned_to_user_id=payload.assigned_to_user_id, title=payload.title,
                         description=payload.description, category="follow_up", priority="normal", status="open",
-                        due_at=payload.due_at, source_kind="deadline", source_reference_json=json_dump(reference),
+                        due_at=payload.due_at, source_kind="manual" if is_context else "deadline", source_reference_json=json_dump(reference),
                     )
                     session.add(task)
                     session.flush()
@@ -147,6 +160,11 @@ def process_task_action(database: Database, settings: Settings, object_store: Ob
                     task, condition, payload, reference, run.organization_id, agent.delegated_by_user_id)
                 if not verified:
                     raise HTTPException(status_code=409, detail="Task read-back did not satisfy the success condition.")
+                if is_context:
+                    # The source row remains locked, but wall-clock retention can
+                    # elapse during read-back. Fail inside the savepoint so no task
+                    # survives an expired-source dispatch.
+                    definition.validate_scope(service, agent, run, payload)
                 service._run_is_live(run)
                 if aware(agent.expires_at) <= utcnow():
                     raise HTTPException(status_code=401, detail="The agent expired during dispatch.")
@@ -167,13 +185,17 @@ def process_task_action(database: Database, settings: Settings, object_store: Ob
                 "version_id": evidence.version_id, "verified": True,
                 "verification_method": "database_read_back", "verified_at": utcnow().isoformat(),
             }
+            if is_context:
+                result.update(type="context_task_created", context_id=payload.context_id,
+                              plan_sha256=payload.plan_sha256, node_id=payload.condition_id)
             action.status, action.result_json, action.completed_at = "succeeded", json_dump(result), utcnow()
             action.lease_token = action.lease_expires_at = None
             service._event(run, "action.succeeded", {"action_id": action.id, "task_id": task.id, "verified": True})
             service.checkpoint_agent_action(run, action, result)
             service._audit(run.organization_id, agent.delegated_by_user_id, "task.created", task.contract_id,
                            {"task_id": task.id, "agent_id": agent.id, "run_id": run.id, "action_id": action.id})
-            service._audit(run.organization_id, agent.delegated_by_user_id, "agent.run_succeeded", detail={
+            service._audit(run.organization_id, agent.delegated_by_user_id,
+                           "agent.graph_checkpointed" if is_context and run.status != "succeeded" else "agent.run_succeeded", detail={
                 "run_id": run.id, "agent_id": agent.id, "action_id": action.id, "task_id": task.id,
             })
             session.commit()
@@ -213,10 +235,14 @@ def expire_agent_runs(database: Database, settings: Settings, object_store: Obje
         stale_input = exists(select(AgentInputRequest.id).where(
             AgentInputRequest.run_id == AgentRun.id, AgentInputRequest.supplied_at.is_(None),
             AgentInputRequest.expires_at <= now))
+        from .agent_generalization_models import ContextEvidence, ContextRecord
+        stale_context = exists(select(ContextEvidence.id).join(ContextRecord).where(
+            ContextEvidence.run_id == AgentRun.id,
+            or_(ContextRecord.deleted_at.is_not(None), ContextRecord.expires_at <= now)))
         run_ids = session.scalars(select(AgentRun.id).join(AgentPrincipal, AgentRun.agent_id == AgentPrincipal.id).where(
             AgentRun.status.not_in(TERMINAL_RUN_STATES),
             or_(AgentRun.deadline_at <= now, AgentPrincipal.expires_at <= now,
-                AgentPrincipal.revoked_at.is_not(None), ~delegated_authority, stale_approval, stale_input),
+                AgentPrincipal.revoked_at.is_not(None), ~delegated_authority, stale_approval, stale_input, stale_context),
         ).order_by(AgentRun.created_at).limit(1000)).all()
     closed = 0
     for run_id in run_ids:
@@ -240,6 +266,11 @@ def expire_agent_runs(database: Database, settings: Settings, object_store: Obje
                     service._agent_is_active(agent, lock_authority=True)
                 except HTTPException:
                     code = "agent_inactive"
+            if not code:
+                if session.scalar(select(ContextEvidence.id).join(ContextRecord).where(
+                    ContextEvidence.run_id == run.id,
+                    or_(ContextRecord.deleted_at.is_not(None), ContextRecord.expires_at <= utcnow())).limit(1)):
+                    code = "source_unavailable"
             if not code:
                 if session.scalar(select(AgentInputRequest.id).where(AgentInputRequest.run_id == run.id,
                     AgentInputRequest.supplied_at.is_(None), AgentInputRequest.expires_at <= utcnow()).limit(1)):

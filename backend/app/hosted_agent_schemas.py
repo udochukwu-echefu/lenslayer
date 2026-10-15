@@ -26,9 +26,17 @@ class HostedTaskCreate(StrictInput):
     task_description: str = Field(default="", max_length=4000)
     calendar: CalendarSuccessCondition | None = None
     planner_mode: PlannerMode = "deterministic"
+    expected_model_provider: Literal["deepseek", "openai"] | None = None
+    expected_model_id: Literal["deepseek-flash", "gpt-6.1-sol"] | None = None
+    expected_model_reasoning_effort: Literal["high"] | None = None
 
     @model_validator(mode="after")
     def exact_goal_facts(self):
+        expected = (self.expected_model_provider, self.expected_model_id, self.expected_model_reasoning_effort)
+        if self.planner_mode == "model" and any(value is None for value in expected):
+            raise ValueError("Model mode requires the exact disclosed provider/model/high-effort expectation.")
+        if self.planner_mode == "deterministic" and any(value is not None for value in expected):
+            raise ValueError("Deterministic mode must not claim a model selection.")
         document_fields = {"contract_id", "version_id", "query", "assignee_id", "due_at", "task_title", "task_description"}
         if self.goal_type == "calendar-event":
             if self.model_fields_set & document_fields:
@@ -45,6 +53,9 @@ class HostedTaskCreate(StrictInput):
     def facts(self):
         """Canonical input excludes irrelevant defaults, so it remains valid on restart."""
         values = self.model_dump(mode="json")
+        if self.planner_mode == "deterministic":
+            for key in ("expected_model_provider", "expected_model_id", "expected_model_reasoning_effort"):
+                values.pop(key)
         if self.goal_type == "calendar-event":
             for key in ("contract_id", "version_id", "query", "assignee_id", "due_at", "task_title", "task_description"):
                 values.pop(key)
@@ -60,6 +71,9 @@ class HostedTaskResponse(StrictInput):
     goal_type: GoalType
     goal: str
     planner_mode: PlannerMode
+    model_provider: Literal["deepseek", "openai"] | None = None
+    model_id: Literal["deepseek-flash", "gpt-6.1-sol"] | None = None
+    model_reasoning_effort: Literal["high"] | None = None
     status: HostedStatus
     phase: str
     run_id: str | None
@@ -76,6 +90,11 @@ class HostedCapabilities(StrictInput):
     goal_types: list[GoalType]
     planner_modes: list[PlannerMode]
     max_deadline_days: Literal[7] = 7
+    model_provider: Literal["deepseek", "openai"] | None = None
+    model_id: Literal["deepseek-flash", "gpt-6.1-sol"] | None = None
+    model_reasoning_effort: Literal["high"] | None = None
+    model_excerpt_max_chars: Literal[1000] = 1000
+    model_disclosure: str | None = None
 
 
 class ModelDecision(StrictInput):

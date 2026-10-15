@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, true
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
@@ -96,6 +96,7 @@ class Membership(Base):
     organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id", ondelete="CASCADE"), index=True)
     user_id: Mapped[str] = mapped_column(ForeignKey("platform_users.id", ondelete="CASCADE"), index=True)
     role: Mapped[str] = mapped_column(String(32), default="member")
+    email_notifications: Mapped[bool] = mapped_column(Boolean, default=True, server_default=true())
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
     organization: Mapped[Organization] = relationship(back_populates="memberships")
@@ -563,6 +564,9 @@ class WebhookSubscription(Base):
     description: Mapped[str] = mapped_column(String(255), default="")
     events_json: Mapped[str] = mapped_column(Text, default="[]")
     signing_secret_hash: Mapped[str] = mapped_column(String(64), index=True)
+    # Historical production stores this nullable key for outbound HMAC. Never
+    # reconstruct a missing key from its hash or expose it in list responses.
+    signing_secret: Mapped[str | None] = mapped_column(String(128), nullable=True)
     secret_prefix: Mapped[str] = mapped_column(String(16), default="")
     status: Mapped[str] = mapped_column(String(32), default="active", index=True)
     last_delivery_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

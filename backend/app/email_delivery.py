@@ -3,10 +3,11 @@ from __future__ import annotations
 from html import escape
 
 import httpx
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .config import Settings
-from .models import EmailDelivery
+from .models import EmailDelivery, Membership
 
 
 def absolute_action_url(settings: Settings, action_url: str) -> str:
@@ -31,6 +32,11 @@ def queue_email(
 ) -> EmailDelivery | None:
     if settings.email_backend.lower() == "disabled" or not recipient:
         return None
+    if user_id is not None:
+        wants_email = session.scalar(select(Membership.email_notifications).where(
+            Membership.organization_id == organization_id, Membership.user_id == user_id))
+        if wants_email is False:
+            return None
     url = absolute_action_url(settings, action_url)
     action = f' <a href="{escape(url, quote=True)}">Open LensLayer</a>' if url else ""
     text_action = f"\n\nOpen LensLayer: {url}" if url else ""

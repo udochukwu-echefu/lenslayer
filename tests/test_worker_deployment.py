@@ -17,7 +17,9 @@ class ProductionWorkerGuardTests(unittest.TestCase):
         validate_production_worker(**values)
         for change in ({"origin": "REVIEW_REQUIRED"}, {"origin": "https://lenslayer-agent-worker-staging-example.a.run.app"},
                        {"queue": "lenslayer-agent-work-staging"}, {"service": "lenslayer-review-worker"},
-                       {"origin": "https://lenslayer-agent-worker-example.a.run.app/drain"},
+                        {"origin": "https://lenslayer-agent-worker-example.a.run.app/drain"},
+                        {"origin": "https://lenslayer-agent-worker-example.a.run.app:443"},
+                        {"project": "unreviewed-project"}, {"region": "us-central1"},
                        {"invoker": "lenslayer-runtime"}):
             with self.subTest(change=change), self.assertRaises(ValueError):
                 validate_production_worker(**{**values, **change})
@@ -35,12 +37,16 @@ class ProductionWorkerGuardTests(unittest.TestCase):
         values = dict(project="lenslayer", region="europe-west1", service="lenslayer-agent-worker",
             queue="lenslayer-agent-work", origin="https://lenslayer-agent-worker-example.a.run.app", invoker="lenslayer-agent-wake")
         state = [
-            {"state": "RUNNING", "rateLimits": {"maxConcurrentDispatches": 1, "maxDispatchesPerSecond": 1}},
-            {"state": "ENABLED", "schedule": "0 * * * *", "httpTarget": {"uri": values['origin'] + "/recover",
+            {"state": "RUNNING", "rateLimits": {"maxConcurrentDispatches": 1, "maxDispatchesPerSecond": 1},
+                "retryConfig": {"maxAttempts": 8, "minBackoff": "10s", "maxBackoff": "300s", "maxRetryDuration": "86400s"}},
+            {"state": "ENABLED", "schedule": "0 * * * *", "timeZone": "Africa/Lagos", "attemptDeadline": "300s",
+                "httpTarget": {"uri": values['origin'] + "/recover",
                 "httpMethod": "POST", "oidcToken": {"audience": values['origin'],
                 "serviceAccountEmail": "lenslayer-agent-wake@lenslayer.iam.gserviceaccount.com"}}},
-            {"status": {"url": values['origin']}, "spec": {"template": {"metadata": {"annotations": {
-                "autoscaling.knative.dev/minScale": "0", "run.googleapis.com/cpu-throttling": "true"}}}}},
+            {"status": {"url": values['origin']}, "metadata": {"annotations": {"run.googleapis.com/maxScale": "1"}},
+                "spec": {"template": {"metadata": {"annotations": {
+                "autoscaling.knative.dev/minScale": "0", "autoscaling.knative.dev/maxScale": "1",
+                "run.googleapis.com/cpu-throttling": "true"}}, "spec": {"containerConcurrency": 1}}}},
             {"bindings": [{"role": "roles/run.invoker", "members": ["serviceAccount:lenslayer-agent-wake@lenslayer.iam.gserviceaccount.com"]}]},
         ]
         def run_case(data):
@@ -49,14 +55,50 @@ class ProductionWorkerGuardTests(unittest.TestCase):
                 check_cloud_worker(**values)
                 self.assertTrue(all('describe' in c.args[0] or 'get-iam-policy' in c.args[0] for c in run.call_args_list))
         run_case(state)
+        explicit = copy.deepcopy(state)
+        explicit[2]['metadata'] = {'annotations': {
+            'run.googleapis.com/maxScale': '1',
+            'run.googleapis.com/invoker-iam-disabled': 'false',
+            'run.googleapis.com/scalingMode': 'automatic'}}
+        run_case(explicit)
         for i, key, value in ((0, 'state', 'PAUSED'), (1, 'state', 'PAUSED'), (1, 'schedule', '* * * * *')):
             changed = copy.deepcopy(state); changed[i][key] = value
             with self.subTest(key=key, value=value), self.assertRaises(ValueError): run_case(changed)
+        for key, value in (("maxAttempts", 0), ("minBackoff", "1s"), ("maxBackoff", "3600s"),
+                           ("maxRetryDuration", "0s")):
+            changed = copy.deepcopy(state)
+            changed[0]['retryConfig'][key] = value
+            with self.subTest(retry=key), self.assertRaises(ValueError): run_case(changed)
+        for key, value in (("timeZone", "UTC"), ("attemptDeadline", "1800s")):
+            changed = copy.deepcopy(state)
+            changed[1][key] = value
+            with self.subTest(recovery=key), self.assertRaises(ValueError): run_case(changed)
+        changed = copy.deepcopy(state)
+        del changed[2]['metadata']['annotations']['run.googleapis.com/maxScale']
+        with self.assertRaises(ValueError): run_case(changed)
         changed = copy.deepcopy(state)
         changed[2]['spec']['template']['metadata']['annotations']['autoscaling.knative.dev/minScale'] = '1'
         with self.assertRaises(ValueError): run_case(changed)
+        changed = copy.deepcopy(state)
+        changed[2]['spec']['template']['spec']['containerConcurrency'] = 2
+        with self.assertRaises(ValueError): run_case(changed)
+        changed = copy.deepcopy(state)
+        changed[2]['spec']['template']['metadata']['annotations']['autoscaling.knative.dev/maxScale'] = '2'
+        with self.assertRaises(ValueError): run_case(changed)
         changed = copy.deepcopy(state); changed[3]['bindings'][0]['members'].append('allUsers')
         with self.assertRaises(ValueError): run_case(changed)
+
+        # A narrow IAM policy does not make a service private if the independent
+        # invoker check is disabled. Zero minScale also does not undo manual mode.
+        for annotations in ({'run.googleapis.com/invoker-iam-disabled': 'true'},
+                            {'run.googleapis.com/scalingMode': 'manual',
+                             'run.googleapis.com/manualInstanceCount': '1'},
+                            {'run.googleapis.com/scalingMode': 'manual',
+                             'run.googleapis.com/manualInstanceCount': '0'}):
+            changed = copy.deepcopy(state)
+            changed[2]['metadata'] = {'annotations': {'run.googleapis.com/maxScale': '1', **annotations}}
+            with self.subTest(annotations=annotations), self.assertRaises(ValueError):
+                run_case(changed)
 
 
 if __name__ == "__main__":

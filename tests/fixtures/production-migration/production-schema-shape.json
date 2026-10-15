@@ -1,0 +1,3141 @@
+{
+  "schema_revision": "6b1d3e8f2c57",
+  "server_version": "18.6 (653b019)",
+  "columns": [
+    {
+      "table_name": "alembic_version",
+      "column_name": "version_num",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "approval_requests",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "approval_requests",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "approval_requests",
+      "column_name": "contract_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "approval_requests",
+      "column_name": "requested_by_user_id",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "approval_requests",
+      "column_name": "assigned_to_user_id",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "approval_requests",
+      "column_name": "resolved_by_user_id",
+      "ordinal_position": 6,
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "approval_requests",
+      "column_name": "title",
+      "ordinal_position": 7,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 512
+    },
+    {
+      "table_name": "approval_requests",
+      "column_name": "note",
+      "ordinal_position": 8,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "approval_requests",
+      "column_name": "status",
+      "ordinal_position": 9,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "approval_requests",
+      "column_name": "conditions_json",
+      "ordinal_position": 10,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "approval_requests",
+      "column_name": "condition_results_json",
+      "ordinal_position": 11,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "approval_requests",
+      "column_name": "resolution_note",
+      "ordinal_position": 12,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "approval_requests",
+      "column_name": "due_at",
+      "ordinal_position": 13,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "approval_requests",
+      "column_name": "resolved_at",
+      "ordinal_position": 14,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "approval_requests",
+      "column_name": "created_at",
+      "ordinal_position": 15,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "approval_requests",
+      "column_name": "updated_at",
+      "ordinal_position": 16,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_comments",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "contract_comments",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "contract_comments",
+      "column_name": "contract_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "contract_comments",
+      "column_name": "author_user_id",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "contract_comments",
+      "column_name": "body",
+      "ordinal_position": 5,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_comments",
+      "column_name": "mentions_json",
+      "ordinal_position": 6,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_comments",
+      "column_name": "created_at",
+      "ordinal_position": 7,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_comments",
+      "column_name": "updated_at",
+      "ordinal_position": 8,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_decisions",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "contract_decisions",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "contract_decisions",
+      "column_name": "contract_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "contract_decisions",
+      "column_name": "reviewer_user_id",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "contract_decisions",
+      "column_name": "decision",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "contract_decisions",
+      "column_name": "subject",
+      "ordinal_position": 6,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 512
+    },
+    {
+      "table_name": "contract_decisions",
+      "column_name": "rationale",
+      "ordinal_position": 7,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_decisions",
+      "column_name": "source_reference_json",
+      "ordinal_position": 8,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_decisions",
+      "column_name": "created_at",
+      "ordinal_position": 9,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_lifecycle_items",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "contract_lifecycle_items",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "contract_lifecycle_items",
+      "column_name": "contract_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "contract_lifecycle_items",
+      "column_name": "created_by_user_id",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "contract_lifecycle_items",
+      "column_name": "owner_user_id",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "contract_lifecycle_items",
+      "column_name": "kind",
+      "ordinal_position": 6,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "contract_lifecycle_items",
+      "column_name": "title",
+      "ordinal_position": 7,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 512
+    },
+    {
+      "table_name": "contract_lifecycle_items",
+      "column_name": "description",
+      "ordinal_position": 8,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_lifecycle_items",
+      "column_name": "amount",
+      "ordinal_position": 9,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "table_name": "contract_lifecycle_items",
+      "column_name": "due_at",
+      "ordinal_position": 10,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_lifecycle_items",
+      "column_name": "reminder_days",
+      "ordinal_position": 11,
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_lifecycle_items",
+      "column_name": "recurrence",
+      "ordinal_position": 12,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "contract_lifecycle_items",
+      "column_name": "status",
+      "ordinal_position": 13,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "contract_lifecycle_items",
+      "column_name": "last_notified_at",
+      "ordinal_position": 14,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_lifecycle_items",
+      "column_name": "escalated_at",
+      "ordinal_position": 15,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_lifecycle_items",
+      "column_name": "completed_at",
+      "ordinal_position": 16,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_lifecycle_items",
+      "column_name": "created_at",
+      "ordinal_position": 17,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_lifecycle_items",
+      "column_name": "updated_at",
+      "ordinal_position": 18,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_reviews",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "contract_reviews",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "contract_reviews",
+      "column_name": "contract_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "contract_reviews",
+      "column_name": "analysis_json",
+      "ordinal_position": 4,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_reviews",
+      "column_name": "quality_json",
+      "ordinal_position": 5,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_reviews",
+      "column_name": "source_text",
+      "ordinal_position": 6,
+      "data_type": "text",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_reviews",
+      "column_name": "created_at",
+      "ordinal_position": 7,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_reviews",
+      "column_name": "updated_at",
+      "ordinal_position": 8,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_versions",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "contract_versions",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "contract_versions",
+      "column_name": "contract_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "contract_versions",
+      "column_name": "document_asset_id",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "contract_versions",
+      "column_name": "uploaded_by_user_id",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "contract_versions",
+      "column_name": "version_number",
+      "ordinal_position": 6,
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_versions",
+      "column_name": "label",
+      "ordinal_position": 7,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "table_name": "contract_versions",
+      "column_name": "notes",
+      "ordinal_position": 8,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_versions",
+      "column_name": "source_name",
+      "ordinal_position": 9,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 512
+    },
+    {
+      "table_name": "contract_versions",
+      "column_name": "sha256",
+      "ordinal_position": 10,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "contract_versions",
+      "column_name": "size_bytes",
+      "ordinal_position": 11,
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_versions",
+      "column_name": "comparison_json",
+      "ordinal_position": 12,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_versions",
+      "column_name": "extracted_text",
+      "ordinal_position": 13,
+      "data_type": "text",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "contract_versions",
+      "column_name": "created_at",
+      "ordinal_position": 14,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "counterparty_responses",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "counterparty_responses",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "counterparty_responses",
+      "column_name": "contract_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "counterparty_responses",
+      "column_name": "contract_version_id",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "counterparty_responses",
+      "column_name": "recorded_by_user_id",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "counterparty_responses",
+      "column_name": "responder_name",
+      "ordinal_position": 6,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "table_name": "counterparty_responses",
+      "column_name": "channel",
+      "ordinal_position": 7,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "counterparty_responses",
+      "column_name": "body",
+      "ordinal_position": 8,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "counterparty_responses",
+      "column_name": "related_item_ids_json",
+      "ordinal_position": 9,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "counterparty_responses",
+      "column_name": "created_at",
+      "ordinal_position": 10,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "document_assets",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "document_assets",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "document_assets",
+      "column_name": "contract_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "document_assets",
+      "column_name": "storage_key",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 1024
+    },
+    {
+      "table_name": "document_assets",
+      "column_name": "original_name",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 512
+    },
+    {
+      "table_name": "document_assets",
+      "column_name": "content_type",
+      "ordinal_position": 6,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "table_name": "document_assets",
+      "column_name": "size_bytes",
+      "ordinal_position": 7,
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "document_assets",
+      "column_name": "sha256",
+      "ordinal_position": 8,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "document_assets",
+      "column_name": "status",
+      "ordinal_position": 9,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "document_assets",
+      "column_name": "created_at",
+      "ordinal_position": 10,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "email_deliveries",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "email_deliveries",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "email_deliveries",
+      "column_name": "user_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "email_deliveries",
+      "column_name": "kind",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "email_deliveries",
+      "column_name": "recipient",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 320
+    },
+    {
+      "table_name": "email_deliveries",
+      "column_name": "subject",
+      "ordinal_position": 6,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "table_name": "email_deliveries",
+      "column_name": "text_body",
+      "ordinal_position": 7,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "email_deliveries",
+      "column_name": "html_body",
+      "ordinal_position": 8,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "email_deliveries",
+      "column_name": "action_url",
+      "ordinal_position": 9,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 1024
+    },
+    {
+      "table_name": "email_deliveries",
+      "column_name": "status",
+      "ordinal_position": 10,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "email_deliveries",
+      "column_name": "attempts",
+      "ordinal_position": 11,
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "email_deliveries",
+      "column_name": "last_error",
+      "ordinal_position": 12,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "email_deliveries",
+      "column_name": "provider_message_id",
+      "ordinal_position": 13,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "table_name": "email_deliveries",
+      "column_name": "sent_at",
+      "ordinal_position": 14,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "email_deliveries",
+      "column_name": "created_at",
+      "ordinal_position": 15,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "email_deliveries",
+      "column_name": "updated_at",
+      "ordinal_position": 16,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "external_shares",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "external_shares",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "external_shares",
+      "column_name": "contract_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "external_shares",
+      "column_name": "created_by_user_id",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "external_shares",
+      "column_name": "token_hash",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "external_shares",
+      "column_name": "label",
+      "ordinal_position": 6,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "table_name": "external_shares",
+      "column_name": "include_evidence",
+      "ordinal_position": 7,
+      "data_type": "boolean",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "external_shares",
+      "column_name": "expires_at",
+      "ordinal_position": 8,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "external_shares",
+      "column_name": "revoked_at",
+      "ordinal_position": 9,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "external_shares",
+      "column_name": "last_viewed_at",
+      "ordinal_position": 10,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "external_shares",
+      "column_name": "view_count",
+      "ordinal_position": 11,
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "external_shares",
+      "column_name": "created_at",
+      "ordinal_position": 12,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "integration_connections",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "integration_connections",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "integration_connections",
+      "column_name": "created_by_user_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "integration_connections",
+      "column_name": "provider",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "integration_connections",
+      "column_name": "display_name",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "table_name": "integration_connections",
+      "column_name": "external_account_id",
+      "ordinal_position": 6,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "table_name": "integration_connections",
+      "column_name": "status",
+      "ordinal_position": 7,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "integration_connections",
+      "column_name": "capabilities_json",
+      "ordinal_position": 8,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "integration_connections",
+      "column_name": "settings_json",
+      "ordinal_position": 9,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "integration_connections",
+      "column_name": "last_sync_at",
+      "ordinal_position": 10,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "integration_connections",
+      "column_name": "error_message",
+      "ordinal_position": 11,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "integration_connections",
+      "column_name": "created_at",
+      "ordinal_position": 12,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "integration_connections",
+      "column_name": "updated_at",
+      "ordinal_position": 13,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "integration_imports",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "integration_imports",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "integration_imports",
+      "column_name": "connection_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "integration_imports",
+      "column_name": "contract_id",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "integration_imports",
+      "column_name": "imported_by_user_id",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "integration_imports",
+      "column_name": "provider",
+      "ordinal_position": 6,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "integration_imports",
+      "column_name": "source_type",
+      "ordinal_position": 7,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "integration_imports",
+      "column_name": "external_id",
+      "ordinal_position": 8,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 512
+    },
+    {
+      "table_name": "integration_imports",
+      "column_name": "source_url",
+      "ordinal_position": 9,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 1024
+    },
+    {
+      "table_name": "integration_imports",
+      "column_name": "title",
+      "ordinal_position": 10,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 512
+    },
+    {
+      "table_name": "integration_imports",
+      "column_name": "original_name",
+      "ordinal_position": 11,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 512
+    },
+    {
+      "table_name": "integration_imports",
+      "column_name": "content_type",
+      "ordinal_position": 12,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "table_name": "integration_imports",
+      "column_name": "size_bytes",
+      "ordinal_position": 13,
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "integration_imports",
+      "column_name": "sha256",
+      "ordinal_position": 14,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "integration_imports",
+      "column_name": "status",
+      "ordinal_position": 15,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "integration_imports",
+      "column_name": "metadata_json",
+      "ordinal_position": 16,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "integration_imports",
+      "column_name": "error_message",
+      "ordinal_position": 17,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "integration_imports",
+      "column_name": "created_at",
+      "ordinal_position": 18,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "integration_imports",
+      "column_name": "updated_at",
+      "ordinal_position": 19,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "negotiation_items",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "negotiation_items",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "negotiation_items",
+      "column_name": "contract_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "negotiation_items",
+      "column_name": "created_by_user_id",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "negotiation_items",
+      "column_name": "title",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 512
+    },
+    {
+      "table_name": "negotiation_items",
+      "column_name": "description",
+      "ordinal_position": 6,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "negotiation_items",
+      "column_name": "category",
+      "ordinal_position": 7,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "negotiation_items",
+      "column_name": "priority",
+      "ordinal_position": 8,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "negotiation_items",
+      "column_name": "status",
+      "ordinal_position": 9,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "negotiation_items",
+      "column_name": "our_position",
+      "ordinal_position": 10,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "negotiation_items",
+      "column_name": "counterparty_position",
+      "ordinal_position": 11,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "negotiation_items",
+      "column_name": "source_reference_json",
+      "ordinal_position": 12,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "negotiation_items",
+      "column_name": "resolved_at",
+      "ordinal_position": 13,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "negotiation_items",
+      "column_name": "created_at",
+      "ordinal_position": 14,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "negotiation_items",
+      "column_name": "updated_at",
+      "ordinal_position": 15,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "notifications",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "notifications",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "notifications",
+      "column_name": "user_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "notifications",
+      "column_name": "contract_id",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "notifications",
+      "column_name": "kind",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "notifications",
+      "column_name": "title",
+      "ordinal_position": 6,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "table_name": "notifications",
+      "column_name": "message",
+      "ordinal_position": 7,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "notifications",
+      "column_name": "action_url",
+      "ordinal_position": 8,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 1024
+    },
+    {
+      "table_name": "notifications",
+      "column_name": "read_at",
+      "ordinal_position": 9,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "notifications",
+      "column_name": "created_at",
+      "ordinal_position": 10,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "organization_invitations",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "organization_invitations",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "organization_invitations",
+      "column_name": "created_by_user_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "organization_invitations",
+      "column_name": "email",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 320
+    },
+    {
+      "table_name": "organization_invitations",
+      "column_name": "role",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "organization_invitations",
+      "column_name": "token_hash",
+      "ordinal_position": 6,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "organization_invitations",
+      "column_name": "expires_at",
+      "ordinal_position": 7,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "organization_invitations",
+      "column_name": "accepted_at",
+      "ordinal_position": 8,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "organization_invitations",
+      "column_name": "revoked_at",
+      "ordinal_position": 9,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "organization_invitations",
+      "column_name": "created_at",
+      "ordinal_position": 10,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "organization_memberships",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "organization_memberships",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "organization_memberships",
+      "column_name": "user_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "organization_memberships",
+      "column_name": "role",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "organization_memberships",
+      "column_name": "created_at",
+      "ordinal_position": 5,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "organization_memberships",
+      "column_name": "email_notifications",
+      "ordinal_position": 6,
+      "data_type": "boolean",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "organization_settings",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "organization_settings",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "organization_settings",
+      "column_name": "default_retention_days",
+      "ordinal_position": 3,
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "organization_settings",
+      "column_name": "default_retain_document",
+      "ordinal_position": 4,
+      "data_type": "boolean",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "organization_settings",
+      "column_name": "default_retain_source_text",
+      "ordinal_position": 5,
+      "data_type": "boolean",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "organization_settings",
+      "column_name": "notification_review_ready",
+      "ordinal_position": 6,
+      "data_type": "boolean",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "organization_settings",
+      "column_name": "notification_review_failed",
+      "ordinal_position": 7,
+      "data_type": "boolean",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "organization_settings",
+      "column_name": "created_at",
+      "ordinal_position": 8,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "organization_settings",
+      "column_name": "updated_at",
+      "ordinal_position": 9,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "organizations",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "organizations",
+      "column_name": "name",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "table_name": "organizations",
+      "column_name": "slug",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 120
+    },
+    {
+      "table_name": "organizations",
+      "column_name": "created_at",
+      "ordinal_position": 4,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "organizations",
+      "column_name": "updated_at",
+      "ordinal_position": 5,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "platform_audit_events",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "platform_audit_events",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "platform_audit_events",
+      "column_name": "actor_user_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "platform_audit_events",
+      "column_name": "contract_id",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "platform_audit_events",
+      "column_name": "action",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 128
+    },
+    {
+      "table_name": "platform_audit_events",
+      "column_name": "detail_json",
+      "ordinal_position": 6,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "platform_audit_events",
+      "column_name": "created_at",
+      "ordinal_position": 7,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "platform_audit_events",
+      "column_name": "verification_case_id",
+      "ordinal_position": 8,
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "platform_contracts",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "platform_contracts",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "platform_contracts",
+      "column_name": "created_by_user_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "platform_contracts",
+      "column_name": "title",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 512
+    },
+    {
+      "table_name": "platform_contracts",
+      "column_name": "source_name",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 512
+    },
+    {
+      "table_name": "platform_contracts",
+      "column_name": "counterparty",
+      "ordinal_position": 6,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "table_name": "platform_contracts",
+      "column_name": "contract_type",
+      "ordinal_position": 7,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "table_name": "platform_contracts",
+      "column_name": "status",
+      "ordinal_position": 8,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "platform_contracts",
+      "column_name": "review_context_json",
+      "ordinal_position": 9,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "platform_contracts",
+      "column_name": "retain_document",
+      "ordinal_position": 10,
+      "data_type": "boolean",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "platform_contracts",
+      "column_name": "retain_source_text",
+      "ordinal_position": 11,
+      "data_type": "boolean",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "platform_contracts",
+      "column_name": "retention_days",
+      "ordinal_position": 12,
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "platform_contracts",
+      "column_name": "expires_at",
+      "ordinal_position": 13,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "platform_contracts",
+      "column_name": "created_at",
+      "ordinal_position": 14,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "platform_contracts",
+      "column_name": "updated_at",
+      "ordinal_position": 15,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "platform_users",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "platform_users",
+      "column_name": "external_subject",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "table_name": "platform_users",
+      "column_name": "email",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 320
+    },
+    {
+      "table_name": "platform_users",
+      "column_name": "display_name",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "table_name": "platform_users",
+      "column_name": "created_at",
+      "ordinal_position": 5,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "platform_users",
+      "column_name": "updated_at",
+      "ordinal_position": 6,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "processing_jobs",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "processing_jobs",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "processing_jobs",
+      "column_name": "contract_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "processing_jobs",
+      "column_name": "document_asset_id",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "processing_jobs",
+      "column_name": "kind",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "processing_jobs",
+      "column_name": "status",
+      "ordinal_position": 6,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "processing_jobs",
+      "column_name": "progress_step",
+      "ordinal_position": 7,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "table_name": "processing_jobs",
+      "column_name": "attempts",
+      "ordinal_position": 8,
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "processing_jobs",
+      "column_name": "error_code",
+      "ordinal_position": 9,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 128
+    },
+    {
+      "table_name": "processing_jobs",
+      "column_name": "error_message",
+      "ordinal_position": 10,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "processing_jobs",
+      "column_name": "created_at",
+      "ordinal_position": 11,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "processing_jobs",
+      "column_name": "started_at",
+      "ordinal_position": 12,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "processing_jobs",
+      "column_name": "completed_at",
+      "ordinal_position": 13,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "public_api_keys",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "public_api_keys",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "public_api_keys",
+      "column_name": "created_by_user_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "public_api_keys",
+      "column_name": "name",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "table_name": "public_api_keys",
+      "column_name": "key_prefix",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "public_api_keys",
+      "column_name": "key_hash",
+      "ordinal_position": 6,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "public_api_keys",
+      "column_name": "scopes_json",
+      "ordinal_position": 7,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "public_api_keys",
+      "column_name": "last_used_at",
+      "ordinal_position": 8,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "public_api_keys",
+      "column_name": "revoked_at",
+      "ordinal_position": 9,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "public_api_keys",
+      "column_name": "created_at",
+      "ordinal_position": 10,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "secure_intake_links",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "secure_intake_links",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "secure_intake_links",
+      "column_name": "created_by_user_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "secure_intake_links",
+      "column_name": "verification_case_id",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "secure_intake_links",
+      "column_name": "token_hash",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "secure_intake_links",
+      "column_name": "token_prefix",
+      "ordinal_position": 6,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 16
+    },
+    {
+      "table_name": "secure_intake_links",
+      "column_name": "channel",
+      "ordinal_position": 7,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "secure_intake_links",
+      "column_name": "recipient_name",
+      "ordinal_position": 8,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "table_name": "secure_intake_links",
+      "column_name": "recipient_email",
+      "ordinal_position": 9,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 320
+    },
+    {
+      "table_name": "secure_intake_links",
+      "column_name": "recipient_phone_hint",
+      "ordinal_position": 10,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "secure_intake_links",
+      "column_name": "applicant_name",
+      "ordinal_position": 11,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "table_name": "secure_intake_links",
+      "column_name": "message",
+      "ordinal_position": 12,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "secure_intake_links",
+      "column_name": "max_uploads",
+      "ordinal_position": 13,
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "secure_intake_links",
+      "column_name": "upload_count",
+      "ordinal_position": 14,
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "secure_intake_links",
+      "column_name": "retention_days",
+      "ordinal_position": 15,
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "secure_intake_links",
+      "column_name": "expires_at",
+      "ordinal_position": 16,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "secure_intake_links",
+      "column_name": "revoked_at",
+      "ordinal_position": 17,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "secure_intake_links",
+      "column_name": "last_used_at",
+      "ordinal_position": 18,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "secure_intake_links",
+      "column_name": "created_at",
+      "ordinal_position": 19,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_assignments",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "verification_assignments",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "verification_assignments",
+      "column_name": "verification_case_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "verification_assignments",
+      "column_name": "assigned_to_user_id",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "verification_assignments",
+      "column_name": "assigned_by_user_id",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "verification_assignments",
+      "column_name": "note",
+      "ordinal_position": 6,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_assignments",
+      "column_name": "created_at",
+      "ordinal_position": 7,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "seeded_by_user_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "reference",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 128
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "applicant_name",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "status",
+      "ordinal_position": 6,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "risk_score",
+      "ordinal_position": 7,
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "suggested_action",
+      "ordinal_position": 8,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "finding_count",
+      "ordinal_position": 9,
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "document_count",
+      "ordinal_position": 10,
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "average_confidence",
+      "ordinal_position": 11,
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "submitted_at",
+      "ordinal_position": 12,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "source_json",
+      "ordinal_position": 13,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "evaluation_json",
+      "ordinal_position": 14,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "synthetic",
+      "ordinal_position": 15,
+      "data_type": "boolean",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "created_at",
+      "ordinal_position": 16,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "updated_at",
+      "ordinal_position": 17,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "applicant_email",
+      "ordinal_position": 18,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 320
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "priority",
+      "ordinal_position": 19,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "assigned_to_user_id",
+      "ordinal_position": 20,
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "intake_channel",
+      "ordinal_position": 21,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "retention_days",
+      "ordinal_position": 22,
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "due_at",
+      "ordinal_position": 23,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "expires_at",
+      "ordinal_position": 24,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_cases",
+      "column_name": "closed_at",
+      "ordinal_position": 25,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_decisions",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "verification_decisions",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "verification_decisions",
+      "column_name": "verification_case_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "verification_decisions",
+      "column_name": "reviewer_user_id",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "verification_decisions",
+      "column_name": "decision",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "verification_decisions",
+      "column_name": "rationale",
+      "ordinal_position": 6,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_decisions",
+      "column_name": "recommended_action",
+      "ordinal_position": 7,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "verification_decisions",
+      "column_name": "created_at",
+      "ordinal_position": 8,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_documents",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "verification_documents",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "verification_documents",
+      "column_name": "verification_case_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "verification_documents",
+      "column_name": "uploaded_by_user_id",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "verification_documents",
+      "column_name": "document_type",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "verification_documents",
+      "column_name": "original_name",
+      "ordinal_position": 6,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 512
+    },
+    {
+      "table_name": "verification_documents",
+      "column_name": "storage_key",
+      "ordinal_position": 7,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 1024
+    },
+    {
+      "table_name": "verification_documents",
+      "column_name": "content_type",
+      "ordinal_position": 8,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "table_name": "verification_documents",
+      "column_name": "size_bytes",
+      "ordinal_position": 9,
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_documents",
+      "column_name": "sha256",
+      "ordinal_position": 10,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "verification_documents",
+      "column_name": "status",
+      "ordinal_position": 11,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "verification_documents",
+      "column_name": "scan_status",
+      "ordinal_position": 12,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "verification_documents",
+      "column_name": "extraction_status",
+      "ordinal_position": 13,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "verification_documents",
+      "column_name": "extracted_fields_json",
+      "ordinal_position": 14,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_documents",
+      "column_name": "confidence",
+      "ordinal_position": 15,
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_documents",
+      "column_name": "expires_at",
+      "ordinal_position": 16,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_documents",
+      "column_name": "created_at",
+      "ordinal_position": 17,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_documents",
+      "column_name": "updated_at",
+      "ordinal_position": 18,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_reconciliations",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "verification_reconciliations",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "verification_reconciliations",
+      "column_name": "verification_case_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "verification_reconciliations",
+      "column_name": "field_name",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 128
+    },
+    {
+      "table_name": "verification_reconciliations",
+      "column_name": "canonical_value",
+      "ordinal_position": 5,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_reconciliations",
+      "column_name": "status",
+      "ordinal_position": 6,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "verification_reconciliations",
+      "column_name": "sources_json",
+      "ordinal_position": 7,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_reconciliations",
+      "column_name": "resolution_note",
+      "ordinal_position": 8,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_reconciliations",
+      "column_name": "resolved_by_user_id",
+      "ordinal_position": 9,
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "verification_reconciliations",
+      "column_name": "resolved_at",
+      "ordinal_position": 10,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_reconciliations",
+      "column_name": "created_at",
+      "ordinal_position": 11,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "verification_reconciliations",
+      "column_name": "updated_at",
+      "ordinal_position": 12,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "webhook_deliveries",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "webhook_deliveries",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "webhook_deliveries",
+      "column_name": "subscription_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "webhook_deliveries",
+      "column_name": "contract_id",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "webhook_deliveries",
+      "column_name": "event_type",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 128
+    },
+    {
+      "table_name": "webhook_deliveries",
+      "column_name": "payload_json",
+      "ordinal_position": 6,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "webhook_deliveries",
+      "column_name": "status",
+      "ordinal_position": 7,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "webhook_deliveries",
+      "column_name": "attempts",
+      "ordinal_position": 8,
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "webhook_deliveries",
+      "column_name": "last_error",
+      "ordinal_position": 9,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "webhook_deliveries",
+      "column_name": "delivered_at",
+      "ordinal_position": 10,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "webhook_deliveries",
+      "column_name": "created_at",
+      "ordinal_position": 11,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "webhook_deliveries",
+      "column_name": "updated_at",
+      "ordinal_position": 12,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "webhook_subscriptions",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "webhook_subscriptions",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "webhook_subscriptions",
+      "column_name": "created_by_user_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "webhook_subscriptions",
+      "column_name": "target_url",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 1024
+    },
+    {
+      "table_name": "webhook_subscriptions",
+      "column_name": "description",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "table_name": "webhook_subscriptions",
+      "column_name": "events_json",
+      "ordinal_position": 6,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "webhook_subscriptions",
+      "column_name": "signing_secret_hash",
+      "ordinal_position": 7,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "webhook_subscriptions",
+      "column_name": "secret_prefix",
+      "ordinal_position": 8,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 16
+    },
+    {
+      "table_name": "webhook_subscriptions",
+      "column_name": "status",
+      "ordinal_position": 9,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "webhook_subscriptions",
+      "column_name": "last_delivery_at",
+      "ordinal_position": 10,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "webhook_subscriptions",
+      "column_name": "created_at",
+      "ordinal_position": 11,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "webhook_subscriptions",
+      "column_name": "updated_at",
+      "ordinal_position": 12,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "webhook_subscriptions",
+      "column_name": "signing_secret",
+      "ordinal_position": 13,
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "character_maximum_length": 128
+    },
+    {
+      "table_name": "workflow_tasks",
+      "column_name": "id",
+      "ordinal_position": 1,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "workflow_tasks",
+      "column_name": "organization_id",
+      "ordinal_position": 2,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "workflow_tasks",
+      "column_name": "contract_id",
+      "ordinal_position": 3,
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "workflow_tasks",
+      "column_name": "created_by_user_id",
+      "ordinal_position": 4,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "workflow_tasks",
+      "column_name": "assigned_to_user_id",
+      "ordinal_position": 5,
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "workflow_tasks",
+      "column_name": "title",
+      "ordinal_position": 6,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 512
+    },
+    {
+      "table_name": "workflow_tasks",
+      "column_name": "description",
+      "ordinal_position": 7,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "workflow_tasks",
+      "column_name": "category",
+      "ordinal_position": 8,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "workflow_tasks",
+      "column_name": "priority",
+      "ordinal_position": 9,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "workflow_tasks",
+      "column_name": "status",
+      "ordinal_position": 10,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 32
+    },
+    {
+      "table_name": "workflow_tasks",
+      "column_name": "due_at",
+      "ordinal_position": 11,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "workflow_tasks",
+      "column_name": "source_kind",
+      "ordinal_position": 12,
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 64
+    },
+    {
+      "table_name": "workflow_tasks",
+      "column_name": "source_reference_json",
+      "ordinal_position": 13,
+      "data_type": "text",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "workflow_tasks",
+      "column_name": "completed_at",
+      "ordinal_position": 14,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "workflow_tasks",
+      "column_name": "created_at",
+      "ordinal_position": 15,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "table_name": "workflow_tasks",
+      "column_name": "updated_at",
+      "ordinal_position": 16,
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    }
+  ],
+  "historical_columns": {
+    "webhook_subscriptions.signing_secret": true,
+    "organization_memberships.email_notifications": true
+  },
+  "recovery_snapshot_matches": true,
+  "parent": "br-round-bread-b1hh774g",
+  "recovery": "br-cold-credit-b11o29gv"
+}

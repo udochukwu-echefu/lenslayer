@@ -161,6 +161,16 @@ class WorkspaceServiceMixin:
             updated_at=settings.updated_at,
         )
 
+    def update_notification_preferences(self, organization_id: str, user: User,
+                                        email_notifications: bool) -> Membership:
+        membership = self.membership(organization_id, user)
+        membership.email_notifications = email_notifications
+        self._audit(organization_id, user.id, "membership.preferences_updated",
+                    detail={"email_notifications": email_notifications})
+        self.session.commit()
+        self.session.refresh(membership)
+        return membership
+
     def membership(self, organization_id: str, user: User) -> Membership:
         membership = self.session.scalar(
             select(Membership).where(

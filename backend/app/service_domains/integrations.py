@@ -415,6 +415,7 @@ class IntegrationsServiceMixin:
             description=payload.get("description", "").strip(),
             events_json=json_dump(events),
             signing_secret_hash=hashlib.sha256(signing_secret.encode("utf-8")).hexdigest(),
+            signing_secret=signing_secret,
             secret_prefix=signing_secret[:12],
             status="active",
         )
@@ -429,6 +430,27 @@ class IntegrationsServiceMixin:
         self.session.commit()
         self.session.refresh(subscription)
         return subscription, signing_secret
+
+    def rotate_webhook_secret(self, organization_id: str, webhook_id: str,
+                              user: User) -> tuple[WebhookSubscription, str]:
+        self.workspace.require_roles(organization_id, user, {"owner", "admin"},
+                                     "Only owners and administrators can manage webhooks.")
+        webhook = self.session.scalar(select(WebhookSubscription).where(
+            WebhookSubscription.id == webhook_id, WebhookSubscription.organization_id == organization_id))
+        if webhook is None:
+            raise HTTPException(status_code=404, detail="Webhook not found.")
+        if webhook.status != "active":
+            raise HTTPException(status_code=409, detail="Revoked webhooks cannot be rotated.")
+        secret = f"whsec_{secrets.token_urlsafe(32)}"
+        webhook.signing_secret = secret
+        webhook.signing_secret_hash = hashlib.sha256(secret.encode("utf-8")).hexdigest()
+        webhook.secret_prefix = secret[:12]
+        webhook.updated_at = utcnow()
+        # Do not silently replay failed deliveries or reset attempt budgets.
+        self._audit(organization_id, user.id, "webhook.secret_rotated", detail={"webhook_id": webhook.id})
+        self.session.commit()
+        self.session.refresh(webhook)
+        return webhook, secret
 
     def list_webhook_subscriptions(self, organization_id: str, user: User) -> list[WebhookSubscription]:
         self.workspace.require_roles(

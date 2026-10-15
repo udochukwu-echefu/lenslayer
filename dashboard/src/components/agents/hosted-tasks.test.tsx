@@ -5,7 +5,7 @@ import { api, ApiError } from "@/lib/api";
 import type { HostedAgentTask } from "@/lib/hosted-agent-types";
 import type { Role } from "@/lib/types";
 import { contractFixture, memberFixture } from "@/test/agent-fixtures";
-import { calendarConnectionFixture, hostedCapabilities, hostedTaskFixture } from "@/test/hosted-fixtures";
+import { calendarConnectionFixture, hostedCapabilities, hostedTaskFixture, deepseekCapabilities } from "@/test/hosted-fixtures";
 import { agentQueryWrapper } from "@/test/agent-query-wrapper";
 import { HostedTaskList } from "./hosted-task-list";
 import { HostedTaskDetail } from "./hosted-task-detail";
@@ -63,9 +63,13 @@ describe("hosted task assignment", () => {
     expect(container.querySelector('input[name*="token"]')).toBeNull();
   });
   it.each(["calendar-event", "follow-up-and-calendar"])("uses exact Calendar grants for %s and no irrelevant scope", async (goal) => {
-    show(); await fill(goal); submit(); await waitFor(() => expect(api.createHostedAgentTask).toHaveBeenCalledTimes(1));
+    show(); await fill(goal);
+    expect(screen.getByRole("option", { name: "Owned sandbox calendar — sandbox@example.test (connection-1)" })).toHaveValue(JSON.stringify(["connection-1", "sandbox@example.test"]));
+    expect(screen.getByText("Human approval always required.")).toBeInTheDocument();
+    submit(); await waitFor(() => expect(api.createHostedAgentTask).toHaveBeenCalledTimes(1));
     const input = vi.mocked(api.createHostedAgentTask).mock.calls[0][1];
-    expect(input).toMatchObject({ goal_type: goal, calendar: { type: "calendar_event_created", connection_id: "connection-1", calendar_id: "sandbox@example.test", summary: "Human-authored appointment" } });
+    expect(input).toMatchObject({ goal_type: goal, planner_mode: "deterministic", calendar: { type: "calendar_event_created", connection_id: "connection-1", calendar_id: "sandbox@example.test", summary: "Human-authored appointment" } });
+    expect(input).not.toHaveProperty("token"); expect(input).not.toHaveProperty("require_approval");
     if (goal === "calendar-event") { expect(input).not.toHaveProperty("contract_id"); expect(api.contracts).not.toHaveBeenCalled(); expect(api.members).not.toHaveBeenCalled(); }
     else expect(input).toHaveProperty("contract_id", "contract-1");
   });
@@ -104,16 +108,16 @@ describe("hosted task assignment", () => {
     expect(await screen.findByText(/key is bound to a different request/)).toBeInTheDocument(); expect(screen.queryByText("Edit rejected request")).toBeNull();
   });
   it("uses capabilities for model selection and requires explicit excerpt-sharing acknowledgement", async () => {
-    vi.mocked(api.hostedAgentCapabilities).mockResolvedValue({ ...hostedCapabilities, planner_modes: ["deterministic", "model"] });
+    vi.mocked(api.hostedAgentCapabilities).mockResolvedValue(deepseekCapabilities);
     show(); await fill();
-    expect(screen.getByText(/Choosing model assistance shares your goal/)).toBeInTheDocument();
+    expect(screen.getByText(/retrieved retained-source excerpt to DeepSeek/)).toBeInTheDocument();
     change("Planning mode", "model");
-    expect(screen.getByText(/any retrieved document excerpt will be sent to OpenAI/)).toBeInTheDocument();
+    expect(screen.getAllByText(/retrieved retained-source excerpt to DeepSeek/)).toHaveLength(2);
     // fire submit to exercise runtime guard as well as native required checkbox.
     fireEvent.submit(screen.getByLabelText("Your goal").closest("form")!);
     expect(api.createHostedAgentTask).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("checkbox", { name: /Share this scoped context/ })); submit();
-    await waitFor(() => expect(api.createHostedAgentTask).toHaveBeenCalledWith("org-1", expect.objectContaining({ planner_mode: "model" }), expect.any(AbortSignal)));
+    await waitFor(() => expect(api.createHostedAgentTask).toHaveBeenCalledWith("org-1", expect.objectContaining({ planner_mode: "model", expected_model_provider: "deepseek", expected_model_id: "deepseek-flash", expected_model_reasoning_effort: "high" }), expect.any(AbortSignal)));
   });
   it("preserves the exact request after a pagehide interrupts an uncertain submit", async () => {
     let done!: (task: HostedAgentTask) => void;

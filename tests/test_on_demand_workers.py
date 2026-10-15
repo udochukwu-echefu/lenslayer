@@ -1,5 +1,7 @@
 """Real API/database/drain transitions; only Cloud Tasks and provider HTTP are fake."""
 import json
+import contextlib
+import io
 import unittest
 from datetime import timedelta
 from unittest.mock import patch
@@ -318,6 +320,40 @@ class OnDemandWorkerTests(unittest.TestCase):
         self.assertEqual(self.client.get("/health/worker").status_code, 503)
         self.drain()
         self.assertEqual(self.client.get("/health/worker").status_code, 200)
+
+    def test_successful_recovery_signals_the_backlog_it_cleared(self):
+        task = self.fixture.create()
+        with self.database.session_factory() as session:
+            session.get(HostedAgentTask, task["id"]).next_attempt_at = utcnow() - timedelta(hours=1)
+            session.commit()
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            response = self.worker.post("/recover")
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(self.fixture.read(task)["status"], "awaiting_approval")
+        observations = [json.loads(line) for line in output.getvalue().splitlines()
+                        if line.startswith('{')]
+        self.assertTrue(any(item.get("state") == "attention"
+                            and item.get("overdue_wake_seconds", 0) >= 3600
+                            for item in observations), observations)
+        self.assertEqual(observations[-1]["state"], "healthy")
+
+    def test_repeated_recovery_of_human_wait_does_not_start_processor_or_new_timer(self):
+        task = self.fixture.create()
+        self.drain()
+        timer = self.cloud_tasks[-1]
+        with self.database.session_factory() as session:
+            attempts = session.get(HostedAgentTask, task["id"]).attempts
+        # Exercise the Scheduler route at distinct times, not just burst enqueue.
+        now = utcnow()
+        self.cloud_tasks.clear()
+        with patch("backend.app.worker.run_worker", side_effect=AssertionError("Human wait is not runnable")):
+            for minutes in (0, 30, 60):
+                with patch.object(agent_wake, "utcnow", return_value=now + timedelta(minutes=minutes)):
+                    self.assertEqual(self.worker.post("/recover").status_code, 200)
+        self.assertEqual({item["name"] for item in self.cloud_tasks}, {timer["name"]})
+        with self.database.session_factory() as session:
+            self.assertEqual(session.get(HostedAgentTask, task["id"]).attempts, attempts)
 
     def test_bounded_drain_returns_with_work_preserved_for_the_next_wake(self):
         task = self.fixture.create()

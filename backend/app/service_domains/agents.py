@@ -107,6 +107,8 @@ class AgentsServiceMixin:
             raise HTTPException(status_code=422, detail="Agent expiry must be within the next 365 days.")
         for contract_id in sorted(payload.contract_ids):
             self._scope_contract(organization_id, contract_id)
+        for context_id in sorted(payload.context_ids):
+            self._scope_context(organization_id, context_id)
         for assignee_id in sorted(payload.assignee_ids):
             self._scope_assignee(organization_id, assignee_id)
         targets = [target.model_dump() for target in payload.calendar_targets]
@@ -114,7 +116,7 @@ class AgentsServiceMixin:
             raise HTTPException(422, "Calendar grants must be unique.")
         for target in sorted(payload.calendar_targets, key=lambda t: (t.connection_id, t.calendar_id)):
             CalendarResource(target.connection_id, target.calendar_id).authorize(self, organization_id)
-        if not payload.contract_ids and not targets:
+        if not payload.contract_ids and not targets and not payload.context_ids:
             raise HTTPException(422, "Delegate at least one explicit contract or calendar resource.")
         # Internal grants have no usable bearer and expose only an opaque marker.
         token = secrets.token_urlsafe(32) if internal else "ll_agent_" + secrets.token_urlsafe(32)
@@ -123,6 +125,7 @@ class AgentsServiceMixin:
             token_hash=digest(token), token_prefix="internal" if internal else token[:18],
             allowed_tools_json=canonical_json(payload.allowed_tools),
             contract_ids_json=canonical_json(payload.contract_ids),
+            context_ids_json=canonical_json(payload.context_ids),
             assignee_ids_json=canonical_json(payload.assignee_ids),
             calendar_targets_json=canonical_json(targets),
             require_approval=payload.require_approval, max_actions_per_run=payload.max_actions_per_run,
@@ -171,6 +174,7 @@ class AgentsServiceMixin:
             id=agent.id, organization_id=agent.organization_id, delegated_by_user_id=agent.delegated_by_user_id,
             name=agent.name, token_prefix=agent.token_prefix, allowed_tools=json_load(agent.allowed_tools_json, []),
             contract_ids=json_load(agent.contract_ids_json, []), assignee_ids=json_load(agent.assignee_ids_json, []),
+            context_ids=json_load(agent.context_ids_json, []),
             calendar_targets=json_load(agent.calendar_targets_json, []),
             require_approval=agent.require_approval, max_actions_per_run=agent.max_actions_per_run,
             status=status, expires_at=aware(agent.expires_at), revoked_at=aware(agent.revoked_at) if agent.revoked_at else None,
@@ -196,6 +200,8 @@ class AgentsServiceMixin:
         request_input = payload.model_dump(mode="json")
         if not request_input.get("calendar_targets"):
             request_input.pop("calendar_targets", None)
+        if not request_input.get("context_ids"):
+            request_input.pop("context_ids", None)
         serialized = canonical_json(request_input)
         request_hash = digest(serialized)
         existing = self.session.scalar(select(AgentRun).where(
@@ -280,6 +286,7 @@ class AgentsServiceMixin:
         return AgentRunResponse(
             id=run.id, organization_id=run.organization_id, agent_id=run.agent_id, idempotency_key=run.idempotency_key,
             goal=run.goal, contract_ids=json_load(run.contract_ids_json, []), allowed_tools=json_load(run.allowed_tools_json, []),
+            context_ids=json_load(run.context_ids_json, []),
             execution_owner=run.execution_owner,
             max_actions=run.max_actions, status=run.status, success_condition=json_load(run.success_condition_json, {}),
             calendar_targets=json_load(run.calendar_targets_json, []),
@@ -421,6 +428,9 @@ class AgentsServiceMixin:
     def checkpoint_agent_action(self, run, action, result):
         """Immutable verified receipts form the durable composite checkpoint."""
         condition = json_load(run.success_condition_json, {})
+        if condition["type"] == "graph":
+            self.advance_workflow_graph(self.session.get(AgentPrincipal, run.agent_id), run)
+            return
         if condition["type"] != "all":
             run.result_json = json_dump(result)
             self._end_run(run, "succeeded", "")
@@ -449,6 +459,8 @@ class AgentsServiceMixin:
 
     def request_agent_input(self, agent, run_id, payload: InputRequestCreate, *, commit: bool = True):
         agent, run = self._mutating_agent_run(agent, run_id)
+        if json_load(run.success_condition_json, {}).get("type") == "graph":
+            raise HTTPException(409, "Graph facts and scope are immutable; create a new graph.")
         serialized = canonical_json(payload.model_dump(mode="json"))
         existing = self.session.scalar(select(AgentInputRequest).where(
             AgentInputRequest.run_id == run.id, AgentInputRequest.idempotency_key == payload.idempotency_key))
@@ -569,6 +581,8 @@ class AgentsServiceMixin:
             self.session.commit() if commit else self.session.flush()
             return existing
         self._run_is_live(run)
+        if json_load(run.success_condition_json, {}).get("type") == "graph":
+            raise HTTPException(409, "All graph actions were created atomically with the immutable plan.")
         if run.status == "awaiting_input":
             raise HTTPException(409, "Supply the requested input before proposing new actions.")
         count = self.session.scalar(select(func.count()).select_from(AgentAction).where(AgentAction.run_id == run.id))
@@ -629,6 +643,8 @@ class AgentsServiceMixin:
             action.status = "queued"
             self.session.flush()
             self.refresh_agent_run_status(run)
+            if json_load(run.success_condition_json, {}).get("type") == "graph":
+                self.advance_workflow_graph(agent, run)
         else:
             action.status = "cancelled"
             action.error_code = "approval_rejected"

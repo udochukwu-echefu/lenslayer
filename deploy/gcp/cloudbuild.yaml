@@ -127,6 +127,8 @@ steps:
       - --platform=managed
       - --service-account=${_RUNTIME_SERVICE_ACCOUNT}@$PROJECT_ID.iam.gserviceaccount.com
       - --no-allow-unauthenticated
+      - --invoker-iam-check
+      - --scaling=auto
       - --min-instances=0
       - --cpu-throttling
       - --max-instances=1

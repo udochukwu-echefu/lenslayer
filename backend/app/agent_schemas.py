@@ -7,7 +7,7 @@ from typing import Annotated, Any, Literal
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, StringConstraints, field_validator, model_validator
 
 
-ToolName = Literal["documents.retrieve", "workspace.tasks.create", "google_calendar.events.create"]
+ToolName = Literal["documents.retrieve", "workspace.tasks.create", "google_calendar.events.create", "context.retrieve", "workspace.context_tasks.create"]
 RunStatus = Literal["running", "awaiting_approval", "awaiting_input", "succeeded", "failed", "cancelled"]
 ActionStatus = Literal["queued", "awaiting_approval", "running", "unknown_outcome", "succeeded", "failed", "cancelled"]
 Identifier = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=64)]
@@ -30,7 +30,8 @@ class CalendarTarget(StrictInput):
 
 class AgentCreate(StrictInput):
     name: str = Field(min_length=1, max_length=255)
-    allowed_tools: list[ToolName] = Field(min_length=1, max_length=3)
+    allowed_tools: list[ToolName] = Field(min_length=1, max_length=5)
+    context_ids: list[Identifier] = Field(default_factory=list, max_length=100)
     contract_ids: list[Identifier] = Field(min_length=0, max_length=100)
     assignee_ids: list[Identifier] = Field(min_length=0, max_length=100)
     calendar_targets: list[CalendarTarget] = Field(default_factory=list, max_length=100)
@@ -38,7 +39,7 @@ class AgentCreate(StrictInput):
     expires_at: AwareDatetime
     max_actions_per_run: int = Field(default=1, ge=1, le=20)
 
-    @field_validator("allowed_tools", "contract_ids", "assignee_ids")
+    @field_validator("allowed_tools", "contract_ids", "assignee_ids", "context_ids")
     @classmethod
     def unique_scope(cls, values):
         if len(values) != len(set(values)):
@@ -54,6 +55,7 @@ class AgentResponse(BaseModel):
     token_prefix: str
     allowed_tools: list[ToolName]
     contract_ids: list[str]
+    context_ids: list[str] = Field(default_factory=list)
     assignee_ids: list[str]
     calendar_targets: list[CalendarTarget] = Field(default_factory=list)
     require_approval: bool
@@ -122,6 +124,38 @@ class AgentRunCreate(StrictInput):
         return values
 
 
+class ContextTaskCondition(StrictInput):
+    type: Literal["context_task_created"] = "context_task_created"
+    context_id: Identifier
+    assigned_to_user_id: Identifier
+    title: str = Field(min_length=1, max_length=512)
+    description: str = Field(default="", max_length=4000)
+    due_at: AwareDatetime
+
+
+class GraphRequiredCondition(StrictInput):
+    id: Identifier
+    condition: ContextTaskCondition
+
+
+class GraphSuccessCondition(StrictInput):
+    type: Literal["graph"] = "graph"
+    nodes: list[GraphRequiredCondition] = Field(min_length=1, max_length=20)
+
+
+class FactualPredicate(StrictInput):
+    fact: str = Field(min_length=1, max_length=64, pattern=r"^[a-z][a-z0-9_]*$")
+    value: bool = Field(strict=True)
+    equals: bool = Field(strict=True)
+
+
+class ContextTaskActionInput(ContextTaskCondition):
+    condition_id: Identifier
+    evidence_id: Identifier
+    plan_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    when: FactualPredicate | None = None
+
+
 class AgentRunResponse(BaseModel):
     id: str
     organization_id: str
@@ -130,10 +164,11 @@ class AgentRunResponse(BaseModel):
     goal: str
     execution_owner: Literal["external_agent", "lenslayer_hosted_agent"] = "external_agent"
     contract_ids: list[str]
+    context_ids: list[str] = Field(default_factory=list)
     allowed_tools: list[ToolName]
     max_actions: int
     status: RunStatus
-    success_condition: TaskSuccessCondition | CalendarSuccessCondition | CompositeSuccessCondition
+    success_condition: TaskSuccessCondition | CalendarSuccessCondition | CompositeSuccessCondition | GraphSuccessCondition
     calendar_targets: list[CalendarTarget] = Field(default_factory=list)
     result: dict[str, Any]
     error_code: str
@@ -266,7 +301,7 @@ class AgentActionResponse(BaseModel):
     idempotency_key: str
     tool: str
     tool_version: str
-    input: TaskActionInput | CalendarActionInput
+    input: TaskActionInput | CalendarActionInput | ContextTaskActionInput
     input_sha256: str
     status: ActionStatus
     attempts: int

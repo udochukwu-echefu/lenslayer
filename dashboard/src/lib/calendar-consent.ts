@@ -17,7 +17,7 @@ export function calendarAuthorizationUrl(raw: string, origin: string): string {
 }
 
 export function takeCalendarCallback(url: URL, history: Pick<History, "replaceState">, storage: Pick<Storage, "getItem" | "removeItem">, now = Date.now()): CalendarCallback | null {
-  // Scrub before auth/workspace loading, and never persist code or signed state.
+  // Scrub before auth/workspace loading, and never persist code or opaque state.
   history.replaceState(null, "", url.pathname);
   const pending = storage.getItem(CALENDAR_CONSENT_KEY);
   storage.removeItem(CALENDAR_CONSENT_KEY);

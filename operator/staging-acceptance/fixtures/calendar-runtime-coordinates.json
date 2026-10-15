@@ -1,0 +1,12 @@
+{
+  "secret_refs": {
+    "google_calendar_client_id": "projects/lenslayer/secrets/lenslayer-staging-google-calendar-client-id/versions/1",
+    "google_calendar_client_secret": "projects/lenslayer/secrets/lenslayer-staging-google-calendar-client-secret/versions/1",
+    "connector_encryption_key": "projects/lenslayer/secrets/lenslayer-staging-connector-encryption-key/versions/1",
+    "connector_state_signing_key": "projects/lenslayer/secrets/lenslayer-staging-connector-state-signing-key/versions/1",
+    "calendar_session_binding_key": "projects/lenslayer/secrets/lenslayer-staging-calendar-session-binding-key/versions/1"
+  },
+  "google_calendar_redirect_uri": "https://lenslayer-dashboard-staging.udboy361.workers.dev/calendar/oauth-return",
+  "database_secret": "projects/lenslayer/secrets/lenslayer-staging-neon-pooled-url/versions/1",
+  "observed_revision": "lenslayer-api-staging-00007-hrc"
+}

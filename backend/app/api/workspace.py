@@ -11,6 +11,7 @@ from ..schemas import (
     InvitationResponse,
     MembershipResponse,
     MembershipRoleUpdate,
+    NotificationPreferences,
     OrganizationCreate,
     OrganizationResponse,
     OrganizationSettingsResponse,
@@ -87,6 +88,19 @@ def update_organization_settings(
         payload.model_dump(exclude_unset=True),
     )
     return service.organization_settings_response(settings_value)
+
+
+@router.get("/organizations/{organization_id}/preferences", response_model=NotificationPreferences, tags=["organizations"])
+def get_notification_preferences(organization_id: str, service: ServiceDep, user: UserDep) -> NotificationPreferences:
+    membership = service.membership(organization_id, user)
+    return NotificationPreferences(email_notifications=membership.email_notifications)
+
+
+@router.patch("/organizations/{organization_id}/preferences", response_model=NotificationPreferences, tags=["organizations"])
+def update_notification_preferences(organization_id: str, payload: NotificationPreferences,
+                                    service: ServiceDep, user: UserDep) -> NotificationPreferences:
+    membership = service.update_notification_preferences(organization_id, user, payload.email_notifications)
+    return NotificationPreferences(email_notifications=membership.email_notifications)
 
 
 @router.get(

@@ -12,6 +12,7 @@ from ..malware import scan_upload
 from ..models import (
     ApprovalRequest,
     ContractVersion,
+    Contract,
     CounterpartyResponse,
     DocumentAsset,
     LifecycleItem,
@@ -28,6 +29,7 @@ from ..schemas import (
     NegotiationSummaryResponse,
 )
 from .common import json_dump, json_load, safe_filename
+from ..source_retention import require_source_available, source_expired
 
 
 class NegotiationServiceMixin:
@@ -63,6 +65,9 @@ class NegotiationServiceMixin:
             "Viewers cannot upload revised documents.",
         )
         contract = self.contracts.get_contract(organization_id, contract_id, user)
+        contract = self.session.scalar(select(Contract).where(Contract.id == contract.id)
+            .with_for_update().execution_options(populate_existing=True))
+        require_source_available(contract)
         filename = safe_filename(original_name)
         suffix = Path(filename).suffix.lower()
         if suffix not in self.settings.allowed_extension_set:
@@ -129,9 +134,10 @@ class NegotiationServiceMixin:
             },
         )
         try:
-            self.object_store.put(storage_key, data, asset.content_type)
-            if not contract.retain_document:
-                self.object_store.delete(storage_key)
+            require_source_available(contract)
+            if contract.retain_document:
+                self.object_store.put(storage_key, data, asset.content_type)
+            require_source_available(contract)
             contract.updated_at = utcnow()
             self.session.commit()
         except Exception:
@@ -146,6 +152,8 @@ class NegotiationServiceMixin:
 
     def _version_text(self, version: ContractVersion | None) -> str:
         if version is None:
+            return ""
+        if source_expired(version.contract):
             return ""
         if version.extracted_text:
             return version.extracted_text

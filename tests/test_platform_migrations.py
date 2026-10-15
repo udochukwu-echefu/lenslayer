@@ -18,6 +18,17 @@ class MigrationChecks:
     def check_migrations(self, engine):
         config = Config("backend/alembic.ini")
 
+        def historical_metadata_diff(connection):
+            # These round trips intentionally stay on the already-applied agent
+            # branch. The final production-compatibility merge is forward-only;
+            # its two sibling columns are not part of this historical schema.
+            def include_object(obj, name, type_, reflected, compare_to):
+                return not (type_ == "column" and not reflected and compare_to is None
+                    and (obj.table.name, name) in {("organization_memberships", "email_notifications"),
+                                                  ("webhook_subscriptions", "signing_secret")})
+            return compare_metadata(MigrationContext.configure(connection,
+                opts={"compare_type": True, "include_object": include_object}), Base.metadata)
+
         def migrate(direction, revision):
             with engine.begin() as connection:
                 config.attributes["connection"] = connection
@@ -70,12 +81,9 @@ class MigrationChecks:
                 allowed_tools_json="[]", success_condition_json="{}", max_actions=1, status="failed", result_json="{}",
                 error_code="historical", event_sequence=0, revision=0, deadline_at=now, created_at=now, updated_at=now))
             connection.execute(heartbeat.insert().values(worker_id="historical-worker", last_seen_at=now))
-        migrate("upgrade", "head")
-        with engine.begin() as connection:
-            config.attributes["connection"] = connection
-            command.check(config)
+        migrate("upgrade", "bf84e2c19a67")
         with engine.connect() as connection:
-            self.assertEqual(compare_metadata(MigrationContext.configure(connection, opts={"compare_type": True}), Base.metadata), [])
+            self.assertEqual(historical_metadata_diff(connection), [])
             self.assertEqual(connection.scalar(text("SELECT name FROM organizations WHERE id='o'")), "Preserved")
             self.assertEqual(connection.scalar(text("SELECT count(*) FROM organization_settings WHERE organization_id='o'")), 1)
             self.assertEqual(connection.scalar(text("SELECT execution_owner FROM agent_runs WHERE id='historical-run'")), "external_agent")
@@ -97,19 +105,24 @@ class MigrationChecks:
             self.assertNotIn("execution_owner", [c["name"] for c in inspect(connection).get_columns("agent_runs")])
             self.assertNotIn("lane", [c["name"] for c in inspect(connection).get_columns("agent_worker_heartbeats")])
             self.assertEqual(connection.scalar(text("SELECT goal FROM agent_runs WHERE id='historical-run'")), "Preserved goal")
-        migrate("upgrade", "head")
+        migrate("upgrade", "bf84e2c19a67")
         with engine.connect() as connection:
-            self.assertEqual(compare_metadata(MigrationContext.configure(connection), Base.metadata), [])
+            self.assertEqual(historical_metadata_diff(connection), [])
             self.assertEqual(connection.scalar(text("SELECT execution_owner FROM agent_runs WHERE id='historical-run'")), "external_agent")
         migrate("downgrade", "6e8a2b4d9c10")
         uniqueness_is_preserved()
         with engine.connect() as connection:
             self.assertNotIn("calendar_credentials", inspect(connection).get_table_names())
             self.assertNotIn("dispatch_intent_json", [c["name"] for c in inspect(connection).get_columns("agent_actions")])
-        migrate("upgrade", "head")
+        migrate("upgrade", "bf84e2c19a67")
         with engine.connect() as connection:
-            self.assertEqual(compare_metadata(MigrationContext.configure(connection), Base.metadata), [])
+            self.assertEqual(historical_metadata_diff(connection), [])
             self.assertEqual(connection.scalar(text("SELECT name FROM organizations WHERE id='o'")), "Preserved")
+        migrate("upgrade", "head")
+        with engine.begin() as connection:
+            config.attributes["connection"] = connection
+            command.check(config)
+            self.assertEqual(compare_metadata(MigrationContext.configure(connection), Base.metadata), [])
 
 
 class SQLitePlatformMigrationTests(MigrationChecks, unittest.TestCase):

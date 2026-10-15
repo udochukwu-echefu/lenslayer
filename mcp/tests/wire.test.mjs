@@ -67,7 +67,7 @@ test("official SDK client -> real stdio -> injected HTTP ledger: initialize, dis
     assert.deepEqual((await client.listTools()).tools, []);
     await assert.rejects(client.callTool({ name: "actions.approve", arguments: {} }));
     assert.ok(!requests.some((r) => /organizations|approval/.test(r)));
-    assert.ok(!stderr.includes(token)); assert.ok(!stderr.includes(receipt.excerpt));
+    assert.ok(!stderr.includes(token)); assert.ok(!stderr.includes(receipt.excerpt)); assert.ok(!stderr.includes(input.goal));
   } finally { await client.close(); await new Promise((resolve) => http.close(resolve)); }
 });
 

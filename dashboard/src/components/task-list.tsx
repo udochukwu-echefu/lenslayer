@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 import type { TaskStatus, WorkflowTask } from "@/lib/types";
 import { dueAtEndOfDay, formatDate, titleCase } from "@/lib/utils";
 import { AppSelect } from "./app-select";
+import { taskSource } from "@/lib/task-source";
 import { useWorkspace } from "./workspace-provider";
 import { StatusBadge } from "./ui/status-badge";
 
@@ -46,7 +47,7 @@ export function TaskList({ tasks, empty = "No actions match this view.", compact
           const due = dueState(task, now);
           return <tr className={task.status === "done" ? "is-done" : ""} key={task.id}>
             <td className="assigned-action-check">{taskCheck(task)}</td>
-            <td className="assigned-action-primary"><strong>{task.title}</strong>{task.contract_id ? <Link href={`/contracts/${task.contract_id}`}><FileText size={13} />{task.contract_title}</Link> : <span>Workspace action</span>}</td>
+            <td className="assigned-action-primary"><strong>{task.title}</strong><TaskSource task={task} /></td>
             <td className="assigned-action-owner"><span><UserRound size={13} />{task.assigned_to_name || "Unassigned"}</span></td>
             <td className="assigned-action-priority"><span className={`task-priority ${task.priority}`}>{titleCase(task.priority)}</span></td>
             <td className="assigned-action-status">{taskStatus(task)}</td>
@@ -62,7 +63,7 @@ export function TaskList({ tasks, empty = "No actions match this view.", compact
     const due = dueState(task, now);
     return <article className={`task-row ${task.status === "done" ? "is-done" : ""}`} key={task.id}>
       {taskCheck(task)}
-      <div className="task-primary"><strong>{task.title}</strong><div className="task-meta">{task.contract_id ? <Link href={`/contracts/${task.contract_id}`}><FileText size={12} />{task.contract_title}</Link> : <span>Workspace action</span>}<span><UserRound size={12} />{task.assigned_to_name || "Unassigned"}</span></div></div>
+      <div className="task-primary"><strong>{task.title}</strong><div className="task-meta"><TaskSource task={task} /><span><UserRound size={12} />{task.assigned_to_name || "Unassigned"}</span></div></div>
       <div className="task-details">
         <span className={`task-priority ${task.priority}`}>{titleCase(task.priority)}</span>
         {taskStatus(task)}
@@ -70,4 +71,9 @@ export function TaskList({ tasks, empty = "No actions match this view.", compact
       </div>
     </article>;
   })}{mutation.error && <p className="form-error task-list-error">{mutation.error.message}</p>}</div>;
+}
+
+function TaskSource({ task }: { task: WorkflowTask }) {
+  const source = taskSource(task);
+  return source ? <Link href={source.href}><FileText size={13} />{source.label}</Link> : <span>Workspace action</span>;
 }

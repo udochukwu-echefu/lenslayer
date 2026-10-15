@@ -47,13 +47,26 @@ and failed recovery rather than claiming guaranteed immediate execution.
 
 Set `LENSLAYER_PLATFORM_AGENT_WORKER_MODE=on_demand`, the canonical private
 `_AGENT_WORKER_URL`, full `_AGENT_WORKER_QUEUE`, and `_AGENT_WORKER_INVOKER_EMAIL`.
-The production build's first step refuses an unresolved/staging target, a paused
+The legacy `deploy/gcp/cloudbuild.yaml` pipeline's first step refuses an unresolved/staging target, a paused
 or unbounded queue, missing/paused/misdirected recovery, public worker invocation,
 or an idle CPU/minimum-instance configuration. Provision and review these resources
 before running the pipeline. The build updates hourly recovery before switching
 the API. Use the [staging renderer](../../scripts/prepare-staging.py) to prepare
 pinned, separate staging commands; bootstrap the private service only to resolve
 its URL, then regenerate the plan with its actual URL before activation.
+Those active-queue prerequisites are not permission to unpause production. Use
+the separate build-only pipeline and individually gated
+[production preflight](production-release-preflight.md); keep dispatch/recovery
+paused through review, backup/restore, migration and private acceptance. The
+renderer executes nothing; gate labels do not enforce authorization.
+
+Private invocation requires both a narrow IAM policy and an enabled Cloud Run
+Invoker IAM check. The service-level `run.googleapis.com/invoker-iam-disabled`
+annotation must be absent or `false`; removing `allUsers` alone is insufficient.
+Keep `run.googleapis.com/scalingMode` absent or `automatic`: manual scaling can
+pin idle instances or disable dispatch even with both minimums set to zero.
+Worker deployment commands explicitly set `--invoker-iam-check --scaling=auto`;
+verify the effective service settings and unauthenticated rejection after rollout.
 
 Apply migrations before switching the API and preserve the durable ledger:
 
@@ -93,8 +106,8 @@ downgrade cannot undo remote events and would remove the recovery ledger.
   run/action status, event counters, expired leases, retries, oldest queued age,
   and pending provider revocations. No credentials/source/goals/input metric labels.
 
-Alert on overdue runnable work, failed queue/recovery deliveries, rising queue
-age/expired leases/retries, any
+Alert on overdue runnable work, failed queue/recovery deliveries, expired
+leases/retries, any
 `unknown_outcome` or `action.partial_effect`, and pending remote revocations.
 Inspect stable action/event IDs before restarting or reconciling. Separate human
 approval/input waits from queue backlog. Scope/credential failures require new
@@ -183,6 +196,65 @@ RISC push revocation, automated encryption-key rotation and background remote
 revocation retry are not implemented. Retry disconnect explicitly; use a reviewed
 re-encryption procedure for key rotation. Replacing the master key alone makes
 old credentials unavailable.
+
+The server bridge also requires an independent high-entropy key:
+`CALENDAR_SESSION_BINDING_KEY` on the dashboard and the exact same value in
+`LENSLAYER_PLATFORM_CALENDAR_SESSION_BINDING_KEY` on the backend. It must differ
+from connector encryption, state-signing and model keys. A cryptographic private
+login-session identity is held only in the encrypted server session. The bridge
+signs a short-lived one-use proof bound to user, organization, operation, body and
+login-session fingerprint. Relogin invalidates old OAuth state; token refresh
+preserves the initiating session. Missing proof/key fails closed. Browser session
+JSON must not contain provider bearer/refresh tokens or the private session ID.
+
+Calendar defaults to disabled (`LENSLAYER_PLATFORM_GOOGLE_CALENDAR_ENABLED=false`).
+The optional model also defaults to disabled with a zero lifetime call allowance;
+see the [provider and spending rules](../hosted-model-providers.md).
+
+## October roadmap migrations and operational release
+
+`b14e6f8a9023` adds retained private context and dependency/conditional/timed graph
+records. `bf84e2c19a67` follows it with immutable model selection, durable global
+spending reservations and Calendar session proofs. Readiness checks the required
+tables and columns before accepting the new revision. Preserve ledger data and
+backups before applying either migration. The two spent-budget tables deliberately
+survive downgrade/reupgrade; rolling back source does not refund paid calls.
+
+The subsequent candidate `c7a4e9d2b630` merges that staging history with recovered
+production revision `6b1d3e8f2c57`, preserving the original webhook signing key and
+member email-preference columns. It is **forward-only**, not deployed or PG18.6
+clone-qualified. See [lineage/compatibility review](production-migration-lineage.md).
+The bounded document job now also contains signed webhook delivery; the private
+agents-only HTTP worker still must never send document email/webhooks or idle poll.
+
+The subsequent [source-retention follow-up](source-retention-review.md) preserves
+contracts and ledgers at expiry and commits per-asset `purge_pending` deletion
+intent before object I/O. Only `purged` acknowledges object deletion; failures
+remain retryable on the next authorized bounded maintenance invocation. Do not
+clear expired deadlines or treat the audit event as proof of physical erasure.
+No new migration/head, scheduler or idle polling. This runtime source needs
+independent review/exact-image PG18.6 qualification; historical migration34+5 and
+staging-image evidence do not qualify it automatically.
+
+Use `scripts/prepare-production.py` to render the immutable source/digest release
+plan, with private acceptance and traffic promotion as separate steps. It does
+not deploy or migrate. `scripts/prepare-agent-monitoring.py` renders five policies
+per environment: worker HTTP failures, ledger attention/unavailability, hourly
+recovery failure, post-commit wake enqueue failure and at least three unsuccessful
+Cloud Tasks attempts within fifteen minutes. It ignores ordinary future timers
+and human approval waits. Policies stay disabled until an approved notification
+channel is supplied; inspect existing names before creating duplicates. This is
+the renderer default, not current live status: saved acceptance records ten
+enabled policies and actual receipt of the staging ledger-attention alert only.
+
+Worker health observations are emitted before recovery/draining and again after
+runnable work drains and enqueues successfully, within the existing request.
+This preserves overdue backlog/expired-lease signals even when recovery clears
+them successfully.
+Hourly recovery detects missed commits without keeping an idle process alive.
+There is no claim of immediate detection while a service has no request. Read the
+[current acceptance record](../architecture/agent-roadmap-acceptance-2026-10-14.md)
+before enabling a queue or advertising external provider/SDK acceptance.
 
 ## Opt-in disposable verification
 

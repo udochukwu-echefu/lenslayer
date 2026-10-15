@@ -1,5 +1,5 @@
 /** Wire types mirror backend/app/agent_schemas.py, not the proposed future API. */
-export type ToolName = "documents.retrieve" | "workspace.tasks.create" | "google_calendar.events.create";
+export type ToolName = "documents.retrieve" | "workspace.tasks.create" | "google_calendar.events.create" | "context.retrieve" | "workspace.context_tasks.create";
 export type RunStatus = "running" | "awaiting_approval" | "awaiting_input" | "succeeded" | "failed" | "cancelled";
 export type ActionStatus = "queued" | "awaiting_approval" | "running" | "unknown_outcome" | "succeeded" | "failed" | "cancelled";
 export type JsonObject = Record<string, unknown>;
@@ -8,6 +8,7 @@ export interface AgentCreate {
   name: string;
   allowed_tools: ToolName[];
   contract_ids: string[];
+  context_ids?: string[];
   assignee_ids: string[];
   calendar_targets?: CalendarTarget[];
   require_approval?: boolean;
@@ -23,6 +24,7 @@ export interface Agent {
   token_prefix: string;
   allowed_tools: ToolName[];
   contract_ids: string[];
+  context_ids?: string[];
   assignee_ids: string[];
   calendar_targets?: CalendarTarget[];
   require_approval: boolean;
@@ -53,12 +55,13 @@ export interface CompositeSuccessCondition {
   type: "all";
   conditions: { id: string; condition: TaskSuccessCondition | CalendarSuccessCondition }[];
 }
-export type SuccessCondition = TaskSuccessCondition | CalendarSuccessCondition | CompositeSuccessCondition;
+export type WorkflowSuccessCondition = TaskSuccessCondition | CalendarSuccessCondition | CompositeSuccessCondition;
+export type SuccessCondition = WorkflowSuccessCondition | GraphSuccessCondition;
 /** Generalized route: POST /agent/workflows, not the unchanged task-only /runs. */
 export interface WorkflowCreate extends Omit<RunCreate, "success_condition" | "contract_ids"> {
   contract_ids?: string[];
   calendar_targets?: CalendarTarget[];
-  success_condition: SuccessCondition;
+  success_condition: WorkflowSuccessCondition;
 }
 
 export interface RunCreate {
@@ -77,8 +80,9 @@ export interface AgentRun {
   agent_id: string;
   idempotency_key: string;
   goal: string;
-  execution_owner: "external_agent";
+  execution_owner: "external_agent" | "lenslayer_hosted_agent";
   contract_ids: string[];
+  context_ids?: string[];
   allowed_tools: ToolName[];
   max_actions: number;
   status: RunStatus;
@@ -152,7 +156,7 @@ export interface AgentAction {
   idempotency_key: string;
   tool: string;
   tool_version: string;
-  input: (TaskActionInput & { description: string; deadline_basis: DeadlineBasis | null }) | (CalendarActionInput & { description: string });
+  input: (TaskActionInput & { description: string; deadline_basis: DeadlineBasis | null }) | (CalendarActionInput & { description: string }) | ContextTaskActionInput;
   input_sha256: string;
   status: ActionStatus;
   attempts: number;
@@ -186,3 +190,56 @@ export interface AgentTool {
 
 export interface RequestOptions { signal?: AbortSignal }
 export interface EventOptions extends RequestOptions { afterSequence?: number; limit?: number }
+
+/** Additive bounded-v2 contract, coordination/generalization-interface.md. */
+export interface ContextRecordCreate { title: string; text: string; expires_at: string }
+export interface ContextVersionCreate { expected_version: number; text: string }
+export interface ContextScope { context_ids: string[] }
+export interface ContextRecord {
+  id: string; organization_id: string; title: string; current_version: number;
+  expires_at: string; deleted_at: string | null; created_at: string;
+}
+export interface ContextVersion {
+  id: string; record_id: string; version_number: number; source_sha256: string;
+  text: string; created_at: string;
+}
+export interface ContextSearch extends ContextScope { query: string; max_results?: number }
+/** Pre-run planning only: no evidence ID/created_at and never authorizes a write. */
+export type ContextSearchHit = Omit<ContextEvidenceReceipt, "id" | "created_at">;
+export interface ContextEvidenceReceipt extends Omit<EvidenceReceipt, "contract_id"> { context_id: string }
+export interface FactualPredicate { fact: string; value: boolean; equals: boolean }
+export interface ContextTaskCondition {
+  type: "context_task_created"; context_id: string; assigned_to_user_id: string;
+  title: string; description?: string; due_at: string;
+}
+export interface GraphTask extends Omit<ContextTaskCondition, "type"> { type?: "context_task_created"; query: string }
+export interface GraphNodeCreate {
+  id: string; depends_on?: string[]; not_before_at?: string | null;
+  when?: FactualPredicate | null; task: GraphTask;
+}
+export interface WorkflowGraphCreate extends ContextScope {
+  idempotency_key: string; goal: string; deadline_at: string; nodes: GraphNodeCreate[];
+}
+export interface GraphSuccessCondition { type: "graph"; nodes: { id: string; condition: ContextTaskCondition }[] }
+export interface ContextTaskActionInput extends ContextTaskCondition {
+  condition_id: string; evidence_id: string; plan_sha256: string; when?: FactualPredicate | null;
+}
+export type GraphNodeStatus = "blocked" | "ready" | "completed" | "skipped";
+export interface GraphNode { id: string; action_id: string; depends_on: string[]; not_before_at: string; status: GraphNodeStatus }
+export interface WorkflowGraph { run_id: string; plan_sha256: string; nodes: GraphNode[] }
+export interface ContextTaskReceipt {
+  type: "context_task_created"; task_id: string; contract_id: null; context_id: string;
+  assigned_to_user_id: string; due_at: string; evidence_id: string; version_id: string;
+  plan_sha256: string; node_id: string; verified: true;
+  verification_method: "database_read_back"; verified_at: string;
+}
+export interface GraphResult {
+  type: "graph"; verified: boolean;
+  completed_nodes: Record<string, { action_id: string; result: ContextTaskReceipt }>;
+  skipped_node_ids: string[];
+}
+export type ContextGraphEventData =
+  | { evidence_id: string; context_id: string; version_id: string; source_sha256: string }
+  | { plan_sha256: string; node_ids: string[] }
+  | { node_id: string; action_id: string }
+  | { completed_node_ids: string[]; skipped_node_ids: string[] };

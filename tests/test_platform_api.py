@@ -282,7 +282,7 @@ class PlatformApiTests(unittest.TestCase):
             self.assertIn(b"<w:del ", document_xml)
             self.assertIn(b"<w:ins ", document_xml)
             self.assertIn("word/comments.xml", archive.namelist())
-    def test_worker_purges_expired_contracts_and_documents(self):
+    def test_worker_preserves_expired_contract_and_purges_source(self):
         organization = self.create_organization()
         created = self.upload_contract(organization["id"], retain_document="true").json()
         database = self.client.app.state.database
@@ -291,18 +291,18 @@ class PlatformApiTests(unittest.TestCase):
             contract.expires_at = utcnow() - timedelta(seconds=1)
             session.commit()
 
-        run_worker(self.settings, once=True)
+        run_worker(self.settings, once=True, documents_only=True)
         response = self.client.get(
             f"/api/v1/organizations/{organization['id']}/contracts/{created['contract']['id']}",
             headers=self.alice,
         )
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 200)
         self.assertFalse(any(item.is_file() for item in self.settings.object_storage_root.rglob("*")))
         audit = self.client.get(
             f"/api/v1/organizations/{organization['id']}/audit-events",
             headers=self.alice,
         ).json()
-        self.assertIn("contract.expired", {item["action"] for item in audit})
+        self.assertIn("contract.source_purged", {item["action"] for item in audit})
 
     def test_invitation_is_email_bound_and_creates_membership(self):
         organization = self.create_organization()

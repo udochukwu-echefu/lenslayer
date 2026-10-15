@@ -21,6 +21,10 @@ class HostedAgentTask(Base):
     goal_type: Mapped[str] = mapped_column(String(32))
     goal: Mapped[str] = mapped_column(Text)
     planner_mode: Mapped[str] = mapped_column(String(32))
+    model_provider: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    model_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    model_reasoning_effort: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    model_selection_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
     status: Mapped[str] = mapped_column(String(32), default="queued", index=True)
     phase: Mapped[str] = mapped_column(String(32), default="initialize")
     run_id: Mapped[str | None] = mapped_column(ForeignKey("agent_runs.id", ondelete="SET NULL"), nullable=True, unique=True)
@@ -39,3 +43,25 @@ class HostedAgentTask(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class HostedModelLifetimeBudget(Base):
+    """Global monotonic admission count. Never cascades with product records."""
+    __tablename__ = "hosted_model_lifetime_budget"
+    id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    reserved_calls: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class HostedModelReservation(Base):
+    __tablename__ = "hosted_model_reservations"
+    task_id: Mapped[str] = mapped_column(String(64), primary_key=True)  # deliberately NO FK
+    organization_id: Mapped[str] = mapped_column(String(64))  # deliberately NO FK
+    request_sha256: Mapped[str] = mapped_column(String(64))
+    selection_sha256: Mapped[str] = mapped_column(String(64))
+    provider: Mapped[str] = mapped_column(String(32))
+    model_id: Mapped[str] = mapped_column(String(64))
+    reasoning_effort: Mapped[str] = mapped_column(String(16))
+    reserved_usd: Mapped[str] = mapped_column(String(32))
+    input_token_bound: Mapped[int] = mapped_column(Integer)
+    output_token_bound: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

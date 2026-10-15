@@ -1,0 +1,218 @@
+name: Publish reviewed SDK (human approval required)
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Direct OIDC publication (default) or signed handoff only (never publishes)
+        required: true
+        default: publish
+        type: choice
+        options:
+          - publish
+          - detached-provenance
+      version:
+        description: Exact reviewed stable version; sdk-v<version> must already point at this main commit
+        required: true
+        type: string
+      review_run_id:
+        description: Successful SDK release artifact review run ID for this exact commit
+        required: true
+        type: string
+      sha256:
+        description: Reviewed tarball SHA-256 (not the artifact ZIP digest)
+        required: true
+        type: string
+      confirmation:
+        description: 'Type publish @lenslayer/agent-sdk@<version>, or sign @lenslayer/agent-sdk@<version> for detached-provenance'
+        required: true
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: sdk-npm-publication
+  cancel-in-progress: false
+
+env:
+  EXPECTED_VERSION: ${{ inputs.version }}
+  REVIEW_RUN_ID: ${{ inputs.review_run_id }}
+  EXPECTED_SHA256: ${{ inputs.sha256 }}
+  CONFIRMATION: ${{ inputs.confirmation }}
+  # Necessary dispatch/job snapshot only. Closing requires workflow disable AND
+  # explicit cancellation of in-flight runs; clearing this flag alone is not an abort.
+  PUBLISH_ENABLED: ${{ vars.SDK_NPM_PUBLISH_ENABLED }}
+  RELEASE_OPERATION: ${{ inputs.operation }}
+
+jobs:
+  verify:
+    if: github.repository == 'udochukwu-echefu/lenslayer' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24.15.0'
+          package-manager-cache: false
+      - name: Bind successful review workflow, attempt, canonical main source and version tag
+        id: policy
+        run: node sdk/scripts/release-policy.mjs github publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          artifact-ids: ${{ steps.policy.outputs.artifact_id }}
+          run-id: ${{ inputs.review_run_id }}
+          github-token: ${{ github.token }}
+          path: sdk-release-review
+          merge-multiple: true
+      - name: Verify reviewed bytes and metadata
+        run: node sdk/scripts/release-artifact.mjs verify sdk-release-review
+        env:
+          REVIEW_RUN_ATTEMPT: ${{ steps.policy.outputs.review_run_attempt }}
+      - run: npm --prefix sdk ci --ignore-scripts --no-audit --no-fund
+      - run: npm --prefix sdk run release:check
+      - name: Install and type-check the downloaded, reviewed tarball
+        working-directory: sdk
+        run: node tests/package-check.mjs ../sdk-release-review/lenslayer-agent-sdk-${EXPECTED_VERSION}.tgz
+
+  publish:
+    if: inputs.operation == 'publish'
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Release owner configures human approval and main-only branches; independent review is optional stronger protection.
+    environment: sdk-npm
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24.15.0'
+          package-manager-cache: false
+      - name: Recheck source and review after human environment approval
+        id: policy
+        run: node sdk/scripts/release-policy.mjs github publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          artifact-ids: ${{ steps.policy.outputs.artifact_id }}
+          run-id: ${{ inputs.review_run_id }}
+          github-token: ${{ github.token }}
+          path: sdk-release-review
+          merge-multiple: true
+      - name: Verify original reviewed artifact again; never rebuild or repack here
+        run: node sdk/scripts/release-artifact.mjs verify sdk-release-review
+        env:
+          REVIEW_RUN_ATTEMPT: ${{ steps.policy.outputs.review_run_attempt }}
+      - name: Publish exact reviewed bytes via package-scoped trusted OIDC and provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Direct OIDC publishing needs >=11.5.1. This is NOT a first-package
+          # staging bootstrap (npm stage requires >=11.15.0 and a separate plan).
+          test "$(npm --version)" = '11.12.1'
+          test -z "${NODE_AUTH_TOKEN:-}"
+          test -z "${NPM_TOKEN:-}"
+          test -z "${NPM_ID_TOKEN:-}"
+          test -z "${SIGSTORE_ID_TOKEN:-}"
+          test ! -e .npmrc
+          # Empty job-local config files, never a developer/runner auth store.
+          : > "$RUNNER_TEMP/sdk-publish-user.npmrc"
+          : > "$RUNNER_TEMP/sdk-publish-global.npmrc"
+          # Fresh self-workflow enabled-state/source/review check after setup.
+          # The enable variable is only a snapshot, not live revocation.
+          node sdk/scripts/release-policy.mjs github publish
+          npm publish "sdk-release-review/lenslayer-agent-sdk-${EXPECTED_VERSION}.tgz" --ignore-scripts --access public --provenance --tag latest --registry https://registry.npmjs.org/ --userconfig "$RUNNER_TEMP/sdk-publish-user.npmrc" --globalconfig "$RUNNER_TEMP/sdk-publish-global.npmrc"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REVIEW_RUN_ATTEMPT: ${{ steps.policy.outputs.review_run_attempt }}
+          REVIEW_ARTIFACT_ID: ${{ steps.policy.outputs.artifact_id }}
+      - name: Verify registry bytes, cryptographic signatures and provenance source binding
+        run: node sdk/scripts/verify-registry.mjs sdk-release-review sdk-registry-evidence
+      - name: Retain published-byte evidence (not a second pack)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: published-sdk-${{ inputs.version }}-${{ github.run_id }}
+          path: |
+            sdk-release-review/
+            sdk-registry-evidence/
+          if-no-files-found: error
+          retention-days: 90
+
+  detached-provenance:
+    if: inputs.operation == 'detached-provenance'
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: sdk-npm
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24.15.0'
+          package-manager-cache: false
+      - name: Recheck all release guards after owner environment approval
+        id: policy
+        run: node sdk/scripts/release-policy.mjs github publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          artifact-ids: ${{ steps.policy.outputs.artifact_id }}
+          run-id: ${{ inputs.review_run_id }}
+          github-token: ${{ github.token }}
+          path: sdk-release-review
+          merge-multiple: true
+      - name: Verify original reviewed bytes; never rebuild or repack
+        run: node sdk/scripts/release-artifact.mjs verify sdk-release-review
+        env:
+          REVIEW_RUN_ATTEMPT: ${{ steps.policy.outputs.review_run_attempt }}
+      - name: Install locked dev-only signing tools without scripts or registry credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(npm --version)" = '11.12.1'
+          test -z "${NODE_AUTH_TOKEN:-}"
+          test -z "${NPM_TOKEN:-}"
+          test -z "${NPM_ID_TOKEN:-}"
+          test -z "${SIGSTORE_ID_TOKEN:-}"
+          test ! -e .npmrc
+          test ! -e sdk/.npmrc
+          : > "$RUNNER_TEMP/sdk-sign-user.npmrc"
+          : > "$RUNNER_TEMP/sdk-sign-global.npmrc"
+          npm --prefix sdk ci --ignore-scripts --no-audit --no-fund --registry https://registry.npmjs.org/ --userconfig "$RUNNER_TEMP/sdk-sign-user.npmrc" --globalconfig "$RUNNER_TEMP/sdk-sign-global.npmrc" --cache "$RUNNER_TEMP/sdk-sign-cache"
+      - name: Sign and cryptographically verify exact-byte handoff (NOT a publication)
+        run: node sdk/scripts/sign-handoff.mjs sdk-release-review sdk-bootstrap-handoff
+        env:
+          REVIEW_RUN_ATTEMPT: ${{ steps.policy.outputs.review_run_attempt }}
+          REVIEW_ARTIFACT_ID: ${{ steps.policy.outputs.artifact_id }}
+          GH_TOKEN: ${{ github.token }}
+      - name: Retain signed handoff only; no registry acceptance claim
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: sdk-bootstrap-${{ inputs.version }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: sdk-bootstrap-handoff/
+          if-no-files-found: error
+          retention-days: 7

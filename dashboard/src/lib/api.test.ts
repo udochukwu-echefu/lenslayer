@@ -14,22 +14,22 @@ describe("resolvePlatformApiPrefix", () => {
 });
 
 describe("resolveAuthenticatedSession", () => {
-  it("retries once when the access token is still hydrating", async () => {
+  it("waits once for the safe authenticated identity, not a browser bearer", async () => {
     const getCurrentSession = vi
       .fn()
       .mockResolvedValueOnce({ user: { name: "Udo" } })
-      .mockResolvedValueOnce({ accessToken: "ready-token" });
+      .mockResolvedValueOnce({ user: { id: "auth0|ready-human" } });
     const pause = vi.fn().mockResolvedValue(undefined);
 
     const session = await resolveAuthenticatedSession(getCurrentSession, pause);
 
-    expect(session?.accessToken).toBe("ready-token");
+    expect(session?.user?.id).toBe("auth0|ready-human");
     expect(getCurrentSession).toHaveBeenCalledTimes(2);
     expect(pause).toHaveBeenCalledOnce();
   });
 
-  it("does not delay when the token is already available", async () => {
-    const getCurrentSession = vi.fn().mockResolvedValue({ accessToken: "ready-token" });
+  it("does not delay when the authenticated identity is available", async () => {
+    const getCurrentSession = vi.fn().mockResolvedValue({ user: { id: "auth0|ready-human" } });
     const pause = vi.fn().mockResolvedValue(undefined);
 
     await resolveAuthenticatedSession(getCurrentSession, pause);

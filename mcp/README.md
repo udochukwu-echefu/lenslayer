@@ -6,7 +6,9 @@ service. No client sampling, shell, submitted code, approval or direct DB writes
 
 ## Setup
 
-Node 20.3+ (validated with 24.15.0), existing API and continuous worker:
+Node 20.3+ (validated with 24.15.0), existing API; a worker is needed only for
+approved execution, not discovery/reads. Worker operation is coordinator-owned
+and must sleep when no jobs exist.
 
 ```sh
 npm --prefix sdk ci
@@ -15,13 +17,18 @@ npm --prefix mcp ci
 npm --prefix mcp run build
 ```
 
-Adapt `client-config.example.json` to your host's local `mcpServers` format.
-Use an absolute Node executable/path if the host lacks your shell PATH. Replace
-the placeholder through the host's server-side secret mechanism, or a private
-0600 configuration file; do not commit it or put a token in a prompt. The process
-reads only `LENSLAYER_API_URL` and `LENSLAYER_AGENT_TOKEN`. Use HTTPS or loopback
-HTTP. Revoked/expired credentials fail closed. Do not run it via `npm start` on
-stdio: npm lifecycle chatter can corrupt stdout. Invoke `node dist/stdio.js`.
+`client-config.example.json` is an exact **OpenCode V2** local-server example:
+`mcp.servers.lenslayer`, `type: local`, array `command`, and `environment` using
+`{env:NAME}` substitutions. It is not the V1/generic `mcpServers` format.
+Set both paths absolutely. See [OpenCode host setup and acceptance](OPENCODE.md)
+for process-only credentials, supported commands, isolation and a repeatable
+coordinator-owned staging check. Actual native legacy and fresh-host auto reads
+passed against a disposable API; staging and protocol switching remain pending.
+The process requires explicit `LENSLAYER_API_URL` and `LENSLAYER_AGENT_TOKEN`;
+there is no implicit localhost fallback and no `.env` loading. It removes the
+token from its own environment after constructing the private bearer client.
+Use HTTPS or loopback HTTP. Revoked/expired credentials fail closed. Do not run
+it via `npm start` on stdio: npm chatter can corrupt stdout. Invoke Node directly.
 
 ## Protocol and capability boundaries
 
@@ -30,9 +37,15 @@ Zod **4.4.3**, committed lockfile. `serveStdio` handles the current July 2026
 discovery/envelope spec and legacy `initialize` negotiation. JSON-RPC framing,
 validation and era projection belong to the official SDK, not homemade parsing.
 
-Every discovery and call fetches `/agent/tools` afresh, filters to known version-1
-grants and exposes no unknown provider tool. Resource/assignee/approval checks
-remain authoritative in the API. The host cannot widen grants through model text.
+Every discovery and call fetches `/agent/tools` afresh, filters to known **string
+version `"1"`** grants and exposes no unknown provider tool. Missing versions,
+numeric `1`, and unsupported versions are omitted, never assumed compatible.
+No supported grants means an empty catalog; calls fail closed. Discovery failure
+is a credential/connectivity error, not an empty successful catalog. A host may
+cache old tools until reconnect: each call still rechecks grants. Resource,
+tenant, ownership, assignee and approval checks remain authoritative in the API;
+the bearer fixes the tenant/agent. No tool accepts tenant selection or human
+credentials. Host/session metadata is not authorization. Model text cannot widen grants.
 
 | Tools | Delegation / route |
 | --- | --- |
@@ -70,6 +83,17 @@ Only tool name/outcome metadata is logged to stderr; stdout is protocol only.
 
 ## Verification
 
+Bounded-v2 additions (same version-1 backend grants): `context.search` is read-only
+pre-run planning; hits have no receipt ID/created_at and cannot authorize writes.
+`workflow_graphs.create` atomically creates the immutable context-only plan and
+all original actions. `runs.graph`, `context.retrieve`, `context.evidence.read`
+inspect original readiness/proof. Graph operations require both context grants;
+search/evidence requires `context.retrieve`. No context management, org/credential
+selector, context-action insertion, expression/eval or approval tool is exposed.
+See `sdk/GENERALIZATION.md` for exact routes and boolean/dependency/scheduling
+semantics. Fresh grant checks apply to calls even if the host caches old discovery.
+These routes are source-integrated, not deployed/host-accepted by this pass.
+
 ```sh
 npm --prefix mcp test
 ```
@@ -78,7 +102,17 @@ The real stdio smoke uses the official MCP client against an injected loopback
 HTTP ledger: initialize, listTools, callTool, approval pending, then an injected
 verified receipt. Additional tests cover modern negotiation, credential-safe
 failures, narrowed calendar discovery, exact additive routes and unsupported inputs.
-Fake receipts alone do not prove database/provider verification.
+Fake receipts alone do not prove database/provider verification. Real stdio tests
+also cover missing/unsupported versions, fresh-call revocation, synthetic API
+scope denial, no idle requests, safe startup failures and goal/source/token-free
+stderr. These are **official-client wire tests, not interactive OpenCode host
+acceptance or proof of the backend's tenant isolation**.
+
+The [OpenCode 2.0.18 auto investigation](OPENCODE-AUTO-DIAGNOSTIC.md) additionally
+tests pinned MCP client/core 2.0.0 versus 2.3.1 over real stdio in legacy, auto and
+pinned-modern modes. It includes a credential-free parent discovery fixture;
+these client tests are separate from the coordinator's subsequent successful
+fresh native auto-host tool traces. In-place switching remains unqualified.
 
 `tests/local-backend-smoke.mjs` additionally exercises the disposable original-v1
 backend, real SQLite persistence and worker, with a real human API approval. It

@@ -15,20 +15,20 @@ def provider(organization_id: str, service: ServiceDep, user: UserDep):
 
 
 @router.post("/organizations/{organization_id}/calendar/oauth/start", response_model=CalendarOAuthStartResponse)
-def start(organization_id: str, payload: CalendarOAuthStart, response: Response, service: ServiceDep, user: UserDep):
+def start(organization_id: str, payload: CalendarOAuthStart, request: Request, response: Response, service: ServiceDep, user: UserDep):
     response.headers["Cache-Control"] = "no-store"
-    return service.start_calendar_oauth(organization_id, user, payload)
+    return service.start_calendar_oauth(organization_id, user, payload, session_proof=request.headers.get("x-lenslayer-calendar-session"))
 
 
 @router.post("/organizations/{organization_id}/calendar/oauth/callback", response_model=IntegrationConnectionResponse, status_code=201)
-def callback(organization_id: str, payload: CalendarOAuthCallback, response: Response, service: ServiceDep, user: UserDep):
+def callback(organization_id: str, payload: CalendarOAuthCallback, request: Request, response: Response, service: ServiceDep, user: UserDep):
     response.headers["Cache-Control"] = "no-store"
-    return service.complete_calendar_oauth(organization_id, user, payload)
+    return service.complete_calendar_oauth(organization_id, user, payload, session_proof=request.headers.get("x-lenslayer-calendar-session"))
 
 
 @router.post("/organizations/{organization_id}/calendar/connections/{connection_id}/disconnect", response_model=CalendarDisconnectResponse)
 def disconnect(organization_id: str, connection_id: str, request: Request, background_tasks: BackgroundTasks,
                service: ServiceDep, user: UserDep):
-    result = service.disconnect_calendar(organization_id, connection_id, user)
+    result = service.disconnect_calendar(organization_id, connection_id, user, session_proof=request.headers.get("x-lenslayer-calendar-session"))
     queue_agent_worker(background_tasks, request, organization_id=organization_id)
     return result

@@ -5,6 +5,7 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { setTimeout as pause } from "node:timers/promises";
+import { calendarSessionHeaders } from "./calendar-session.mjs";
 
 // Actual API/worker/persistence, synthetic identity and fake provider only.
 const base = process.env.LENSLAYER_AGENT_TEST_API_URL;
@@ -55,7 +56,8 @@ async function call(path, method = "GET", body, headers = identity, expectedStat
 assert.deepEqual(await call("/__lenslayer_disposable_fixture", "GET", undefined, {}), {
   fixture: "calendar-workflows", nonce,
 });
-const human = (path, method, body, status) => call("/api/v1" + path, method, body, identity, status);
+const human = (path, method, body, status) => call("/api/v1" + path, method, body,
+  { ...identity, ...calendarSessionHeaders(path, method, body, identity["X-LensLayer-User"]) }, status);
 function worker(agentsOnly = true) {
   execFileSync(python, ["-m", "examples.agents.tests.calendar_backend", "--worker", ...(agentsOnly ? ["--agents-only"] : [])], {
     cwd: root, env: { PATH: process.env.PATH, LENSLAYER_AGENT_TEST_ROOT: directory }, stdio: "pipe", timeout: 45_000,
@@ -179,6 +181,7 @@ assert.equal((await human(`${tasksPath}/${cancelled.id}/cancel`, "POST")).status
 worker();
 assert.equal(await insertCount() - baseline, 2);
 await human(tasksPath, "POST", { idempotency_key: "hosted-model-unconfigured", goal_type: "retained-document-follow-up", goal: "Model must be explicitly configured.",
-  deadline_at: deadline, planner_mode: "model", ...facts }, 503);
+  deadline_at: deadline, planner_mode: "model", expected_model_provider: "deepseek", expected_model_id: "deepseek-flash",
+  expected_model_reasoning_effort: "high", ...facts }, 503);
 assert.equal((await human(tasksPath)).length, 4);
 console.log("PASS: hosted cancellation produces no effect, model mode fails closed, Calendar-only scope requires no document or assignee, and no duplicate task/event was created.");

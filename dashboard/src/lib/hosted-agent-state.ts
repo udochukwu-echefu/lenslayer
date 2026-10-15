@@ -9,7 +9,7 @@ export const goalLabels: Record<HostedGoalType, string> = {
 };
 export const plannerLabels: Record<HostedPlannerMode, string> = {
   deterministic: "Fixed workflow · no model",
-  model: "Model-assisted · GPT-6.1 Sol, high effort",
+  model: "Model-assisted · high effort",
 };
 export const statusNotes: Record<HostedAgentTask["status"], string> = {
   queued: "Assignment recorded. No action has executed yet.",
@@ -29,7 +29,8 @@ export function retainedContract(contract: Contract, now = Date.now()) {
   return contract.retain_source_text && (contract.expires_at === null || Date.parse(contract.expires_at) > now);
 }
 export function calendarGrants(connections: IntegrationConnection[], org: string) {
-  return connections.filter((connection) => connection.organization_id === org && connection.provider === "google_calendar" && connection.status === "active" && connection.capabilities.includes("google_calendar.events.create") && connection.settings.credential_mode === "encrypted").flatMap((connection) => {
+  // Integration metadata uses connector capabilities, not agent action tool names.
+  return connections.filter((connection) => connection.organization_id === org && connection.provider === "google_calendar" && connection.status === "active" && connection.capabilities.includes("events.create") && connection.settings.credential_mode === "encrypted").flatMap((connection) => {
     const ids = Array.isArray(connection.settings.calendar_ids) ? connection.settings.calendar_ids : [];
     return [...new Set(ids)].filter((id): id is string => typeof id === "string" && id.length > 0 && id.length <= 1024 && !/[\s*]/.test(id)).map((calendarId) => ({ connection, calendarId, value: JSON.stringify([connection.id, calendarId]) }));
   });

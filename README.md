@@ -2,7 +2,7 @@
 
 LensLayer gives developer-run and LensLayer-hosted agents context, permission to act, and proof of completion. Agents retrieve retained evidence, propose typed workspace tasks or exact Calendar events, pause for factual input or human approval, and complete bounded workflows with independently verified receipts. It combines a Next.js operator workspace with a FastAPI service, persistent execution records, private document storage, and a separate worker.
 
-The implementation is locally verified. Owners/admins can assign document follow-ups, Calendar events or combined goals through `/agent-tasks`; the Python hosted service persists planning checkpoints and uses existing approvals and verified receipts. A separate task-only TypeScript CLI remains a developer reference. Staging is prepared for review; live OIDC/provider/model checks, deployment and SDK publication remain release gates.
+Owners/admins assign document follow-ups, Calendar events or combined goals through `/agent-tasks`; the Python hosted service persists planning checkpoints and uses existing approvals and verified receipts. Developers can also create bounded context workflows with dependencies, approved boolean branches and execution timers. A separate task-only TypeScript CLI remains a reference. Basic private staging/OIDC and on-demand worker checks have passed. The [live DeepSeek evaluation](docs/architecture/deepseek-live-evaluation-2026-10-14.md) passed ten synthetic cases; the latest full staging release, real Calendar consent, production rollout and npm publication still have separate acceptance gates.
 
 LensLayer is a separate project from ContractGuard, the original Streamlit contract-review application.
 
@@ -13,6 +13,8 @@ LensLayer turns agreements into source-linked risks, obligations, negotiation pr
 - Scoped agent credentials and delegations, typed versioned tools, durable runs, source-version evidence receipts, immutable approvals, and verified internal tasks
 - Exact owned-calendar targets, encrypted OAuth credentials, GET-only recovery of uncertain writes, and named task/event completion conditions
 - Typed human/agent input waits, execution leases, durable metrics, and worker health checks
+- Private versioned context, explicit resource delegation, scoped lexical retrieval and verified context-backed assigned follow-ups
+- Immutable workflow graphs with dependencies, supplied boolean facts, not-before timers and completed/skipped checkpoints
 - Hosted assignment/status UI, database-backed planning recovery, and a dedicated agent worker lane
 - Server-side TypeScript SDK, official local stdio MCP adapter, bounded task-planner CLI, and public developer onboarding
 - PDF, DOCX, and TXT ingestion with extraction diagnostics and configurable retention
@@ -60,6 +62,8 @@ documents the implemented backend and its additive workflow routes. See the
 for actual checks and the [release checklist](docs/developer-release-checklist.md)
 for the remaining external setup. The [developer quickstart](docs/developer-agent-quickstart.md)
 covers API, SDK, MCP, planner, operator and Calendar consent setup.
+The [context/workflow interface](docs/architecture/agent-generalization-interface.md)
+defines the additive graph routes, exact limits and retained-source semantics.
 
 ## Local Development
 
@@ -101,6 +105,16 @@ Run `make check` from the repository root after installing Python dependencies a
 running `npm ci` in `dashboard`, `landing`, `sdk`, `mcp`, and `hosted-agent`.
 The PostgreSQL tests require explicit disposable-database opt-in; skipped tests
 are not PostgreSQL validation. See the operations guide and `make check-agent-postgres`.
+Production-lineage tests use the two non-secret, source-bound inputs in
+`tests/fixtures/production-migration/`; no private root-level migration-history
+directory is required. See [lineage review](docs/deployment/production-migration-lineage.md)
+for the supported DAG and [retention review](docs/deployment/source-retention-review.md)
+for the separately qualified runtime behavior. Historical/private audit patches
+are not fixture or production build inputs.
+The focused combined runner is `scripts/test-code-complete-local.py` (optional
+`--postgres` creates its own disposable local cluster). Final local integration
+results and exact-byte limits are recorded in `CODE-COMPLETE.md`; no live release
+or registry availability is implied.
 Individual commands:
 
 ```bash
@@ -127,8 +141,11 @@ make check-agent-integration
 The dashboard is prepared for Cloudflare Workers through OpenNext, and private document storage can use Cloudflare R2. The Python API and worker run as separate services behind TLS. See `docs/deployment/cloudflare-beta.md` and `backend/README.md` for environment and production-boundary details.
 
 The [staging review](docs/deployment/agent-staging-review.md) specifies isolated
-resources, pinned secret references, migration order and a disabled agent worker
-pool. `make prepare-staging` renders the plan without deploying it.
+resources, pinned secret references and migration order. The continuous worker
+pool stays at zero; new deployments use a private on-demand service with zero
+minimum instances and request-billed CPU. `make prepare-staging` renders the plan
+without deploying it. The [production IAM review](docs/deployment/agent-production-iam-review.md)
+records the narrowly scoped invocation grants and paused queue.
 
 Production requires PostgreSQL, OIDC verification, private object storage, malware scanning, secret rotation, backups, observability, and documented retention procedures.
 

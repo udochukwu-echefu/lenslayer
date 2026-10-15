@@ -59,6 +59,17 @@ test("grounded proposal stops at human approval; restart observes verification w
   assert.deepEqual(await f.execute(), { state: "succeeded", runId: "run", actionId: "action", taskId: "task" });
   await f.execute(); assert.equal(f.state.tasks, 1);
 });
+test("contract planner rejects a context-task input on restart without replanning", async () => {
+  const f = fixture();
+  assert.equal((await f.execute()).state, "awaiting_approval");
+  delete f.state.actions[0].input.contract_id;
+  f.state.actions[0].input.context_id = "context";
+  assert.equal((await f.execute()).code, "original_action_mismatch");
+  assert.equal(f.state.modelCalls, 1);
+  assert.equal(f.state.evidenceCalls, 1);
+  assert.equal(f.state.actions.length, 1);
+  assert.equal(f.state.tasks, 0);
+});
 test("unsupported goal and missing identities/dates make no API or model calls", async () => {
   const f = fixture();
   assert.equal((await f.execute({ ...config, goal: "send-renewal-notice" })).state, "unsupported");

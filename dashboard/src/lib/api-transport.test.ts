@@ -8,7 +8,7 @@ beforeEach(() => {
   vi.stubEnv("NEXT_PUBLIC_LENSLAYER_PUBLIC_ACCESS", "false");
   vi.mocked(getSession)
     .mockReset()
-    .mockResolvedValue({ accessToken: "test-token", expires: "2099-01-01" });
+    .mockResolvedValue({ user: { id: "auth0|test-human" }, expires: "2099-01-01" });
 });
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -28,7 +28,7 @@ describe("domain API transport", () => {
     expect(options.method).toBe("PATCH");
     expect(JSON.parse(options.body)).toEqual({ status: "done" });
     expect(options.headers.get("Content-Type")).toBe("application/json");
-    expect(options.headers.get("Authorization")).toBe("Bearer test-token");
+    expect(options.headers.has("Authorization")).toBe(false);
   });
 
   it("leaves multipart boundaries to the browser", async () => {

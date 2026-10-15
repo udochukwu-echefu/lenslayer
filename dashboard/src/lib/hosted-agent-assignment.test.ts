@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { assignmentInput } from "./hosted-agent-assignment";
 import { calendarGrants, hostedTaskPollInterval } from "./hosted-agent-state";
 import { contractFixture, memberFixture } from "@/test/agent-fixtures";
-import { calendarConnectionFixture, hostedCapabilities, hostedTaskFixture } from "@/test/hosted-fixtures";
+import { calendarConnectionFixture, hostedCapabilities, hostedTaskFixture, deepseekCapabilities } from "@/test/hosted-fixtures";
+import type { IntegrationConnection } from "./types";
 
 function values(overrides: Record<string, string> = {}) {
   const form = new FormData();
@@ -20,6 +21,34 @@ describe("hosted assignment facts and exact scope", () => {
     const input = assignmentInput(values({ goal_type: "calendar-event" }), scope, "stable-key");
     expect(input).not.toHaveProperty("contract_id"); expect(input).not.toHaveProperty("assignee_id"); expect(input).not.toHaveProperty("query");
     expect(input).toMatchObject({ calendar: { connection_id: "connection-1", calendar_id: "sandbox@example.test", summary: "My exact event" } });
+    expect(input.planner_mode).toBe("deterministic");
+    expect(input).not.toHaveProperty("token"); expect(input).not.toHaveProperty("require_approval");
+  });
+  it.each([
+    { organization_id: "other-org" },
+    { provider: "google_drive" },
+    { status: "revoked" },
+    { status: "paused" },
+    { status: "error" },
+    { capabilities: [] },
+    { capabilities: ["events.get"] },
+    { capabilities: ["google_calendar.events.create"] },
+    { settings: { calendar_ids: ["sandbox@example.test"] } },
+    { settings: { calendar_ids: ["sandbox@example.test"], credential_mode: "plaintext" } },
+    { settings: { credential_mode: "encrypted" } },
+    { settings: { calendar_ids: "sandbox@example.test", credential_mode: "encrypted" } },
+  ] satisfies Partial<IntegrationConnection>[]) ("rejects nonmatching Calendar connection metadata %j", (patch) => {
+    const connections = [{ ...calendarConnectionFixture, ...patch }];
+    expect(calendarGrants(connections, "org-1")).toEqual([]);
+    expect(() => assignmentInput(values({ goal_type: "calendar-event" }), { ...scope, connections }, "key")).toThrow(/originally granted/);
+  });
+  it("selects only unique valid original IDs without inferring or accepting a forged connection/calendar pair", () => {
+    const connections = [{ ...calendarConnectionFixture, settings: { ...calendarConnectionFixture.settings,
+      calendar_ids: ["sandbox@example.test", "sandbox@example.test", "", "*", "with space", "x".repeat(1025), 7, null] } }];
+    expect(calendarGrants(connections, "org-1").map(({ value }) => value)).toEqual([JSON.stringify(["connection-1", "sandbox@example.test"])]);
+    for (const pair of [["connection-1", "other@example.test"], ["other-connection", "sandbox@example.test"]]) {
+      expect(() => assignmentInput(values({ goal_type: "calendar-event", calendar_target: JSON.stringify(pair) }), { ...scope, connections }, "key")).toThrow(/originally granted/);
+    }
   });
   it("combined outcome requires both exact scopes and an explicit timezone", () => {
     expect(assignmentInput(values({ goal_type: "follow-up-and-calendar" }), scope, "key")).toHaveProperty("calendar");
@@ -37,7 +66,7 @@ describe("hosted assignment facts and exact scope", () => {
   });
   it("capability disables unsupported model and requires excerpt disclosure consent", () => {
     expect(() => assignmentInput(values({ planner_mode: "model" }), scope, "key")).toThrow(/not enabled/);
-    const modelScope = { ...scope, capabilities: { ...hostedCapabilities, planner_modes: ["deterministic", "model"] as const } };
+    const modelScope = { ...scope, capabilities: deepseekCapabilities };
     expect(() => assignmentInput(values({ planner_mode: "model" }), { ...modelScope, capabilities: { ...modelScope.capabilities, planner_modes: [...modelScope.capabilities.planner_modes] } }, "key")).toThrow(/sharing/);
   });
   it("lists only active encrypted original calendar grants and stops terminal/deadline polling", () => {
