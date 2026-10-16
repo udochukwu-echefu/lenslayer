@@ -16,7 +16,7 @@ substitutions:
   _GROQ_VERSION: REVIEW_REQUIRED
   _MIGRATION_JOB: lenslayer-migrate
   _RUNTIME_SERVICE_ACCOUNT: lenslayer-runtime
-  _DASHBOARD_URL: https://lenslayer-dashboard.udboy361.workers.dev
+  _DASHBOARD_URL: https://app.lenslayer.online
   _OIDC_ISSUER: https://deveze.uk.auth0.com/
   _OIDC_AUDIENCE: https://api.lenslayer.local
   _OIDC_JWKS_URL: https://deveze.uk.auth0.com/.well-known/jwks.json

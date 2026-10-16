@@ -16,6 +16,57 @@ class ProductionReleaseTests(unittest.TestCase):
     def setUp(self):
         self.config = json.loads(release.MANIFEST.read_text())
 
+    def test_new_canonical_dashboard_origin_is_accepted_and_rendered_with_models_off(self):
+        self.assertEqual(self.config["dashboard_origin"], "https://app.lenslayer.online")
+        original = copy.deepcopy(self.config)
+        self.assertEqual(release.validate_manifest(self.config)["dashboard_origin"], "https://app.lenslayer.online")
+        self.assertEqual(self.config, original)
+        slash = copy.deepcopy(self.config)
+        slash["dashboard_origin"] += "/"
+        self.assertEqual(release.validate_manifest(slash)["dashboard_origin"], "https://app.lenslayer.online")
+        with tempfile.TemporaryDirectory() as temp:
+            plan = release.render_plan(self.config, Path(temp), "a" * 40)
+            for name in ("runtime-env.json", "api-env.json", "bootstrap-env.json"):
+                env = json.loads((Path(temp) / name).read_text())
+                self.assertEqual(env["LENSLAYER_PLATFORM_DASHBOARD_URL"], "https://app.lenslayer.online")
+                self.assertEqual(env["LENSLAYER_PLATFORM_CORS_ORIGINS"], "https://app.lenslayer.online")
+                self.assertEqual(env["LENSLAYER_PLATFORM_HOSTED_MODEL_ENABLED"], "false")
+                self.assertEqual(env["LENSLAYER_PLATFORM_HOSTED_MODEL_LIFETIME_CALL_LIMIT"], "0")
+                self.assertEqual(env["LENSLAYER_PLATFORM_GOOGLE_CALENDAR_ENABLED"], "false")
+        self.assertFalse(plan["model_enabled"])
+        self.assertFalse(plan["calendar_enabled"])
+
+    def test_noncanonical_dashboard_origins_are_rejected_not_generalized(self):
+        origins = ["https://lenslayer-dashboard.udboy361.workers.dev",
+                   "https://lenslayer-dashboard-staging.udboy361.workers.dev",
+                   "https://app-staging.lenslayer.online",
+                   "https://app.lenslayer.online.attacker.invalid",
+                   "https://app-lenslayer.online",
+                   "https://lenslayer.online",
+                   "http://app.lenslayer.online",
+                   "https://app.lenslayer.online:443",
+                   "https://attacker.invalid@app.lenslayer.online",
+                   "https://app.lenslayer.online/other",
+                   "https://app.lenslayer.online?next=attacker",
+                   "https://app.lenslayer.online#attacker"]
+        for origin in origins:
+            with self.subTest(origin=origin):
+                config = copy.deepcopy(self.config)
+                config["dashboard_origin"] = origin
+                with self.assertRaises(ValueError):
+                    release.validate_manifest(config)
+
+    def test_domain_change_preserves_other_strict_authority_pins(self):
+        for key, value in [("project_id", "unreviewed-project"), ("region", "europe-west2"),
+                           ("oidc_issuer", "https://attacker.invalid/"),
+                           ("oidc_audience", "https://api.lenslayer.staging"),
+                           ("r2_endpoint", "https://attacker.invalid")]:
+            with self.subTest(key=key):
+                config = copy.deepcopy(self.config)
+                config[key] = value
+                with self.assertRaises(ValueError):
+                    release.validate_manifest(config)
+
     def test_refuses_cross_environment_authority_and_floating_secrets(self):
         for key, value in [("dashboard_origin", "https://lenslayer-dashboard-staging.udboy361.workers.dev"),
                            ("oidc_audience", "https://api.lenslayer.staging"),
