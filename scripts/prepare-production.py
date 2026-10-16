@@ -49,7 +49,7 @@ def validate_manifest(config: object) -> dict:
         result[k] = clean_https(config[k], origin=True)
     for k in ("oidc_issuer", "oidc_audience"):
         result[k] = clean_https(config[k])
-    if (result["dashboard_origin"] != "https://lenslayer-dashboard.udboy361.workers.dev"
+    if (result["dashboard_origin"] != "https://app.lenslayer.online"
             or result["oidc_issuer"] != "https://deveze.uk.auth0.com/"
             or result["oidc_audience"] != "https://api.lenslayer.local"
             or result["r2_endpoint"] != "https://9d03f4c51b061a0160b4e10c9765527b.r2.cloudflarestorage.com"):
