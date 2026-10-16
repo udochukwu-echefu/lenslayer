@@ -1,3 +1,3 @@
-import { RunList } from "@/components/agents/run-list";
+import { redirect } from "next/navigation";
 
-export default function RunsPage() { return <RunList />; }
+export default function RunsPage() { redirect("/agents/runs"); }

@@ -1,0 +1,45 @@
+/* The real form control is inaccessible to pointer/keyboard/AT navigation.
+   Do not use display:none or type=hidden: required validation must remain real. */
+.app-select-native-bridge {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+  pointer-events: none !important;
+}
+
+.app-select-content[data-app-select-content] {
+  width: var(--radix-select-trigger-width);
+  min-width: 0;
+  max-width: min(32rem, calc(100vw - 24px));
+  max-height: min(24rem, var(--radix-select-content-available-height));
+  color: var(--ink);
+  background: var(--surface);
+}
+
+.app-select-content[data-app-select-content] .app-select-item {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.app-select-scroll {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 28px;
+  background: var(--surface);
+  color: var(--ink-muted);
+}
+
+.app-select-scroll svg { width: 16px; height: 16px; }
+.app-select-error { color: var(--danger, var(--ink)); font-size: .875rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .app-select-content[data-app-select-content] { animation: none; }
+}

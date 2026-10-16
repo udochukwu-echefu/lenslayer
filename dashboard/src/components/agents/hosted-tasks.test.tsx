@@ -7,6 +7,7 @@ import type { Role } from "@/lib/types";
 import { contractFixture, memberFixture } from "@/test/agent-fixtures";
 import { calendarConnectionFixture, hostedCapabilities, hostedTaskFixture, deepseekCapabilities } from "@/test/hosted-fixtures";
 import { agentQueryWrapper } from "@/test/agent-query-wrapper";
+import { selectOption } from "@/test/select-option";
 import { HostedTaskList } from "./hosted-task-list";
 import { HostedTaskDetail } from "./hosted-task-detail";
 
@@ -31,7 +32,11 @@ beforeEach(() => {
   vi.mocked(api.integrations).mockReset().mockResolvedValue([calendarConnectionFixture]);
 });
 function show() { const { Wrapper } = agentQueryWrapper(); return render(<HostedTaskList />, { wrapper: Wrapper }); }
-function change(label: string, value: string) { fireEvent.change(screen.getByLabelText(label), { target: { value } }); }
+function change(label: string, value: string) {
+  const control = screen.getByLabelText(label);
+  if (control.getAttribute("role") === "combobox") selectOption(label, value);
+  else fireEvent.change(control, { target: { value } });
+}
 async function fill(goal = "retained-document-follow-up") {
   await screen.findByLabelText("Outcome to create"); change("Outcome to create", goal);
   await waitFor(() => expect(screen.getByRole("button", { name: "Assign to LensLayer agent" })).toBeEnabled());
@@ -64,7 +69,8 @@ describe("hosted task assignment", () => {
   });
   it.each(["calendar-event", "follow-up-and-calendar"])("uses exact Calendar grants for %s and no irrelevant scope", async (goal) => {
     show(); await fill(goal);
-    expect(screen.getByRole("option", { name: "Owned sandbox calendar — sandbox@example.test (connection-1)" })).toHaveValue(JSON.stringify(["connection-1", "sandbox@example.test"]));
+    expect(screen.getByRole("combobox", { name: "Exact connected calendar grant" })).toHaveTextContent("Owned sandbox calendar — sandbox@example.test (connection-1)");
+    expect(new FormData(screen.getByLabelText("Your goal").closest("form")!).get("calendar_target")).toBe(JSON.stringify(["connection-1", "sandbox@example.test"]));
     expect(screen.getByText("Human approval always required.")).toBeInTheDocument();
     submit(); await waitFor(() => expect(api.createHostedAgentTask).toHaveBeenCalledTimes(1));
     const input = vi.mocked(api.createHostedAgentTask).mock.calls[0][1];
@@ -139,7 +145,13 @@ describe("hosted task assignment", () => {
     vi.mocked(api.hostedAgentCapabilities).mockResolvedValue(hostedCapabilities);
     vi.mocked(api.contracts).mockResolvedValue([{ ...contractFixture, retain_source_text: false }]);
     show(); change(await screen.findByLabelText("Outcome to create").then(() => "Outcome to create"), "retained-document-follow-up");
-    expect(await screen.findByRole("option", { name: /source unavailable or expired/ })).toBeDisabled();
+    await screen.findByRole("link", { name: /Upload a source with text retention/ });
+    fireEvent.keyDown(screen.getByRole("combobox", { name: "Retained source contract" }), { key: "ArrowDown" });
+    const unavailable = await screen.findByRole("option", { name: /source unavailable or expired/ });
+    expect(unavailable).toHaveAttribute("aria-disabled", "true");
+    fireEvent.click(unavailable);
+    expect(api.createHostedAgentTask).not.toHaveBeenCalled();
+    fireEvent.keyDown(unavailable, { key: "Escape" });
     expect(screen.getByRole("link", { name: /Upload a source with text retention/ })).toHaveAttribute("href", "/contracts/new");
   });
   it("shows scope/read errors and hides cached assignment data on auth failure", async () => {
@@ -176,7 +188,9 @@ describe("hosted task assignment", () => {
   });
   it("does not expose model mode when disabled, and has accessible explicit scope controls", async () => {
     const { container } = show(); await fill("follow-up-and-calendar");
+    fireEvent.keyDown(screen.getByRole("combobox", { name: "Planning mode" }), { key: "ArrowDown" });
     expect(screen.queryByRole("option", { name: /Model-assisted/ })).toBeNull();
+    fireEvent.keyDown(screen.getByRole("listbox"), { key: "Escape" });
     expect((await axe(container)).violations).toEqual([]);
   });
   it("drops late task list responses on a tenant switch", async () => {

@@ -14,6 +14,14 @@ describe("developer onboarding access boundaries", () => {
     expect(screen.getByRole("link", { name: "Upload a retained source" })).toHaveAttribute("href", "/contracts/new");
     expect(container.querySelector("input, textarea")).toBeNull();
   });
+  it("embeds without a second public header/main and uses canonical settings and run links", () => {
+    const { container } = render(<DeveloperGuide embedded />);
+    expect(container.querySelector("main, .developer-nav")).toBeNull();
+    expect(screen.queryByRole("link", { name: "Sign in" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Inspect runs" })).toHaveAttribute("href", "/agents/runs");
+    expect(screen.getByRole("link", { name: "Calendar settings" })).toHaveAttribute("href", "/settings/integrations#calendar-connection");
+    expect(screen.getByText(/Agent credentials cannot call human approval routes/)).toBeInTheDocument();
+  });
   it("ties optional model sharing to server disclosure and acknowledgement without hardcoding a provider", () => {
     render(<DeveloperGuide />);
     const hostedGuide = screen.getByRole("region", { name: "Let LensLayer prepare the proposals" });

@@ -53,7 +53,7 @@ function WorkspaceRun({ organizationId, runId }: { organizationId: string; runId
   const refresh = () => { void run.refetch(); void actions.refetch(); void events.refetch(); if (run.data?.success_condition.type === "graph") void graph.refetch(); void client.invalidateQueries({ queryKey: [...key, "inputs"] }); };
 
   return <div className="page agent-page">
-    <Link className="agent-back-link" href="/runs">Back to runs</Link>
+    <Link className="agent-back-link" href="/agents/runs">Back to runs</Link>
     {isDemo && <AgentDemoNotice />}
     {run.isLoading && <PageLoading rows={7} />}
     {run.error && <AgentViewError error={run.error} resource="run" retry={() => void run.refetch()} />}
