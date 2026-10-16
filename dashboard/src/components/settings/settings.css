@@ -1,0 +1,55 @@
+.workspace-settings .settings-sections-layout { display: grid; grid-template-columns: 182px minmax(0, 1fr); gap: 40px; align-items: start; margin-top: 24px; }
+.workspace-settings .settings-section-nav { display: flex; flex-direction: column; gap: 4px; position: sticky; top: 24px; }
+.workspace-settings .settings-section-nav a { min-height: 44px; display: flex; align-items: center; padding: 10px 12px; border-radius: 8px; font-size: 14px; color: var(--ink-muted); text-decoration: none; }
+.workspace-settings .settings-section-nav a:hover { background: var(--surface-hover); color: var(--ink); }
+.workspace-settings .settings-section-nav a[aria-current="page"] { background: var(--accent-soft); color: var(--ink); font-weight: 650; }
+.workspace-settings .settings-selected-content { min-width: 0; }
+.workspace-settings .button { min-height: 44px; }
+.workspace-settings .settings-field :is(.input, .app-select-trigger) { min-height: 44px; width: 100%; }
+.workspace-settings .settings-section-heading { padding-bottom: 20px; margin-bottom: 24px; border-bottom: 1px solid var(--line); }
+.workspace-settings .settings-section-heading h2 { font-size: 23px; line-height: 1.25; font-weight: 650; }
+.workspace-settings .settings-section-heading p { margin-top: 8px; color: var(--ink-muted); max-width: 65ch; line-height: 1.6; }
+.workspace-settings .settings-selected-section h3 { font-size: 16px; font-weight: 650; margin-bottom: 12px; }
+.workspace-settings .settings-selected-section p { max-width: 70ch; line-height: 1.65; }
+.workspace-settings .settings-access-note { color: var(--ink-muted); font-size: 13px; line-height: 1.6; margin-bottom: 24px; }
+.workspace-settings .settings-field { display: grid; gap: 8px; margin-bottom: 24px; max-width: 520px; }
+.workspace-settings .settings-field label { font-size: 13px; font-weight: 650; }
+.workspace-settings .settings-field p { font-size: 12px; color: var(--ink-muted); }
+.workspace-settings .settings-choice { display: flex; align-items: flex-start; gap: 12px; min-height: 52px; padding-block: 12px; max-width: 620px; cursor: pointer; }
+.workspace-settings .settings-choice input { margin-top: 4px; width: 18px; height: 18px; flex: none; accent-color: var(--accent); }
+.workspace-settings .settings-choice strong, .workspace-settings .settings-choice small { display: block; }
+.workspace-settings .settings-choice strong { font-size: 14px; font-weight: 600; }
+.workspace-settings .settings-choice small { margin-top: 5px; color: var(--ink-muted); line-height: 1.55; font-size: 12px; }
+.workspace-settings .settings-save-row { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; border-top: 1px solid var(--line); padding-top: 24px; margin-top: 24px; }
+.workspace-settings .settings-save-row > span { color: var(--ink-muted); font-size: 12px; }
+.workspace-settings .settings-facts { display: grid; margin-bottom: 32px; }
+.workspace-settings .settings-facts > div { display: grid; grid-template-columns: 145px minmax(0, 1fr); gap: 20px; padding-block: 12px; border-bottom: 1px solid var(--line); font-size: 13px; }
+.workspace-settings .settings-facts dt { color: var(--ink-muted); }
+.workspace-settings .settings-facts dd { margin: 0; overflow-wrap: anywhere; }
+.workspace-settings .settings-tool { border-top: 1px solid var(--line); padding-top: 28px; margin-top: 28px; }
+.workspace-settings .settings-tool > p { color: var(--ink-muted); font-size: 13px; margin-bottom: 16px; }
+.workspace-settings .settings-security-summary > p { color: var(--ink-muted); font-size: 13px; margin-bottom: 16px; }
+.workspace-settings .settings-text-link { display: inline-flex; align-items: center; min-height: 44px; margin-left: 16px; text-decoration: underline; text-underline-offset: 3px; font-size: 13px; }
+.workspace-settings .settings-inline-form { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-block: 20px; }
+.workspace-settings .settings-inline-form .settings-field { flex: 1 1 240px; margin: 0; }
+.workspace-settings .settings-connection-form { max-width: 620px; margin-block: 20px; }
+.workspace-settings .settings-records article, .workspace-settings .settings-provider-list article { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 14px; border-bottom: 1px solid var(--line); font-size: 13px; }
+.workspace-settings .settings-records article > div, .workspace-settings .settings-provider-list article > div { min-width: 0; }
+.workspace-settings .settings-records strong, .workspace-settings .settings-provider-list strong { overflow-wrap: anywhere; font-weight: 600; }
+.workspace-settings .settings-records small, .workspace-settings .settings-provider-list small { display: block; color: var(--ink-muted); margin-top: 5px; line-height: 1.5; }
+.workspace-settings .settings-records > p, .workspace-settings .settings-provider-list > p { padding-block: 16px; color: var(--ink-muted); font-size: 13px; }
+.workspace-settings .settings-provider-list article > span { flex: none; color: var(--ink-muted); font-size: 12px; }
+.workspace-settings .settings-copy-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 16px; }
+.workspace-settings .settings-copy-row code { overflow-wrap: anywhere; min-width: 0; }
+.workspace-settings .settings-secret { display: grid; gap: 12px; padding: 20px; border: 1px solid var(--line); background: var(--surface); border-radius: 10px; margin-block: 20px; }
+.workspace-settings .settings-secret label { font-weight: 650; font-size: 14px; }
+.workspace-settings .settings-secret p { font-size: 12px; color: var(--ink-muted); }
+.workspace-settings .settings-secret button { justify-self: start; }
+@media (max-width: 760px) {
+  .workspace-settings .settings-sections-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .workspace-settings .settings-section-nav { position: static; flex-direction: row; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--line); padding-bottom: 16px; }
+  .workspace-settings .settings-section-nav a { padding-inline: 10px; }
+  .workspace-settings .settings-facts > div { grid-template-columns: 115px minmax(0, 1fr); gap: 12px; }
+  .workspace-settings .settings-records article { flex-wrap: wrap; }
+  .workspace-settings .settings-provider-list article { align-items: flex-start; }
+}

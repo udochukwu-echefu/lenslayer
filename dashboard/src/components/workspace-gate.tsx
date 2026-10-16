@@ -20,6 +20,9 @@ export function WorkspaceGate({ children }: { children: React.ReactNode }) {
   const { organizations, isLoading, error } = useWorkspace();
   const { data: session, status: sessionStatus } = useSession();
   const pathname = usePathname();
+  // Only this static guide is readable independently of workspace access. Its
+  // Settings shell stays mounted; sibling settings and data routes remain gated.
+  const isStaticDeveloperGuide = pathname === "/settings/developers";
   const router = useRouter();
   const createWorkspace = useCreateWorkspace();
   const [name, setName] = useState("");
@@ -28,10 +31,13 @@ export function WorkspaceGate({ children }: { children: React.ReactNode }) {
   const privateSessionExpired = session?.error === "RefreshAccessTokenError" || (sessionStatus === "authenticated" && unauthorized);
 
   useEffect(() => {
+    if (isStaticDeveloperGuide) return;
     const callbackUrl = encodeURIComponent(pathname || "/");
     if (privateSessionExpired) router.replace(`/auth/session-expired?callbackUrl=${callbackUrl}`);
     else if (authRequired && sessionStatus === "unauthenticated") router.replace(unauthenticatedDestination(pathname || "/"));
-  }, [authRequired, pathname, privateSessionExpired, router, sessionStatus]);
+  }, [authRequired, isStaticDeveloperGuide, pathname, privateSessionExpired, router, sessionStatus]);
+
+  if (isStaticDeveloperGuide) return children;
 
   if (isLoading || privateSessionExpired || (authRequired && sessionStatus !== "authenticated")) {
     return <main className="gate"><LoaderCircle className="gate-spinner" aria-label="Loading workspace" /><p>Opening your workspace…</p></main>;

@@ -90,3 +90,63 @@
   .agent-facts { grid-template-columns: 1fr; }
   .agent-events li { gap: 10px; }
 }
+
+/* Agents hub only: leave shared forms, run detail and global tables unchanged. */
+.agent-hub-page { min-width: 0; }
+.agent-hub-page .agents-hub-header { display: grid; gap: 20px; min-width: 0; }
+.agent-hub-page .agents-section-links { display: flex; gap: 6px; border-bottom: 1px solid var(--line); }
+.agent-hub-page .agents-section-links a:not(.button) {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 44px;
+  padding: 8px 16px; border-radius: 8px 8px 0 0; color: var(--ink-muted);
+  font-size: 14px; font-weight: 620; text-decoration: none;
+}
+.agent-hub-page .agents-section-links a:hover { background: var(--surface-raised); color: var(--ink); }
+.agent-hub-page .agents-section-links a[aria-current="page"] { background: var(--surface-raised); color: var(--ink); box-shadow: inset 0 -2px var(--accent); }
+.agent-hub-page .agents-section-links a:focus-visible,
+.agent-hub-page .agent-exact-scope summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.agent-hub-page .agent-credentials-list { border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+.agent-hub-page .agent-credential-record { min-width: 0; padding: 18px 20px 8px; }
+.agent-hub-page .agent-credential-record:last-child { border-bottom: 0; }
+.agent-hub-page .agent-credential-overview { display: grid; grid-template-columns: minmax(0, 1fr) 7rem 11rem auto; gap: 16px; align-items: start; }
+.agent-hub-page .agent-credential-overview > * { min-width: 0; }
+.agent-hub-page .agent-credential-name h3 { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: break-word; }
+.agent-hub-page .agent-credential-id { max-width: 30ch; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.agent-hub-page .agent-credential-summary { max-width: 65ch; margin: 8px 0 0; color: var(--ink-muted); font-size: 13px; line-height: 1.5; }
+.agent-hub-page .agent-credential-policy { margin: 4px 0 0; color: var(--ink-muted); font-size: 12px; line-height: 1.5; }
+.agent-hub-page .agent-overview-label { display: block; margin-bottom: 6px; color: var(--ink-muted); font-size: 12px; font-weight: 500; }
+.agent-hub-page .agent-credential-expiry time { display: block; font-size: 13px; line-height: 1.5; font-variant-numeric: tabular-nums; }
+.agent-hub-page .agent-credential-overview > .button { max-width: 12rem; min-height: 44px; white-space: normal; overflow-wrap: break-word; }
+.agent-hub-page .agent-exact-scope { margin-top: 12px; border-top: 1px solid var(--line); }
+.agent-hub-page .agent-exact-scope summary { color: var(--ink-muted); font-size: 13px; }
+.agent-hub-page .agent-exact-scope .agent-facts { margin: 8px 0 20px; }
+.agent-hub-page .agent-exact-scope code { max-width: 100%; }
+.agent-hub-page .agent-exact-scope .agent-context-scope { margin-bottom: 16px; }
+.agent-hub-page .agent-revoke-confirmation { padding-block: 16px; }
+.agent-hub-page .agent-runs-table .data-table { min-width: 56rem; }
+.agent-hub-page .agent-runs-table .data-table .agent-run-col-goal { width: auto; }
+.agent-hub-page .agent-runs-table .data-table .agent-run-col-status { width: 12rem; }
+.agent-hub-page .agent-runs-table .data-table .agent-run-col-owner { width: 10rem; }
+.agent-hub-page .agent-runs-table .data-table .agent-run-col-deadline { width: 12rem; }
+.agent-hub-page .agent-runs-table .data-table td { padding-block: 16px; }
+.agent-hub-page .agent-runs-table .table-primary-link,
+.agent-hub-page .agent-runs-table .mobile-primary > a { display: grid; gap: 8px; align-content: start; max-width: none; min-width: 0; }
+.agent-hub-page .agent-runs-table .mobile-primary > a:not(.button) { text-decoration: none; }
+.agent-hub-page .agent-run-goal { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; white-space: normal; word-break: normal; overflow-wrap: break-word; font-size: 14px; font-weight: 620; line-height: 1.5; }
+.agent-hub-page .agent-run-reference { display: flex; align-items: baseline; gap: 6px; color: var(--ink-muted); font-size: 12px; font-weight: 400; }
+.agent-hub-page .agent-run-reference code { white-space: nowrap; overflow-wrap: normal; }
+.agent-hub-page .agent-run-col-deadline time { white-space: normal; word-break: normal; line-height: 1.5; font-variant-numeric: tabular-nums; }
+.agent-hub-page .agent-run-unknown { display: block; margin-top: 8px; font-size: 12px; line-height: 1.5; color: var(--ink-muted); }
+.agent-hub-page .agent-runs-table .agent-run-col-status .status-badge { max-width: 100%; white-space: normal; }
+@media (max-width: 1000px) {
+  .agent-hub-page .agent-credential-overview { grid-template-columns: minmax(0, 1fr) 7rem 11rem; }
+  .agent-hub-page .agent-credential-overview > .button { grid-column: 1 / -1; justify-self: start; }
+}
+@media (max-width: 720px) {
+  .agent-hub-page .agent-credential-record { padding-inline: 16px; }
+  .agent-hub-page .agent-credential-overview { grid-template-columns: minmax(0, 1fr) auto; gap: 16px 12px; }
+  .agent-hub-page .agent-credential-name { grid-column: 1 / -1; }
+  .agent-hub-page .agent-credential-expiry { grid-column: 1; grid-row: 2; }
+  .agent-hub-page .agent-credential-state { grid-column: 2; grid-row: 2; }
+  .agent-hub-page .agent-runs-table .data-mobile-list .agent-run-col-goal { padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+  .agent-hub-page .agent-runs-table .data-mobile-list .agent-run-col-deadline { grid-column: 1 / -1; }
+}

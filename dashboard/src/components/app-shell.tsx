@@ -4,7 +4,7 @@ import * as Avatar from "@radix-ui/react-avatar";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BarChart3, Bell, BookOpen, Bot, CalendarDays, CheckSquare2, ChevronDown, FileOutput, Files, Inbox, LayoutDashboard, ListChecks, LogIn, Menu, Plus, Search, Settings, UsersRound, X } from "lucide-react";
+import { BarChart3, Bell, BookOpen, Bot, CalendarDays, CheckSquare2, ChevronDown, FileOutput, Files, Inbox, LayoutDashboard, LogIn, Menu, Plus, Search, Settings, UsersRound, X } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
@@ -34,8 +34,6 @@ const navigationGroups = [
     { href: "/convert", label: "Document converter", icon: FileOutput },
   ] },
   { label: "Governance", items: [
-    { href: "/runs", label: "Runs", icon: ListChecks },
-    { href: "/developers", label: "Developer guide", icon: BookOpen },
     { href: "/reports", label: "Reports", icon: BarChart3 },
   ] },
   { label: "Administration", items: [
@@ -50,7 +48,7 @@ function Navigation({ close }: { close?: () => void }) {
   return (
     <nav className="side-nav" aria-label="Workspace navigation">
       {navigationGroups.map((group) => <div className="nav-group" key={group.label}><p>{group.label}</p>{group.items.map(({ href, label, icon: Icon }) => {
-        const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
+        const active = href === "/" ? pathname === "/" : pathname.startsWith(href) || (href === "/agents" && pathname.startsWith("/runs"));
         return <Link key={href} href={href} prefetch={false} className={`nav-link ${active ? "active" : ""}`} aria-current={active ? "page" : undefined} onNavigate={close}><Icon size={17} />{label}</Link>;
       })}</div>)}
     </nav>
@@ -164,6 +162,6 @@ function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  if (pathname.startsWith("/invite/") || pathname.startsWith("/shared/") || pathname.startsWith("/auth/") || pathname === "/calendar/oauth-return" || pathname === "/developers" || pathname === "/signin" || pathname === "/login" || pathname === "/signup" || pathname === "/sample") return <>{children}</>;
+  if (pathname.startsWith("/invite/") || pathname.startsWith("/shared/") || pathname.startsWith("/auth/") || pathname === "/calendar/oauth-return" || pathname === "/signin" || pathname === "/login" || pathname === "/signup" || pathname === "/sample") return <>{children}</>;
   return <WorkspaceAppShell>{children}</WorkspaceAppShell>;
 }

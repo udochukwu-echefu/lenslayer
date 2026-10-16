@@ -6,6 +6,7 @@ import { api, ApiError } from "@/lib/api";
 import type { Role } from "@/lib/types";
 import { contextFixture, contextVersionFixture } from "@/test/context-fixtures";
 import { agentQueryWrapper } from "@/test/agent-query-wrapper";
+import { selectOption } from "@/test/select-option";
 import { WorkspaceContextPage } from "./workspace-context";
 
 const workspace = vi.hoisted(() => ({ activeOrganization: { id: "org-1" }, activeRole: "owner" as Role | null, isDemo: false, error: null }));
@@ -27,7 +28,7 @@ it("creates private context with explicit retention and no credential surface", 
   fireEvent.click(await screen.findByRole("button", { name: "Add context" }));
   fireEvent.change(screen.getByLabelText("Title"), { target: { value: "Aster Cloud support brief" } });
   fireEvent.change(screen.getByLabelText("Source text"), { target: { value: "Customer onboarding owner: Riley Chen." } });
-  fireEvent.change(screen.getByLabelText("Retention from creation"), { target: { value: "7" } });
+  selectOption("Retention from creation", "7");
   fireEvent.click(screen.getByRole("button", { name: "Save context" }));
   await waitFor(() => expect(api.createContextRecord).toHaveBeenCalledOnce());
   const [org, body, signal] = vi.mocked(api.createContextRecord).mock.calls[0];

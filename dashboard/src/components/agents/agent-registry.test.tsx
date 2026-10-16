@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { api, ApiError } from "@/lib/api";
 import type { AgentCreated } from "@/lib/agent-types";
@@ -59,6 +59,7 @@ describe("agent administration and one-time credential", () => {
     vi.mocked(api.agents).mockResolvedValue([{ ...agentFixture, context_ids: ["context-1"] }]);
     vi.mocked(api.narrowAgentContext).mockResolvedValue({ ...agentFixture, context_ids: [] });
     const { Wrapper } = agentQueryWrapper(); render(<AgentRegistry />, { wrapper: Wrapper });
+    fireEvent.click(await screen.findByText("View exact scope"));
     fireEvent.click(await screen.findByRole("button", { name: "Narrow context access" }));
     fireEvent.click(screen.getByRole("checkbox", { name: "context-1" }));
     expect(api.narrowAgentContext).not.toHaveBeenCalled();
@@ -88,6 +89,8 @@ describe("agent administration and one-time credential", () => {
     expect(screen.getByText("Administrator access required")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Create agent" })).not.toBeInTheDocument();
     expect(api.agents).not.toHaveBeenCalled();
+    expect(screen.getByRole("link", { name: "View runs" })).toHaveAttribute("href", "/agents/runs");
+    expect(screen.getByRole("link", { name: "Runs" })).toHaveAttribute("href", "/agents/runs");
   });
   it.each(["viewer", "reviewer", null] as const)("hides cached delegations after a role change to %s", async (role) => {
     const { client, Wrapper } = agentQueryWrapper();
@@ -188,5 +191,54 @@ describe("agent administration and one-time credential", () => {
     expect(api.revokeAgent).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "Confirm revocation" }));
     await waitFor(() => expect(api.revokeAgent).toHaveBeenCalledWith("org-1", "agent-1"));
+  });
+
+  it("shows a compact overview and reveals the full exact scope on demand", async () => {
+    const longId = "6c9df2d2-f4ec-4bad-a1c3-7c5df3889e62";
+    vi.mocked(api.agents).mockResolvedValue([{ ...agentFixture, id: longId, context_ids: ["context-1"],
+      calendar_targets: [{ connection_id: "connection-1", calendar_id: "synthetic-owned-calendar@example.test" }] }]);
+    const { Wrapper } = agentQueryWrapper(); render(<AgentRegistry />, { wrapper: Wrapper });
+    const record = await screen.findByRole("article", { name: `${agentFixture.name} credential` });
+    expect(within(record).getByRole("heading", { name: agentFixture.name })).toBeVisible();
+    expect(within(record).getByText("Active")).toBeVisible();
+    expect(within(record).getByText("Human approval required · 1 action per run")).toBeVisible();
+    expect(within(record).getByText(/1 contract · 1 context record · 1 assignee · 1 calendar target/)).toBeVisible();
+    expect(within(record).getByTitle(longId)).toHaveTextContent(longId);
+    const details = record.querySelector("details")!;
+    expect(details).not.toHaveAttribute("open");
+    expect(within(record).getByText("synthetic-owned-calendar@example.test")).not.toBeVisible();
+    fireEvent.click(within(record).getByText("View exact scope"));
+    expect(details).toHaveAttribute("open");
+    expect(within(record).getByRole("link", { name: "contract-1" })).toHaveAttribute("href", "/contracts/contract-1");
+    expect(within(record).getByRole("link", { name: "context-1" })).toHaveAttribute("href", "/context/context-1");
+    expect(within(record).getByText("synthetic-owned-calendar@example.test")).toBeVisible();
+    expect(within(record).getByText("Human approval for every action")).toBeVisible();
+    expect(within(record).getByText("1 per run")).toBeVisible();
+    for (const tool of agentFixture.allowed_tools) expect(within(record).getByText(tool)).toBeVisible();
+    expect(api.revokeAgent).not.toHaveBeenCalled();
+  });
+
+  it("labels elapsed credentials Expired and never offers revoked access mutations", async () => {
+    vi.mocked(api.agents).mockResolvedValue([
+      { ...agentFixture, name: "Elapsed credential", expires_at: "2000-01-01T00:00:00Z", context_ids: ["context-1"] },
+      { ...agentFixture, id: "revoked-agent", name: "Revoked credential", status: "revoked" },
+    ]);
+    const { Wrapper } = agentQueryWrapper(); render(<AgentRegistry />, { wrapper: Wrapper });
+    const expired = await screen.findByRole("article", { name: "Elapsed credential credential" });
+    expect(within(expired).getByText("Expired")).toBeVisible();
+    fireEvent.click(within(expired).getByText("View exact scope"));
+    expect(within(expired).queryByRole("button", { name: "Narrow context access" })).not.toBeInTheDocument();
+    const revoked = screen.getByRole("article", { name: "Revoked credential credential" });
+    expect(within(revoked).getByText("Revoked")).toBeVisible();
+    expect(within(revoked).queryByRole("button", { name: /Revoke/ })).not.toBeInTheDocument();
+  });
+
+  it("uses the credentials hub link state and the Settings developer route", async () => {
+    const { Wrapper } = agentQueryWrapper(); render(<AgentRegistry />, { wrapper: Wrapper });
+    await screen.findByText(agentFixture.name);
+    const nav = screen.getByRole("navigation", { name: "Agents sections" });
+    expect(within(nav).getByRole("link", { name: "Credentials" })).toHaveAttribute("aria-current", "page");
+    expect(within(nav).getByRole("link", { name: "Runs" })).not.toHaveAttribute("aria-current");
+    expect(screen.getByRole("link", { name: "Developer setup guide" })).toHaveAttribute("href", "/settings/developers");
   });
 });

@@ -4,6 +4,7 @@ import { api } from "@/lib/api";
 import type { InputRequest } from "@/lib/agent-types";
 import { runFixture } from "@/test/agent-fixtures";
 import { agentQueryWrapper } from "@/test/agent-query-wrapper";
+import { selectOption } from "@/test/select-option";
 import { RunInputRequests } from "./run-input-requests";
 
 const workspace = vi.hoisted(() => ({ activeRole: "owner", isDemo: false }));
@@ -17,6 +18,17 @@ it("awaiting_input is a factual wait and sends typed values, never approval", as
   fireEvent.click(screen.getByRole("button", { name: "Supply exact facts" }));
   await waitFor(() => expect(api.supplyAgentRunInput).toHaveBeenCalledWith("org-1", "run-1", "input-1", { values: { notice_days: 30 } }));
   expect(screen.getByText(/Supplying facts does not change scope/)).toBeInTheDocument();
+});
+it("requires an explicit boolean choice and submits false as a typed fact, not truthiness or approval", async () => {
+  vi.mocked(api.agentInputRequests).mockResolvedValue([{ ...request, request: { ...request.request,
+    fields: [{ name: "needed", type: "boolean", prompt: "Is a follow-up needed?" }] } }]);
+  show();
+  await screen.findByRole("combobox", { name: "Is a follow-up needed?" });
+  fireEvent.click(screen.getByRole("button", { name: "Supply exact facts" }));
+  expect(api.supplyAgentRunInput).not.toHaveBeenCalled();
+  selectOption("Is a follow-up needed?", "false");
+  fireEvent.click(screen.getByRole("button", { name: "Supply exact facts" }));
+  await waitFor(() => expect(api.supplyAgentRunInput).toHaveBeenCalledWith("org-1", "run-1", "input-1", { values: { needed: false } }));
 });
 it("rejects credential collection fields and disables supply for read-only/demo users", async () => {
   vi.mocked(api.agentInputRequests).mockResolvedValue([{ ...request, request: { ...request.request, fields: [{ name: "api_token", type: "text", prompt: "Secret" }] } }]);
