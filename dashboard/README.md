@@ -35,6 +35,16 @@ Local identity variables are used only when `NODE_ENV` is not `production`. Prod
 
 `NEXT_PUBLIC_LENSLAYER_PUBLIC_ACCESS=true` enables the synthetic public workspace for signed-out visitors while signed-in visitors continue to use Auth0-backed private workspaces. Set it to `false` only when every workspace route must require authentication. Authenticated deployments expose `/signin`, `/login`, `/signup`, invitation authentication, sign-out, auth-error, and session-expiry recovery pages.
 
+### Email/password with Auth0 Universal Login
+
+- Enable an Auth0 **database connection** for the dashboard's Regular Web Application, with email/password authentication enabled. The email buttons explicitly request `Username-Password-Authentication`; set server-only `AUTH_OIDC_EMAIL_CONNECTION` to the exact connection name if different (blank uses the default). This is a routing name, not a credential. Google still requests `google-oauth2`; generic Auth0 entry remains connection-neutral.
+- Allow signups on that connection if self-service registration is intended. `/signup` requests `screen_hint=signup`; Auth0 policies and any existing provider session still govern the result. Configure password strength and other password policies in Auth0, not LensLayer.
+- Password entry and “forgot password” recovery stay on Auth0's secure page. Configure reset-email delivery and the Application Login URI/default login route for return after reset. LensLayer has no password form, password storage, or password grant.
+- Review verification-email delivery and explicitly enforce `email_verified` in provider/backend policy before granting any access that requires verified email, especially email-bound invitations. Requesting the OIDC `email` scope or completing signup alone does not guarantee verification; this routing change adds no verification gate or account linking.
+- Google and database accounts remain separate identities even when their email addresses match. Existing workspace access stays with the original identity; linking accounts requires a separate flow that verifies control of both accounts.
+
+These are setup requirements, not a claim that a live tenant is enabled or tested. Official Auth0 references: [Universal Login](https://auth0.com/docs/authenticate/login/auth0-universal-login/new-experience), [database connections](https://auth0.com/docs/authenticate/database-connections), [password policies](https://auth0.com/docs/authenticate/database-connections/password-strength), [password reset](https://auth0.com/docs/authenticate/database-connections/password-change).
+
 ## Team roles
 
 - **Owner** manages ownership, administrators, and all workspace actions.

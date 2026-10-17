@@ -10,3 +10,5 @@ NEXT_PUBLIC_LENSLAYER_PUBLIC_ACCESS=true
 # AUTH_OIDC_AUDIENCE=https://api.lenslayer.example
 # AUTH_OIDC_CLIENT_ID=replace-me
 # AUTH_OIDC_CLIENT_SECRET=replace-me
+# Server-only database connection name, enabled for this Auth0 application.
+# AUTH_OIDC_EMAIL_CONNECTION=Username-Password-Authentication

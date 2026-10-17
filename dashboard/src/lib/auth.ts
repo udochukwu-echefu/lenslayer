@@ -7,6 +7,9 @@ const clientId = process.env.AUTH_OIDC_CLIENT_ID;
 const clientSecret = process.env.AUTH_OIDC_CLIENT_SECRET;
 const audience = process.env.AUTH_OIDC_AUDIENCE;
 
+// Resolved on the server; only this non-secret routing name reaches the button.
+export const oidcEmailConnection = process.env.AUTH_OIDC_EMAIL_CONNECTION?.trim() || "Username-Password-Authentication";
+
 export const oidcConfigured = Boolean(issuer && audience && clientId && clientSecret && process.env.NEXTAUTH_SECRET);
 
 export function safeCallbackUrl(value?: string | string[] | null, fallback = "/") {

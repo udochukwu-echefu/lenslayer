@@ -2,6 +2,7 @@ import { ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { SignInButton } from "@/components/sign-in-button";
+import { oidcEmailConnection } from "@/lib/auth";
 
 type AuthEntryProps = {
   callbackUrl: string;
@@ -70,13 +71,13 @@ export function AuthEntry({ callbackUrl, configured, mode }: AuthEntryProps) {
                 {configured ? <>
                   <SignInButton callbackUrl={callbackUrl} configured mode={mode} method="google" />
                   <div className="auth-divider"><span>or</span></div>
-                  <SignInButton callbackUrl={callbackUrl} configured mode={mode} method="email" />
+                  <SignInButton callbackUrl={callbackUrl} configured mode={mode} method="email" emailConnection={oidcEmailConnection} />
                 </> : <SignInButton callbackUrl={callbackUrl} configured={false} mode={mode} />}
               </div>
 
               <div className="auth-security-note">
                 <ShieldCheck size={20} aria-hidden="true" />
-                <p>Authentication is handled securely by Google or Auth0.</p>
+                <p>Enter your email and password on Auth0’s secure sign-in page. You can reset a forgotten password there.</p>
               </div>
 
               <p className="auth-switch">{content.switchLabel} <Link href={switchHref}>{content.switchAction}</Link></p>
