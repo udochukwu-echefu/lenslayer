@@ -87,7 +87,8 @@ class HostedAgentService:
             if request.version_id:
                 self.platform._source_version(organization_id, request.contract_id, request.version_id)
         if request.calendar:
-            CalendarResource(request.calendar.connection_id, request.calendar.calendar_id).authorize(self.platform, organization_id)
+            CalendarResource(request.calendar.connection_id, request.calendar.calendar_id).authorize(
+                self.platform, organization_id, actor_user_id=user.id)
         task = HostedAgentTask(organization_id=organization_id, created_by_user_id=user.id,
             idempotency_key=request.idempotency_key, request_json=serialized, request_sha256=digest(serialized),
             goal_type=request.goal_type, goal=request.goal, planner_mode=request.planner_mode, deadline_at=request.deadline_at)

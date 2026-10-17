@@ -8,6 +8,7 @@ import sys
 import unittest
 from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
+from decimal import Decimal
 from unittest.mock import patch
 
 import httpx
@@ -138,7 +139,8 @@ class HostedAgentTests(unittest.TestCase):
 
     def enable_model(self):
         self.settings.hosted_model_provider = "openai"
-        self.settings.hosted_model_lifetime_call_limit = 100  # test fixture only, exceeds production config validator
+        self.settings.hosted_model_lifetime_call_limit = 3
+        self.settings.hosted_model_lifetime_usd_limit = Decimal("1.00")
         self.settings.hosted_model_enabled = True
         self.settings.hosted_model_api_key = "fake-separate-product-key"
 
@@ -545,6 +547,12 @@ finally:
     def test_authority_and_source_rechecked_after_model_http(self):
         self.enable_model()
         for event in ("role", "source", "deadline", "lease"):
+            if event == "lease":
+                # Fourth independent scenario gets a fresh disposable database,
+                # never a refund/reset or a fixture that bypasses the pilot cap.
+                requests = self.model_requests
+                self.tearDown(); self.setUp(); self.enable_model()
+                self.model_requests = requests
             facts = {"deadline_at": (utcnow() + timedelta(seconds=30)).isoformat()} if event == "deadline" else {}
             task = self.create(self.payload(planner_mode="model", idempotency_key=event, **facts))
             self.step()

@@ -3,11 +3,12 @@
 ## Assign a hosted goal in the dashboard
 
 Use **Agent tasks** (`/agent-tasks`) when LensLayer should prepare the proposals.
-Use **Agents** (`/agents`) only for credentials supplied to your own server-side
-SDK/MCP client. These share the existing scope, evidence, approval and verified
+Use **Agents** (`/agents`) for credentials supplied to your own server-side
+SDK/MCP client and its Runs view. The Developer guide is inside Settings. These
+share the existing scope, evidence, approval and verified
 completion ledger; they are not separate execution backends.
 
-1. Start/migrate the existing API and keep the agent worker lane running; sign in
+1. Use the operator-qualified API and on-demand agent worker deployment; sign in
    through the existing OIDC workspace session as an **owner or administrator**.
    Public preview remains clearly synthetic/read-only, not a hosted-task demo.
    An ordinary agent bearer cannot call these administration endpoints.
@@ -27,9 +28,13 @@ completion ledger; they are not separate execution backends.
    your facts into bounded typed proposals, not AI/legal interpretation. Optional
    model choice appears only when enabled by `/hosted-agent-capabilities`; its
    goal/facts/retained-excerpt sharing disclosure appears before selection, and
-   submission requires explicit acknowledgement. Separate
-   server product API access uses GPT-6.1 Sol/high, never subscription credentials.
-   No model/provider call was run in this implementation pass.
+   submission requires explicit acknowledgement. The optional production pilot
+   uses separate server-side **DeepSeek** product API access: a decision-only gate
+   over fixed facts, not an autonomous planner. The human chose **USD1 total, no
+   automatic refill**; production acceptance remains operator-owned. Coding tools such
+   as OpenCode use developer subscriptions separately; those credentials never
+   enter the product. See [current release status](deployment/current-release-status.md)
+   and [reviewed provider profiles](../deploy/gcp/PROVIDER-PROFILES.md).
 5. Assign. Backend creates the exact internal delegation, always approval-required,
    expiring at the execution deadline. **No agent credential is accepted from or
    returned to the browser**. The 201 response means assignment recorded, not
@@ -108,10 +113,11 @@ backend persistence, lease/concurrency, live provider or deployment verification
 ## Bring your own server-side agent
 
 Give a developer-run agent scoped source access, permission to create an internal
-task, and a durable record of the verified outcome. The local implementation now
-includes a packable SDK, official stdio MCP adapter, reference task-planner CLI,
-hosted task assignment/status UI and a public guide at `/developers`. Nothing was
-published or deployed by this work.
+task, and a durable record of the verified outcome. Install the published
+`@lenslayer/agent-sdk@0.1.0`; see the [SDK README](../sdk/README.md) for ESM imports
+and server-side credentials. The repository also includes a local stdio MCP
+adapter, reference task-planner CLI and hosted task assignment/status UI. Publication
+does not establish production task/model/Calendar acceptance.
 It does **not** execute submitted code, send renewal notices or handle a renewal.
 The additive platform contract also supports exact Google Calendar event writes,
 composite task/event conditions and factual input waits; OAuth/live provider checks
@@ -131,7 +137,7 @@ source identity, persisted task fields, and optional caller-supplied date
 arithmetic. It does not independently validate legal interpretation or confirm
 that the person performed the follow-up.
 
-## 1. Start the existing stack
+## 1. Start the existing stack locally (not production deployment)
 
 Use the repository's Python environment and Node 24.15.0. From the repository
 root, after installing `requirements.txt` and configuring the existing `.env`:
@@ -147,9 +153,12 @@ In another terminal, with the same database/storage configuration:
 .venv/bin/python -m backend.app.worker
 ```
 
-The API durably records proposals; the worker actually dispatches tasks and
-closes expired runs/approvals. Keep it running, including while waiting for a
-human. `--once` processes one worker pass, not a continuous service.
+For this local development setup, the API durably records proposals; the worker
+dispatches tasks and closes expired runs/approvals. Keep the local worker running
+while testing; `--once` processes one pass. **Do not run an idle polling worker in
+production.** Production uses the private request-billed, min-zero on-demand agent
+service with a bounded drain, plus a document-only job that drains and exits.
+See the [worker operations runbook](deployment/agent-worker-operations.md).
 
 Start the dashboard separately:
 

@@ -42,6 +42,44 @@ describe("domain API transport", () => {
     expect(fetchMock.mock.calls[0][1].headers.has("Content-Type")).toBe(false);
   });
 
+  it.each(["fetch", "response stream"])("reports unknown upload acceptance after %s failure without retry", async (failure) => {
+    const committed: string[] = [];
+    const fetchMock = vi.fn().mockImplementation(async () => {
+      committed.push("synthetic-committed-contract");
+      if (failure === "fetch") throw new TypeError("Failed to fetch");
+      return new Response(new ReadableStream<Uint8Array>({
+        start(controller) { controller.error(new TypeError("synthetic-private-response-body")); },
+      }), { status: 202, headers: { "Content-Type": "application/json" } });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const { api } = await import("./api");
+    const body = new FormData();
+    body.set("file", new File(["Synthetic only"], "synthetic.txt"));
+    await expect(api.createContract("org-1", body)).rejects.toThrow(
+      "We couldn't confirm the upload. The contract may already be in this workspace. Check Contracts before uploading it again.",
+    );
+    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(committed).toEqual(["synthetic-committed-contract"]);
+  });
+
+  it.each([403, 413, 422, 503])("preserves a readable upload API failure (%s)", async (status) => {
+    const detail = "Synthetic specific API rejection";
+    const fetchMock = vi.fn().mockResolvedValue(Response.json({ detail }, { status }));
+    vi.stubGlobal("fetch", fetchMock);
+    const { api, ApiError } = await import("./api");
+    const error = await api.createContract("org-1", new FormData()).catch((cause: unknown) => cause);
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error).toMatchObject({ message: detail, status, detail: { detail } });
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
+  it("does not change transport errors for non-upload requests", async () => {
+    const failure = new TypeError("Failed to fetch");
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(failure));
+    const { api } = await import("./api");
+    await expect(api.contracts("org-1")).rejects.toBe(failure);
+  });
+
   it("coalesces concurrent session lookups for dashboard requests", async () => {
     vi.stubGlobal(
       "fetch",

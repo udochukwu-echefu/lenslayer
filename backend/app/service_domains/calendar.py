@@ -12,6 +12,7 @@ from ..calendar_connector import (CALENDAR_SCOPE, ConnectorError, GoogleCalendar
                                   decrypt_credentials, encrypt_credentials, require_connector_config)
 from ..connector_models import CalendarCredential, CalendarOAuthState
 from ..calendar_session import verify_session_proof
+from ..calendar_eligibility import require_calendar_pilot_user
 from ..models import IntegrationConnection, new_id, utcnow
 from .agents import canonical_json, digest
 from .common import json_dump
@@ -36,6 +37,13 @@ class CalendarServiceMixin:
             IntegrationConnection.status == "active").limit(1))
         try:
             require_connector_config(self.settings)
+            require_calendar_pilot_user(self.settings, user.id)
+            if self.settings.google_calendar_pilot_enabled:
+                configured = self.session.scalar(select(CalendarCredential.connection_id).join(IntegrationConnection).where(
+                    CalendarCredential.organization_id == organization_id, CalendarCredential.revoked_at.is_(None),
+                    CalendarCredential.encrypted_json != "", IntegrationConnection.organization_id == organization_id,
+                    IntegrationConnection.status == "active", IntegrationConnection.created_by_user_id.in_(
+                        self.settings.google_calendar_pilot_user_id_set)).limit(1))
         except HTTPException:
             configured = False
         return IntegrationProviderResponse(provider="google_calendar", display_name="Google Calendar", category="calendar",
@@ -45,12 +53,22 @@ class CalendarServiceMixin:
         self.workspace.require_roles(organization_id, user, {"owner", "admin"},
                                      "Only owners/admins can configure calendar connections.")
 
+    def calendar_oauth_eligibility(self, organization_id, user):
+        # BFF admission before minting a fresh OAuth proof; checked again by the
+        # mutation endpoints so this read is not a reusable authorization grant.
+        self._calendar_admin(organization_id, user)
+        require_calendar_pilot_user(self.settings, user.id)
+        require_connector_config(self.settings)
+        return IntegrationProviderResponse(provider="google_calendar", display_name="Google Calendar", category="calendar",
+            capabilities=["events.create", "events.get"], connection_mode="oauth", configured=True)
+
     def _calendar_oauth_binding(self):
         return digest(canonical_json({"client": self.settings.google_calendar_client_id,
             "redirect": self.settings.google_calendar_redirect_uri, "state_key_hash": digest(self.settings.connector_state_signing_key)}))
 
     def start_calendar_oauth(self, organization_id, user, payload, *, session_proof=None):
         self._calendar_admin(organization_id, user)
+        require_calendar_pilot_user(self.settings, user.id)
         require_connector_config(self.settings)
         fingerprint = verify_session_proof(self.settings, self.session, user, organization_id, "oauth/start", payload.model_dump(), session_proof)
         # No caller-controlled redirect URI. The frontend relays Google's code
@@ -76,6 +94,7 @@ class CalendarServiceMixin:
 
     def complete_calendar_oauth(self, organization_id, user, payload, *, session_proof=None):
         self._calendar_admin(organization_id, user)
+        require_calendar_pilot_user(self.settings, user.id)
         require_connector_config(self.settings)
         fingerprint = verify_session_proof(self.settings, self.session, user, organization_id, "oauth/callback", payload.model_dump(), session_proof)
         record = self.session.scalar(select(CalendarOAuthState).where(
@@ -99,6 +118,7 @@ class CalendarServiceMixin:
         finally:
             provider.close()
         self._calendar_admin(organization_id, user)
+        require_calendar_pilot_user(self.settings, user.id)
         connection_id = new_id()
         connection = IntegrationConnection(id=connection_id, organization_id=organization_id, created_by_user_id=user.id,
             provider="google_calendar", display_name=request.display_name, external_account_id="oauth-grant:" + connection_id, status="active",

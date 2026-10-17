@@ -4,6 +4,7 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { readTrustedSession, calendarAttestation } from "@/lib/calendar-session.server";
+import * as calendarSession from "@/lib/calendar-session.server";
 import { POST } from "./route";
 vi.mock("@/lib/trusted-session.server", () => ({ readTrustedSession: vi.fn() }));
 const key = "synthetic-bff-session-HMAC-key-never-deploy-".repeat(2);
@@ -20,11 +21,13 @@ beforeEach(() => {
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.restoreAllMocks(); });
 
 it("binds authenticated cookie identity, organization, operation and exact Unicode body; never returns proof/bearer/key", async () => {
-  const fetcher = vi.fn().mockResolvedValue(Response.json({ authorization_url: "https://accounts.google.com/o/oauth2/v2/auth?state=opaque", expires_at: "2099-01-01", proof: "PRIVATE", bearer: session.accessToken }));
+  const fetcher = vi.fn().mockResolvedValueOnce(Response.json({ configured: true })).mockResolvedValueOnce(Response.json({ authorization_url: "https://accounts.google.com/o/oauth2/v2/auth?state=opaque", expires_at: "2099-01-01", proof: "PRIVATE", bearer: session.accessToken }));
   vi.stubGlobal("fetch", fetcher);
   const response = await POST(request({ Authorization: "Bearer caller-asserted" }), context);
   expect(response.status).toBe(200); expect(response.headers.get("Cache-Control")).toBe("private, no-store");
-  const [url, options] = fetcher.mock.calls[0];
+  expect(fetcher.mock.calls[0][0]).toBe("https://backend.example.test/api/v1/organizations/org-1/calendar/oauth/eligibility");
+  expect(fetcher.mock.calls[0][1].headers).not.toHaveProperty("X-LensLayer-Calendar-Session");
+  const [url, options] = fetcher.mock.calls[1];
   expect(url).toBe("https://backend.example.test/api/v1/organizations/org-1/calendar/oauth/start");
   expect(options.headers.Authorization).toBe(`Bearer ${session.accessToken}`);
   const proof = options.headers["X-LensLayer-Calendar-Session"];
@@ -35,6 +38,27 @@ it("binds authenticated cookie identity, organization, operation and exact Unico
   const body = await response.text();
   for (const secret of [key, proof, session.sessionId, session.accessToken, "caller-asserted"]) expect(body).not.toContain(secret);
   expect(body).not.toContain('"proof"');
+});
+
+it.each([403, 503, 302, 200])("does not mint OAuth proofs when pilot eligibility is denied or unconfirmed (%s)", async (status) => {
+  const attest = vi.spyOn(calendarSession, "calendarAttestation");
+  const fetcher = vi.fn().mockResolvedValue(Response.json({ configured: false }, { status }));
+  vi.stubGlobal("fetch", fetcher);
+  const response = await POST(request(), context);
+  expect(response.status).toBe(status === 403 || status === 200 ? 403 : 503);
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  expect(attest).not.toHaveBeenCalled();
+});
+
+it("still mints disconnect-only proofs without pilot admission for credential cleanup", async () => {
+  const fetcher = vi.fn().mockResolvedValue(Response.json({ connection_id: "conn-1", status: "revoked", provider_revocation_pending: false }));
+  vi.stubGlobal("fetch", fetcher);
+  const response = await POST(request({}, {}), { params: Promise.resolve({ organizationId: "org-1", operation: ["connections", "conn-1", "disconnect"] }) });
+  expect(response.status).toBe(200);
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  expect(fetcher.mock.calls[0][0]).toContain("connections/conn-1/disconnect");
+  const proof = fetcher.mock.calls[0][1].headers["X-LensLayer-Calendar-Session"];
+  expect(JSON.parse(Buffer.from(proof.split(".")[1], "base64url").toString()).op).toBe("connections/disconnect");
 });
 
 it.each([{ Origin: "https://attacker.example.test" }, { "X-LensLayer-Calendar-CSRF": "" }, { "sec-fetch-site": "cross-site" }])("rejects Origin/CSRF %j before reading session or forwarding", async (headers) => {

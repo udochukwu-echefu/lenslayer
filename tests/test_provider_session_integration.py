@@ -89,12 +89,21 @@ class ProviderSessionIntegrationTests(unittest.TestCase):
         f.enable_model()
         f.settings.hosted_model_provider = "deepseek"
         for field in ("model_provider", "model_id", "model_reasoning_effort", "model_selection_sha256"):
+            if field != "model_provider":
+                self.tearDown(); self.setUp()
+                f = self.fixture
+                f.enable_model()
+                f.settings.hosted_model_provider = "deepseek"
             task = f.create(f.payload(planner_mode="model", idempotency_key=field))
             with f.database.session_factory() as session:
                 setattr(session.get(HostedAgentTask, task["id"]), field, "changed")
                 session.commit()
             f.step()
             self.assertEqual(f.read(task)["error_code"], "model_binding_changed")
+        self.tearDown(); self.setUp()
+        f = self.fixture
+        f.enable_model()
+        f.settings.hosted_model_provider = "deepseek"
         task = f.create(f.payload(planner_mode="model", idempotency_key="http-config-change"))
         f.step(); f.step()
         with f.fake_model(response={"model": "deepseek-flash", "status": "completed", "output": [

@@ -3,7 +3,7 @@
 
 Run from the reviewed source checkout. Build only an archive of that exact
 commit, then re-render with the registry digest and resolved private origin.
-Calendar/model credentials and calls stay disabled in this core rollout.
+Optional providers require an explicit source/snapshot-bound reviewed profile.
 """
 from __future__ import annotations
 
@@ -12,9 +12,12 @@ import json
 from pathlib import Path
 import re
 import shlex
+import sys
 from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from scripts.production_provider_profile import provider_settings
 MANIFEST = ROOT / "deploy/gcp/production-release.json"
 SECRET_ENV = {
     "neon-pooled-url": "LENSLAYER_PLATFORM_DATABASE_URL",
@@ -66,7 +69,7 @@ def write_json(path: Path, value):
 
 
 def render_plan(config, output: Path, commit: str, digest=None, worker_origin=None,
-                previous_revision=None):
+                previous_revision=None, provider_profile=None, provider_snapshot=None):
     config = validate_manifest(config)
     if not re.fullmatch(r"[0-9a-f]{40}", commit):
         raise ValueError("Pin the exact reviewed source commit")
@@ -80,6 +83,7 @@ def render_plan(config, output: Path, commit: str, digest=None, worker_origin=No
             raise ValueError("Use the canonical production private-worker origin")
     if previous_revision and not re.fullmatch(r"lenslayer-api-[0-9]{5}-[a-z0-9]+", previous_revision):
         raise ValueError("Previous traffic must name an actual production API revision")
+    provider_env, provider_secrets = provider_settings(provider_profile, provider_snapshot, commit)
     output.mkdir(parents=True, exist_ok=True)
     project, region = config["project_id"], config["region"]
     runtime = f"lenslayer-runtime@{project}.iam.gserviceaccount.com"
@@ -91,6 +95,8 @@ def render_plan(config, output: Path, commit: str, digest=None, worker_origin=No
     base = [f"--project={project}", f"--region={region}"]
     secrets = ",".join(f"{env}=lenslayer-{suffix}:{config['secret_versions'][suffix]}"
                        for suffix, env in sorted(SECRET_ENV.items()))
+    provider_bindings = ",".join(f"{key}={value}" for key, value in sorted(provider_secrets.items()))
+    runtime_secrets = secrets + ("," + provider_bindings if provider_bindings else "")
     values = {
         "LENSLAYER_PLATFORM_ENVIRONMENT": "production",
         "LENSLAYER_PLATFORM_AUTO_CREATE_SCHEMA": "false",
@@ -126,11 +132,21 @@ def render_plan(config, output: Path, commit: str, digest=None, worker_origin=No
         "GROQ_MODEL": "openai/gpt-oss-120b",
         "GROQ_MAX_TOKENS": "8192",
     }
+    review_values = dict(values)
+    # Document analysis gets core bindings only, never optional product credentials.
+    from scripts.production_provider_profile import DEFAULTS, PREFIX
+    review_values.update({PREFIX + k: v for k, v in DEFAULTS.items()})
+    write_json(output / "review-env.json", review_values)
+    values.update(provider_env)
     write_json(output / "runtime-env.json", values)
     write_json(output / "api-env.json", {**values, "LENSLAYER_PLATFORM_REVIEW_WORKER_JOB":
                                         f"projects/{project}/locations/{region}/jobs/lenslayer-review-worker"})
-    write_json(output / "bootstrap-env.json", {**values, "LENSLAYER_PLATFORM_AGENT_WORKER_MODE": "continuous",
-                                              "LENSLAYER_PLATFORM_HOSTED_AGENTS_ENABLED": "false"})
+    write_json(output / "bootstrap-env.json", {**review_values, "LENSLAYER_PLATFORM_AGENT_WORKER_MODE": "continuous",
+                                               "LENSLAYER_PLATFORM_HOSTED_AGENTS_ENABLED": "false"})
+    if provider_profile is not None:
+        write_json(output / "provider-profile.json", provider_profile)
+    if provider_snapshot is not None:
+        write_json(output / "provider-snapshot.json", provider_snapshot)
     commands = []
 
     def add(name, phase, args, **gates):
@@ -163,8 +179,9 @@ def render_plan(config, output: Path, commit: str, digest=None, worker_origin=No
         "--invoker-iam-check", "--scaling=auto",
         "--cpu-throttling", "--cpu=1", "--memory=1Gi", "--concurrency=1", "--timeout=300", "--command=python",
         "--args=-m,uvicorn,backend.app.agent_worker_service:app,--host,0.0.0.0,--port,8080,--no-access-log",
-        f"--set-secrets={secrets}"]
-    add("bootstrap-private-worker", "provision", [*worker_args, f"--env-vars-file={output/'bootstrap-env.json'}"],
+        f"--set-secrets={runtime_secrets}"]
+    bootstrap_args = [arg if not arg.startswith("--set-secrets=") else f"--set-secrets={secrets}" for arg in worker_args]
+    add("bootstrap-private-worker", "provision", [*bootstrap_args, f"--env-vars-file={output/'bootstrap-env.json'}"],
         requires_image_digest=True, skip_if_exists=True)
     add("resolve-worker-origin", "provision", ["run", "services", "describe", "lenslayer-agent-worker", *base,
         "--format=value(status.url)"])
@@ -182,11 +199,11 @@ def render_plan(config, output: Path, commit: str, digest=None, worker_origin=No
     add("deploy-api-without-traffic", "deploy", ["run", "deploy", "lenslayer-api", *base, f"--service-account={runtime}",
         f"--image={image}", "--allow-unauthenticated", "--min-instances=0", "--max-instances=1", "--min=0", "--max=1",
         "--cpu-throttling", "--cpu=1", "--memory=1Gi", "--concurrency=20", "--timeout=300", "--no-traffic", "--tag=agent-release",
-        f"--env-vars-file={output/'api-env.json'}", f"--set-secrets={secrets}"], requires_worker_origin=True, requires_image_digest=True)
+        f"--env-vars-file={output/'api-env.json'}", f"--set-secrets={runtime_secrets}"], requires_worker_origin=True, requires_image_digest=True)
     add("deploy-bounded-review-job", "deploy", ["run", "jobs", "deploy", "lenslayer-review-worker", *base,
         f"--service-account={runtime}", f"--image={image}", "--command=python", "--args=-m,backend.app.worker,--documents-only,--drain",
         "--tasks=1", "--parallelism=1", "--max-retries=0", "--task-timeout=30m", "--cpu=1", "--memory=2Gi",
-        f"--env-vars-file={output/'runtime-env.json'}", f"--set-secrets={secrets}"], requires_worker_origin=True, requires_image_digest=True)
+        f"--env-vars-file={output/'review-env.json'}", f"--set-secrets={secrets}"], requires_worker_origin=True, requires_image_digest=True)
     add("create-hourly-recovery", "activate", ["scheduler", "jobs", "create", "http", "lenslayer-agent-recovery",
         f"--project={project}", f"--location={region}", "--schedule=0 * * * *", "--time-zone=Africa/Lagos", "--http-method=POST",
         f"--uri={origin}/recover", f"--oidc-service-account-email={invoker}", f"--oidc-token-audience={origin}",
@@ -212,13 +229,18 @@ def render_plan(config, output: Path, commit: str, digest=None, worker_origin=No
                          f"--to-revisions={previous_revision}=100"])
     plan = {"schema_version": 1, "source_commit": commit, "image": image, "worker_origin": origin,
              "secret_versions": dict(config["secret_versions"]),
-            "renders_only": True, "calendar_enabled": False, "model_enabled": False,
+             "renders_only": True,
+             "requires_fresh_provider_snapshot_check": True,
+             "provider_env": provider_env, "provider_secrets": provider_secrets,
+             "calendar_enabled": provider_env["LENSLAYER_PLATFORM_GOOGLE_CALENDAR_ENABLED"] == "true",
+             "model_enabled": provider_env["LENSLAYER_PLATFORM_HOSTED_MODEL_ENABLED"] == "true",
             "commands": commands, "emergency_park": rollback[:2],
             "rollback_before_new_feature_data_only": rollback,
             "rollback_warning": "Never downgrade the ledger or replay Calendar uncertainty. The old API supports unlinked tasks but lacks the new context/agent routes. After new-feature use, park dispatch and inspect effects before rolling traffic and dashboard back or applying a forward fix."}
     write_json(output / "plan.json", plan)
     text = ["# Reviewed production commands (rendered only)", "", f"Source: `{commit}`", f"Image: `{image}`", "",
-            "Run gated steps only after the named evidence exists. Re-render unresolved coordinates. Build from an exact Git archive, never the working directory.",
+             "Run gated steps only after the named evidence exists. Re-render unresolved coordinates. Build from an exact Git archive, never the working directory.",
+             "Before ANY mutation, use scripts.production_provider_release with a reviewed provider snapshot; use its guarded command execution for deploys. A render without a snapshot is a disabled proposal, not permission to replace existing provider state.",
             "Gate labels are review requirements, not execution enforcement. Do not batch-run this document. Keep queue/recovery paused until separately authorized activation. Inspect existing recovery before create/update; skip-if-exists does not qualify its configuration.", ""]
     for command in commands:
         gates = [k for k,v in command.items() if k.startswith("requires_") and v]
@@ -235,10 +257,14 @@ def main():
     parser.add_argument("--image-digest")
     parser.add_argument("--worker-origin")
     parser.add_argument("--previous-revision")
+    parser.add_argument("--provider-profile", type=Path)
+    parser.add_argument("--provider-snapshot", type=Path)
     args = parser.parse_args()
     try:
         plan = render_plan(json.loads(args.manifest.read_text()), args.output.resolve(), args.source_commit,
-                           args.image_digest, args.worker_origin, args.previous_revision)
+                           args.image_digest, args.worker_origin, args.previous_revision,
+                           json.loads(args.provider_profile.read_text()) if args.provider_profile else None,
+                           json.loads(args.provider_snapshot.read_text()) if args.provider_snapshot else None)
     except (ValueError, OSError) as e:
         parser.exit(1, str(e) + "\n")
     print(json.dumps({"output": str(args.output.resolve()), "commands": len(plan["commands"]), "renders_only": True}))

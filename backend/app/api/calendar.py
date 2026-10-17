@@ -20,6 +20,12 @@ def start(organization_id: str, payload: CalendarOAuthStart, request: Request, r
     return service.start_calendar_oauth(organization_id, user, payload, session_proof=request.headers.get("x-lenslayer-calendar-session"))
 
 
+@router.get("/organizations/{organization_id}/calendar/oauth/eligibility", response_model=IntegrationProviderResponse)
+def oauth_eligibility(organization_id: str, response: Response, service: ServiceDep, user: UserDep):
+    response.headers["Cache-Control"] = "no-store"
+    return service.calendar_oauth_eligibility(organization_id, user)
+
+
 @router.post("/organizations/{organization_id}/calendar/oauth/callback", response_model=IntegrationConnectionResponse, status_code=201)
 def callback(organization_id: str, payload: CalendarOAuthCallback, request: Request, response: Response, service: ServiceDep, user: UserDep):
     response.headers["Cache-Control"] = "no-store"

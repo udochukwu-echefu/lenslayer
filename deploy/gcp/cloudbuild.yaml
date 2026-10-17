@@ -1,210 +1,158 @@
+# Existing-production rollout only. No provisioning, IAM grants, queue/recovery
+# activation or traffic promotion. All runtime flags come from the pure renderer.
+# Core authority/storage/secret pins live in production-release.json, not overrides.
 substitutions:
-  _REGION: europe-west1
-  _ARTIFACT_REPOSITORY: lenslayer
-  _API_SERVICE: lenslayer-api
-  _WORKER_JOB: lenslayer-review-worker
-  _AGENT_WORKER_SERVICE: lenslayer-agent-worker
+  _SOURCE_COMMIT: REVIEW_REQUIRED
+  _PROVIDER_SNAPSHOT_FILE: REVIEW_REQUIRED
+  _PROVIDER_PROFILE_FILE: NONE
+  _MIGRATION_APPROVAL: REVIEW_REQUIRED
   _AGENT_WORKER_ORIGIN: REVIEW_REQUIRED
-  _AGENT_WORKER_QUEUE: lenslayer-agent-work
-  _AGENT_WORKER_INVOKER: lenslayer-agent-wake
-  _NEON_DIRECT_VERSION: REVIEW_REQUIRED
-  _NEON_POOLED_VERSION: REVIEW_REQUIRED
-  _R2_ACCESS_VERSION: REVIEW_REQUIRED
-  _R2_SECRET_VERSION: REVIEW_REQUIRED
-  _CLOUDMERSIVE_VERSION: REVIEW_REQUIRED
-  _RESEND_VERSION: REVIEW_REQUIRED
-  _GROQ_VERSION: REVIEW_REQUIRED
-  _MIGRATION_JOB: lenslayer-migrate
-  _RUNTIME_SERVICE_ACCOUNT: lenslayer-runtime
   _DASHBOARD_URL: https://app.lenslayer.online
-  _OIDC_ISSUER: https://deveze.uk.auth0.com/
-  _OIDC_AUDIENCE: https://api.lenslayer.local
-  _OIDC_JWKS_URL: https://deveze.uk.auth0.com/.well-known/jwks.json
-  _R2_BUCKET: lenslayer-documents
-  _R2_ENDPOINT: https://9d03f4c51b061a0160b4e10c9765527b.r2.cloudflarestorage.com
-  _RESEND_FROM_EMAIL: LensLayer <onboarding@resend.dev>
-  _GROQ_MODEL: openai/gpt-oss-120b
-  _GROQ_MAX_TOKENS: "8192"
 
 options:
   logging: CLOUD_LOGGING_ONLY
 
 steps:
-  - id: validate-on-demand-worker
+  - id: validate-reviewed-provider-state
     name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
     entrypoint: python3
     args:
       - -m
-      - scripts.check_on_demand_deployment
+      - scripts.production_provider_release
       - --project=$PROJECT_ID
-      - --region=${_REGION}
-      - --service=${_AGENT_WORKER_SERVICE}
-      - --origin=${_AGENT_WORKER_ORIGIN}
-      - --queue=${_AGENT_WORKER_QUEUE}
-      - --invoker=${_AGENT_WORKER_INVOKER}
-      - --check-cloud
-      - --secret-version=${_NEON_DIRECT_VERSION}
-      - --secret-version=${_NEON_POOLED_VERSION}
-      - --secret-version=${_R2_ACCESS_VERSION}
-      - --secret-version=${_R2_SECRET_VERSION}
-      - --secret-version=${_CLOUDMERSIVE_VERSION}
-      - --secret-version=${_RESEND_VERSION}
-      - --secret-version=${_GROQ_VERSION}
+      - --dashboard-origin=${_DASHBOARD_URL}
+      - --source-commit=${_SOURCE_COMMIT}
+      - --build-source-commit=$COMMIT_SHA
+      - --worker-origin=${_AGENT_WORKER_ORIGIN}
+      - --provider-snapshot=${_PROVIDER_SNAPSHOT_FILE}
+      - --provider-profile=${_PROVIDER_PROFILE_FILE}
+      - --output=/workspace/output/provider-release
 
   - id: pull-runtime-cache
     name: gcr.io/cloud-builders/docker
-    args:
-      - pull
-      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/platform:cache
+    args: [pull, 'europe-west1-docker.pkg.dev/$PROJECT_ID/lenslayer/platform:cache']
     allowFailure: true
 
   - id: build-runtime
     name: gcr.io/cloud-builders/docker
-    waitFor:
-      - pull-runtime-cache
     args:
       - build
       - --file
       - backend/Dockerfile
       - --cache-from
-      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/platform:cache
+      - europe-west1-docker.pkg.dev/$PROJECT_ID/lenslayer/platform:cache
       - --tag
-      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/platform:$BUILD_ID
+      - europe-west1-docker.pkg.dev/$PROJECT_ID/lenslayer/platform:$BUILD_ID
       - --tag
-      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/platform:cache
+      - europe-west1-docker.pkg.dev/$PROJECT_ID/lenslayer/platform:cache
       - .
 
   - id: push-runtime
     name: gcr.io/cloud-builders/docker
-    args:
-      - push
-      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/platform:$BUILD_ID
+    args: [push, 'europe-west1-docker.pkg.dev/$PROJECT_ID/lenslayer/platform:$BUILD_ID']
 
   - id: push-runtime-cache
     name: gcr.io/cloud-builders/docker
+    args: [push, 'europe-west1-docker.pkg.dev/$PROJECT_ID/lenslayer/platform:cache']
+
+  - id: resolve-immutable-runtime
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: sh
     args:
-      - push
-      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/platform:cache
+      - -ec
+      - >-
+        gcloud artifacts docker images describe
+        europe-west1-docker.pkg.dev/$PROJECT_ID/lenslayer/platform:$BUILD_ID
+        --project=$PROJECT_ID --format='value(image_summary.digest)'
+        > /workspace/production-image-digest.txt
 
   - id: configure-migration-job
     name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
-    entrypoint: gcloud
+    entrypoint: python3
     args:
-      - run
-      - jobs
-      - deploy
-      - ${_MIGRATION_JOB}
-      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/platform:$BUILD_ID
-      - --region=${_REGION}
-      - --service-account=${_RUNTIME_SERVICE_ACCOUNT}@$PROJECT_ID.iam.gserviceaccount.com
-      - --command=alembic
-      - --args=-c,backend/alembic.ini,upgrade,head
-      - --set-env-vars=LENSLAYER_PLATFORM_ENVIRONMENT=migration,LENSLAYER_PLATFORM_AUTO_CREATE_SCHEMA=false
-      - --set-secrets=LENSLAYER_PLATFORM_DATABASE_URL=lenslayer-neon-direct-url:${_NEON_DIRECT_VERSION}
-      - --max-retries=1
-      - --task-timeout=10m
+      - -m
+      - scripts.production_provider_release
+      - --project=$PROJECT_ID
+      - --dashboard-origin=${_DASHBOARD_URL}
+      - --source-commit=${_SOURCE_COMMIT}
+      - --build-source-commit=$COMMIT_SHA
+      - --worker-origin=${_AGENT_WORKER_ORIGIN}
+      - --provider-snapshot=${_PROVIDER_SNAPSHOT_FILE}
+      - --provider-profile=${_PROVIDER_PROFILE_FILE}
+      - --output=/workspace/output/provider-release
+      - --image-digest-file=/workspace/production-image-digest.txt
+      - --migration-approval=${_MIGRATION_APPROVAL}
+      - --command-id=configure-migration
 
   - id: migrate-neon
     name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
-    entrypoint: gcloud
+    entrypoint: python3
     args:
-      - run
-      - jobs
-      - execute
-      - ${_MIGRATION_JOB}
-      - --region=${_REGION}
-      - --wait
+      - -m
+      - scripts.production_provider_release
+      - --project=$PROJECT_ID
+      - --dashboard-origin=${_DASHBOARD_URL}
+      - --source-commit=${_SOURCE_COMMIT}
+      - --build-source-commit=$COMMIT_SHA
+      - --worker-origin=${_AGENT_WORKER_ORIGIN}
+      - --provider-snapshot=${_PROVIDER_SNAPSHOT_FILE}
+      - --provider-profile=${_PROVIDER_PROFILE_FILE}
+      - --output=/workspace/output/provider-release
+      - --image-digest-file=/workspace/production-image-digest.txt
+      - --migration-approval=${_MIGRATION_APPROVAL}
+      - --command-id=migrate-with-recovery-point
 
   - id: deploy-on-demand-agent-worker
     name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
-    entrypoint: gcloud
+    entrypoint: python3
     args:
-      - run
-      - deploy
-      - ${_AGENT_WORKER_SERVICE}
-      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/platform:$BUILD_ID
-      - --region=${_REGION}
-      - --platform=managed
-      - --service-account=${_RUNTIME_SERVICE_ACCOUNT}@$PROJECT_ID.iam.gserviceaccount.com
-      - --no-allow-unauthenticated
-      - --invoker-iam-check
-      - --scaling=auto
-      - --min-instances=0
-      - --cpu-throttling
-      - --max-instances=1
-      - --cpu=1
-      - --memory=1Gi
-      - --concurrency=1
-      - --min=0
-      - --max=1
-      - --command=python
-      - --args=-m,uvicorn,backend.app.agent_worker_service:app,--host,0.0.0.0,--port,8080,--no-access-log
-      - --timeout=300
-      - --set-env-vars=LENSLAYER_PLATFORM_ENVIRONMENT=production,LENSLAYER_PLATFORM_AUTO_CREATE_SCHEMA=false,LENSLAYER_PLATFORM_AUTH_MODE=oidc,LENSLAYER_PLATFORM_OIDC_ISSUER=${_OIDC_ISSUER},LENSLAYER_PLATFORM_OIDC_AUDIENCE=${_OIDC_AUDIENCE},LENSLAYER_PLATFORM_OIDC_JWKS_URL=${_OIDC_JWKS_URL},LENSLAYER_PLATFORM_OIDC_EMAIL_CLAIM=https://lenslayer.app/email,LENSLAYER_PLATFORM_OIDC_NAME_CLAIM=https://lenslayer.app/name,LENSLAYER_PLATFORM_OIDC_EMAIL_VERIFIED_CLAIM=https://lenslayer.app/email_verified,LENSLAYER_PLATFORM_OIDC_REQUIRE_VERIFIED_EMAIL=true,LENSLAYER_PLATFORM_CORS_ORIGINS=${_DASHBOARD_URL},LENSLAYER_PLATFORM_DASHBOARD_URL=${_DASHBOARD_URL},LENSLAYER_PLATFORM_OBJECT_STORAGE_BACKEND=s3,LENSLAYER_PLATFORM_S3_BUCKET=${_R2_BUCKET},LENSLAYER_PLATFORM_S3_ENDPOINT_URL=${_R2_ENDPOINT},LENSLAYER_PLATFORM_S3_REGION=auto,LENSLAYER_PLATFORM_MALWARE_SCAN_BACKEND=cloudmersive,LENSLAYER_PLATFORM_EMAIL_BACKEND=resend,LENSLAYER_PLATFORM_RESEND_FROM_EMAIL=${_RESEND_FROM_EMAIL},LENSLAYER_PLATFORM_REVIEW_WORKER_JOB=projects/$PROJECT_ID/locations/${_REGION}/jobs/${_WORKER_JOB},GROQ_MODEL=${_GROQ_MODEL},GROQ_MAX_TOKENS=${_GROQ_MAX_TOKENS},LENSLAYER_PLATFORM_AGENT_WORKER_MODE=on_demand,LENSLAYER_PLATFORM_AGENT_WORKER_URL=${_AGENT_WORKER_ORIGIN},LENSLAYER_PLATFORM_AGENT_WORKER_QUEUE=projects/$PROJECT_ID/locations/${_REGION}/queues/${_AGENT_WORKER_QUEUE},LENSLAYER_PLATFORM_AGENT_WORKER_INVOKER_EMAIL=${_AGENT_WORKER_INVOKER}@$PROJECT_ID.iam.gserviceaccount.com,LENSLAYER_PLATFORM_AGENT_WORKER_DRAIN_SECONDS=120,LENSLAYER_PLATFORM_WORKER_HEALTH_MAX_AGE_SECONDS=300,LENSLAYER_PLATFORM_HOSTED_AGENTS_ENABLED=true,LENSLAYER_PLATFORM_HOSTED_MODEL_ENABLED=false
-      - --set-secrets=LENSLAYER_PLATFORM_DATABASE_URL=lenslayer-neon-pooled-url:${_NEON_POOLED_VERSION},LENSLAYER_PLATFORM_S3_ACCESS_KEY_ID=lenslayer-r2-access-key-id:${_R2_ACCESS_VERSION},LENSLAYER_PLATFORM_S3_SECRET_ACCESS_KEY=lenslayer-r2-secret-access-key:${_R2_SECRET_VERSION},LENSLAYER_PLATFORM_CLOUDMERSIVE_API_KEY=lenslayer-cloudmersive-api-key:${_CLOUDMERSIVE_VERSION},LENSLAYER_PLATFORM_RESEND_API_KEY=lenslayer-resend-api-key:${_RESEND_VERSION},GROQ_API_KEY=lenslayer-groq-api-key:${_GROQ_VERSION}
-
-  - id: configure-hourly-agent-recovery
-    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
-    entrypoint: gcloud
-    args:
-      - scheduler
-      - jobs
-      - update
-      - http
-      - lenslayer-agent-recovery
-      - --location=${_REGION}
-      - --schedule=0 * * * *
-      - --time-zone=Africa/Lagos
-      - --http-method=POST
-      - --uri=${_AGENT_WORKER_ORIGIN}/recover
-      - --oidc-service-account-email=${_AGENT_WORKER_INVOKER}@$PROJECT_ID.iam.gserviceaccount.com
-      - --oidc-token-audience=${_AGENT_WORKER_ORIGIN}
-      - --attempt-deadline=300s
+      - -m
+      - scripts.production_provider_release
+      - --project=$PROJECT_ID
+      - --dashboard-origin=${_DASHBOARD_URL}
+      - --source-commit=${_SOURCE_COMMIT}
+      - --build-source-commit=$COMMIT_SHA
+      - --worker-origin=${_AGENT_WORKER_ORIGIN}
+      - --provider-snapshot=${_PROVIDER_SNAPSHOT_FILE}
+      - --provider-profile=${_PROVIDER_PROFILE_FILE}
+      - --output=/workspace/output/provider-release
+      - --image-digest-file=/workspace/production-image-digest.txt
+      - --command-id=deploy-sleeping-worker
 
   - id: deploy-api
     name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
-    entrypoint: gcloud
+    entrypoint: python3
     args:
-      - run
-      - deploy
-      - ${_API_SERVICE}
-      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/platform:$BUILD_ID
-      - --region=${_REGION}
-      - --platform=managed
-      - --service-account=${_RUNTIME_SERVICE_ACCOUNT}@$PROJECT_ID.iam.gserviceaccount.com
-      - --allow-unauthenticated
-      - --min-instances=0
-      - --cpu-throttling
-      - --max-instances=1
-      - --cpu=1
-      - --memory=1Gi
-      - --concurrency=20
-      - --timeout=300
-      - --set-env-vars=LENSLAYER_PLATFORM_ENVIRONMENT=production,LENSLAYER_PLATFORM_AUTO_CREATE_SCHEMA=false,LENSLAYER_PLATFORM_AUTH_MODE=oidc,LENSLAYER_PLATFORM_OIDC_ISSUER=${_OIDC_ISSUER},LENSLAYER_PLATFORM_OIDC_AUDIENCE=${_OIDC_AUDIENCE},LENSLAYER_PLATFORM_OIDC_JWKS_URL=${_OIDC_JWKS_URL},LENSLAYER_PLATFORM_OIDC_EMAIL_CLAIM=https://lenslayer.app/email,LENSLAYER_PLATFORM_OIDC_NAME_CLAIM=https://lenslayer.app/name,LENSLAYER_PLATFORM_OIDC_EMAIL_VERIFIED_CLAIM=https://lenslayer.app/email_verified,LENSLAYER_PLATFORM_OIDC_REQUIRE_VERIFIED_EMAIL=true,LENSLAYER_PLATFORM_CORS_ORIGINS=${_DASHBOARD_URL},LENSLAYER_PLATFORM_DASHBOARD_URL=${_DASHBOARD_URL},LENSLAYER_PLATFORM_OBJECT_STORAGE_BACKEND=s3,LENSLAYER_PLATFORM_S3_BUCKET=${_R2_BUCKET},LENSLAYER_PLATFORM_S3_ENDPOINT_URL=${_R2_ENDPOINT},LENSLAYER_PLATFORM_S3_REGION=auto,LENSLAYER_PLATFORM_MALWARE_SCAN_BACKEND=cloudmersive,LENSLAYER_PLATFORM_EMAIL_BACKEND=resend,LENSLAYER_PLATFORM_RESEND_FROM_EMAIL=${_RESEND_FROM_EMAIL},LENSLAYER_PLATFORM_REVIEW_WORKER_JOB=projects/$PROJECT_ID/locations/${_REGION}/jobs/${_WORKER_JOB},GROQ_MODEL=${_GROQ_MODEL},GROQ_MAX_TOKENS=${_GROQ_MAX_TOKENS},LENSLAYER_PLATFORM_AGENT_WORKER_MODE=on_demand,LENSLAYER_PLATFORM_AGENT_WORKER_URL=${_AGENT_WORKER_ORIGIN},LENSLAYER_PLATFORM_AGENT_WORKER_QUEUE=projects/$PROJECT_ID/locations/${_REGION}/queues/${_AGENT_WORKER_QUEUE},LENSLAYER_PLATFORM_AGENT_WORKER_INVOKER_EMAIL=${_AGENT_WORKER_INVOKER}@$PROJECT_ID.iam.gserviceaccount.com,LENSLAYER_PLATFORM_AGENT_WORKER_DRAIN_SECONDS=120,LENSLAYER_PLATFORM_WORKER_HEALTH_MAX_AGE_SECONDS=300,LENSLAYER_PLATFORM_HOSTED_AGENTS_ENABLED=true,LENSLAYER_PLATFORM_HOSTED_MODEL_ENABLED=false
-      - --set-secrets=LENSLAYER_PLATFORM_DATABASE_URL=lenslayer-neon-pooled-url:${_NEON_POOLED_VERSION},LENSLAYER_PLATFORM_S3_ACCESS_KEY_ID=lenslayer-r2-access-key-id:${_R2_ACCESS_VERSION},LENSLAYER_PLATFORM_S3_SECRET_ACCESS_KEY=lenslayer-r2-secret-access-key:${_R2_SECRET_VERSION},LENSLAYER_PLATFORM_CLOUDMERSIVE_API_KEY=lenslayer-cloudmersive-api-key:${_CLOUDMERSIVE_VERSION},LENSLAYER_PLATFORM_RESEND_API_KEY=lenslayer-resend-api-key:${_RESEND_VERSION},GROQ_API_KEY=lenslayer-groq-api-key:${_GROQ_VERSION}
+      - -m
+      - scripts.production_provider_release
+      - --project=$PROJECT_ID
+      - --dashboard-origin=${_DASHBOARD_URL}
+      - --source-commit=${_SOURCE_COMMIT}
+      - --build-source-commit=$COMMIT_SHA
+      - --worker-origin=${_AGENT_WORKER_ORIGIN}
+      - --provider-snapshot=${_PROVIDER_SNAPSHOT_FILE}
+      - --provider-profile=${_PROVIDER_PROFILE_FILE}
+      - --output=/workspace/output/provider-release
+      - --image-digest-file=/workspace/production-image-digest.txt
+      - --command-id=deploy-api-without-traffic
 
   - id: deploy-review-job
     name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
-    entrypoint: gcloud
+    entrypoint: python3
     args:
-      - run
-      - jobs
-      - deploy
-      - ${_WORKER_JOB}
-      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/platform:$BUILD_ID
-      - --region=${_REGION}
-      - --service-account=${_RUNTIME_SERVICE_ACCOUNT}@$PROJECT_ID.iam.gserviceaccount.com
-      - --command=python
-      - --args=-m,backend.app.worker,--documents-only,--drain
-      - --tasks=1
-      - --parallelism=1
-      - --max-retries=1
-      - --task-timeout=30m
-      - --cpu=1
-      - --memory=2Gi
-      - --set-env-vars=LENSLAYER_PLATFORM_ENVIRONMENT=production,LENSLAYER_PLATFORM_AUTO_CREATE_SCHEMA=false,LENSLAYER_PLATFORM_AUTH_MODE=oidc,LENSLAYER_PLATFORM_OIDC_ISSUER=${_OIDC_ISSUER},LENSLAYER_PLATFORM_OIDC_AUDIENCE=${_OIDC_AUDIENCE},LENSLAYER_PLATFORM_OIDC_JWKS_URL=${_OIDC_JWKS_URL},LENSLAYER_PLATFORM_OIDC_EMAIL_CLAIM=https://lenslayer.app/email,LENSLAYER_PLATFORM_OIDC_NAME_CLAIM=https://lenslayer.app/name,LENSLAYER_PLATFORM_OIDC_EMAIL_VERIFIED_CLAIM=https://lenslayer.app/email_verified,LENSLAYER_PLATFORM_OIDC_REQUIRE_VERIFIED_EMAIL=true,LENSLAYER_PLATFORM_CORS_ORIGINS=${_DASHBOARD_URL},LENSLAYER_PLATFORM_DASHBOARD_URL=${_DASHBOARD_URL},LENSLAYER_PLATFORM_OBJECT_STORAGE_BACKEND=s3,LENSLAYER_PLATFORM_S3_BUCKET=${_R2_BUCKET},LENSLAYER_PLATFORM_S3_ENDPOINT_URL=${_R2_ENDPOINT},LENSLAYER_PLATFORM_S3_REGION=auto,LENSLAYER_PLATFORM_MALWARE_SCAN_BACKEND=cloudmersive,LENSLAYER_PLATFORM_EMAIL_BACKEND=resend,LENSLAYER_PLATFORM_RESEND_FROM_EMAIL=${_RESEND_FROM_EMAIL},GROQ_MODEL=${_GROQ_MODEL},GROQ_MAX_TOKENS=${_GROQ_MAX_TOKENS},LENSLAYER_PLATFORM_AGENT_WORKER_MODE=on_demand,LENSLAYER_PLATFORM_AGENT_WORKER_URL=${_AGENT_WORKER_ORIGIN},LENSLAYER_PLATFORM_AGENT_WORKER_QUEUE=projects/$PROJECT_ID/locations/${_REGION}/queues/${_AGENT_WORKER_QUEUE},LENSLAYER_PLATFORM_AGENT_WORKER_INVOKER_EMAIL=${_AGENT_WORKER_INVOKER}@$PROJECT_ID.iam.gserviceaccount.com,LENSLAYER_PLATFORM_AGENT_WORKER_DRAIN_SECONDS=120,LENSLAYER_PLATFORM_WORKER_HEALTH_MAX_AGE_SECONDS=300,LENSLAYER_PLATFORM_HOSTED_AGENTS_ENABLED=true,LENSLAYER_PLATFORM_HOSTED_MODEL_ENABLED=false
-      - --set-secrets=LENSLAYER_PLATFORM_DATABASE_URL=lenslayer-neon-pooled-url:${_NEON_POOLED_VERSION},LENSLAYER_PLATFORM_S3_ACCESS_KEY_ID=lenslayer-r2-access-key-id:${_R2_ACCESS_VERSION},LENSLAYER_PLATFORM_S3_SECRET_ACCESS_KEY=lenslayer-r2-secret-access-key:${_R2_SECRET_VERSION},LENSLAYER_PLATFORM_CLOUDMERSIVE_API_KEY=lenslayer-cloudmersive-api-key:${_CLOUDMERSIVE_VERSION},LENSLAYER_PLATFORM_RESEND_API_KEY=lenslayer-resend-api-key:${_RESEND_VERSION},GROQ_API_KEY=lenslayer-groq-api-key:${_GROQ_VERSION}
+      - -m
+      - scripts.production_provider_release
+      - --project=$PROJECT_ID
+      - --dashboard-origin=${_DASHBOARD_URL}
+      - --source-commit=${_SOURCE_COMMIT}
+      - --build-source-commit=$COMMIT_SHA
+      - --worker-origin=${_AGENT_WORKER_ORIGIN}
+      - --provider-snapshot=${_PROVIDER_SNAPSHOT_FILE}
+      - --provider-profile=${_PROVIDER_PROFILE_FILE}
+      - --output=/workspace/output/provider-release
+      - --image-digest-file=/workspace/production-image-digest.txt
+      - --command-id=deploy-bounded-review-job
 
 images:
-  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/platform:$BUILD_ID
-  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/platform:cache
+  - europe-west1-docker.pkg.dev/$PROJECT_ID/lenslayer/platform:$BUILD_ID
+  - europe-west1-docker.pkg.dev/$PROJECT_ID/lenslayer/platform:cache

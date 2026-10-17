@@ -1,15 +1,73 @@
 # Optional product model providers and evaluation
 
-Explicit selection and source disclosure are wired to a durable lifetime gate that defaults to zero calls. The [ten-case live DeepSeek evaluation](architecture/deepseek-live-evaluation-2026-10-14.md) passed and reserved US$3.1678476 of the aggregate US$5 authorization. Do not rerun it or refund that reservation. A single staged product canary and real browser acceptance remain pending; see the [acceptance record](architecture/agent-roadmap-acceptance-2026-10-14.md).
+Updated 17 October 2026 from public combined source and supplied release facts,
+not new live verification. **Production providers remain disabled**; activation
+and acceptance remain operator-owned. See [current release status](deployment/current-release-status.md),
+[production provider activation](deployment/production-provider-activation.md) and
+[source/snapshot-reviewed profiles](../deploy/gcp/PROVIDER-PROFILES.md).
 
-This is product API code, not development subscription access. Explicit server-side selection permits only:
+This is product API code, not developer coding subscription access. The closed
+**adapter registry** contains these entries; registry presence is not permission
+for paid admission:
 
 | Selection | Fixed model | Fixed Responses endpoint | Reasoning |
 | --- | --- | --- | --- |
 | `deepseek` | `deepseek-flash` (currently DeepSeek-V4.1-Flash) | `https://api.deepseek.com/responses` | `high` |
 | `openai` | `gpt-6.1-sol` | `https://api.openai.com/v1/responses` | `high` |
 
-There is no default, endpoint/model override, automatic retry, provider fallback or tools. Missing provider selection fails closed. Immutable selection, accurate disclosure and the zero-default lifetime gate are integrated. Production stays model-disabled. A staged canary must set `LENSLAYER_PLATFORM_HOSTED_MODEL_ENABLED=true`, provider `deepseek`, and lifetime call limit `1`, with the separate product key bound only to the staging runtime. Admission reserves US$0.319488 before HTTP and is never refunded, including failure or an unknown charged outcome. The spent ledger survives process restarts, tenant deletion and migration rollback. Values above one are rejected.
+**Only DeepSeek is admitted by the paid product budget gate.** OpenAI's registry
+entry is not an approved product path and does not justify OpenAI API/subscription
+setup. There is no default provider, endpoint/model override, automatic retry,
+provider fallback or tools. Missing selection fails closed. The release operator alone supplies
+separate product credentials; never reuse development subscription/session access.
+
+## Current bounded production pilot (not activation)
+
+All settings below have prefix `LENSLAYER_PLATFORM_`:
+
+| Suffix | Default / integrated bound | Approved pilot target |
+| --- | --- | --- |
+| `HOSTED_MODEL_ENABLED` | `false` | `true` only after release approval/configuration |
+| `HOSTED_MODEL_PROVIDER` | unset; paid admission DeepSeek only | `deepseek` |
+| `HOSTED_MODEL_LIFETIME_CALL_LIMIT` | `0`; range 0..3 | `3`, counting existing admissions |
+| `HOSTED_MODEL_LIFETIME_USD_LIMIT` | Decimal `0`; finite range 0..1.00 | `1.00` **total, no automatic refill** |
+| `HOSTED_MODEL_TIMEOUT_SECONDS` | `30`; range 1..30 | `30` in the reviewed deployment profile |
+| `HOSTED_MODEL_MAX_OUTPUT_TOKENS` | `2048`; range 1..4096 | `2048` in the reviewed deployment profile |
+| `HOSTED_AGENT_LEASE_SECONDS` | `180` | Strictly greater than `3 * timeout + 15` |
+
+Both lifetime ceilings must be explicitly nonzero for admission. Each burns a
+fixed **US$0.319488** reservation before HTTP; three reserve **US$0.958464**. The
+US$1 authorization is global and lifetime, not per task/day/organization. A task
+has at most **one HTTP model call**; charge/crash uncertainty fails closed without
+retry. Reservations are never refunded on failure, cancellation, deletion or lower
+actual usage. Unknown/inconsistent history blocks admission; do not reset the
+counter, change the budget ID or reprice historical rows to regain capacity.
+
+The integrated pilot uses the existing counter/ledger at current `c7a4e9d2b630`
+head and requires **no new migration**. Ordinary process restarts and tenant deletion
+do not release spending, but privileged database/backup rollback can erase history.
+Recovery must preserve monotonic budget usage and never restore spent funds;
+reconcile durable spending evidence before resuming. This is not an invoice or a
+claim of immunity to privileged destruction of the counter and ledger.
+
+Deploy only through the reviewed source/snapshot flow above: exact numeric secret
+references, matching API/agent-worker profile and stale-state refusal, disabled
+fresh defaults, no optional model/Calendar credentials for document-only jobs.
+Calendar remains a separately approved **private owner pilot**, not general
+provider availability. Settings and merged source do not establish consent or
+production acceptance. Production execution uses private min0/requestCPU/max1
+on-demand workers with drain <=120 seconds; continuous workers are local development
+only, not the production model path.
+
+## Historical release evidence (not the production US$1 allowance)
+
+Supplied release facts record the [ten-case DeepSeek evaluation](architecture/deepseek-live-evaluation-2026-10-14.md)
+at **US$3.1678476 reserved**, plus the separate completed single staging product
+canary at **US$0.319488**, for **US$3.4873356 burned of the old aggregate US$5**.
+See the dated [acceptance record](architecture/agent-roadmap-acceptance-2026-10-14.md).
+These are historical bounded proofs, not new verification or production acceptance.
+The new production **US$1 total** is separate, never a refund/reset of that old
+allowance. Do not rerun the evaluation/canary or infer new paid-call authorization.
 
 The only accepted result is exactly one completed assistant output containing one JSON object with a single `decision` field (`proceed`, `needs_input`, `decline`). Duplicate JSON keys, extra decision fields, refusal content, empty/malformed/truncated output, wrong models, incomplete/error envelopes and tool calls fail closed. Reasoning is discarded. Provider envelope metadata is not mistaken for decision-schema fields. HTTP redirects, credentials failures and timeouts are never retried; error bodies are not reported. Input JSON is limited to 32 KiB, response bytes to 64 KiB, retained excerpt to 1,000 characters, output to 4,096 tokens maximum, and HTTP timeout to 30 seconds per phase with a checked elapsed stream deadline. No cookies, proxy environment, subscription OAuth store or `.env` is used by these helpers.
 
@@ -30,6 +88,10 @@ Discovery confirms declared availability/version, not actual response capability
 Both providers receive the exact supplied facts and up to 1,000 characters of retained source. These can be sensitive. Server keys must be separate product API credentials, never OpenCode/Codex/subscription OAuth. Neither `store:false` on OpenAI nor DeepSeek's stateless Responses interface establishes zero provider retention, zero caching or absence of safety logs. Account-specific retention, jurisdiction, data-processing terms and permission to send source must be reviewed separately. No provider compensation/deletion of created Calendar events is implemented or claimed.
 
 ## Capped synthetic evaluation (coordinator only)
+
+**Historical procedure retained below:** the ten-case evaluation is complete.
+The commands, rates and amounts document that dated evidence; they are not a
+request to rerun it, a fresh US$5 grant or a way to exercise production admission.
 
 The CLI reads only one explicitly named process environment variable; it never searches key stores or loads `.env`. It requires `--ack-product-api-credential` for paid work. Do not pass keys in command arguments or record a credential-bearing terminal. Ten authorized paid synthetic calls have been completed by the release operator; the implementation agents made no product API calls.
 

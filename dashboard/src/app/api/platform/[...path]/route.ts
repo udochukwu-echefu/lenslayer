@@ -38,9 +38,9 @@ async function proxy(request: Request, context: { params: Promise<{ path: string
   }
 
   const method = request.method.toUpperCase();
-  const body = method === "GET" || method === "HEAD" ? undefined : await request.arrayBuffer();
 
   try {
+    const body = method === "GET" || method === "HEAD" ? undefined : await request.arrayBuffer();
     const response = await fetch(upstreamUrl(request, path), { method, headers, body, cache: "no-store", redirect: "manual" });
     const outgoing = new Headers();
     // API records and one-time credentials must not enter intermediary caches.

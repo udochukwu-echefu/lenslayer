@@ -6,7 +6,7 @@ import type {
   Job,
   Review,
 } from "../types";
-import { request, jsonRequest, download, API_PREFIX } from "./client";
+import { request, jsonRequest, download, API_PREFIX, ApiError } from "./client";
 
 export const contractsApi = {
   contracts: (organizationId: string, options?: { signal?: AbortSignal; privateWorkspace?: boolean }) =>
@@ -15,11 +15,17 @@ export const contractsApi = {
     request<Contract>(
       `/organizations/${organizationId}/contracts/${contractId}`,
     ),
-  createContract: (organizationId: string, body: FormData) =>
-    request<ContractCreated>(`/organizations/${organizationId}/contracts`, {
-      method: "POST",
-      body,
-    }),
+  createContract: async (organizationId: string, body: FormData) => {
+    try {
+      return await request<ContractCreated>(`/organizations/${organizationId}/contracts`, {
+        method: "POST",
+        body,
+      });
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      throw new Error("We couldn't confirm the upload. The contract may already be in this workspace. Check Contracts before uploading it again.");
+    }
+  },
   deleteContract: (organizationId: string, contractId: string) =>
     request<void>(`/organizations/${organizationId}/contracts/${contractId}`, {
       method: "DELETE",

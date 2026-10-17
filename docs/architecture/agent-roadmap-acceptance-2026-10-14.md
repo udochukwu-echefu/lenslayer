@@ -1,5 +1,13 @@
 # Agent infrastructure acceptance — 14 October 2026
 
+> **Supersession notice — 17 October 2026:** this is a dated evidence record,
+> not the current release checklist. SDK 0.1.0 is now published, PRs #5–#7 are
+> merged, and the canonical dashboard is https://app.lenslayer.online. See
+> [current release status](../deployment/current-release-status.md) and the
+> [developer release checklist](../developer-release-checklist.md). Historical
+> identities/results below are preserved; these later release facts do not imply
+> new production task, model or Calendar acceptance.
+
 **Updated through the coordinator's supplied 15 October 2026 finish update,
 including the 17:13:21.750 UTC live SDK denial, 17:14:03 UTC independent
 revocation readback and approximately 17:15 UTC dashboard asset reload.**

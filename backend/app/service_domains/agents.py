@@ -24,6 +24,7 @@ from ..agent_schemas import (
 )
 from ..agent_tools import TOOLS, conditions, get_tool, selected_condition
 from ..agent_resources import CalendarResource
+from ..calendar_eligibility import require_calendar_pilot_user
 from ..models import Contract, ContractVersion, Membership, User, utcnow
 from .common import aware, json_dump, json_load, normalized_role
 
@@ -112,10 +113,12 @@ class AgentsServiceMixin:
         for assignee_id in sorted(payload.assignee_ids):
             self._scope_assignee(organization_id, assignee_id)
         targets = [target.model_dump() for target in payload.calendar_targets]
+        if targets and self.settings.google_calendar_pilot_enabled and not payload.require_approval:
+            raise HTTPException(422, "Calendar pilot actions require human per-action approval.")
         if len({canonical_json(t) for t in targets}) != len(targets):
             raise HTTPException(422, "Calendar grants must be unique.")
         for target in sorted(payload.calendar_targets, key=lambda t: (t.connection_id, t.calendar_id)):
-            CalendarResource(target.connection_id, target.calendar_id).authorize(self, organization_id)
+            CalendarResource(target.connection_id, target.calendar_id).authorize(self, organization_id, actor_user_id=user.id)
         if not payload.contract_ids and not targets and not payload.context_ids:
             raise HTTPException(422, "Delegate at least one explicit contract or calendar resource.")
         # Internal grants have no usable bearer and expose only an opaque marker.
@@ -232,7 +235,8 @@ class AgentsServiceMixin:
             raise HTTPException(status_code=422, detail="Run deadline must be in the future and within agent expiry.")
         targets = [t.model_dump() for t in getattr(payload, "calendar_targets", [])]
         for target in sorted(targets, key=canonical_json):
-            CalendarResource(**target).authorize(self, agent.organization_id, json_load(agent.calendar_targets_json, []))
+            CalendarResource(**target).authorize(self, agent.organization_id, json_load(agent.calendar_targets_json, []),
+                                                actor_user_id=agent.delegated_by_user_id)
         for condition in required_conditions.values():
             if condition["type"] == "workspace_task_created":
                 if condition["contract_id"] not in payload.contract_ids or condition["assigned_to_user_id"] not in json_load(agent.assignee_ids_json, []):
@@ -240,7 +244,8 @@ class AgentsServiceMixin:
                 self._scope_assignee(agent.organization_id, condition["assigned_to_user_id"])
             else:
                 CalendarResource(condition["connection_id"], condition["calendar_id"]).authorize(
-                    self, agent.organization_id, targets, json_load(agent.calendar_targets_json, []))
+                    self, agent.organization_id, targets, json_load(agent.calendar_targets_json, []),
+                    actor_user_id=agent.delegated_by_user_id)
         for contract_id in sorted(payload.contract_ids):
             self._scope_contract(agent.organization_id, contract_id)
         run = AgentRun(
@@ -396,11 +401,12 @@ class AgentsServiceMixin:
                 raise HTTPException(status_code=422, detail="The due date does not match the supplied renewal date and notice period.")
         return evidence
 
-    def validate_agent_calendar_input(self, agent, run, payload: CalendarActionInput):
+    def validate_agent_calendar_input(self, agent, run, payload: CalendarActionInput, *, reconcile_only=False):
         if any("google_calendar.events.create" not in json_load(item.allowed_tools_json, []) for item in (agent, run)):
             raise HTTPException(403, "Calendar tool is outside delegation.")
         CalendarResource(payload.connection_id, payload.calendar_id).authorize(
-            self, run.organization_id, json_load(agent.calendar_targets_json, []), json_load(run.calendar_targets_json, []))
+            self, run.organization_id, json_load(agent.calendar_targets_json, []), json_load(run.calendar_targets_json, []),
+            actor_user_id=agent.delegated_by_user_id, reconcile_only=reconcile_only)
         condition = selected_condition(run, payload)
         from ..agent_schemas import CalendarSuccessCondition
         if condition.get("type") != "calendar_event_created":
@@ -626,6 +632,8 @@ class AgentsServiceMixin:
         action = self.session.scalar(select(AgentAction).where(AgentAction.id == action_id, AgentAction.run_id == run.id))
         if action is None:
             raise HTTPException(status_code=404, detail="Action not found.")
+        if action.tool == "google_calendar.events.create" and payload.decision == "approved":
+            require_calendar_pilot_user(self.settings, user.id)
         if action.approval_status != "pending" or action.status != "awaiting_approval":
             raise HTTPException(status_code=409, detail="This action is not awaiting approval.")
         if action.approval_expires_at is None or aware(action.approval_expires_at) <= utcnow():
@@ -682,7 +690,7 @@ class AgentsServiceMixin:
         if action.attempts >= self.settings.agent_action_max_attempts:
             raise HTTPException(409, "Reconciliation attempt budget exhausted; investigate the stable provider ID.")
         definition = get_tool(action.tool, action.tool_version)
-        definition.validate_scope(self, agent, run, definition.input_model.model_validate_json(action.input_json))
+        self.validate_agent_calendar_input(agent, run, definition.input_model.model_validate_json(action.input_json), reconcile_only=True)
         action.status, action.error_code, action.completed_at = "queued", "", None
         self._event(run, "action.reconciliation_requested", {"action_id": action.id})
         self._audit(organization_id, user.id, "calendar.reconciliation_requested", detail={"run_id": run.id, "action_id": action.id})
