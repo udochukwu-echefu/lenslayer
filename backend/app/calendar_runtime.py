@@ -14,6 +14,7 @@ from .agent_resources import CalendarResource
 from .agent_schemas import CalendarActionInput
 from .agent_tools import get_tool
 from .calendar_connector import ConnectorError, GoogleCalendarHTTP, decrypt_credentials, encrypt_credentials
+from .calendar_eligibility import require_calendar_pilot_user
 from .connector_models import CalendarCredential
 from .models import IntegrationConnection, Membership, utcnow
 from .service_domains.agents import TERMINAL_RUN_STATES, canonical_json, digest
@@ -47,7 +48,7 @@ def _authorize(service, agent, run, action, *, recovery=False):
         service._run_is_live(run)
     if digest(action.input_json) != action.input_sha256:
         raise HTTPException(409, "Action binding changed.")
-    if agent.require_approval:
+    if agent.require_approval or (service.settings.google_calendar_pilot_enabled and not recovery):
         if (action.approval_status != "approved" or action.approved_input_sha256 != action.input_sha256
                 or not action.approved_by_user_id or not action.approval_expires_at
                 or aware(action.approval_expires_at) <= utcnow()):
@@ -56,9 +57,12 @@ def _authorize(service, agent, run, action, *, recovery=False):
             Membership.organization_id == run.organization_id, Membership.user_id == action.approved_by_user_id).with_for_update())
         if not approver or approver.role not in {"owner", "admin"}:
             raise HTTPException(403, "Approver authority removed.")
+        if not recovery:
+            require_calendar_pilot_user(service.settings, action.approved_by_user_id)
     payload = CalendarActionInput.model_validate_json(action.input_json)
-    evidence = service.validate_agent_calendar_input(agent, run, payload)
-    credential = CalendarResource(payload.connection_id, payload.calendar_id).authorize(service, run.organization_id)
+    evidence = service.validate_agent_calendar_input(agent, run, payload, reconcile_only=recovery)
+    credential = CalendarResource(payload.connection_id, payload.calendar_id).authorize(
+        service, run.organization_id, actor_user_id=agent.delegated_by_user_id, reconcile_only=recovery)
     return payload, evidence, credential
 
 

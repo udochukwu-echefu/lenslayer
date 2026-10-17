@@ -42,4 +42,24 @@ describe("credential response proxy", () => {
     expect(JSON.stringify(logs.mock.calls)).not.toContain(token);
     expect(await response.text()).not.toContain(token);
   });
+  it("sanitizes an errored incoming upload stream without calling upstream", async () => {
+    const marker = "synthetic-private-upload-body-and-headers";
+    const fetcher = vi.fn();
+    vi.stubGlobal("fetch", fetcher);
+    const logs = vi.spyOn(console, "error").mockImplementation(() => {});
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) { controller.error(new TypeError(marker)); },
+    });
+    const upload = new Request("http://localhost:3000/api/platform/api/v1/organizations/org-1/contracts", {
+      method: "POST", headers: { "Content-Type": "multipart/form-data; boundary=synthetic" },
+      body, duplex: "half",
+    } as RequestInit & { duplex: string });
+    const response = await POST(upload, { params: Promise.resolve({ path: ["api", "v1", "organizations", "org-1", "contracts"] }) });
+    expect(response.status).toBe(503);
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store");
+    expect(await response.json()).toEqual({ detail: "The LensLayer API is unavailable. Start the platform API and try again." });
+    expect(fetcher).not.toHaveBeenCalled();
+    expect(logs.mock.calls).toEqual([["Platform API proxy failed"]]);
+    expect(JSON.stringify(logs.mock.calls)).not.toContain(marker);
+  });
 });

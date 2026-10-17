@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from sqlalchemy import select
 
 from .calendar_connector import CALENDAR_SCOPE
+from .calendar_eligibility import require_calendar_pilot_user
 from .connector_models import CalendarCredential
 from .models import IntegrationConnection
 from .service_domains.common import json_load
@@ -18,7 +19,7 @@ class CalendarResource:
     def as_dict(self):
         return {"connection_id": self.connection_id, "calendar_id": self.calendar_id}
 
-    def authorize(self, service, organization_id, *grants):
+    def authorize(self, service, organization_id, *grants, actor_user_id=None, reconcile_only=False):
         if any(self.as_dict() not in grant for grant in grants):
             raise HTTPException(403, "Calendar target exceeds delegated scope.")
         connection = service.session.scalar(select(IntegrationConnection).where(
@@ -34,4 +35,7 @@ class CalendarResource:
                 or self.calendar_id not in json_load(credential.calendar_ids_json, [])
                 or json_load(credential.scopes_json, []) != [CALENDAR_SCOPE]):
             raise HTTPException(409, "Calendar connection is unavailable or its grant has changed.")
+        if not reconcile_only:
+            require_calendar_pilot_user(service.settings, actor_user_id)
+            require_calendar_pilot_user(service.settings, connection.created_by_user_id)
         return credential

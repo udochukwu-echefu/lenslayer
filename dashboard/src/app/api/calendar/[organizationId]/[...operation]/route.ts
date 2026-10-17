@@ -36,10 +36,17 @@ export async function POST(request: Request, context: { params: Promise<{ organi
     const fields = tail === "oauth/start" ? { display_name: 255, calendar_id: 1024 } : tail === "oauth/callback" ? { code: 4096, state: 4096 } : {};
     if (Object.keys(input).length !== Object.keys(fields).length || Object.entries(fields).some(([name, max]) => typeof input[name] !== "string" || !input[name] || input[name].length > max)) return fail(400);
     const body = disconnect ? { connection_id: operation[1] } : input as Record<string, string>;
-    const attestation = await calendarAttestation(key, session.subject, session.sessionId, organizationId, disconnect ? "connections/disconnect" : tail, body);
     const origin = new URL(process.env.PLATFORM_API_URL ?? "http://127.0.0.1:8000");
     if (origin.username || origin.password || origin.search || origin.hash || origin.pathname !== "/" ||
         (origin.protocol !== "https:" && !(process.env.NODE_ENV !== "production" && origin.protocol === "http:" && ["localhost", "127.0.0.1"].includes(origin.hostname)))) return fail(503);
+    if (!disconnect) {
+      const eligibility = await fetch(`${origin.origin}/api/v1/organizations/${organizationId}/calendar/oauth/eligibility`, {
+        headers: { Authorization: `Bearer ${session.accessToken}` }, cache: "no-store", redirect: "manual", signal: AbortSignal.timeout(30_000),
+      });
+      if (!eligibility.ok) return fail(eligibility.status >= 400 && eligibility.status < 500 ? eligibility.status : 503);
+      if ((await eligibility.json()).configured !== true) return fail(403);
+    }
+    const attestation = await calendarAttestation(key, session.subject, session.sessionId, organizationId, disconnect ? "connections/disconnect" : tail, body);
     const upstream = await fetch(`${origin.origin}/api/v1/organizations/${organizationId}/calendar/${tail}`, {
       method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.accessToken}`, "X-LensLayer-Calendar-Session": attestation },
       body: JSON.stringify(input), cache: "no-store", redirect: "manual", signal: AbortSignal.timeout(30_000),

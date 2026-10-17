@@ -2,29 +2,47 @@
 
 A server-side TypeScript client for the implemented `/api/v1/agent` API. No runtime
 dependencies or framework. Requires Node 20.3+ (the repository uses Node 24.15).
-Version 0.1.0 is prepared locally and **not published to npm**. This SDK package
-alone is licensed under the [MIT License](LICENSE), copyright 2026 LensLayer.
-This does not relicense MCP, the backend, or the repository. The free `@lenslayer`
-organization exists per owner status; MFA, first-package bootstrap, trusted
-publishing setup and main/artifact release approval remain release-owner gates.
+Version **0.1.0 is published** as
+[`@lenslayer/agent-sdk`](https://www.npmjs.com/package/@lenslayer/agent-sdk).
+This SDK package alone is licensed under the [MIT License](LICENSE), copyright
+2026 LensLayer. This does not relicense MCP, the backend, or the repository.
 
 ```sh
-cd sdk
-npm ci
-npm test
-npm run release:check
+npm install @lenslayer/agent-sdk@0.1.0
 ```
+
+Use an ESM server-side project (`"type": "module"` or an `.mjs` file):
 
 ```ts
 import { LensLayerClient } from "@lenslayer/agent-sdk";
 
 // Obtain a scoped ll_agent_ credential from an owner/admin; never use a user JWT.
+const baseUrl = process.env.LENSLAYER_API_URL;
+const token = process.env.LENSLAYER_AGENT_TOKEN;
+if (!baseUrl || !token) throw new Error("Configure the server-side API URL and agent token.");
 const client = new LensLayerClient({
-  baseUrl: process.env.LENSLAYER_API_URL!,
-  token: process.env.LENSLAYER_AGENT_TOKEN!,
+  baseUrl,
+  token,
 });
 const tools = await client.tools();
 ```
+
+Set `LENSLAYER_API_URL` to the backend API origin supplied by your operator (or
+its `/api/v1` base); the client adds `/api/v1` when absent. The canonical dashboard
+is https://app.lenslayer.online, **not the SDK API base URL**. In the dashboard,
+use Agents for scoped credentials and Runs; the Developer guide is inside Settings.
+Keep the token in server-side secret configuration, never browser code, public
+environment variables, source control or logs. Scope/expiry/revocation and human
+approval still apply; installing the SDK grants no authority.
+
+This repository README corrects the release status; the immutable npm 0.1.0
+tarball retains its historical README. No republish or new registry version is
+implied. See [current release status](https://github.com/udochukwu-echefu/lenslayer/blob/main/docs/deployment/current-release-status.md).
+
+## Source validation and API boundaries
+
+From a source checkout, run `cd sdk`, `npm ci`, `npm test` and
+`npm run release:check` for local validation, not publication.
 
 For an installed-artifact check, run `npm pack --pack-destination /your/private/package-directory`
 from `sdk/`, then `npm install /your/private/package-directory/lenslayer-agent-sdk-0.1.0.tgz`
@@ -59,7 +77,8 @@ additive methods. Discriminate success conditions by `type` and action inputs by
 `unknown_outcome` is an action status; a failed run with that error may have
 remote effects. `partial_effect` receipts are not rollback or whole-run success.
 These additive methods require the platform interface update, not the original
-v1-only backend. Live Google OAuth/provider verification is a release gate.
+v1-only backend. Production Calendar acceptance remains in progress with the
+release owner; staging evidence does not qualify production.
 
 Run, workflow, input-request and action creation require caller-supplied `idempotency_key` values. Default
 retries: at most two additional attempts on network failures and HTTP 429/500/

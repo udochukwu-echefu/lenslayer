@@ -10,6 +10,7 @@ from sqlalchemy import delete
 from sqlalchemy.exc import IntegrityError
 
 from .connector_models import CalendarSessionProof
+from .calendar_eligibility import require_calendar_pilot_user
 from .models import utcnow
 from .service_domains.agents import canonical_json, digest
 
@@ -22,6 +23,8 @@ def session_fingerprint(key, session_id):
 
 
 def verify_session_proof(settings, session, user, organization_id, operation, payload, proof):
+    if operation in {"oauth/start", "oauth/callback"} and getattr(settings, "google_calendar_pilot_enabled", False):
+        require_calendar_pilot_user(settings, user.id)
     if len(settings.calendar_session_binding_key) < 32:
         raise HTTPException(503, "Trusted Calendar session binding is not configured.")
     try:

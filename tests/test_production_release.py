@@ -2,6 +2,7 @@ import copy
 import importlib.util
 import json
 from pathlib import Path
+import re
 import tempfile
 import unittest
 
@@ -15,6 +16,48 @@ spec.loader.exec_module(release)
 class ProductionReleaseTests(unittest.TestCase):
     def setUp(self):
         self.config = json.loads(release.MANIFEST.read_text())
+
+    def test_production_worker_retires_workers_dev_and_preserves_custom_domain(self):
+        # These configs use only full-line comments, not arbitrary JSONC syntax.
+        text = (ROOT / "dashboard/wrangler.jsonc").read_text()
+        config = json.loads("\n".join(line for line in text.splitlines()
+                                      if not line.lstrip().startswith("//")))
+        self.assertIs(config["workers_dev"], False)
+        self.assertEqual(config["name"], "lenslayer-dashboard")
+        self.assertEqual(config["routes"], [
+            {"pattern": "app.lenslayer.online", "custom_domain": True}])
+        self.assertNotIn("route", config)
+        self.assertFalse(config.get("preview_urls", False))
+        self.assertEqual(config["compatibility_date"], "2026-10-09")
+        self.assertEqual(config["compatibility_flags"],
+                         ["nodejs_compat", "global_fetch_strictly_public"])
+        self.assertEqual(config["main"], ".open-next/worker.js")
+        self.assertEqual(config["assets"],
+                         {"directory": ".open-next/assets", "binding": "ASSETS"})
+        self.assertEqual(config["observability"], {
+            "enabled": True, "logs": {"invocation_logs": False},
+            "traces": {"enabled": False}})
+
+    def test_staging_worker_keeps_its_workers_dev_host(self):
+        config = json.loads((ROOT / "deploy/cloudflare/wrangler.staging.jsonc").read_text())
+        self.assertEqual(config["name"], "lenslayer-dashboard-staging")
+        # No routes means Wrangler's workers_dev default remains true.
+        self.assertIs(config.get("workers_dev", True), True)
+        self.assertNotIn("routes", config)
+        self.assertNotIn("route", config)
+        self.assertNotIn("env", config)
+
+    def test_ci_production_build_bakes_only_the_canonical_app_url(self):
+        workflow = (ROOT / ".github/workflows/tests.yml").read_text()
+        # Pin the active build step, not a comment/example elsewhere in the file.
+        step = re.search(r"(?ms)^      - name: Build landing\n(.*?)(?=^      - name:|\Z)", workflow)
+        self.assertIsNotNone(step)
+        self.assertIn("        working-directory: landing\n", step[1])
+        self.assertIn("        run: npm run build\n", step[1])
+        self.assertIn("        env:\n          VITE_APP_URL: https://app.lenslayer.online\n", step[1])
+        self.assertEqual(re.findall(r"(?m)^\s*VITE_APP_URL: *([^\n]+)$", workflow),
+                         ["https://app.lenslayer.online"])
+        self.assertNotIn("https://lenslayer-dashboard.udboy361.workers.dev", workflow)
 
     def test_new_canonical_dashboard_origin_is_accepted_and_rendered_with_models_off(self):
         self.assertEqual(self.config["dashboard_origin"], "https://app.lenslayer.online")

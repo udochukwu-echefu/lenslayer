@@ -201,7 +201,8 @@ def _context(service, task, request):
             if evidence.version_id != latest.id:
                 raise HostedPolicyError("source_changed")
     if request.calendar:
-        CalendarResource(request.calendar.connection_id, request.calendar.calendar_id).authorize(service, task.organization_id)
+        CalendarResource(request.calendar.connection_id, request.calendar.calendar_id).authorize(
+            service, task.organization_id, actor_user_id=task.created_by_user_id)
     return agent, run
 
 

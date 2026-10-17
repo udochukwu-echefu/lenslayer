@@ -24,14 +24,18 @@ def validate_production_worker(project, region, service, queue, origin, invoker)
 
 
 def check_cloud_worker(project, region, service, queue, origin, invoker):
-    def read(arguments):
-        result = subprocess.run(["gcloud", *arguments, f"--project={project}", "--format=json"],
+    def read(arguments, fields):
+        # Output projections, not server-side field masking. Never request env
+        # values, scheduler headers/body or Secret Manager payloads in this process.
+        result = subprocess.run(["gcloud", *arguments, f"--project={project}", f"--format=json({fields})"],
             capture_output=True, text=True, timeout=60)
         if result.returncode:
             raise ValueError("Required worker infrastructure is unavailable")
         return json.loads(result.stdout)
 
-    queue_state = read(["tasks", "queues", "describe", queue, f"--location={region}"])
+    queue_state = read(["tasks", "queues", "describe", queue, f"--location={region}"],
+        "state,rateLimits.maxConcurrentDispatches,rateLimits.maxDispatchesPerSecond,"
+        "retryConfig.maxAttempts,retryConfig.minBackoff,retryConfig.maxBackoff,retryConfig.maxRetryDuration")
     rates = queue_state.get("rateLimits", {})
     retries = queue_state.get("retryConfig", {})
     if (queue_state.get("state") != "RUNNING" or rates.get("maxConcurrentDispatches") != 1
@@ -39,7 +43,9 @@ def check_cloud_worker(project, region, service, queue, origin, invoker):
             or retries.get("maxAttempts") != 8 or retries.get("minBackoff") != "10s"
             or retries.get("maxBackoff") != "300s" or retries.get("maxRetryDuration") != "86400s"):
         raise ValueError("Queue must be active and bounded")
-    recovery = read(["scheduler", "jobs", "describe", "lenslayer-agent-recovery", f"--location={region}"])
+    recovery = read(["scheduler", "jobs", "describe", "lenslayer-agent-recovery", f"--location={region}"],
+        "state,schedule,timeZone,attemptDeadline,httpTarget.uri,httpTarget.httpMethod,"
+        "httpTarget.oidcToken.audience,httpTarget.oidcToken.serviceAccountEmail")
     target = recovery.get("httpTarget", {})
     token = target.get("oidcToken", {})
     if (recovery.get("state") != "ENABLED" or recovery.get("schedule") != "0 * * * *"
@@ -47,7 +53,15 @@ def check_cloud_worker(project, region, service, queue, origin, invoker):
             or target.get("uri") != origin + "/recover" or target.get("httpMethod") != "POST"
             or token.get("audience") != origin or token.get("serviceAccountEmail") != f"{invoker}@{project}.iam.gserviceaccount.com"):
         raise ValueError("Enabled private hourly recovery is required")
-    worker = read(["run", "services", "describe", service, f"--region={region}"])
+    worker = read(["run", "services", "describe", service, f"--region={region}"],
+        'status.url,metadata.annotations."run.googleapis.com/invoker-iam-disabled",'
+        'metadata.annotations."run.googleapis.com/scalingMode",'
+        'metadata.annotations."run.googleapis.com/minScale",'
+        'metadata.annotations."run.googleapis.com/maxScale",'
+        'spec.template.metadata.annotations."autoscaling.knative.dev/minScale",'
+        'spec.template.metadata.annotations."autoscaling.knative.dev/maxScale",'
+        'spec.template.metadata.annotations."run.googleapis.com/cpu-throttling",'
+        'spec.template.spec.containerConcurrency')
     annotations = worker.get("spec", {}).get("template", {}).get("metadata", {}).get("annotations", {})
     service_annotations = worker.get("metadata", {}).get("annotations", {})
     revision_spec = worker.get("spec", {}).get("template", {}).get("spec", {})
@@ -64,7 +78,8 @@ def check_cloud_worker(project, region, service, queue, origin, invoker):
             or revision_spec.get("containerConcurrency") != 1
             or annotations.get("run.googleapis.com/cpu-throttling", "true") != "true"):
         raise ValueError("Request-billed zero-minimum, bounded worker is required")
-    policy = read(["run", "services", "get-iam-policy", service, f"--region={region}"])
+    policy = read(["run", "services", "get-iam-policy", service, f"--region={region}"],
+        "bindings[].role,bindings[].members")
     members = {member for binding in policy.get("bindings", []) if binding.get("role") == "roles/run.invoker"
         for member in binding.get("members", [])}
     if ({"allUsers", "allAuthenticatedUsers"} & members

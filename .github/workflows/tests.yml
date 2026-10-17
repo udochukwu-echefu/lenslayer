@@ -123,7 +123,7 @@ jobs:
       - name: Build landing
         working-directory: landing
         env:
-          VITE_APP_URL: https://lenslayer-dashboard.udboy361.workers.dev
+          VITE_APP_URL: https://app.lenslayer.online
         run: npm run build
 
       - name: Reject local URLs in landing artifact

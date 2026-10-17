@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from decimal import Decimal
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
+from uuid import UUID
 
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -72,6 +74,10 @@ class Settings(BaseSettings):
     agent_max_evidence_receipts_per_run: int = Field(default=100, ge=1, le=1000)
     google_calendar_client_id: str = ""
     google_calendar_enabled: bool = False
+    google_calendar_pilot_enabled: bool = False
+    google_calendar_pilot_user_ids: str = Field(default="", description=(
+        "Comma-separated canonical local platform user UUIDs, not OIDC subjects or emails. "
+        "In pilot mode an empty or malformed entire list denies all new Calendar use."))
     google_calendar_client_secret: str = Field(default="", repr=False)
     google_calendar_redirect_uri: str = ""
     connector_encryption_key: str = Field(default="", repr=False)
@@ -83,11 +89,24 @@ class Settings(BaseSettings):
     hosted_agent_max_attempts: int = Field(default=12, ge=6, le=30)
     hosted_agent_wait_seconds: int = Field(default=15, ge=5, le=60)
     hosted_model_enabled: bool = False
-    hosted_model_lifetime_call_limit: int = Field(default=0, ge=0, le=1)
+    hosted_model_lifetime_call_limit: int = Field(default=0, ge=0, le=3)
+    hosted_model_lifetime_usd_limit: Decimal = Field(default=Decimal("0"), ge=0, le=Decimal("1.00"), allow_inf_nan=False)
     hosted_model_provider: Literal["deepseek", "openai"] | None = None
     hosted_model_api_key: str = Field(default="", repr=False)
     hosted_model_timeout_seconds: float = Field(default=30, ge=1, le=30)
     hosted_model_max_output_tokens: int = Field(default=2048, ge=1, le=4096)
+
+    @property
+    def google_calendar_pilot_user_id_set(self) -> frozenset[str]:
+        # Validate on every use, including after settings updates. Do not prevent
+        # service startup/credential cleanup on invalid pilot configuration.
+        try:
+            items = [item.strip() for item in self.google_calendar_pilot_user_ids.split(",")]
+            if any(not item or str(UUID(item)) != item for item in items):
+                return frozenset()
+            return frozenset(items)
+        except (ValueError, AttributeError, TypeError):
+            return frozenset()
 
     @property
     def allowed_extension_set(self) -> set[str]:
