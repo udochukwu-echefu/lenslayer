@@ -110,7 +110,7 @@ export default function PortfolioDemo({ sampleUrl }) {
   }
 
   return (
-    <div className="portfolio-carousel" ref={carouselRef} role="region" aria-roledescription="carousel" aria-label="Illustrative document workflow" onFocusCapture={() => setFocused(true)} onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false) }} onKeyDown={(event) => { if (event.key === "ArrowRight" || event.key === "ArrowLeft") { event.preventDefault(); navigate(event.key === "ArrowRight" ? 1 : -1) } }}>
+    <div className="portfolio-carousel" ref={carouselRef} role="region" aria-roledescription="carousel" aria-label="Illustrative document workflow" onFocusCapture={() => setFocused(true)} onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false) }}>
       <div className="portfolio-carousel-viewport" aria-live={paused || reduceMotion ? "polite" : "off"} onPointerMove={tiltCard} onPointerLeave={clearLighting} onPointerDown={(event) => { if (event.pointerType === "touch") { swipeClick.current = false; swipeStart.current = { x: event.clientX, y: event.clientY } } }} onPointerCancel={() => { swipeStart.current = null; clearLighting() }} onPointerUp={(event) => { if (!swipeStart.current) return; const x = event.clientX - swipeStart.current.x; const y = event.clientY - swipeStart.current.y; swipeStart.current = null; if (Math.abs(x) > 45 && Math.abs(x) > Math.abs(y) * 1.2) { swipeClick.current = true; navigate(x < 0 ? 1 : -1) } }} onClickCapture={(event) => { if (swipeClick.current) { event.preventDefault(); event.stopPropagation(); swipeClick.current = false } }}>
         <div className="portfolio-carousel-track">
           {questions.map((query, index) => {
@@ -136,7 +136,7 @@ export default function PortfolioDemo({ sampleUrl }) {
           })}
         </div>
       </div>
-      <div className="portfolio-carousel-pagination" role="group" aria-label="Walkthrough cards">
+      <div className="portfolio-carousel-pagination" role="group" aria-label="Walkthrough cards" onKeyDown={(event) => { if (event.key === "ArrowRight" || event.key === "ArrowLeft") { event.preventDefault(); navigate(event.key === "ArrowRight" ? 1 : -1) } }}>
         {questions.map((question, index) => <button type="button" key={question.label} aria-label={`Show ${question.label.toLowerCase()} card and stop automatic rotation`} title={`Show ${question.label.toLowerCase()} card and stop automatic rotation`} aria-pressed={active === index} aria-controls={`${id}-slide-${index}`} onClick={() => { setActive(index); setPaused(true) }}><span className="portfolio-carousel-dot" />{active === index && running && <span className="portfolio-slide-progress" key={`${active}-progress`} aria-hidden="true" />}</button>)}
       </div>
     </div>
