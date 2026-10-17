@@ -44,8 +44,7 @@ export default function FaqSection() {
           return <article className="faq-item" data-open={isOpen} key={item.question}>
             <h3>
               <button type="button" aria-expanded={isOpen} aria-controls={answerId} onClick={() => setOpenItem(isOpen ? null : index)}>
-                <span className="faq-number">{String(index + 1).padStart(2, "0")}</span>
-                <span>{item.question}</span>
+                <span className="faq-question">{item.question}</span>
                 <span className="faq-toggle" aria-hidden="true"><Plus /></span>
               </button>
             </h3>
