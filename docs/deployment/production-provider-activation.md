@@ -1,8 +1,9 @@
 # Production provider activation and positive acceptance
 
-Public-source audit of `7e2955faac10004d6c004a5dacfc04295ab00670`, checked
-2026-10-17, with the subsequently human-approved **USD 1 total DeepSeek pilot**
-implemented in source. This is an operator handoff, **not activation,
+Source handoff for publicly merged PR #8 (`e2407846a926b527bc3e40acf7ad5eaf687c8ca5`,
+squash main `d4a30cc1ec53faa5802937595873e54a23a79333`), checked 2026-10-17.
+The human-approved **USD 1 total DeepSeek pilot** and guarded provider release
+path are implemented in source. This is an operator handoff, **not activation,
 Google verification, or evidence of live success**. The release operator owns private configuration,
 human approvals and live checks. No OpenAI API access is needed for this procedure.
 
@@ -253,30 +254,65 @@ Official: [Web server OAuth/credential creation](https://developers.google.com/i
 [publishing/test users](https://support.google.com/cloud/answer/10311615),
 [refresh-token expiry](https://developers.google.com/identity/protocols/oauth2).
 
-## 4. Deployment persistence: current rollout will undo activation
+## 4. Deployment persistence: reviewed profiles and guarded rollout
 
-`scripts/prepare-production.py` validates a closed manifest/secret list and renders
-`HOSTED_MODEL_ENABLED=false`, lifetime limit `0`, `GOOGLE_CALENDAR_ENABLED=false`.
-Its API/worker deployments use replacement `--env-vars-file` and `--set-secrets`
-without optional provider secrets. `deploy/gcp/cloudbuild.yaml` likewise replaces
-env/secrets, disables the model and omits Calendar settings (defaults disabled).
-The pinned `cloudbuild.release.yaml` only builds; it does not preserve or activate
-providers. **Do not activate once manually and assume the next release preserves it.**
+The [renderer](../../scripts/prepare-production.py) now consumes the closed
+[provider profile contract](../../scripts/production_provider_profile.py) alongside
+the core manifest. With no profile it renders model and Calendar disabled,
+model call/USD limits `0` / `0.00`, Calendar pilot disabled and an empty pilot-user
+list, with no optional credentials. A render without a snapshot is only a
+disabled proposal, **not permission to replace existing provider state**.
 
-Before durable activation root needs a reviewed renderer/manifest and build-path
-change with explicit optional-provider settings and pinned secret-version
-references, consistent API/worker selection, and disabled defaults when omitted.
-Verify rendered output and post-deploy configuration metadata without exporting
-values. Dashboard server-secret bindings must also survive its deployment path.
-No such code/config change is made by this audit. Keep `on_demand`, private worker
-invocation, zero minimum instances, bounded drain/queue and recovery; do not follow
-older "supervise continuously" guidance for this production lane.
+A reviewed snapshot pins both existing API/worker revisions and their nonsecret
+optional-provider settings and numeric secret-version references. A profile must
+bind the exact source commit and snapshot SHA-256, supply explicit flags/limits,
+and bind exactly the selected providers' settings and secrets. DeepSeek is fixed
+to the bounded selection described above (profile timeout `30`, output `2048`,
+1–3 calls and a positive two-decimal USD ceiling at most `1.00`, sufficient for
+all configured calls). Calendar requires `GOOGLE_CALENDAR_PILOT_ENABLED=true`,
+exactly one canonical owner-pilot user UUID in `GOOGLE_CALENDAR_PILOT_USER_IDS`,
+the canonical callback and all five Calendar secret references. Omitted providers
+remain disabled; unused optional credentials are rejected.
 
-Freshness findings for the documentation owner: `docs/deployment/hosted-agent-service.md`
-still claims OpenAI-only selection, twice-timeout lease and continuous supervision;
-current code uses the explicit registry, **three** timeouts plus 15 seconds and
-on-demand production. Historical evaluation results are not current production
-acceptance. This guide does not modify those other documents.
+Existing optional secrets or nondefault settings require a profile that preserves
+every existing value/reference exactly on both services. The contract refuses
+silent removal, reduction or change; divergent API/worker configuration may need
+separate review rather than an override. API and on-demand worker receive the
+same selected provider configuration through replacement `--env-vars-file` and
+`--set-secrets`. Document review and bootstrap retain disabled provider defaults
+and core secrets only. Dashboard server-secret bindings, including the matching
+Calendar HMAC, remain a separate deployment responsibility.
+
+The [release helper](../../scripts/production_provider_release.py) requires a
+reviewed snapshot and checks the enabled backend source contract. It rechecks both
+services against the snapshot for preflight/migration and the original target
+service before each API/worker deployment; the core-only document review job has
+no optional-provider metadata recheck. It rejects
+unsettled revisions, unsupported provider configuration, literal credentials and
+stale snapshots. Its CLI also checks source/build identity, canonical coordinates
+and the on-demand worker preflight. For an existing production service, that
+preflight requires the bounded queue to be `RUNNING` and its approved hourly
+recovery schedule to be `ENABLED`; a deliberately parked queue is refused. Initial
+provisioning and activation use their separate reviewed procedure. Mutation
+requires an immutable image digest and private-worker origin; migration commands
+additionally require explicit
+source-bound backup/staging/migration-path approval. Keep review inputs/output
+under Docker-excluded `output/` or outside the source/build context; never include
+credential values. These checks are not live acceptance or substitutes for human
+approval and post-deploy read-back.
+
+[cloudbuild.yaml](../../deploy/gcp/cloudbuild.yaml) now uses that helper for the
+existing-service rollout: provider-state preflight, build/digest resolution,
+guarded migration, sleeping worker, API **without traffic**, and bounded document
+review job. The helper only permits these non-activation commands; provisioning,
+IAM grants, queue/recovery activation and traffic promotion are separate.
+[cloudbuild.release.yaml](../../deploy/gcp/cloudbuild.release.yaml) remains
+build-only. Rendered activation gate labels are review requirements, not execution
+enforcement: do not batch-run a plan or bypass the helper with raw replacement
+deploy commands. Keep queue/recovery parked until separately authorized activation,
+and retain `on_demand`, private invocation, zero minimum instances and bounded
+drain/queue/recovery. Source preservation support does not prove any rollout,
+migration, activation or provider acceptance has occurred.
 
 ## 5. One positive production task: exact synthetic internal acceptance
 
@@ -340,8 +376,12 @@ form path was exercised.
 
 ### Separate provider acceptance gates (do not conflate them)
 
-- **Model-assisted:** only after root's spend decision and available reservation,
-  use one synthetic hosted document/fixed plan with explicit sharing consent.
+- **Model-assisted:** only after the operator's spend decision and available reservation,
+  use one synthetic hosted fixed plan with explicit sharing consent. Calendar-only
+  model assistance is also supported without a document or assignee. One such
+  assignment can exercise model planning and Calendar acceptance together, provided
+  each evidence requirement below is verified separately; model success alone is
+  not an event receipt.
   Record explicit call/USD limits (`3` / `1.00` for this pilot), all pre-existing
   reservations, and remaining capacity; do not assume three fresh calls.
   Record disclosure and expected/actual `deepseek/deepseek-flash/high`, task/request/
@@ -377,7 +417,9 @@ per-action approval; dispatch and read-back receipts; duplicate/idle checks; act
 times, outcomes and unresolved/partial effects. Broader repeatability, OAuth public
 verification and deployment persistence remain gates until their evidence exists.
 
-The old workers.dev app retirement is root/other-worker work, not done here.
-The current `dashboard/wrangler.jsonc` still has `workers_dev:true`; canonical
-OAuth/NextAuth origins must not depend on that old address. No marketing website
+The [dashboard configuration](../../dashboard/wrangler.jsonc) sets
+`workers_dev:false` and the custom-domain route `app.lenslayer.online`. This is
+source intent, not deployed-state evidence: old workers.dev app retirement and
+shutdown/redirect verification remain pending with the release operator. Canonical
+OAuth/NextAuth origins must not depend on the old address. No marketing website
 or launch-video work is part of this procedure.
