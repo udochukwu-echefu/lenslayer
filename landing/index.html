@@ -3,10 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#fdfdfb" />
+    <meta name="theme-color" content="#ffffff" />
+    <script>
+      // Apply the saved theme before the page paints. Light is the default.
+      try {
+        if (localStorage.getItem("lenslayer-landing-theme") === "dark") {
+          document.documentElement.dataset.theme = "dark"
+          document.querySelector('meta[name="theme-color"]').content = "#191a17"
+        }
+      } catch { /* Storage may be unavailable in private browsing. */ }
+    </script>
     <meta
       name="description"
-      content="Give developer-run agents retained context, scoped permission to act, durable execution records, and proof of a verified task outcome."
+      content="Agentic document intelligence for teams. Surface risks and obligations, ask source-linked questions, review decisions together, and prepare agent-assisted follow-up tasks."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -14,7 +23,7 @@
       href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Figtree:wght@400;450;500;550;600;650;700&display=swap"
       rel="stylesheet"
     />
-    <title>LensLayer | Context, permission, verified outcomes</title>
+    <title>LensLayer | Agentic document intelligence for teams</title>
   </head>
   <body>
     <div id="root"></div>
