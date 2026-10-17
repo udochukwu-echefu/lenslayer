@@ -6,11 +6,11 @@ product
 
 ## Users
 
-Developers building agents that need private context, permission to act and durable proof of completion. Operators assign work, inspect evidence and approve exact actions through the dashboard. Agreement review remains a supported workflow for legal, procurement, compliance, finance and operations teams.
+Legal, procurement, compliance, finance and operations teams that need to understand documents, review evidence and coordinate decisions and follow-up work. Developers can connect agents that need private context, scoped permission to act and durable proof of completion.
 
 ## Product Purpose
 
-LensLayer provides agent infrastructure for retrieving scoped evidence, proposing typed actions, waiting for input or approval, recovering execution and verifying exact outcomes. External agents use the API, SDK and MCP adapter; LensLayer's hosted runner uses the same execution records for bounded user assignments. Private context and document review supply evidence for this work. The document workflows provide first-pass triage and professional-review handoff, without claiming legal advice.
+LensLayer is agentic document intelligence for teams. It turns documents into source-linked findings, answers, obligations, comparisons and shared review decisions. Agents are a supporting feature: they can retrieve scoped evidence, propose follow-up tasks, wait for input or approval and verify exact outcomes. External agents use the API, SDK and MCP adapter; LensLayer's hosted runner uses the same execution records for bounded user assignments. The document workflows provide first-pass triage and professional-review handoff, without claiming legal advice. Lead public messaging with document intelligence and team collaboration, not agent infrastructure.
 
 ## Brand Personality
 
