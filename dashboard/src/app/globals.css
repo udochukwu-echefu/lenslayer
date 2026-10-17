@@ -2067,7 +2067,7 @@ body { font-size: var(--text-body); line-height: 1.5; }
 }
 :root[data-theme="dark"] {
   --palette-cloud: var(--ref-cream); --palette-sky: oklch(76% .018 88); --palette-navy: var(--ref-charcoal);
-  --canvas: oklch(18% .007 95); --surface: oklch(22% .008 95); --surface-raised: oklch(26% .01 95); --surface-hover: oklch(30% .013 95); --surface-strong: oklch(34% .016 95);
+  --canvas: oklch(14% .002 270); --surface: oklch(22% .008 95); --surface-raised: oklch(26% .01 95); --surface-hover: oklch(30% .013 95); --surface-strong: oklch(34% .016 95);
   --line: oklch(33% .015 95); --line-strong: oklch(47% .02 95); --ink: var(--ref-cream); --ink-muted: oklch(79% .02 88); --ink-faint: oklch(70% .023 88);
   --accent: var(--ref-pink); --accent-hover: oklch(90% .06 345); --accent-bright: var(--ref-pink); --accent-soft: oklch(31% .045 345); --accent-contrast: var(--ref-charcoal);
   --good: oklch(79% .09 125); --warning: var(--ref-yellow); --danger: oklch(79% .105 25);
@@ -2472,3 +2472,33 @@ body { font-size: var(--text-body); line-height: 1.5; }
   background: var(--surface-hover);
   color: var(--ink);
 }
+
+/* Deeper neutral workspace shell. Component pigments and text retain their original palette. */
+:root[data-theme="dark"] {
+  --workspace-surface: oklch(18% .003 270);
+  --workspace-raised: oklch(22% .004 270);
+  --workspace-hover: oklch(26% .004 270);
+  --workspace-line: oklch(31% .004 270);
+}
+:root[data-theme="dark"] .sidebar,
+:root[data-theme="dark"] .mobile-drawer { background: var(--canvas); border-color: var(--workspace-line); }
+:root[data-theme="dark"] .sidebar-brand,
+:root[data-theme="dark"] .mobile-drawer-head { border-color: var(--workspace-line); }
+:root[data-theme="dark"] .sidebar .brand-mark i,
+:root[data-theme="dark"] .sidebar .brand-mark b,
+:root[data-theme="dark"] .mobile-drawer .brand-mark i,
+:root[data-theme="dark"] .mobile-drawer .brand-mark b { background: var(--canvas); }
+:root[data-theme="dark"] .nav-link:not(.active):hover,
+:root[data-theme="dark"] .mobile-drawer-head .icon-button:hover { background: var(--workspace-hover); }
+:root[data-theme="dark"] .topbar,
+:root[data-theme="dark"] .demo-banner,
+:root[data-theme="dark"] .table-card,
+:root[data-theme="dark"] .table-card-header,
+:root[data-theme="dark"] .today-page .table-card:first-of-type > .table-card-header,
+:root[data-theme="dark"] .today-grid .table-card > .table-card-header,
+:root[data-theme="dark"] .portfolio-register > .table-card-header,
+:root[data-theme="dark"] .assigned-actions-table-wrap,
+:root[data-theme="dark"] .data-mobile-list article,
+:root[data-theme="dark"] table { background: var(--workspace-surface); }
+:root[data-theme="dark"] table th { background: var(--workspace-raised); }
+:root[data-theme="dark"] table tbody tr:hover { background: var(--workspace-hover); }
