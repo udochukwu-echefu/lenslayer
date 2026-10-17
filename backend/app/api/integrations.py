@@ -15,7 +15,9 @@ from ..schemas import (
     JobResponse,
 )
 from ..review_trigger import queue_review_worker
-from .dependencies import ServiceDep, UserDep, read_upload
+from ..services import PlatformService
+from .dependencies import ServiceDep, UserDep, get_current_user, read_upload
+from .uploads import run_upload
 
 
 router = APIRouter()
@@ -122,8 +124,6 @@ async def intake_forwarded_email(
     organization_id: str,
     request: Request,
     background_tasks: BackgroundTasks,
-    service: ServiceDep,
-    user: UserDep,
     file: Annotated[UploadFile, File()],
     sender: Annotated[str, Form()] = "",
     subject: Annotated[str, Form()] = "",
@@ -134,28 +134,29 @@ async def intake_forwarded_email(
     retention_days: Annotated[int, Form()] = 30,
 ) -> IntakeCreatedResponse:
     data = await read_upload(file, request.app.state.settings.max_upload_bytes)
-    import_record, contract, asset, job = service.create_imported_contract(
-        organization_id,
-        user,
-        provider="email",
-        source_type="forwarded_email",
-        original_name=file.filename or "forwarded-contract",
-        content_type=file.content_type or "application/octet-stream",
-        data=data,
-        title=subject or file.filename or "Forwarded contract",
-        external_id=external_id,
-        metadata={"sender": sender, "subject": subject, "body_excerpt": body[:500]},
-        retain_document=retain_document,
-        retain_source_text=retain_source_text,
-        retention_days=retention_days,
-    )
+
+    def create(service: PlatformService) -> IntakeCreatedResponse:
+        user = get_current_user(request, service)
+        created = service.create_imported_contract(
+            organization_id,
+            user,
+            provider="email",
+            source_type="forwarded_email",
+            original_name=file.filename or "forwarded-contract",
+            content_type=file.content_type or "application/octet-stream",
+            data=data,
+            title=subject or file.filename or "Forwarded contract",
+            external_id=external_id,
+            metadata={"sender": sender, "subject": subject, "body_excerpt": body[:500]},
+            retain_document=retain_document,
+            retain_source_text=retain_source_text,
+            retention_days=retention_days,
+        )
+        return _intake_response(service, created)
+
+    result = await run_upload(request, create)
     queue_review_worker(background_tasks, request.app.state.settings)
-    return IntakeCreatedResponse(
-        import_record=service.integration_import_response(import_record),
-        contract=service.contract_response(contract),
-        asset=AssetResponse.model_validate(asset),
-        job=JobResponse.model_validate(job),
-    )
+    return result
 
 
 @router.post(
@@ -168,8 +169,6 @@ async def import_google_drive_file(
     organization_id: str,
     request: Request,
     background_tasks: BackgroundTasks,
-    service: ServiceDep,
-    user: UserDep,
     file: Annotated[UploadFile, File()],
     connection_id: Annotated[str, Form()] = "",
     drive_file_id: Annotated[str, Form()] = "",
@@ -180,30 +179,31 @@ async def import_google_drive_file(
     retention_days: Annotated[int, Form()] = 30,
 ) -> IntakeCreatedResponse:
     data = await read_upload(file, request.app.state.settings.max_upload_bytes)
-    import_record, contract, asset, job = service.create_imported_contract(
-        organization_id,
-        user,
-        provider="google_drive",
-        source_type="drive_file",
-        original_name=file.filename or "drive-contract",
-        content_type=file.content_type or "application/octet-stream",
-        data=data,
-        title=title or file.filename or "Google Drive contract",
-        connection_id=connection_id or None,
-        external_id=drive_file_id,
-        source_url=source_url,
-        metadata={"drive_file_id": drive_file_id},
-        retain_document=retain_document,
-        retain_source_text=retain_source_text,
-        retention_days=retention_days,
-    )
+
+    def create(service: PlatformService) -> IntakeCreatedResponse:
+        user = get_current_user(request, service)
+        created = service.create_imported_contract(
+            organization_id,
+            user,
+            provider="google_drive",
+            source_type="drive_file",
+            original_name=file.filename or "drive-contract",
+            content_type=file.content_type or "application/octet-stream",
+            data=data,
+            title=title or file.filename or "Google Drive contract",
+            connection_id=connection_id or None,
+            external_id=drive_file_id,
+            source_url=source_url,
+            metadata={"drive_file_id": drive_file_id},
+            retain_document=retain_document,
+            retain_source_text=retain_source_text,
+            retention_days=retention_days,
+        )
+        return _intake_response(service, created)
+
+    result = await run_upload(request, create)
     queue_review_worker(background_tasks, request.app.state.settings)
-    return IntakeCreatedResponse(
-        import_record=service.integration_import_response(import_record),
-        contract=service.contract_response(contract),
-        asset=AssetResponse.model_validate(asset),
-        job=JobResponse.model_validate(job),
-    )
+    return result
 
 
 @router.post(
@@ -217,8 +217,6 @@ async def import_provider_file(
     provider: str,
     request: Request,
     background_tasks: BackgroundTasks,
-    service: ServiceDep,
-    user: UserDep,
     file: Annotated[UploadFile, File()],
     connection_id: Annotated[str, Form()] = "",
     external_id: Annotated[str, Form()] = "",
@@ -231,24 +229,35 @@ async def import_provider_file(
     retention_days: Annotated[int, Form()] = 30,
 ) -> IntakeCreatedResponse:
     data = await read_upload(file, request.app.state.settings.max_upload_bytes)
-    import_record, contract, asset, job = service.create_imported_contract(
-        organization_id,
-        user,
-        provider=provider,
-        source_type="cloud_file" if provider in {"google_drive", "onedrive", "sharepoint", "dropbox"} else "message_attachment",
-        original_name=file.filename or "imported-contract",
-        content_type=file.content_type or "application/octet-stream",
-        data=data,
-        title=title or file.filename or "Imported contract",
-        connection_id=connection_id or None,
-        external_id=external_id,
-        source_url=source_url,
-        metadata={"sender": sender, "channel_reference": channel_reference},
-        retain_document=retain_document,
-        retain_source_text=retain_source_text,
-        retention_days=retention_days,
-    )
+
+    def create(service: PlatformService) -> IntakeCreatedResponse:
+        user = get_current_user(request, service)
+        created = service.create_imported_contract(
+            organization_id,
+            user,
+            provider=provider,
+            source_type="cloud_file" if provider in {"google_drive", "onedrive", "sharepoint", "dropbox"} else "message_attachment",
+            original_name=file.filename or "imported-contract",
+            content_type=file.content_type or "application/octet-stream",
+            data=data,
+            title=title or file.filename or "Imported contract",
+            connection_id=connection_id or None,
+            external_id=external_id,
+            source_url=source_url,
+            metadata={"sender": sender, "channel_reference": channel_reference},
+            retain_document=retain_document,
+            retain_source_text=retain_source_text,
+            retention_days=retention_days,
+        )
+        return _intake_response(service, created)
+
+    result = await run_upload(request, create)
     queue_review_worker(background_tasks, request.app.state.settings)
+    return result
+
+
+def _intake_response(service: PlatformService, created: tuple) -> IntakeCreatedResponse:
+    import_record, contract, asset, job = created
     return IntakeCreatedResponse(
         import_record=service.integration_import_response(import_record),
         contract=service.contract_response(contract),

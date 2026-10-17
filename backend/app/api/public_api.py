@@ -19,7 +19,9 @@ from ..schemas import (
     WebhookSubscriptionResponse,
 )
 from ..review_trigger import queue_review_worker
+from ..services import PlatformService
 from .dependencies import ServiceDep, UserDep, public_api_token, read_upload
+from .uploads import run_upload
 
 
 router = APIRouter()
@@ -153,7 +155,6 @@ def list_webhook_deliveries(
 async def public_api_upload_contract(
     request: Request,
     background_tasks: BackgroundTasks,
-    service: ServiceDep,
     file: Annotated[UploadFile, File()],
     title: Annotated[str, Form()] = "",
     counterparty: Annotated[str, Form()] = "",
@@ -163,32 +164,37 @@ async def public_api_upload_contract(
     retain_source_text: Annotated[bool, Form()] = False,
     retention_days: Annotated[int, Form()] = 30,
 ) -> IntakeCreatedResponse:
-    api_key, user = service.authenticate_api_key(public_api_token(request), "contracts:write")
     data = await read_upload(file, request.app.state.settings.max_upload_bytes)
-    import_record, contract, asset, job = service.create_imported_contract(
-        api_key.organization_id,
-        user,
-        provider="public_api",
-        source_type="api_upload",
-        original_name=file.filename or "api-contract",
-        content_type=file.content_type or "application/octet-stream",
-        data=data,
-        title=title or file.filename or "API contract",
-        counterparty=counterparty,
-        contract_type=contract_type,
-        external_id=external_id,
-        metadata={"api_key_id": api_key.id},
-        retain_document=retain_document,
-        retain_source_text=retain_source_text,
-        retention_days=retention_days,
-    )
+
+    def create(service: PlatformService) -> IntakeCreatedResponse:
+        api_key, user = service.authenticate_api_key(public_api_token(request), "contracts:write")
+        import_record, contract, asset, job = service.create_imported_contract(
+            api_key.organization_id,
+            user,
+            provider="public_api",
+            source_type="api_upload",
+            original_name=file.filename or "api-contract",
+            content_type=file.content_type or "application/octet-stream",
+            data=data,
+            title=title or file.filename or "API contract",
+            counterparty=counterparty,
+            contract_type=contract_type,
+            external_id=external_id,
+            metadata={"api_key_id": api_key.id},
+            retain_document=retain_document,
+            retain_source_text=retain_source_text,
+            retention_days=retention_days,
+        )
+        return IntakeCreatedResponse(
+            import_record=service.integration_import_response(import_record),
+            contract=service.contract_response(contract),
+            asset=AssetResponse.model_validate(asset),
+            job=JobResponse.model_validate(job),
+        )
+
+    result = await run_upload(request, create)
     queue_review_worker(background_tasks, request.app.state.settings)
-    return IntakeCreatedResponse(
-        import_record=service.integration_import_response(import_record),
-        contract=service.contract_response(contract),
-        asset=AssetResponse.model_validate(asset),
-        job=JobResponse.model_validate(job),
-    )
+    return result
 
 
 @router.get(
