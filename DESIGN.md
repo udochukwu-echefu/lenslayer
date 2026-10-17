@@ -24,7 +24,7 @@ Strategy: warm-white reading surfaces dominate the application. Use the four sam
 
 Tokens use OKLCH; sampled hex values and conversions live in `branding/tokens/reference-pastels.json`. The active application theme is the dated block at the end of each application stylesheet. Historical branding exports are retained independently.
 
-Use dark text on pastel fills. Avoid white labels on pastels. Muted text is deliberately darker than the reference image to improve readability. Category colors never represent risk or confidence. Status badges retain semantic colors and explicit text. Dark mode keeps the sampled pigments bright on compact accents and uses low-concentration washes on large panels, over warm charcoal surfaces with cream text.
+Use dark text on pastel fills. Avoid white labels on pastels. Muted text is deliberately darker than the reference image to improve readability. Category colors never represent risk or confidence. Status badges retain semantic colors and explicit text. Dark mode uses a neutral near-black workspace canvas, sidebar and mobile drawer, with charcoal table surfaces. Preserve the existing component palette, including the pastel Overview cards, selected navigation, buttons, status badges, charts and their text colors. Darker structural surfaces do not recolor those components.
 
 Color guidance: [Adobe color relationships](https://www.adobe.com/uk/creativecloud/design/discover/color-wheel.html), [W3C text contrast](https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum). Target at least 4.5:1 for normal text and 3:1 for large text; color harmony alone does not guarantee legibility. Keep neutral space dominant, match chroma across supporting accents, and use lightness contrast to establish hierarchy.
 
