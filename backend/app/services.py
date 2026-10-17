@@ -14,9 +14,11 @@ from .service_domains.governance import GovernanceServiceMixin
 from .service_domains.agents import AgentsServiceMixin
 from .service_domains.calendar import CalendarServiceMixin
 from .service_domains.agent_generalization import AgentGeneralizationServiceMixin
+from .service_domains.workspace_queries import WorkspaceQueriesServiceMixin
 
 
 class PlatformService(
+    WorkspaceQueriesServiceMixin,
     AgentGeneralizationServiceMixin,
     AgentsServiceMixin,
     CalendarServiceMixin,
