@@ -12,7 +12,9 @@ from ..schemas import (
     JobResponse,
 )
 from ..review_trigger import queue_review_worker
-from .dependencies import ServiceDep, UserDep, read_upload
+from ..services import PlatformService
+from .dependencies import ServiceDep, UserDep, get_current_user, read_upload
+from .uploads import run_upload
 
 
 router = APIRouter()
@@ -28,8 +30,6 @@ async def create_contract(
     organization_id: str,
     request: Request,
     background_tasks: BackgroundTasks,
-    service: ServiceDep,
-    user: UserDep,
     file: Annotated[UploadFile, File()],
     title: Annotated[str, Form()] = "",
     counterparty: Annotated[str, Form()] = "",
@@ -43,31 +43,37 @@ async def create_contract(
     retention_days: Annotated[int, Form()] = 30,
 ) -> ContractCreatedResponse:
     data = await read_upload(file, request.app.state.settings.max_upload_bytes)
-    contract, asset, job = service.create_contract(
-        organization_id,
-        user,
-        original_name=file.filename or "contract",
-        content_type=file.content_type or "application/octet-stream",
-        data=data,
-        title=title,
-        counterparty=counterparty,
-        contract_type=contract_type,
-        review_context={
-            "party_role": party_role,
-            "jurisdiction": jurisdiction,
-            "goal": goal,
-            "risk_tolerance": risk_tolerance,
-        },
-        retain_document=retain_document,
-        retain_source_text=retain_source_text,
-        retention_days=retention_days,
-    )
+
+    def create(service: PlatformService) -> ContractCreatedResponse:
+        user = get_current_user(request, service)
+        contract, asset, job = service.create_contract(
+            organization_id,
+            user,
+            original_name=file.filename or "contract",
+            content_type=file.content_type or "application/octet-stream",
+            data=data,
+            title=title,
+            counterparty=counterparty,
+            contract_type=contract_type,
+            review_context={
+                "party_role": party_role,
+                "jurisdiction": jurisdiction,
+                "goal": goal,
+                "risk_tolerance": risk_tolerance,
+            },
+            retain_document=retain_document,
+            retain_source_text=retain_source_text,
+            retention_days=retention_days,
+        )
+        return ContractCreatedResponse(
+            contract=service.contract_response(contract),
+            asset=AssetResponse.model_validate(asset),
+            job=JobResponse.model_validate(job),
+        )
+
+    result = await run_upload(request, create)
     queue_review_worker(background_tasks, request.app.state.settings)
-    return ContractCreatedResponse(
-        contract=service.contract_response(contract),
-        asset=AssetResponse.model_validate(asset),
-        job=JobResponse.model_validate(job),
-    )
+    return result
 
 
 @router.get(
