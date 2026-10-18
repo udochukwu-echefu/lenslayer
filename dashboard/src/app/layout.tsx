@@ -1,8 +1,7 @@
 import "@fontsource-variable/figtree";
 import type { Metadata } from "next";
-import { AppShell } from "@/components/app-shell";
-import { Providers } from "@/components/providers";
-import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
+import "./base.css";
 
 export const metadata: Metadata = {
   title: {
@@ -17,9 +16,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <head><script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('lenslayer.theme');if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t}catch(e){document.documentElement.dataset.theme='light'}})()` }} /></head>
       <body>
-        <Providers>
-          <AppShell>{children}</AppShell>
-        </Providers>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );
