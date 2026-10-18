@@ -37,7 +37,8 @@ export default function PortfolioPage() {
       {!hasContracts && <p className="field-help">Add or select contracts before asking a portfolio question.</p>}
       {hasContracts && <div className="suggested-questions" aria-label="Suggested portfolio questions">{suggestions.map((suggestion) => <button type="button" key={suggestion} onClick={() => setQuestion(suggestion)}>{suggestion}</button>)}</div>}
       {questionMutation.error && <p className="form-error">{questionMutation.error.message}</p>}
-      {questionMutation.partial && !questionMutation.data && <div className="portfolio-answer" role="status"><strong>Provisional answer, not complete</strong><p>{questionMutation.partial}</p>{questionMutation.isPending && <button className="button secondary" type="button" onClick={questionMutation.cancel}>Stop answer</button>}</div>}
+      {questionMutation.isPending && <button className="button secondary" type="button" onClick={questionMutation.cancel}>Stop answer</button>}
+      {questionMutation.partial && !questionMutation.data && <div className="portfolio-answer" role="status"><strong>Provisional answer, not complete</strong><p>{questionMutation.partial}</p></div>}
       {questionMutation.data && <div className="portfolio-answer"><div><span>{questionMutation.data.generated_by === "model" ? "Evidence-grounded answer" : "Retrieved evidence"}</span><p>{questionMutation.data.answer}</p></div><div className="portfolio-sources">{questionMutation.data.sources.map((source, index) => <Link href={`/contracts/${source.contract_id}?tab=ask`} key={`${source.contract_id}-${index}`}><span>{source.contract_title}<ArrowUpRight size={13} /></span><small>{source.location}</small><p>{source.excerpt}</p></Link>)}</div></div>}
     </section>
 

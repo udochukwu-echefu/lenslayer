@@ -88,8 +88,10 @@
 .auth-entry-heading h1 { margin: 0; color: var(--auth-ink); font-size: 32px; font-weight: 620; line-height: 1.2; letter-spacing: -.02em; }
 .auth-entry-heading > p:last-child { margin: 6px 0 0; color: var(--auth-muted); font-size: 15px; line-height: 1.45; }
 .auth-provider-stack { min-width: 0; display: grid; gap: 16px; margin-top: 30px; }
+.auth-provider-stack .signin-button { min-width: 0; min-height: 48px; border-radius: 6px; }
 .auth-portal .auth-google-button { position: relative; border-color: var(--auth-line); background: var(--auth-panel); color: var(--auth-ink); }
 .auth-portal .auth-google-button:hover { border-color: var(--auth-accent); background: var(--auth-panel-muted); color: var(--auth-ink); }
+.auth-google-button .google-mark { position: absolute; left: 16px; width: 18px; height: 18px; }
 .auth-portal .auth-email-button { position: relative; background: var(--auth-ink); color: #FDFDFB; }
 .auth-portal .auth-email-button:hover { background: var(--auth-accent-hover); color: #FFFFFF; }
 .auth-email-button > svg:first-child { position: absolute; left: 16px; }
