@@ -1,0 +1,21 @@
+{
+  "streaming": {
+    "checked_out_before_request": 0,
+    "checked_out_while_fake_provider_waits": 1,
+    "checked_out_after_request": 0,
+    "full_rank_and_materialization_calls_before_provider_completion": 2,
+    "materialized_per_call": [
+      24,
+      24,
+      24
+    ],
+    "completed": true
+  },
+  "upload_admission": {
+    "configured_upload_concurrency": 2,
+    "request_count": 8,
+    "bodies_fully_buffered_before_slots_release": 8,
+    "scan_calls_before_release": 2,
+    "pending_requests_before_release": 8
+  }
+}

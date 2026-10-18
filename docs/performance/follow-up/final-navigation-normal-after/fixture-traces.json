@@ -1,0 +1,1981 @@
+{
+  "revision": "691bf0b",
+  "synthetic": true,
+  "upstreamDelayMs": 80,
+  "browser": "Chrome/155.0.8059.80",
+  "node": "v24.15.0",
+  "harnessSHA256": "a0ee92562d5357945e774e472001bee4b911c715d51ae9172c2bda819756e1e0",
+  "build": "npm ci && npm run build (dashboard); isolated allowlisted fake-auth runtime env",
+  "navigation": true,
+  "noPrefetch": false,
+  "conditions": {
+    "viewport": {
+      "width": 390,
+      "height": 844,
+      "deviceScaleFactor": 1
+    },
+    "cpuSlowdown": 1,
+    "network": "loopback + deterministic 80ms upstream",
+    "syntheticNotProduction": true,
+    "cache": "new browser context each sample; Next server warm state varies"
+  },
+  "traces": [
+    {
+      "run": 1,
+      "browserRequests": [
+        {
+          "label": "private-document",
+          "startMs": 2.317500000000109
+        },
+        {
+          "label": "bff-tasks",
+          "startMs": 297.7237500000001
+        },
+        {
+          "label": "bff-counts",
+          "startMs": 297.818
+        },
+        {
+          "label": "bff-notifications",
+          "startMs": 297.885542
+        },
+        {
+          "label": "bff-contracts",
+          "startMs": 1054.80525
+        },
+        {
+          "label": "private-document",
+          "startMs": 1163.239583
+        },
+        {
+          "label": "bff-contracts",
+          "startMs": 1479.07175
+        },
+        {
+          "label": "private-document",
+          "startMs": 1483.5230000000001
+        }
+      ],
+      "upstreamRequests": [
+        {
+          "label": "me",
+          "startMs": 54.862041999999974
+        },
+        {
+          "label": "organizations",
+          "startMs": 55.00975000000017
+        },
+        {
+          "label": "tasks",
+          "startMs": 317.1693750000002
+        },
+        {
+          "label": "other-fixture-request",
+          "startMs": 317.35062500000004
+        },
+        {
+          "label": "notifications",
+          "startMs": 318.327542
+        },
+        {
+          "label": "contracts",
+          "startMs": 1063.294375
+        },
+        {
+          "label": "contracts",
+          "startMs": 1484.369083
+        }
+      ],
+      "timings": {
+        "navigation": [
+          {
+            "responseStart": 56.099999994039536,
+            "domContentLoaded": 168.69999998807907,
+            "load": 168.7999999821186
+          }
+        ],
+        "paints": [
+          {
+            "name": "first-paint",
+            "time": 80
+          },
+          {
+            "name": "first-contentful-paint",
+            "time": 340
+          }
+        ],
+        "usefulContent": [
+          {
+            "name": "fixture-shell",
+            "time": 295.2999999821186
+          },
+          {
+            "name": "fixture-useful-tasks",
+            "time": 399.69999998807907
+          }
+        ]
+      },
+      "navigation": [
+        {
+          "route": "/tasks",
+          "elapsed": null,
+          "clientIDs": [
+            1
+          ],
+          "mounts": 1,
+          "shellCount": 1,
+          "shellID": 1,
+          "browserRequests": [
+            {
+              "label": "private-document",
+              "startMs": 2.317500000000109
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 297.7237500000001
+            },
+            {
+              "label": "bff-counts",
+              "startMs": 297.818
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 297.885542
+            }
+          ],
+          "upstreamRequests": [
+            {
+              "label": "me",
+              "startMs": 54.862041999999974
+            },
+            {
+              "label": "organizations",
+              "startMs": 55.00975000000017
+            },
+            {
+              "label": "tasks",
+              "startMs": 317.1693750000002
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 317.35062500000004
+            },
+            {
+              "label": "notifications",
+              "startMs": 318.327542
+            }
+          ],
+          "cancelled": []
+        },
+        {
+          "route": "/contracts",
+          "elapsed": 144.3028330000002,
+          "clientIDs": [
+            1
+          ],
+          "mounts": 1,
+          "shellCount": 1,
+          "shellID": 1,
+          "browserRequests": [
+            {
+              "label": "private-document",
+              "startMs": 2.317500000000109
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 297.7237500000001
+            },
+            {
+              "label": "bff-counts",
+              "startMs": 297.818
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 297.885542
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 1054.80525
+            }
+          ],
+          "upstreamRequests": [
+            {
+              "label": "me",
+              "startMs": 54.862041999999974
+            },
+            {
+              "label": "organizations",
+              "startMs": 55.00975000000017
+            },
+            {
+              "label": "tasks",
+              "startMs": 317.1693750000002
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 317.35062500000004
+            },
+            {
+              "label": "notifications",
+              "startMs": 318.327542
+            },
+            {
+              "label": "contracts",
+              "startMs": 1063.294375
+            }
+          ],
+          "cancelled": []
+        },
+        {
+          "route": "/tasks",
+          "elapsed": 21.695916000000125,
+          "clientIDs": [
+            1
+          ],
+          "mounts": 1,
+          "shellCount": 1,
+          "shellID": 1,
+          "browserRequests": [
+            {
+              "label": "private-document",
+              "startMs": 2.317500000000109
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 297.7237500000001
+            },
+            {
+              "label": "bff-counts",
+              "startMs": 297.818
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 297.885542
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 1054.80525
+            },
+            {
+              "label": "private-document",
+              "startMs": 1163.239583
+            }
+          ],
+          "upstreamRequests": [
+            {
+              "label": "me",
+              "startMs": 54.862041999999974
+            },
+            {
+              "label": "organizations",
+              "startMs": 55.00975000000017
+            },
+            {
+              "label": "tasks",
+              "startMs": 317.1693750000002
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 317.35062500000004
+            },
+            {
+              "label": "notifications",
+              "startMs": 318.327542
+            },
+            {
+              "label": "contracts",
+              "startMs": 1063.294375
+            }
+          ],
+          "cancelled": []
+        },
+        {
+          "route": "/tasks-after-cancelled-filter",
+          "elapsed": null,
+          "clientIDs": [
+            1
+          ],
+          "mounts": 1,
+          "shellCount": 1,
+          "shellID": 1,
+          "browserRequests": [
+            {
+              "label": "private-document",
+              "startMs": 2.317500000000109
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 297.7237500000001
+            },
+            {
+              "label": "bff-counts",
+              "startMs": 297.818
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 297.885542
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 1054.80525
+            },
+            {
+              "label": "private-document",
+              "startMs": 1163.239583
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 1479.07175
+            },
+            {
+              "label": "private-document",
+              "startMs": 1483.5230000000001
+            }
+          ],
+          "upstreamRequests": [
+            {
+              "label": "me",
+              "startMs": 54.862041999999974
+            },
+            {
+              "label": "organizations",
+              "startMs": 55.00975000000017
+            },
+            {
+              "label": "tasks",
+              "startMs": 317.1693750000002
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 317.35062500000004
+            },
+            {
+              "label": "notifications",
+              "startMs": 318.327542
+            },
+            {
+              "label": "contracts",
+              "startMs": 1063.294375
+            },
+            {
+              "label": "contracts",
+              "startMs": 1484.369083
+            }
+          ],
+          "cancelled": [
+            "/api/platform/api/v1/organizations/synthetic-org/query/contracts"
+          ]
+        }
+      ],
+      "noPrefetch": false
+    },
+    {
+      "run": 2,
+      "browserRequests": [
+        {
+          "label": "private-document",
+          "startMs": 1.8027499999998327
+        },
+        {
+          "label": "bff-tasks",
+          "startMs": 298.34008399999993
+        },
+        {
+          "label": "bff-counts",
+          "startMs": 298.4076250000003
+        },
+        {
+          "label": "bff-notifications",
+          "startMs": 298.4580000000001
+        },
+        {
+          "label": "bff-contracts",
+          "startMs": 1045.238167
+        },
+        {
+          "label": "private-document",
+          "startMs": 1145.460834
+        },
+        {
+          "label": "bff-contracts",
+          "startMs": 1459.106542
+        },
+        {
+          "label": "private-document",
+          "startMs": 1464.3029170000004
+        }
+      ],
+      "upstreamRequests": [
+        {
+          "label": "me",
+          "startMs": 6.526459000000159
+        },
+        {
+          "label": "organizations",
+          "startMs": 6.6395840000000135
+        },
+        {
+          "label": "tasks",
+          "startMs": 301.8941669999999
+        },
+        {
+          "label": "other-fixture-request",
+          "startMs": 302.0274999999997
+        },
+        {
+          "label": "notifications",
+          "startMs": 302.31762500000013
+        },
+        {
+          "label": "contracts",
+          "startMs": 1046.922459
+        },
+        {
+          "label": "contracts",
+          "startMs": 1464.8998749999996
+        }
+      ],
+      "timings": {
+        "navigation": [
+          {
+            "responseStart": 5.799999982118607,
+            "domContentLoaded": 98.69999998807907,
+            "load": 98.7999999821186
+          }
+        ],
+        "paints": [
+          {
+            "name": "first-paint",
+            "time": 28
+          },
+          {
+            "name": "first-contentful-paint",
+            "time": 328
+          }
+        ],
+        "usefulContent": [
+          {
+            "name": "fixture-shell",
+            "time": 296.19999998807907
+          },
+          {
+            "name": "fixture-useful-tasks",
+            "time": 385.2999999821186
+          }
+        ]
+      },
+      "navigation": [
+        {
+          "route": "/tasks",
+          "elapsed": null,
+          "clientIDs": [
+            1
+          ],
+          "mounts": 1,
+          "shellCount": 1,
+          "shellID": 1,
+          "browserRequests": [
+            {
+              "label": "private-document",
+              "startMs": 1.8027499999998327
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 298.34008399999993
+            },
+            {
+              "label": "bff-counts",
+              "startMs": 298.4076250000003
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 298.4580000000001
+            }
+          ],
+          "upstreamRequests": [
+            {
+              "label": "me",
+              "startMs": 6.526459000000159
+            },
+            {
+              "label": "organizations",
+              "startMs": 6.6395840000000135
+            },
+            {
+              "label": "tasks",
+              "startMs": 301.8941669999999
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 302.0274999999997
+            },
+            {
+              "label": "notifications",
+              "startMs": 302.31762500000013
+            }
+          ],
+          "cancelled": []
+        },
+        {
+          "route": "/contracts",
+          "elapsed": 134.58550000000014,
+          "clientIDs": [
+            1
+          ],
+          "mounts": 1,
+          "shellCount": 1,
+          "shellID": 1,
+          "browserRequests": [
+            {
+              "label": "private-document",
+              "startMs": 1.8027499999998327
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 298.34008399999993
+            },
+            {
+              "label": "bff-counts",
+              "startMs": 298.4076250000003
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 298.4580000000001
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 1045.238167
+            }
+          ],
+          "upstreamRequests": [
+            {
+              "label": "me",
+              "startMs": 6.526459000000159
+            },
+            {
+              "label": "organizations",
+              "startMs": 6.6395840000000135
+            },
+            {
+              "label": "tasks",
+              "startMs": 301.8941669999999
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 302.0274999999997
+            },
+            {
+              "label": "notifications",
+              "startMs": 302.31762500000013
+            },
+            {
+              "label": "contracts",
+              "startMs": 1046.922459
+            }
+          ],
+          "cancelled": []
+        },
+        {
+          "route": "/tasks",
+          "elapsed": 20.5211249999993,
+          "clientIDs": [
+            1
+          ],
+          "mounts": 1,
+          "shellCount": 1,
+          "shellID": 1,
+          "browserRequests": [
+            {
+              "label": "private-document",
+              "startMs": 1.8027499999998327
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 298.34008399999993
+            },
+            {
+              "label": "bff-counts",
+              "startMs": 298.4076250000003
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 298.4580000000001
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 1045.238167
+            },
+            {
+              "label": "private-document",
+              "startMs": 1145.460834
+            }
+          ],
+          "upstreamRequests": [
+            {
+              "label": "me",
+              "startMs": 6.526459000000159
+            },
+            {
+              "label": "organizations",
+              "startMs": 6.6395840000000135
+            },
+            {
+              "label": "tasks",
+              "startMs": 301.8941669999999
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 302.0274999999997
+            },
+            {
+              "label": "notifications",
+              "startMs": 302.31762500000013
+            },
+            {
+              "label": "contracts",
+              "startMs": 1046.922459
+            }
+          ],
+          "cancelled": []
+        },
+        {
+          "route": "/tasks-after-cancelled-filter",
+          "elapsed": null,
+          "clientIDs": [
+            1
+          ],
+          "mounts": 1,
+          "shellCount": 1,
+          "shellID": 1,
+          "browserRequests": [
+            {
+              "label": "private-document",
+              "startMs": 1.8027499999998327
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 298.34008399999993
+            },
+            {
+              "label": "bff-counts",
+              "startMs": 298.4076250000003
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 298.4580000000001
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 1045.238167
+            },
+            {
+              "label": "private-document",
+              "startMs": 1145.460834
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 1459.106542
+            },
+            {
+              "label": "private-document",
+              "startMs": 1464.3029170000004
+            }
+          ],
+          "upstreamRequests": [
+            {
+              "label": "me",
+              "startMs": 6.526459000000159
+            },
+            {
+              "label": "organizations",
+              "startMs": 6.6395840000000135
+            },
+            {
+              "label": "tasks",
+              "startMs": 301.8941669999999
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 302.0274999999997
+            },
+            {
+              "label": "notifications",
+              "startMs": 302.31762500000013
+            },
+            {
+              "label": "contracts",
+              "startMs": 1046.922459
+            },
+            {
+              "label": "contracts",
+              "startMs": 1464.8998749999996
+            }
+          ],
+          "cancelled": [
+            "/api/platform/api/v1/organizations/synthetic-org/query/contracts"
+          ]
+        }
+      ],
+      "noPrefetch": false
+    },
+    {
+      "run": 3,
+      "browserRequests": [
+        {
+          "label": "private-document",
+          "startMs": 2.0519580000000133
+        },
+        {
+          "label": "bff-tasks",
+          "startMs": 298.1491249999999
+        },
+        {
+          "label": "bff-counts",
+          "startMs": 298.2065829999992
+        },
+        {
+          "label": "bff-notifications",
+          "startMs": 298.2529999999997
+        },
+        {
+          "label": "bff-contracts",
+          "startMs": 1040.354875
+        },
+        {
+          "label": "private-document",
+          "startMs": 1145.8691659999995
+        },
+        {
+          "label": "bff-contracts",
+          "startMs": 1475.5489159999997
+        },
+        {
+          "label": "private-document",
+          "startMs": 1480.9813329999997
+        }
+      ],
+      "upstreamRequests": [
+        {
+          "label": "me",
+          "startMs": 6.748790999999983
+        },
+        {
+          "label": "organizations",
+          "startMs": 6.818749999999454
+        },
+        {
+          "label": "tasks",
+          "startMs": 301.21766599999955
+        },
+        {
+          "label": "other-fixture-request",
+          "startMs": 301.31804099999954
+        },
+        {
+          "label": "notifications",
+          "startMs": 301.4266659999994
+        },
+        {
+          "label": "contracts",
+          "startMs": 1045.4191249999994
+        },
+        {
+          "label": "contracts",
+          "startMs": 1481.125083
+        }
+      ],
+      "timings": {
+        "navigation": [
+          {
+            "responseStart": 6,
+            "domContentLoaded": 99.5,
+            "load": 99.69999998807907
+          }
+        ],
+        "paints": [
+          {
+            "name": "first-paint",
+            "time": 28
+          },
+          {
+            "name": "first-contentful-paint",
+            "time": 328
+          }
+        ],
+        "usefulContent": [
+          {
+            "name": "fixture-shell",
+            "time": 296
+          },
+          {
+            "name": "fixture-useful-tasks",
+            "time": 385.2999999821186
+          }
+        ]
+      },
+      "navigation": [
+        {
+          "route": "/tasks",
+          "elapsed": null,
+          "clientIDs": [
+            1
+          ],
+          "mounts": 1,
+          "shellCount": 1,
+          "shellID": 1,
+          "browserRequests": [
+            {
+              "label": "private-document",
+              "startMs": 2.0519580000000133
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 298.1491249999999
+            },
+            {
+              "label": "bff-counts",
+              "startMs": 298.2065829999992
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 298.2529999999997
+            }
+          ],
+          "upstreamRequests": [
+            {
+              "label": "me",
+              "startMs": 6.748790999999983
+            },
+            {
+              "label": "organizations",
+              "startMs": 6.818749999999454
+            },
+            {
+              "label": "tasks",
+              "startMs": 301.21766599999955
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 301.31804099999954
+            },
+            {
+              "label": "notifications",
+              "startMs": 301.4266659999994
+            }
+          ],
+          "cancelled": []
+        },
+        {
+          "route": "/contracts",
+          "elapsed": 131.01566700000058,
+          "clientIDs": [
+            1
+          ],
+          "mounts": 1,
+          "shellCount": 1,
+          "shellID": 1,
+          "browserRequests": [
+            {
+              "label": "private-document",
+              "startMs": 2.0519580000000133
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 298.1491249999999
+            },
+            {
+              "label": "bff-counts",
+              "startMs": 298.2065829999992
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 298.2529999999997
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 1040.354875
+            }
+          ],
+          "upstreamRequests": [
+            {
+              "label": "me",
+              "startMs": 6.748790999999983
+            },
+            {
+              "label": "organizations",
+              "startMs": 6.818749999999454
+            },
+            {
+              "label": "tasks",
+              "startMs": 301.21766599999955
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 301.31804099999954
+            },
+            {
+              "label": "notifications",
+              "startMs": 301.4266659999994
+            },
+            {
+              "label": "contracts",
+              "startMs": 1045.4191249999994
+            }
+          ],
+          "cancelled": []
+        },
+        {
+          "route": "/tasks",
+          "elapsed": 21.51037499999984,
+          "clientIDs": [
+            1
+          ],
+          "mounts": 1,
+          "shellCount": 1,
+          "shellID": 1,
+          "browserRequests": [
+            {
+              "label": "private-document",
+              "startMs": 2.0519580000000133
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 298.1491249999999
+            },
+            {
+              "label": "bff-counts",
+              "startMs": 298.2065829999992
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 298.2529999999997
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 1040.354875
+            },
+            {
+              "label": "private-document",
+              "startMs": 1145.8691659999995
+            }
+          ],
+          "upstreamRequests": [
+            {
+              "label": "me",
+              "startMs": 6.748790999999983
+            },
+            {
+              "label": "organizations",
+              "startMs": 6.818749999999454
+            },
+            {
+              "label": "tasks",
+              "startMs": 301.21766599999955
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 301.31804099999954
+            },
+            {
+              "label": "notifications",
+              "startMs": 301.4266659999994
+            },
+            {
+              "label": "contracts",
+              "startMs": 1045.4191249999994
+            }
+          ],
+          "cancelled": []
+        },
+        {
+          "route": "/tasks-after-cancelled-filter",
+          "elapsed": null,
+          "clientIDs": [
+            1
+          ],
+          "mounts": 1,
+          "shellCount": 1,
+          "shellID": 1,
+          "browserRequests": [
+            {
+              "label": "private-document",
+              "startMs": 2.0519580000000133
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 298.1491249999999
+            },
+            {
+              "label": "bff-counts",
+              "startMs": 298.2065829999992
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 298.2529999999997
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 1040.354875
+            },
+            {
+              "label": "private-document",
+              "startMs": 1145.8691659999995
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 1475.5489159999997
+            },
+            {
+              "label": "private-document",
+              "startMs": 1480.9813329999997
+            }
+          ],
+          "upstreamRequests": [
+            {
+              "label": "me",
+              "startMs": 6.748790999999983
+            },
+            {
+              "label": "organizations",
+              "startMs": 6.818749999999454
+            },
+            {
+              "label": "tasks",
+              "startMs": 301.21766599999955
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 301.31804099999954
+            },
+            {
+              "label": "notifications",
+              "startMs": 301.4266659999994
+            },
+            {
+              "label": "contracts",
+              "startMs": 1045.4191249999994
+            },
+            {
+              "label": "contracts",
+              "startMs": 1481.125083
+            }
+          ],
+          "cancelled": [
+            "/api/platform/api/v1/organizations/synthetic-org/query/contracts"
+          ]
+        }
+      ],
+      "noPrefetch": false
+    }
+  ],
+  "visuals": [
+    {
+      "route": "/sample",
+      "width": 390,
+      "theme": "light",
+      "authRequests": [],
+      "requests": [
+        "/sample",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/3j99h-_6y5hbw.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/signin",
+        "/signin",
+        "/signin"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/signin",
+      "width": 390,
+      "theme": "light",
+      "authRequests": [],
+      "requests": [
+        "/signin",
+        "/lenslayer-lockup.svg",
+        "/_next/image",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/1cyl6_bzkjynz.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/2z01ie5vkveca.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/",
+        "/signup",
+        "/favicon.ico",
+        "/",
+        "/signup",
+        "/signup"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/signup",
+      "width": 390,
+      "theme": "light",
+      "authRequests": [],
+      "requests": [
+        "/signup",
+        "/lenslayer-lockup.svg",
+        "/_next/image",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/1cyl6_bzkjynz.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/2z01ie5vkveca.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/",
+        "/signin",
+        "/",
+        "/signin",
+        "/signin"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/auth/signed-out",
+      "width": 390,
+      "theme": "light",
+      "authRequests": [],
+      "requests": [
+        "/auth/signed-out",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/2ktg6tbxn_si4.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/signin",
+        "/sample",
+        "/signin",
+        "/sample",
+        "/_next/static/chunks/3j99h-_6y5hbw.js"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/invite/synthetic-token",
+      "width": 390,
+      "theme": "light",
+      "authRequests": [
+        "/api/auth/session"
+      ],
+      "requests": [
+        "/invite/synthetic-token",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/0w759hdd4s15h.js",
+        "/_next/static/chunks/1cbbb97fj2mqn.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/1nnvna42_xauz.js",
+        "/_next/static/chunks/3h8mg4bbqa1zk.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/api/platform/api/v1/invitations/synthetic-token",
+        "/api/auth/session",
+        "/favicon.ico",
+        "/api/platform/api/v1/invitations/synthetic-token",
+        "/signin",
+        "/signup",
+        "/signin",
+        "/signup",
+        "/signin",
+        "/signup"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/shared/synthetic-token",
+      "width": 390,
+      "theme": "light",
+      "authRequests": [],
+      "requests": [
+        "/shared/synthetic-token",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/2-5lp4wqd97qh.js",
+        "/_next/static/chunks/3m_kylti5snl4.js",
+        "/_next/static/chunks/1oq8x8x-62uzk.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/api/platform/api/v1/shared/synthetic-token",
+        "/favicon.ico"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/settings/developers",
+      "width": 390,
+      "theme": "light",
+      "authRequests": [],
+      "requests": [
+        "/settings/developers",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/3-z0y43rkkxxd.css",
+        "/_next/static/chunks/0rylse1nqh231.css",
+        "/_next/static/chunks/1qdwd-vjk7nai.css",
+        "/_next/static/chunks/1p5skfjlhdo5d.css",
+        "/_next/static/chunks/2m5j9ptus9bm0.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/169zl_mwl05pe.js",
+        "/_next/static/chunks/2po3xsct2l617.js",
+        "/_next/static/chunks/1cbbb97fj2mqn.js",
+        "/_next/static/chunks/1nnvna42_xauz.js",
+        "/_next/static/chunks/0zxfsa2ol5gfq.js",
+        "/_next/static/chunks/3kf1i_z4kpgjw.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/2v2pnwkfznzxt.js",
+        "/_next/static/chunks/08nwtyvsy5f9j.js",
+        "/_next/static/chunks/36nih1ws4ne6u.js",
+        "/_next/static/chunks/1785yfkis18sm.js",
+        "/_next/static/chunks/1gb5tyb8yefx1.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/_next/static/chunks/0enzvbt4bz7n-.js",
+        "/agent-tasks",
+        "/signin",
+        "/settings/general",
+        "/settings/identity",
+        "/settings/security",
+        "/settings/data",
+        "/settings/notifications",
+        "/settings/integrations",
+        "/settings/developers",
+        "/agent-tasks",
+        "/signin"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/sample",
+      "width": 390,
+      "theme": "dark",
+      "authRequests": [],
+      "requests": [
+        "/sample",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/3j99h-_6y5hbw.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/signin",
+        "/signin",
+        "/signin"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/signin",
+      "width": 390,
+      "theme": "dark",
+      "authRequests": [],
+      "requests": [
+        "/signin",
+        "/lenslayer-lockup.svg",
+        "/_next/image",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/1cyl6_bzkjynz.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/2z01ie5vkveca.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/",
+        "/signup",
+        "/",
+        "/signup",
+        "/signup"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/signup",
+      "width": 390,
+      "theme": "dark",
+      "authRequests": [],
+      "requests": [
+        "/signup",
+        "/lenslayer-lockup.svg",
+        "/_next/image",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/1cyl6_bzkjynz.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/2z01ie5vkveca.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/",
+        "/signin",
+        "/",
+        "/signin",
+        "/signin"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/auth/signed-out",
+      "width": 390,
+      "theme": "dark",
+      "authRequests": [],
+      "requests": [
+        "/auth/signed-out",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/2ktg6tbxn_si4.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/signin",
+        "/sample",
+        "/sample",
+        "/signin",
+        "/_next/static/chunks/3j99h-_6y5hbw.js"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/invite/synthetic-token",
+      "width": 390,
+      "theme": "dark",
+      "authRequests": [
+        "/api/auth/session"
+      ],
+      "requests": [
+        "/invite/synthetic-token",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/0w759hdd4s15h.js",
+        "/_next/static/chunks/1cbbb97fj2mqn.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/1nnvna42_xauz.js",
+        "/_next/static/chunks/3h8mg4bbqa1zk.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/api/platform/api/v1/invitations/synthetic-token",
+        "/api/auth/session",
+        "/favicon.ico",
+        "/api/platform/api/v1/invitations/synthetic-token",
+        "/signin",
+        "/signup",
+        "/signin",
+        "/signup",
+        "/signin",
+        "/signup"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/shared/synthetic-token",
+      "width": 390,
+      "theme": "dark",
+      "authRequests": [],
+      "requests": [
+        "/shared/synthetic-token",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/2-5lp4wqd97qh.js",
+        "/_next/static/chunks/3m_kylti5snl4.js",
+        "/_next/static/chunks/1oq8x8x-62uzk.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/api/platform/api/v1/shared/synthetic-token",
+        "/favicon.ico"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/settings/developers",
+      "width": 390,
+      "theme": "dark",
+      "authRequests": [],
+      "requests": [
+        "/settings/developers",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/3-z0y43rkkxxd.css",
+        "/_next/static/chunks/0rylse1nqh231.css",
+        "/_next/static/chunks/1qdwd-vjk7nai.css",
+        "/_next/static/chunks/1p5skfjlhdo5d.css",
+        "/_next/static/chunks/2m5j9ptus9bm0.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/169zl_mwl05pe.js",
+        "/_next/static/chunks/2po3xsct2l617.js",
+        "/_next/static/chunks/1cbbb97fj2mqn.js",
+        "/_next/static/chunks/1nnvna42_xauz.js",
+        "/_next/static/chunks/0zxfsa2ol5gfq.js",
+        "/_next/static/chunks/3kf1i_z4kpgjw.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/2v2pnwkfznzxt.js",
+        "/_next/static/chunks/08nwtyvsy5f9j.js",
+        "/_next/static/chunks/36nih1ws4ne6u.js",
+        "/_next/static/chunks/1785yfkis18sm.js",
+        "/_next/static/chunks/1gb5tyb8yefx1.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/_next/static/chunks/0enzvbt4bz7n-.js",
+        "/agent-tasks",
+        "/signin",
+        "/settings/general",
+        "/settings/identity",
+        "/settings/security",
+        "/settings/data",
+        "/settings/notifications",
+        "/settings/integrations",
+        "/settings/developers",
+        "/agent-tasks",
+        "/signin"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/sample",
+      "width": 1440,
+      "theme": "light",
+      "authRequests": [],
+      "requests": [
+        "/sample",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/3j99h-_6y5hbw.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/signin",
+        "/signin",
+        "/signin"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/signin",
+      "width": 1440,
+      "theme": "light",
+      "authRequests": [],
+      "requests": [
+        "/signin",
+        "/lenslayer-lockup.svg",
+        "/_next/image",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/1cyl6_bzkjynz.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/2z01ie5vkveca.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/",
+        "/signup",
+        "/",
+        "/signup",
+        "/signup",
+        "/_next/image"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/signup",
+      "width": 1440,
+      "theme": "light",
+      "authRequests": [],
+      "requests": [
+        "/signup",
+        "/lenslayer-lockup.svg",
+        "/_next/image",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/1cyl6_bzkjynz.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/2z01ie5vkveca.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/",
+        "/signin",
+        "/",
+        "/signin",
+        "/signin",
+        "/_next/image"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/auth/signed-out",
+      "width": 1440,
+      "theme": "light",
+      "authRequests": [],
+      "requests": [
+        "/auth/signed-out",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/2ktg6tbxn_si4.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/signin",
+        "/sample",
+        "/signin",
+        "/sample",
+        "/_next/static/chunks/3j99h-_6y5hbw.js"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/invite/synthetic-token",
+      "width": 1440,
+      "theme": "light",
+      "authRequests": [
+        "/api/auth/session"
+      ],
+      "requests": [
+        "/invite/synthetic-token",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/0w759hdd4s15h.js",
+        "/_next/static/chunks/1cbbb97fj2mqn.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/1nnvna42_xauz.js",
+        "/_next/static/chunks/3h8mg4bbqa1zk.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/api/platform/api/v1/invitations/synthetic-token",
+        "/api/auth/session",
+        "/favicon.ico",
+        "/api/platform/api/v1/invitations/synthetic-token",
+        "/signin",
+        "/signup",
+        "/signin",
+        "/signup",
+        "/signin",
+        "/signup"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/shared/synthetic-token",
+      "width": 1440,
+      "theme": "light",
+      "authRequests": [],
+      "requests": [
+        "/shared/synthetic-token",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/2-5lp4wqd97qh.js",
+        "/_next/static/chunks/3m_kylti5snl4.js",
+        "/_next/static/chunks/1oq8x8x-62uzk.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/api/platform/api/v1/shared/synthetic-token",
+        "/favicon.ico"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/settings/developers",
+      "width": 1440,
+      "theme": "light",
+      "authRequests": [],
+      "requests": [
+        "/settings/developers",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/3-z0y43rkkxxd.css",
+        "/_next/static/chunks/0rylse1nqh231.css",
+        "/_next/static/chunks/1qdwd-vjk7nai.css",
+        "/_next/static/chunks/1p5skfjlhdo5d.css",
+        "/_next/static/chunks/2m5j9ptus9bm0.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/169zl_mwl05pe.js",
+        "/_next/static/chunks/2po3xsct2l617.js",
+        "/_next/static/chunks/1cbbb97fj2mqn.js",
+        "/_next/static/chunks/1nnvna42_xauz.js",
+        "/_next/static/chunks/0zxfsa2ol5gfq.js",
+        "/_next/static/chunks/3kf1i_z4kpgjw.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/2v2pnwkfznzxt.js",
+        "/_next/static/chunks/08nwtyvsy5f9j.js",
+        "/_next/static/chunks/36nih1ws4ne6u.js",
+        "/_next/static/chunks/1785yfkis18sm.js",
+        "/_next/static/chunks/1gb5tyb8yefx1.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/_next/static/chunks/0enzvbt4bz7n-.js",
+        "/agent-tasks",
+        "/signin",
+        "/settings/general",
+        "/settings/identity",
+        "/settings/security",
+        "/settings/data",
+        "/settings/notifications",
+        "/settings/integrations",
+        "/settings/developers",
+        "/agent-tasks",
+        "/signin"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/sample",
+      "width": 1440,
+      "theme": "dark",
+      "authRequests": [],
+      "requests": [
+        "/sample",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/3j99h-_6y5hbw.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/signin",
+        "/signin",
+        "/signin"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/signin",
+      "width": 1440,
+      "theme": "dark",
+      "authRequests": [],
+      "requests": [
+        "/signin",
+        "/lenslayer-lockup.svg",
+        "/_next/image",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/1cyl6_bzkjynz.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/2z01ie5vkveca.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/",
+        "/signup",
+        "/",
+        "/signup",
+        "/signup",
+        "/_next/image"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/signup",
+      "width": 1440,
+      "theme": "dark",
+      "authRequests": [],
+      "requests": [
+        "/signup",
+        "/lenslayer-lockup.svg",
+        "/_next/image",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/1cyl6_bzkjynz.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/2z01ie5vkveca.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/",
+        "/signin",
+        "/",
+        "/signin",
+        "/signin",
+        "/_next/image"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/auth/signed-out",
+      "width": 1440,
+      "theme": "dark",
+      "authRequests": [],
+      "requests": [
+        "/auth/signed-out",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/2ktg6tbxn_si4.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/signin",
+        "/sample",
+        "/signin",
+        "/sample",
+        "/_next/static/chunks/3j99h-_6y5hbw.js"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/invite/synthetic-token",
+      "width": 1440,
+      "theme": "dark",
+      "authRequests": [
+        "/api/auth/session"
+      ],
+      "requests": [
+        "/invite/synthetic-token",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/0w759hdd4s15h.js",
+        "/_next/static/chunks/1cbbb97fj2mqn.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/1nnvna42_xauz.js",
+        "/_next/static/chunks/3h8mg4bbqa1zk.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/api/platform/api/v1/invitations/synthetic-token",
+        "/api/auth/session",
+        "/favicon.ico",
+        "/api/platform/api/v1/invitations/synthetic-token",
+        "/signin",
+        "/signup",
+        "/signin",
+        "/signup",
+        "/signin",
+        "/signup"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/shared/synthetic-token",
+      "width": 1440,
+      "theme": "dark",
+      "authRequests": [],
+      "requests": [
+        "/shared/synthetic-token",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/2-5lp4wqd97qh.js",
+        "/_next/static/chunks/3m_kylti5snl4.js",
+        "/_next/static/chunks/1oq8x8x-62uzk.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/api/platform/api/v1/shared/synthetic-token",
+        "/favicon.ico"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/settings/developers",
+      "width": 1440,
+      "theme": "dark",
+      "authRequests": [],
+      "requests": [
+        "/settings/developers",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/3-z0y43rkkxxd.css",
+        "/_next/static/chunks/0rylse1nqh231.css",
+        "/_next/static/chunks/1qdwd-vjk7nai.css",
+        "/_next/static/chunks/1p5skfjlhdo5d.css",
+        "/_next/static/chunks/2m5j9ptus9bm0.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/169zl_mwl05pe.js",
+        "/_next/static/chunks/2po3xsct2l617.js",
+        "/_next/static/chunks/1cbbb97fj2mqn.js",
+        "/_next/static/chunks/1nnvna42_xauz.js",
+        "/_next/static/chunks/0zxfsa2ol5gfq.js",
+        "/_next/static/chunks/3kf1i_z4kpgjw.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/2v2pnwkfznzxt.js",
+        "/_next/static/chunks/08nwtyvsy5f9j.js",
+        "/_next/static/chunks/36nih1ws4ne6u.js",
+        "/_next/static/chunks/1785yfkis18sm.js",
+        "/_next/static/chunks/1gb5tyb8yefx1.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/_next/static/chunks/0enzvbt4bz7n-.js",
+        "/favicon.ico",
+        "/agent-tasks",
+        "/signin",
+        "/settings/general",
+        "/settings/identity",
+        "/settings/security",
+        "/settings/data",
+        "/settings/notifications",
+        "/settings/integrations",
+        "/settings/developers",
+        "/agent-tasks",
+        "/signin"
+      ],
+      "errors": []
+    }
+  ]
+}

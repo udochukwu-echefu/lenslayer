@@ -10,6 +10,8 @@
 
 ## Finding tracker
 
+The original eight-track implementation is followed by [PR #22's five-gap repair](performance-follow-up.md), based on the owner's independent review of #21. Its fix-to-evidence table is the current status for stream resource lifetime, pre-parser upload admission, complete calendar occupancy, persistent private navigation and rank-once stream revalidation. All remain owner-reviewable/unmerged; original performance evidence is preserved separately from follow-up evidence.
+
 | Finding | Baseline evidence | Change / acceptance | Status |
 | --- | --- | --- | --- |
 | 1 Upload blocking | Independent fake 1s scan: unrelated health stalled 1020.88ms | [#14](https://github.com/udochukwu-echefu/lenslayer/pull/14), `backend/app/api/uploads.py`; owned sessions, bound four, synchronized scan/storage/cancellation tests; unchanged reproduction now 1.48ms | Implemented/verified locally |

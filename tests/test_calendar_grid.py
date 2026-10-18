@@ -70,15 +70,17 @@ class CalendarGridTests(unittest.TestCase):
 
     def test_dst_local_midnights_and_timezone_validation(self):
         tz = ZoneInfo("America/New_York")
-        start = datetime(2026, 3, 8, tzinfo=tz).astimezone(timezone.utc)
-        next_day = datetime(2026, 3, 9, tzinfo=tz).astimezone(timezone.utc)
-        self.assertEqual(next_day - start, timedelta(hours=23))
-        for name, instant in [("before", start - timedelta(microseconds=1)), ("start", start), ("last", next_day - timedelta(microseconds=1)), ("next", next_day)]:
-            self.add_day(instant, prefix=name)
-        result = self.grid(month="2026-03-01", grid_start="2026-02-23", timezone="America/New_York")
-        self.assertEqual(result.status_code, 200, result.text)
-        days = {day["date"]: day["total"] for day in result.json()["days"]}
-        self.assertEqual((days["2026-03-07"], days["2026-03-08"], days["2026-03-09"]), (2, 4, 2))
+        for month, day, grid_start, hours in [(3, 8, "2026-02-23", 23), (11, 1, "2026-10-26", 25)]:
+            start = datetime(2026, month, day, tzinfo=tz).astimezone(timezone.utc)
+            next_day = datetime(2026, month, day + 1, tzinfo=tz).astimezone(timezone.utc)
+            self.assertEqual(next_day - start, timedelta(hours=hours))
+            for name, instant in [("before", start - timedelta(microseconds=1)), ("start", start), ("last", next_day - timedelta(microseconds=1)), ("next", next_day)]:
+                self.add_day(instant, prefix=f"{month}-{name}")
+            result = self.grid(month=f"2026-{month:02}-01", grid_start=grid_start, timezone="America/New_York")
+            self.assertEqual(result.status_code, 200, result.text)
+            days = {row["date"]: row["total"] for row in result.json()["days"]}
+            keys = [(start.astimezone(tz).date() + timedelta(days=i)).isoformat() for i in (-1, 0, 1)]
+            self.assertEqual(tuple(days[key] for key in keys), (2, 4, 2))
         for invalid in [{"timezone": "Not/AZone"}, {"grid_start": "2026-01-01"}, {"month": "9999-12-01"}]:
             self.assertEqual(self.grid(**invalid).status_code, 422)
 

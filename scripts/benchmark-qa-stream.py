@@ -3,10 +3,13 @@
 Run this same file with WORKTREE OUTPUT arguments for both source revisions.
 """
 import asyncio
+import hashlib
+from importlib.metadata import version
 import json
 import os
 from pathlib import Path
 import platform
+import sqlite3
 import subprocess
 import sys
 import time
@@ -39,6 +42,11 @@ async def sample(count):
                 session.add(Contract(id=key, organization_id="org", created_by_user_id="u", title="Renewal notice", source_name="synthetic", retain_source_text=True))
                 session.add(ContractReview(id=f"review-{key}", contract_id=key, organization_id="org", source_text="Renewal notice provision. " * 800))
             session.commit()
+        # Initialize lazy local LangChain/LangSmith imports before sampling.
+        # This is a fake provider in a disposable app, never API warming.
+        fixture.model.release.set()
+        warmup = Exchange(fixture.app, "/api/v1/organizations/org/portfolio/questions/stream")
+        assert (await warmup.finish())["completed"]
         results = []
         for trial in range(3):
             fixture.model.release = asyncio.Event()
@@ -80,7 +88,10 @@ async def sample(count):
 
 async def main():
     data = {"source_sha": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip(),
-        "python": platform.python_version(), "conditions": "disposable SQLite; 3 serial samples/size; 20KB synthetic sources; fake provider paused for 3 × 30ms heartbeat intervals; no paid calls; not total-provider speed proof", "samples": []}
+        "harness_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "tools": {name: version(name) for name in ("sqlalchemy", "fastapi", "anyio", "langchain-core")},
+        "sqlite": sqlite3.sqlite_version,
+        "python": platform.python_version(), "conditions": "disposable SQLite; one untimed fake-stream warmup then 3 serial samples/size; 20.8KB synthetic sources; fake provider paused for 3 × 30ms heartbeat intervals; no paid calls; not total-provider speed proof", "samples": []}
     for count in (100, 1000):
         data["samples"].append(await sample(count))
     output.parent.mkdir(parents=True, exist_ok=True)

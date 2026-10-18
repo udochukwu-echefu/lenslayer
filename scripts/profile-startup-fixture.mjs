@@ -7,6 +7,8 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { performance } from "node:perf_hooks";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 
 const [worktree, output, revision, puppeteerModule, portText = "3215"] = process.argv.slice(2);
 if (!worktree || !output || !revision || !puppeteerModule) throw new Error("Missing fixture arguments");
@@ -58,6 +60,8 @@ try {
   browser = await puppeteer.launch({ executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", headless: true, args: ["--no-sandbox"] });
   const traces = [];
   const fixtureMetadata = { revision, synthetic: true, upstreamDelayMs: 80, browser: await browser.version(),
+    node: process.version, harnessSHA256: createHash("sha256").update(readFileSync(new URL(import.meta.url))).digest("hex"),
+    build: "npm ci && npm run build (dashboard); isolated allowlisted fake-auth runtime env", navigation, noPrefetch,
     conditions: { viewport: { width: 390, height: 844, deviceScaleFactor: 1 }, cpuSlowdown: mobile ? 4 : 1,
       network: mobile ? "CDP 150ms latency, 1.6Mbit/s down, 750Kbit/s up + 80ms synthetic upstream" : "loopback + deterministic 80ms upstream",
       syntheticNotProduction: true, cache: "new browser context each sample; Next server warm state varies" } };
