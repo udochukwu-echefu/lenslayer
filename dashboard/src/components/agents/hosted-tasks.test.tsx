@@ -17,7 +17,7 @@ vi.mock("../workspace-provider", () => ({ useWorkspace: () => workspace }));
 vi.mock("next-auth/react", () => ({ useSession: () => session }));
 vi.mock("@/lib/api", async () => {
   const { ApiError } = await import("@/lib/api/client");
-  return { ApiError, api: { hostedAgentCapabilities: vi.fn(), hostedAgentTasks: vi.fn(), hostedAgentTask: vi.fn(), createHostedAgentTask: vi.fn(), cancelHostedAgentTask: vi.fn(), contracts: vi.fn(), members: vi.fn(), integrations: vi.fn() } };
+  return { ApiError, api: { hostedAgentCapabilities: vi.fn(), hostedAgentTasks: vi.fn(), hostedAgentTask: vi.fn(), createHostedAgentTask: vi.fn(), cancelHostedAgentTask: vi.fn(), queryContracts: vi.fn(), members: vi.fn(), integrations: vi.fn() } };
 });
 beforeEach(() => {
   Object.assign(workspace, { activeOrganization: { id: "org-1" }, activeRole: "owner", user: { id: "user-1" }, isDemo: false, isLoading: false, error: null });
@@ -27,7 +27,7 @@ beforeEach(() => {
   vi.mocked(api.hostedAgentTask).mockReset().mockResolvedValue(hostedTaskFixture);
   vi.mocked(api.createHostedAgentTask).mockReset().mockResolvedValue(hostedTaskFixture);
   vi.mocked(api.cancelHostedAgentTask).mockReset().mockResolvedValue({ ...hostedTaskFixture, status: "cancelled" });
-  vi.mocked(api.contracts).mockReset().mockResolvedValue([contractFixture]);
+  vi.mocked(api.queryContracts).mockReset().mockResolvedValue({ items: [contractFixture], total: 1, offset: 0, limit: 25 });
   vi.mocked(api.members).mockReset().mockResolvedValue([memberFixture]);
   vi.mocked(api.integrations).mockReset().mockResolvedValue([calendarConnectionFixture]);
 });
@@ -76,7 +76,7 @@ describe("hosted task assignment", () => {
     const input = vi.mocked(api.createHostedAgentTask).mock.calls[0][1];
     expect(input).toMatchObject({ goal_type: goal, planner_mode: "deterministic", calendar: { type: "calendar_event_created", connection_id: "connection-1", calendar_id: "sandbox@example.test", summary: "Human-authored appointment" } });
     expect(input).not.toHaveProperty("token"); expect(input).not.toHaveProperty("require_approval");
-    if (goal === "calendar-event") { expect(input).not.toHaveProperty("contract_id"); expect(api.contracts).not.toHaveBeenCalled(); expect(api.members).not.toHaveBeenCalled(); }
+    if (goal === "calendar-event") { expect(input).not.toHaveProperty("contract_id"); expect(api.queryContracts).not.toHaveBeenCalled(); expect(api.members).not.toHaveBeenCalled(); }
     else expect(input).toHaveProperty("contract_id", "contract-1");
   });
   it("requires an explicit timezone instead of inferring browser time", async () => {
@@ -143,7 +143,7 @@ describe("hosted task assignment", () => {
     vi.mocked(api.hostedAgentCapabilities).mockResolvedValue({ ...hostedCapabilities, enabled: false });
     const first = show(); expect(await screen.findByText(/Hosted assignments are disabled/)).toBeInTheDocument(); expect(screen.queryByText("Assign to LensLayer agent")).toBeNull(); first.unmount();
     vi.mocked(api.hostedAgentCapabilities).mockResolvedValue(hostedCapabilities);
-    vi.mocked(api.contracts).mockResolvedValue([{ ...contractFixture, retain_source_text: false }]);
+    vi.mocked(api.queryContracts).mockResolvedValue({ items: [{ ...contractFixture, retain_source_text: false }], total: 1, offset: 0, limit: 25 });
     show(); change(await screen.findByLabelText("Outcome to create").then(() => "Outcome to create"), "retained-document-follow-up");
     await screen.findByRole("link", { name: /Upload a source with text retention/ });
     fireEvent.keyDown(screen.getByRole("combobox", { name: "Retained source contract" }), { key: "ArrowDown" });
@@ -155,7 +155,7 @@ describe("hosted task assignment", () => {
     expect(screen.getByRole("link", { name: /Upload a source with text retention/ })).toHaveAttribute("href", "/contracts/new");
   });
   it("shows scope/read errors and hides cached assignment data on auth failure", async () => {
-    vi.mocked(api.contracts).mockRejectedValue(new Error("Scope failed"));
+    vi.mocked(api.queryContracts).mockRejectedValue(new Error("Scope failed"));
     const view = show(); change(await screen.findByLabelText("Outcome to create").then(() => "Outcome to create"), "retained-document-follow-up");
     expect(await screen.findByText(/Scope choices could not load/)).toBeInTheDocument(); expect(screen.getByRole("button", { name: "Assign to LensLayer agent" })).toBeDisabled(); view.unmount();
     vi.mocked(api.hostedAgentTasks).mockResolvedValue([hostedTaskFixture]); const second = show();

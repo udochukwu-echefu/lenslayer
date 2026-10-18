@@ -41,6 +41,25 @@ def get_llm():
     )
 
 
+@lru_cache(maxsize=1)
+def get_qa_llm():
+    """Separate from structured review and hosted planner limits/accounting."""
+    import httpx
+    from langchain_openai import ChatOpenAI
+    from .qa import count_attempt, count_async_attempt
+
+    key = os.environ.get("GROQ_API_KEY")
+    if not key:
+        raise ValueError("GROQ_API_KEY is missing.")
+    return ChatOpenAI(
+        model=os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b"), api_key=key,
+        base_url="https://api.groq.com/openai/v1", temperature=0.1,
+        max_tokens=1536, timeout=90, max_retries=2,
+        http_client=httpx.Client(event_hooks={"request": [count_attempt]}),
+        http_async_client=httpx.AsyncClient(event_hooks={"request": [count_async_attempt]}),
+    )
+
+
 def analyze_contract(text, review_context=None):
     llm = get_llm()
     json_llm = llm.bind(response_format={"type": "json_object"})

@@ -46,6 +46,7 @@ class Settings(BaseSettings):
     s3_secret_access_key: str = ""
 
     max_upload_bytes: int = 25 * 1024 * 1024
+    upload_concurrency: int = Field(default=4, ge=1, le=32)
     allowed_extensions: str = ".pdf,.docx,.txt"
     malware_scan_backend: str = "signature"
     cloudmersive_api_key: str = ""

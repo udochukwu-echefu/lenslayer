@@ -89,3 +89,9 @@ class ReviewWorkflow:
         question: str,
     ) -> QAResult:
         return self._portfolio_qa.answer(documents, question)
+
+    def prepare_contract_answer(self, text, question, context):
+        return self._contract_qa, self._contract_qa.prepare(text, question, context)
+
+    def prepare_portfolio_answer(self, documents, question):
+        return self._portfolio_qa, self._portfolio_qa.prepare(documents, question)

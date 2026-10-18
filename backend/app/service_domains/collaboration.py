@@ -4,6 +4,7 @@ from typing import Any
 
 from fastapi import HTTPException
 from sqlalchemy import select
+from sqlalchemy.orm import joinedload
 
 from ..models import ApprovalRequest, ContractComment, ContractDecision, Membership, User, utcnow
 from ..schemas import ApprovalRequestResponse, ContractCommentResponse, ContractDecisionResponse
@@ -16,6 +17,7 @@ class CollaborationServiceMixin:
         return list(
             self.session.scalars(
                 select(ContractComment)
+                .options(joinedload(ContractComment.author))
                 .where(
                     ContractComment.organization_id == organization_id,
                     ContractComment.contract_id == contract_id,
@@ -100,6 +102,7 @@ class CollaborationServiceMixin:
         return list(
             self.session.scalars(
                 select(ContractDecision)
+                .options(joinedload(ContractDecision.reviewer))
                 .where(
                     ContractDecision.organization_id == organization_id,
                     ContractDecision.contract_id == contract_id,
@@ -165,6 +168,11 @@ class CollaborationServiceMixin:
         return list(
             self.session.scalars(
                 select(ApprovalRequest)
+                .options(
+                    joinedload(ApprovalRequest.requested_by),
+                    joinedload(ApprovalRequest.assigned_to),
+                    joinedload(ApprovalRequest.resolved_by),
+                )
                 .where(
                     ApprovalRequest.organization_id == organization_id,
                     ApprovalRequest.contract_id == contract_id,

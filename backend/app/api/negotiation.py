@@ -13,10 +13,12 @@ from ..schemas import (
     NegotiationItemUpdate,
     NegotiationSummaryResponse,
 )
-from .dependencies import ServiceDep, UserDep, read_upload
+from ..services import PlatformService
+from .dependencies import ServiceDep, UserDep, get_current_user, read_upload
+from .uploads import UploadRoute, run_upload
 
 
-router = APIRouter()
+router = APIRouter(route_class=UploadRoute)
 
 
 @router.get(
@@ -46,24 +48,27 @@ async def upload_contract_version(
     organization_id: str,
     contract_id: str,
     request: Request,
-    service: ServiceDep,
-    user: UserDep,
     file: Annotated[UploadFile, File()],
     label: Annotated[str, Form()] = "",
     notes: Annotated[str, Form()] = "",
 ) -> ContractVersionResponse:
     data = await read_upload(file, request.app.state.settings.max_upload_bytes)
-    version = service.create_contract_version(
-        organization_id,
-        contract_id,
-        user,
-        original_name=file.filename or "revision",
-        content_type=file.content_type or "application/octet-stream",
-        data=data,
-        label=label,
-        notes=notes,
-    )
-    return service.contract_version_response(version)
+
+    def create(service: PlatformService) -> ContractVersionResponse:
+        user = get_current_user(request, service)
+        version = service.create_contract_version(
+            organization_id,
+            contract_id,
+            user,
+            original_name=file.filename or "revision",
+            content_type=file.content_type or "application/octet-stream",
+            data=data,
+            label=label,
+            notes=notes,
+        )
+        return service.contract_version_response(version)
+
+    return await run_upload(request, create)
 
 
 @router.get(

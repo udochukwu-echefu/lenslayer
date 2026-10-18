@@ -1,18 +1,74 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { SessionProvider } from "next-auth/react";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import type { Session } from "next-auth";
+import { SessionProvider, useSession } from "next-auth/react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { seedAuthenticatedSession } from "@/lib/api/client";
+import { sessionAccount, workspaceQueryKey, type WorkspaceBootstrap } from "@/lib/workspace-bootstrap";
 import { WorkspaceProvider } from "./workspace-provider";
-import { ThemeProvider } from "./theme-provider";
+import { PageLoading } from "./page-states";
 
-export function Providers({ children }: { children: React.ReactNode }) {
+function AccountQueries({ children, session, bootstrap }: { children: React.ReactNode; session: Session | null; bootstrap?: WorkspaceBootstrap | null }) {
+  const [client] = useState(() => {
+    seedAuthenticatedSession(session);
+    const client = new QueryClient({ defaultOptions: { queries: { staleTime: 15_000, retry: 1, refetchOnWindowFocus: false } } });
+    const account = sessionAccount(session);
+    if (bootstrap && bootstrap.account === account) {
+      client.setQueryData(workspaceQueryKey("me", "private", account), bootstrap.user, { updatedAt: bootstrap.updatedAt });
+      client.setQueryData(workspaceQueryKey("organizations", "private", account), bootstrap.organizations, { updatedAt: bootstrap.updatedAt });
+    }
+    return client;
+  });
+  useEffect(() => () => { client.clear(); }, [client]);
+  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+}
+
+function AccountBoundary({ children, workspace, bootstrap }: { children: React.ReactNode; workspace: boolean; bootstrap?: WorkspaceBootstrap | null }) {
+  const { data: session, status } = useSession();
+  const [rejected, setRejected] = useState(false);
+  const router = useRouter();
   const pathname = usePathname();
-  const [client] = useState(() => new QueryClient({
-    defaultOptions: { queries: { staleTime: 15_000, retry: 1, refetchOnWindowFocus: false } },
-  }));
-  const publicRoute = pathname === "/sample" || pathname === "/signin" || pathname === "/login" || pathname === "/signup" || pathname.startsWith("/auth/") || pathname.startsWith("/shared/") || pathname.startsWith("/invite/");
-  const content = publicRoute ? children : <WorkspaceProvider>{children}</WorkspaceProvider>;
-  return <SessionProvider><ThemeProvider><QueryClientProvider client={client}>{content}</QueryClientProvider></ThemeProvider></SessionProvider>;
+  useEffect(() => {
+    const reject = () => setRejected(true);
+    window.addEventListener("lenslayer:session-invalidated", reject);
+    return () => window.removeEventListener("lenslayer:session-invalidated", reject);
+  }, []);
+  useEffect(() => {
+    if (!session?.user?.id || session.error) return;
+    const expires = Date.parse(session.expires);
+    if (!Number.isFinite(expires)) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const check = () => {
+      const remaining = expires - Date.now();
+      if (remaining <= 0) {
+        seedAuthenticatedSession(null);
+        window.dispatchEvent(new Event("lenslayer:session-invalidated"));
+      } else timer = setTimeout(check, Math.min(remaining, 2_147_483_647));
+    };
+    check();
+    return () => clearTimeout(timer);
+  }, [session?.user?.id, session?.expires, session?.error]);
+  useEffect(() => {
+    if (rejected) router.replace(`/auth/session-expired?callbackUrl=${encodeURIComponent(pathname || "/")}`);
+  }, [pathname, rejected, router]);
+  // A different account (or expiry/signout/error) gets a NEW cache and remounted
+  // query observers in this render, not an effect after old private data paints.
+  const account = status === "authenticated" ? sessionAccount(session) : null;
+  const key = account ?? (status === "loading" ? "loading" : "signed-out");
+  if (rejected) return <main className="page" aria-label="Loading workspace"><PageLoading /></main>;
+  return <AccountQueries key={key} session={session} bootstrap={bootstrap}>
+    {workspace ? <WorkspaceProvider>{children}</WorkspaceProvider> : children}
+  </AccountQueries>;
+}
+
+export function Providers({ children, session, bootstrap }: { children: React.ReactNode; session?: Session | null; bootstrap?: WorkspaceBootstrap | null }) {
+  return <SessionProvider session={session}><AccountBoundary workspace bootstrap={bootstrap}>{children}</AccountBoundary></SessionProvider>;
+}
+
+// Invitations deliberately retain signed-in affordances; shared previews and
+// sample/auth pages do not need this provider at all.
+export function InvitationProviders({ children }: { children: React.ReactNode }) {
+  return <SessionProvider><AccountBoundary workspace={false}>{children}</AccountBoundary></SessionProvider>;
 }

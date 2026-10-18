@@ -1,0 +1,516 @@
+{
+  "revision": "18f851679478d0b63fc54526031e558095fcb16f",
+  "synthetic": true,
+  "upstreamDelayMs": 80,
+  "browser": "Chrome/155.0.8059.80",
+  "conditions": {
+    "viewport": {
+      "width": 390,
+      "height": 844,
+      "deviceScaleFactor": 1
+    },
+    "cpuSlowdown": 1,
+    "network": "loopback + deterministic 80ms upstream; NOT a production or 4G trace",
+    "cache": "new browser context each sample; Next server warm state varies"
+  },
+  "traces": [
+    {
+      "run": 1,
+      "browserRequests": [
+        {
+          "label": "private-document",
+          "startMs": 5.087582999999995
+        },
+        {
+          "label": "session",
+          "startMs": 128.89795800000002
+        },
+        {
+          "label": "session",
+          "startMs": 180.576458
+        },
+        {
+          "label": "bff-organizations",
+          "startMs": 190.60400000000027
+        },
+        {
+          "label": "bff-me",
+          "startMs": 190.69841600000018
+        },
+        {
+          "label": "bff-notifications",
+          "startMs": 303.8591660000002
+        },
+        {
+          "label": "bff-contracts",
+          "startMs": 304.0847910000002
+        },
+        {
+          "label": "bff-tasks",
+          "startMs": 304.36733300000014
+        }
+      ],
+      "upstreamRequests": [
+        {
+          "label": "organizations",
+          "startMs": 205.74245800000017
+        },
+        {
+          "label": "me",
+          "startMs": 205.91116600000032
+        },
+        {
+          "label": "notifications",
+          "startMs": 320.1282500000002
+        },
+        {
+          "label": "contracts",
+          "startMs": 320.246666
+        },
+        {
+          "label": "tasks",
+          "startMs": 320.38345800000025
+        }
+      ],
+      "timings": {
+        "navigation": [
+          {
+            "responseStart": 30,
+            "domContentLoaded": 59.29999998211861,
+            "load": 116.69999998807907
+          }
+        ],
+        "paints": [
+          {
+            "name": "first-paint",
+            "time": 84
+          },
+          {
+            "name": "first-contentful-paint",
+            "time": 84
+          }
+        ],
+        "usefulContent": [
+          {
+            "name": "fixture-shell",
+            "time": 304.19999998807907
+          },
+          {
+            "name": "fixture-useful-tasks",
+            "time": 406
+          }
+        ]
+      }
+    },
+    {
+      "run": 2,
+      "browserRequests": [
+        {
+          "label": "private-document",
+          "startMs": 2.2782090000000608
+        },
+        {
+          "label": "session",
+          "startMs": 85.15133400000013
+        },
+        {
+          "label": "session",
+          "startMs": 96.77762500000017
+        },
+        {
+          "label": "bff-organizations",
+          "startMs": 102.25862499999994
+        },
+        {
+          "label": "bff-me",
+          "startMs": 103.11508400000002
+        },
+        {
+          "label": "bff-notifications",
+          "startMs": 201.59074999999984
+        },
+        {
+          "label": "bff-contracts",
+          "startMs": 201.64508400000022
+        },
+        {
+          "label": "bff-tasks",
+          "startMs": 201.7260839999999
+        }
+      ],
+      "upstreamRequests": [
+        {
+          "label": "organizations",
+          "startMs": 112.35291700000016
+        },
+        {
+          "label": "me",
+          "startMs": 113.59104200000002
+        },
+        {
+          "label": "notifications",
+          "startMs": 204.45683400000007
+        },
+        {
+          "label": "contracts",
+          "startMs": 204.78941699999996
+        },
+        {
+          "label": "tasks",
+          "startMs": 204.92291699999987
+        }
+      ],
+      "timings": {
+        "navigation": [
+          {
+            "responseStart": 5.300000011920929,
+            "domContentLoaded": 22.69999998807907,
+            "load": 74.59999999403954
+          }
+        ],
+        "paints": [
+          {
+            "name": "first-paint",
+            "time": 48
+          },
+          {
+            "name": "first-contentful-paint",
+            "time": 48
+          }
+        ],
+        "usefulContent": [
+          {
+            "name": "fixture-shell",
+            "time": 207.5
+          },
+          {
+            "name": "fixture-useful-tasks",
+            "time": 290.09999999403954
+          }
+        ]
+      }
+    },
+    {
+      "run": 3,
+      "browserRequests": [
+        {
+          "label": "private-document",
+          "startMs": 4.040874999999687
+        },
+        {
+          "label": "session",
+          "startMs": 99.88195899999937
+        },
+        {
+          "label": "session",
+          "startMs": 106.24654199999986
+        },
+        {
+          "label": "bff-organizations",
+          "startMs": 109.88345899999968
+        },
+        {
+          "label": "bff-me",
+          "startMs": 109.93024999999943
+        },
+        {
+          "label": "bff-notifications",
+          "startMs": 197.94116699999995
+        },
+        {
+          "label": "bff-contracts",
+          "startMs": 197.98983399999997
+        },
+        {
+          "label": "bff-tasks",
+          "startMs": 198.04574999999932
+        }
+      ],
+      "upstreamRequests": [
+        {
+          "label": "organizations",
+          "startMs": 112.8154999999997
+        },
+        {
+          "label": "me",
+          "startMs": 113.02670899999976
+        },
+        {
+          "label": "notifications",
+          "startMs": 200.7175419999994
+        },
+        {
+          "label": "contracts",
+          "startMs": 200.78333399999974
+        },
+        {
+          "label": "tasks",
+          "startMs": 201.63400000000001
+        }
+      ],
+      "timings": {
+        "navigation": [
+          {
+            "responseStart": 5.5,
+            "domContentLoaded": 43.19999998807907,
+            "load": 82.80000001192093
+          }
+        ],
+        "paints": [
+          {
+            "name": "first-paint",
+            "time": 48
+          },
+          {
+            "name": "first-contentful-paint",
+            "time": 48
+          }
+        ],
+        "usefulContent": [
+          {
+            "name": "fixture-shell",
+            "time": 201.90000000596046
+          },
+          {
+            "name": "fixture-useful-tasks",
+            "time": 285.09999999403954
+          }
+        ]
+      }
+    }
+  ],
+  "visuals": [
+    {
+      "route": "/sample",
+      "width": 390,
+      "theme": "light",
+      "authRequests": [
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/signin",
+      "width": 390,
+      "theme": "light",
+      "authRequests": [
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/signup",
+      "width": 390,
+      "theme": "light",
+      "authRequests": [
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/auth/signed-out",
+      "width": 390,
+      "theme": "light",
+      "authRequests": [
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/invite/synthetic-token",
+      "width": 390,
+      "theme": "light",
+      "authRequests": [
+        "/api/auth/session",
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/shared/synthetic-token",
+      "width": 390,
+      "theme": "light",
+      "authRequests": [
+        "/api/auth/session",
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/settings/developers",
+      "width": 390,
+      "theme": "light",
+      "authRequests": [
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/sample",
+      "width": 390,
+      "theme": "dark",
+      "authRequests": [
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/signin",
+      "width": 390,
+      "theme": "dark",
+      "authRequests": [
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/signup",
+      "width": 390,
+      "theme": "dark",
+      "authRequests": [
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/auth/signed-out",
+      "width": 390,
+      "theme": "dark",
+      "authRequests": [
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/invite/synthetic-token",
+      "width": 390,
+      "theme": "dark",
+      "authRequests": [
+        "/api/auth/session",
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/shared/synthetic-token",
+      "width": 390,
+      "theme": "dark",
+      "authRequests": [
+        "/api/auth/session",
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/settings/developers",
+      "width": 390,
+      "theme": "dark",
+      "authRequests": [
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/sample",
+      "width": 1440,
+      "theme": "light",
+      "authRequests": [
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/signin",
+      "width": 1440,
+      "theme": "light",
+      "authRequests": [
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/signup",
+      "width": 1440,
+      "theme": "light",
+      "authRequests": [
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/auth/signed-out",
+      "width": 1440,
+      "theme": "light",
+      "authRequests": [
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/invite/synthetic-token",
+      "width": 1440,
+      "theme": "light",
+      "authRequests": [
+        "/api/auth/session",
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/shared/synthetic-token",
+      "width": 1440,
+      "theme": "light",
+      "authRequests": [
+        "/api/auth/session",
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/settings/developers",
+      "width": 1440,
+      "theme": "light",
+      "authRequests": [
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/sample",
+      "width": 1440,
+      "theme": "dark",
+      "authRequests": [
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/signin",
+      "width": 1440,
+      "theme": "dark",
+      "authRequests": [
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/signup",
+      "width": 1440,
+      "theme": "dark",
+      "authRequests": [
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/auth/signed-out",
+      "width": 1440,
+      "theme": "dark",
+      "authRequests": [
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/invite/synthetic-token",
+      "width": 1440,
+      "theme": "dark",
+      "authRequests": [
+        "/api/auth/session",
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/shared/synthetic-token",
+      "width": 1440,
+      "theme": "dark",
+      "authRequests": [
+        "/api/auth/session",
+        "/api/auth/session"
+      ]
+    },
+    {
+      "route": "/settings/developers",
+      "width": 1440,
+      "theme": "dark",
+      "authRequests": [
+        "/api/auth/session"
+      ]
+    }
+  ]
+}

@@ -14,10 +14,12 @@ from . import (
     lifecycle,
     negotiation,
     public_api,
+    qa_stream,
     review,
     sharing,
     tasks,
     workspace,
+    workspace_queries,
 )
 from .health import router as health_router
 
@@ -27,9 +29,11 @@ router.include_router(agent_generalization.router)
 router.include_router(hosted_agents.router)
 router.include_router(calendar.router)
 router.include_router(workspace.router)
+router.include_router(workspace_queries.router)
 router.include_router(tasks.router)
 router.include_router(contracts.router)
 router.include_router(review.router)
+router.include_router(qa_stream.router)
 router.include_router(integrations.router)
 router.include_router(public_api.router)
 router.include_router(negotiation.router)

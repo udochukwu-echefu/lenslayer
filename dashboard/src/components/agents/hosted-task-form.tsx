@@ -9,6 +9,8 @@ import { assignmentInput } from "@/lib/hosted-agent-assignment";
 import { calendarGrants, goalLabels, plannerLabels, retainedContract } from "@/lib/hosted-agent-state";
 import type { HostedAgentCapabilities, HostedAgentTask, HostedAgentTaskCreate, HostedGoalType, HostedPlannerMode } from "@/lib/hosted-agent-types";
 import { hostedModelDisclosure } from "@/lib/hosted-model-disclosure";
+import { ContractPicker } from "../contract-picker";
+import type { Contract } from "@/lib/types";
 
 export function HostedTaskForm({ organizationId, scopeKey, capabilities, assigned, savedRequest, saveRequest }: {
   organizationId: string; scopeKey: string; capabilities: HostedAgentCapabilities; assigned: (task: HostedAgentTask) => void;
@@ -26,11 +28,12 @@ export function HostedTaskForm({ organizationId, scopeKey, capabilities, assigne
   const alive = useRef(false);
   const document = goalType !== "" && goalType !== "calendar-event";
   const calendar = goalType === "calendar-event" || goalType === "follow-up-and-calendar";
-  const contracts = useQuery({ queryKey: ["hosted-scope", scopeKey, "contracts"], queryFn: ({ signal }) => api.contracts(organizationId, { signal, privateWorkspace: true }), enabled: document, retry: false });
+  const [selectedContracts, setSelectedContracts] = useState<Contract[]>([]);
+  const [contractChoices, setContractChoices] = useState<{ pending: boolean; error: Error | null }>({ pending: true, error: null });
   const members = useQuery({ queryKey: ["hosted-scope", scopeKey, "members"], queryFn: ({ signal }) => api.members(organizationId, { signal, privateWorkspace: true }), enabled: document, retry: false });
   const connections = useQuery({ queryKey: ["hosted-scope", scopeKey, "connections"], queryFn: ({ signal }) => api.integrations(organizationId, "google_calendar", { signal, privateWorkspace: true }), enabled: calendar, retry: false });
-  const sourceError = (document && (contracts.error ?? members.error)) || (calendar && connections.error);
-  const loading = (document && (contracts.isPending || members.isPending)) || (calendar && connections.isPending);
+  const sourceError = (document && (contractChoices.error ?? members.error)) || (calendar && connections.error);
+  const loading = (document && (contractChoices.pending || members.isPending)) || (calendar && connections.isPending);
   const grants = calendarGrants(connections.data ?? [], organizationId);
   const locked = busy || Boolean(frozen);
   const modelDisclosure = hostedModelDisclosure(capabilities);
@@ -72,7 +75,7 @@ export function HostedTaskForm({ organizationId, scopeKey, capabilities, assigne
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); if (intent.current || locked || sourceError || loading) return;
     try {
-      const input = assignmentInput(new FormData(event.currentTarget), { organizationId, capabilities, contracts: contracts.data ?? [], members: members.data ?? [], connections: connections.data ?? [] }, crypto.randomUUID());
+      const input = assignmentInput(new FormData(event.currentTarget), { organizationId, capabilities, contracts: selectedContracts, members: members.data ?? [], connections: connections.data ?? [] }, crypto.randomUUID());
       intent.current = input; setFrozen(input); saveRequest(input); void send(input);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Check the exact scope and required facts."); }
   }
@@ -90,7 +93,7 @@ export function HostedTaskForm({ organizationId, scopeKey, capabilities, assigne
         <div className="field"><label htmlFor="hosted-goal">Your goal</label><textarea className="textarea" id="hosted-goal" name="goal" required maxLength={4000} placeholder="Describe what this exact follow-up or event should help you review." /><p className="field-help">Goal text is context, not permission for additional actions. All identities, dates, titles and targets below are your explicit facts.</p></div>
         {document && <section className="hosted-facts" aria-labelledby="document-facts-heading"><h3 id="document-facts-heading">Document follow-up facts</h3>
           <div className="agent-form-grid">
-            <div className="field"><label htmlFor="hosted-contract">Retained source contract</label><AppSelect className="input" id="hosted-contract" name="contract_id" required defaultValue="" options={[{ value: "", label: "Select a retained source", disabled: true }, ...(contracts.error ? [] : contracts.data ?? []).filter((item) => item.organization_id === organizationId).map((item) => ({ value: item.id, disabled: !retainedContract(item), label: `${item.title || item.source_name}${!retainedContract(item) ? " — source unavailable or expired" : ""}` }))]} /><p className="field-help">The worker uses the latest retained version and verifies its source identity. {contracts.data && !contracts.data.some((item) => retainedContract(item)) && <><Link href="/contracts/new">Upload a source with text retention</Link> before assigning.</>}</p></div>
+            <div className="field"><label htmlFor="hosted-contract">Retained source contract</label><ContractPicker organizationId={organizationId} id="hosted-contract" name="contract_id" required privateWorkspace eligible={retainedContract} onSelectionChange={setSelectedContracts} onAvailabilityChange={setContractChoices} /><p className="field-help">The worker uses the latest retained version and verifies its source identity.</p></div>
             <div className="field"><label htmlFor="hosted-assignee">Follow-up assignee</label><AppSelect className="input" id="hosted-assignee" name="assignee_id" required defaultValue="" options={[{ value: "", label: "Select a workspace member", disabled: true }, ...(members.error ? [] : members.data ?? []).map((member) => ({ value: member.user_id, label: `${member.display_name || member.email} — ${member.email}` }))]} /></div>
             <div className="field"><label htmlFor="hosted-query">Literal evidence phrase</label><input className="input" id="hosted-query" name="query" required minLength={2} maxLength={200} placeholder="A phrase actually present in the retained source" /><p className="field-help">Case-insensitive phrase retrieval, not semantic search. No phrase or source interpretation is inferred.</p></div>
             <div className="field"><label htmlFor="hosted-due">Follow-up due time (with timezone)</label><input className="input" id="hosted-due" name="due_at" required placeholder="YYYY-MM-DDTHH:mm:ssZ or ±HH:MM" aria-describedby="hosted-times-help" /></div>
@@ -113,7 +116,7 @@ export function HostedTaskForm({ organizationId, scopeKey, capabilities, assigne
       </fieldset>
     </form>
     {loading && !frozen && <p role="status" className="field-help">Loading private scope choices…</p>}
-    {sourceError && !frozen && <div role="alert" className="hosted-form-error"><p>Scope choices could not load. No sample targets were substituted.</p><button type="button" className="button secondary" onClick={() => { if (document) { void contracts.refetch(); void members.refetch(); } if (calendar) void connections.refetch(); }}>Reload scope choices</button></div>}
+    {sourceError && !frozen && <div role="alert" className="hosted-form-error"><p>Scope choices could not load. No sample targets were substituted.</p><button type="button" className="button secondary" onClick={() => { if (document) void members.refetch(); if (calendar) void connections.refetch(); }}>Reload scope choices</button></div>}
     {busy && <p role="status" className="agent-notice">Recording assignment… Leaving or switching identity/workspace stops this browser request, not necessarily server acceptance. Inspect assignments before creating another.</p>}
     {error && <p role="alert" className="form-error">{error}</p>}
     {frozen && !busy && <div className="agent-controls"><button type="button" className="button secondary" onClick={() => void send(frozen)}>Retry identical assignment</button>{rejected && <button type="button" className="button secondary" onClick={() => { intent.current = null; setFrozen(null); saveRequest(null); setError(""); setRejected(false); }}>Edit rejected request</button>}<code>Request key: {frozen.idempotency_key}</code></div>}

@@ -7,14 +7,15 @@ import { api } from "@/lib/api";
 import type { AgentCreate, ToolName } from "@/lib/agent-types";
 import { OneTimeCredential } from "./one-time-credential";
 import { useBoundaryClock } from "./use-boundary-clock";
+import { ContractPicker } from "../contract-picker";
 
 export function AgentCreateForm({ organizationId, close }: { organizationId: string; close: () => void }) {
   const client = useQueryClient();
   const [credential, setCredential] = useState<string | null>(null);
   const [validationError, setValidationError] = useState("");
+  const [contractChoices, setContractChoices] = useState<{ pending: boolean; error: Error | null }>({ pending: true, error: null });
   const alive = useRef(false);
   const pending = useRef<AbortController | null>(null);
-  const contracts = useQuery({ queryKey: ["contracts", organizationId], queryFn: () => api.contracts(organizationId) });
   const members = useQuery({ queryKey: ["members", organizationId], queryFn: () => api.members(organizationId) });
   const contexts = useQuery({ queryKey: ["context-records", organizationId], queryFn: ({ signal }) => api.contextRecords(organizationId, signal), retry: false });
   const now = useBoundaryClock((contexts.data ?? []).map((record) => record.expires_at));
@@ -46,6 +47,7 @@ export function AgentCreateForm({ organizationId, close }: { organizationId: str
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (contractChoices.pending || contractChoices.error) return;
     const form = new FormData(event.currentTarget);
     const contractIds = form.getAll("contract_ids").map(String);
     const contextIds = form.getAll("context_ids").map(String);
@@ -66,14 +68,13 @@ export function AgentCreateForm({ organizationId, close }: { organizationId: str
   }
 
   if (credential) return <OneTimeCredential token={credential} dismiss={() => { setCredential(null); mutation.reset(); close(); }} />;
-  const optionsError = contracts.error ?? members.error;
-  const retained = (contracts.data ?? []).filter((contract) => contract.retain_source_text);
+  const optionsError = contractChoices.error ?? members.error;
   const retainedContext = (contexts.data ?? []).filter((record) => !record.deleted_at && Date.parse(record.expires_at) > now);
 
   return <section className="agent-create panel" aria-labelledby="agent-create-heading">
     <div className="agent-section-heading"><div><h2 id="agent-create-heading">Delegate a bounded workflow</h2><p>Choose explicit permissions. The external agent plans; LensLayer authorizes, executes, and verifies the action.</p></div><button className="button secondary" type="button" onClick={close}>Close</button></div>
     <form onSubmit={submit}>
-      <fieldset disabled={mutation.isPending || contracts.isPending || members.isPending || Boolean(optionsError)} className="agent-form-fields">
+      <fieldset disabled={mutation.isPending || members.isPending || Boolean(members.error)} className="agent-form-fields">
         <div className="agent-form-grid">
           <div className="field"><label htmlFor="agent-name">Agent name</label><input className="input" id="agent-name" name="name" required minLength={1} maxLength={255} placeholder="Renewal assistant" /></div>
           <div className="field"><label htmlFor="agent-expiry">Expiry (your local time)</label><input className="input" id="agent-expiry" name="expires_at" type="datetime-local" required aria-describedby="agent-expiry-help" /><p id="agent-expiry-help" className="field-help">Converted to UTC before submission. Maximum 365 days.</p></div>
@@ -81,13 +82,13 @@ export function AgentCreateForm({ organizationId, close }: { organizationId: str
         </div>
         <fieldset className="agent-scope"><legend>Allowed tools</legend><label><input type="checkbox" name="allowed_tools" value="documents.retrieve" defaultChecked /><span>Retrieve retained source evidence <code>documents.retrieve</code></span></label><label><input type="checkbox" name="allowed_tools" value="workspace.tasks.create" defaultChecked /><span>Create an assigned follow-up task <code>workspace.tasks.create</code></span></label><label><input type="checkbox" name="allowed_tools" value="google_calendar.events.create" /><span>Create a private timed calendar event <code>google_calendar.events.create</code></span></label><label><input type="checkbox" name="allowed_tools" value="context.retrieve" disabled={Boolean(contexts.error) || contexts.isPending} /><span>Retrieve workspace context evidence <code>context.retrieve</code></span></label><label><input type="checkbox" name="allowed_tools" value="workspace.context_tasks.create" disabled={Boolean(contexts.error) || contexts.isPending} /><span>Create context-backed follow-up tasks <code>workspace.context_tasks.create</code></span></label><p>Each task workflow requires its retrieval and creation tools. Context graphs use explicit context and assignee scope, not contract or calendar targets. Boolean branches still require human approval for each action.</p></fieldset>
         <div className="agent-form-grid">
-          <fieldset className="agent-scope"><legend>Retained contracts</legend>{retained.map((contract) => <label key={contract.id}><input type="checkbox" name="contract_ids" value={contract.id} /><span>{contract.title || contract.source_name}<small>{contract.id}</small></span></label>)}{!retained.length && <p>Upload a contract with source-text retention enabled before delegating this workflow.</p>}</fieldset>
+          <fieldset className="agent-scope"><legend>Retained contracts</legend><ContractPicker organizationId={organizationId} id="agent-contracts" name="contract_ids" multiple retainedOnly onAvailabilityChange={setContractChoices} /></fieldset>
           <fieldset className="agent-scope"><legend>Permitted assignees</legend>{(members.data ?? []).map((member) => <label key={member.user_id}><input type="checkbox" name="assignee_ids" value={member.user_id} /><span>{member.display_name || member.email}<small>{member.user_id}</small></span></label>)}</fieldset>
         </div>
         <fieldset className="agent-scope"><legend>Retained workspace context</legend>{retainedContext.map((record) => <label key={record.id}><input type="checkbox" name="context_ids" value={record.id} /><span>{record.title}<small>Version {record.current_version} · {record.id}</small></span></label>)}{contexts.error ? <p role="status">Workspace context is unavailable on this API. Existing document and calendar scope remains available.</p> : !retainedContext.length && <p>Add a private brief in <Link href="/context">Workspace context</Link> before delegating context tasks.</p>}</fieldset>
         <fieldset className="agent-scope"><legend>Exact calendar target (optional)</legend><div className="agent-form-grid"><div className="field"><label htmlFor="calendar-connection-id">Calendar OAuth connection ID</label><input className="input" id="calendar-connection-id" name="calendar_connection_id" maxLength={64} /></div><div className="field"><label htmlFor="calendar-id">Calendar ID</label><input className="input" id="calendar-id" name="calendar_id" maxLength={1024} /></div></div><p>Connect an owned calendar in <Link href="/settings/integrations#calendar-connection">Calendar settings</Link>, then use the displayed IDs. The server validates the exact pair against its original grant. Reconnect requires a new connection ID.</p></fieldset>
         <label className="agent-policy-choice"><input type="checkbox" name="require_approval" defaultChecked /><span><strong>Require human approval</strong><small>An owner or administrator must approve each immutable action proposal before dispatch. Unchecking permits delegated writes without a human approval.</small></span></label>
-        <button className="button" type="submit">{mutation.isPending ? "Creating credential…" : "Create agent credential"}</button>
+        <button className="button" type="submit" disabled={contractChoices.pending || Boolean(optionsError)}>{mutation.isPending ? "Creating credential…" : "Create agent credential"}</button>
       </fieldset>
       {optionsError && <p className="form-error" role="alert">Scope choices could not load: {optionsError.message}</p>}
       {mutation.isPending && <p className="agent-notice">If you leave while creation is pending, the server may still create the delegation. Check the list and revoke any credential you could not save; creation is not automatically retried.</p>}

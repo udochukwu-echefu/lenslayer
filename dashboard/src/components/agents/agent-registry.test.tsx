@@ -12,7 +12,7 @@ const workspace = vi.hoisted(() => ({ activeOrganization: { id: "org-1" }, activ
 vi.mock("../workspace-provider", () => ({ useWorkspace: () => workspace }));
 vi.mock("@/lib/api", async () => {
   const { ApiError } = await import("@/lib/api/client");
-  return { ApiError, api: { agents: vi.fn(), createAgent: vi.fn(), revokeAgent: vi.fn(), contracts: vi.fn(), members: vi.fn(), contextRecords: vi.fn(), narrowAgentContext: vi.fn() } };
+  return { ApiError, api: { agents: vi.fn(), createAgent: vi.fn(), revokeAgent: vi.fn(), queryContracts: vi.fn(), members: vi.fn(), contextRecords: vi.fn(), narrowAgentContext: vi.fn() } };
 });
 
 const token = "ll_agent_component_test_only";
@@ -23,7 +23,7 @@ beforeEach(() => {
   vi.mocked(api.agents).mockReset().mockResolvedValue([agentFixture]);
   vi.mocked(api.createAgent).mockReset().mockResolvedValue({ agent: agentFixture, token });
   vi.mocked(api.revokeAgent).mockReset().mockResolvedValue({ ...agentFixture, status: "revoked" });
-  vi.mocked(api.contracts).mockReset().mockResolvedValue([contractFixture]);
+  vi.mocked(api.queryContracts).mockReset().mockResolvedValue({ items: [contractFixture], total: 1, offset: 0, limit: 25 });
   vi.mocked(api.members).mockReset().mockResolvedValue([memberFixture]);
   vi.mocked(api.contextRecords).mockReset().mockResolvedValue([]);
   Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: vi.fn().mockResolvedValue(undefined) } });

@@ -1,4 +1,5 @@
 import { getSession } from "next-auth/react";
+import type { Session } from "next-auth";
 import { PUBLIC_ACCESS_ENABLED } from "../workspace-mode";
 
 export function resolvePlatformApiPrefix(platformApiUrl?: string) {
@@ -12,17 +13,32 @@ let sessionRequest: ReturnType<typeof getSession> | null = null;
 let cachedSession: Awaited<ReturnType<typeof getSession>> = null;
 let sessionCachedAt = 0;
 const SESSION_CACHE_MS = 30_000;
+let sessionGeneration = 0;
+
+// Called synchronously by the account-keyed provider, before descendants can
+// fetch. This is a hint, never authorization: every private request still goes
+// through the authenticated BFF; hosted operations keep their fresh preflight.
+export function seedAuthenticatedSession(session: Session | null) {
+  sessionGeneration++;
+  sessionRequest = null;
+  cachedSession = session?.user?.id && !session.error ? session : null;
+  sessionCachedAt = Date.now();
+}
 
 function authenticatedSession() {
   if (
     cachedSession?.user?.id && !cachedSession.error &&
-    Date.now() - sessionCachedAt < SESSION_CACHE_MS
+    Date.now() - sessionCachedAt < SESSION_CACHE_MS &&
+    Date.parse(cachedSession.expires) > Date.now()
   ) {
     return Promise.resolve(cachedSession);
   }
   if (!sessionRequest) {
+    const generation = sessionGeneration;
     sessionRequest = getSession()
       .then((session) => {
+        if (generation !== sessionGeneration) return null;
+        cachedSession = null;
         if (session?.user?.id && !session.error) {
           cachedSession = session;
           sessionCachedAt = Date.now();
@@ -30,7 +46,7 @@ function authenticatedSession() {
         return session;
       })
       .finally(() => {
-        sessionRequest = null;
+        if (generation === sessionGeneration) sessionRequest = null;
       });
   }
   return sessionRequest;
@@ -103,6 +119,7 @@ export async function request<T>(
   usePublicAccess = PUBLIC_ACCESS_ENABLED,
   sessionPolicy?: "fresh",
 ): Promise<T> {
+  const generation = sessionGeneration;
   if (usePublicAccess) {
     const { getDemoResponse } = await import("../demo-data");
     const preview = getDemoResponse(path, init);
@@ -113,12 +130,16 @@ export async function request<T>(
   const headers = new Headers(init?.headers);
   const method = init?.method?.toUpperCase() ?? "GET";
   if (!["GET", "HEAD"].includes(method)) headers.set("X-LensLayer-Platform-CSRF", "1");
-  const session = sessionPolicy === "fresh"
+  // These exact read-only paths are already anonymous in the BFF. They need no
+  // session lookup, unlike accepting an invitation or reading private records.
+  const publicPreview = method === "GET" && /^\/(?:invitations|shared)\/[^/?]+$/.test(path);
+  const session = publicPreview ? null : sessionPolicy === "fresh"
     ? await resolveAuthenticatedSession(getSession)
     : method === "GET"
       ? await authenticatedSession()
       : await resolveAuthenticatedSession();
   init?.signal?.throwIfAborted();
+  if (generation !== sessionGeneration) throw new ApiError("The account changed. Try again in the current workspace.", 401);
   if (sessionPolicy === "fresh" && (!session?.user?.id || session.error))
     throw new ApiError("Sign in to a private workspace to assign or inspect hosted agent tasks.", 401);
   const response = await fetch(`${API_PREFIX}${path}`, {
@@ -126,7 +147,12 @@ export async function request<T>(
     headers,
     cache: "no-store",
   });
+  if (generation !== sessionGeneration) throw new ApiError("The account changed. Try again in the current workspace.", 401);
   if (!response.ok) {
+    if (response.status === 401 && !publicPreview && typeof window !== "undefined") {
+      seedAuthenticatedSession(null);
+      window.dispatchEvent(new Event("lenslayer:session-invalidated"));
+    }
     // Read once: a failed json() call already consumes the response body.
     const body = await response.text();
     let detail: unknown = body;
@@ -142,7 +168,9 @@ export async function request<T>(
     );
   }
   if (response.status === 204) return undefined as T;
-  return response.json() as Promise<T>;
+  const value = await response.json() as T;
+  if (generation !== sessionGeneration) throw new ApiError("The account changed. Try again in the current workspace.", 401);
+  return value;
 }
 
 export async function download(path: string, filename: string) {

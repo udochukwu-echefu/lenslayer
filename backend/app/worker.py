@@ -50,6 +50,7 @@ from .source_retention import (delete_pending_sources, purge_expired_sources,
 logger = logging.getLogger(__name__)
 WEBHOOK_MAX_ATTEMPTS = 5
 WEBHOOK_RETRY_SECONDS = 300
+DOCUMENT_RECOVERY_LIMIT = 100
 
 
 def public_review_error(exc: Exception) -> str:
@@ -271,6 +272,98 @@ def claim_next_job(database: Database, settings: Settings) -> str | None:
 
 def purge_expired_contracts(database: Database, object_store: ObjectStore) -> int:
     return purge_expired_sources(database, object_store)
+
+
+def fail_contract_review(session, settings: Settings, contract: Contract, job_id: str,
+                         error_code: str, public_error: str) -> None:
+    """Existing review-failure effects, committed with the winning job transition."""
+    contract.status = "failed"
+    contract.updated_at = utcnow()
+    import_record = session.scalar(select(IntegrationImport).where(IntegrationImport.contract_id == contract.id))
+    if import_record is not None:
+        import_record.status = "failed"
+        import_record.error_message = public_error
+        import_record.updated_at = utcnow()
+    session.add(PlatformAuditEvent(
+        organization_id=contract.organization_id, actor_user_id=None, contract_id=contract.id,
+        action="review.failed", detail_json=json_dump({"job_id": job_id, "error_code": error_code}),
+    ))
+    enqueue_webhook_deliveries(
+        session, contract.organization_id, "contract.review_failed", contract.id,
+        {"contract_id": contract.id, "title": contract.title, "status": contract.status, "error_code": error_code},
+    )
+    preferences = session.scalar(select(OrganizationSettings).where(
+        OrganizationSettings.organization_id == contract.organization_id))
+    if preferences is None or preferences.notification_review_failed:
+        member_ids = session.scalars(select(Membership.user_id).where(
+            Membership.organization_id == contract.organization_id)).all()
+        for user_id in member_ids:
+            enqueue_notification(
+                session, settings, organization_id=contract.organization_id, user_id=user_id,
+                contract_id=contract.id, kind="review_failed", title="Contract review needs attention",
+                message=f"{contract.title} could not be processed. Open it to see the error.",
+                action_url=f"/contracts/{contract.id}",
+            )
+
+
+def recover_exhausted_document_jobs(database: Database, settings: Settings, *,
+                                    limit: int = DOCUMENT_RECOVERY_LIMIT,
+                                    stop_at: float | None = None) -> int:
+    """Terminalize a bounded chunk of crashed final attempts, without provider work.
+
+    Lock contracts before jobs, matching completion/retention lock order. SQLite
+    reserves its writer before reading; the conditional job update additionally
+    fences changed claims and atomically owns all failure effects. Later drains
+    handle the remaining chunk; a live lease is never failed or retried here.
+    """
+    stale_before = utcnow() - timedelta(seconds=settings.worker_lease_seconds)
+    eligible = (ProcessingJob.status == "running", ProcessingJob.started_at < stale_before,
+                ProcessingJob.attempts >= settings.worker_max_attempts)
+    with database.session_factory() as session:
+        candidates = list(session.scalars(select(ProcessingJob.id).where(*eligible)
+            .order_by(ProcessingJob.started_at, ProcessingJob.id).limit(max(0, min(limit, DOCUMENT_RECOVERY_LIMIT)))))
+    recovered = 0
+    for job_id in candidates:
+        if stop_at is not None and time.monotonic() >= stop_at:
+            break
+        with database.session_factory() as session:
+            serialize_sqlite_maintenance(session, database)
+            job = session.scalar(select(ProcessingJob).where(ProcessingJob.id == job_id, *eligible))
+            if job is None:
+                continue
+            query = select(Contract).where(Contract.id == job.contract_id)
+            if database.engine.dialect.name == "postgresql":
+                query = query.with_for_update(skip_locked=True)
+            contract = session.scalar(query)
+            if contract is None:
+                # Missing/locked contracts are left for a subsequent drain.
+                continue
+            asset = session.get(DocumentAsset, job.document_asset_id)
+            expired = source_expired(contract)
+            unavailable = asset is None or asset.status != "available"
+            error_code = "SourceRetentionExpired" if expired else "SourceUnavailable" if unavailable else "WorkerLeaseExpired"
+            public_error = ("The source retention deadline has elapsed." if expired else
+                            "The source document is no longer available." if unavailable else
+                            public_review_error(TimeoutError("Review timed out")))
+            changed = session.execute(update(ProcessingJob).where(
+                ProcessingJob.id == job_id, *eligible, ProcessingJob.started_at == job.started_at,
+                ProcessingJob.attempts == job.attempts,
+            ).values(status="failed", completed_at=utcnow(), error_code=error_code, error_message=public_error,
+                progress_step="Source retention expired" if expired else "Source unavailable" if unavailable else "Review failed")
+                .execution_options(synchronize_session=False)).rowcount
+            if changed != 1:
+                continue
+            if contract.status == "processing":
+                if expired or unavailable:
+                    # Retention/deletion intent suppresses ordinary failure effects.
+                    contract.status, contract.updated_at = "failed", utcnow()
+                    session.execute(update(IntegrationImport).where(IntegrationImport.contract_id == contract.id)
+                        .values(status="failed", error_message=public_error, updated_at=utcnow()))
+                else:
+                    fail_contract_review(session, settings, contract, job_id, error_code, public_error)
+            session.commit()
+            recovered += 1
+    return recovered
 
 
 def process_lifecycle_reminders(database: Database, settings: Settings) -> int:
@@ -545,57 +638,7 @@ def process_job(
                 job.error_message = public_error
                 job.completed_at = utcnow()
             if contract:
-                contract.status = "failed"
-                contract.updated_at = utcnow()
-                import_record = session.scalar(select(IntegrationImport).where(IntegrationImport.contract_id == contract.id))
-                if import_record is not None:
-                    import_record.status = "failed"
-                    import_record.error_message = public_error
-                    import_record.updated_at = utcnow()
-                session.add(
-                    PlatformAuditEvent(
-                        organization_id=contract.organization_id,
-                        actor_user_id=None,
-                        contract_id=contract.id,
-                        action="review.failed",
-                        detail_json=json_dump({"job_id": job_id, "error_code": exc.__class__.__name__}),
-                    )
-                )
-                enqueue_webhook_deliveries(
-                    session,
-                    contract.organization_id,
-                    "contract.review_failed",
-                    contract.id,
-                    {
-                        "contract_id": contract.id,
-                        "title": contract.title,
-                        "status": contract.status,
-                        "error_code": exc.__class__.__name__,
-                    },
-                )
-                preferences = session.scalar(
-                    select(OrganizationSettings).where(
-                        OrganizationSettings.organization_id == contract.organization_id
-                    )
-                )
-                if preferences is None or preferences.notification_review_failed:
-                    member_ids = session.scalars(
-                        select(Membership.user_id).where(
-                            Membership.organization_id == contract.organization_id
-                        )
-                    ).all()
-                    for user_id in member_ids:
-                        enqueue_notification(
-                            session,
-                            settings,
-                            organization_id=contract.organization_id,
-                            user_id=user_id,
-                            contract_id=contract.id,
-                            kind="review_failed",
-                            title="Contract review needs attention",
-                            message=f"{contract.title} could not be processed. Open it to see the error.",
-                            action_url=f"/contracts/{contract.id}",
-                        )
+                fail_contract_review(session, settings, contract, job_id, exc.__class__.__name__, public_error)
             session.commit()
     finally:
         if temp_path and os.path.exists(temp_path):
@@ -623,6 +666,7 @@ def run_worker(
     worker_id = new_id()
     started = time.monotonic()
     stop_at = None if max_drain_seconds is None else started + max_drain_seconds
+    document_recovery_done = False
     try:
         while True:
             if max_drain_seconds is not None and time.monotonic() - started >= max_drain_seconds:
@@ -637,6 +681,9 @@ def run_worker(
                 session.commit()
             if not agents_only:
                 purge_expired_contracts(database, object_store)
+                if not document_recovery_done:
+                    recover_exhausted_document_jobs(database, settings, stop_at=stop_at)
+                    document_recovery_done = True
                 process_lifecycle_reminders(database, settings)
             expired_runs = 0 if documents_only else expire_agent_runs(database, settings, object_store, stop_at=stop_at)
             expired_context = 0

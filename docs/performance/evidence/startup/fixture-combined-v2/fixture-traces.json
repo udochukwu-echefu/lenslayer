@@ -1,0 +1,235 @@
+{
+  "revision": "53dbd8b",
+  "synthetic": true,
+  "upstreamDelayMs": 80,
+  "browser": "Chrome/155.0.8059.80",
+  "conditions": {
+    "viewport": {
+      "width": 390,
+      "height": 844,
+      "deviceScaleFactor": 1
+    },
+    "cpuSlowdown": 1,
+    "network": "loopback + deterministic 80ms upstream; NOT a production or 4G trace",
+    "cache": "new browser context each sample; Next server warm state varies"
+  },
+  "traces": [
+    {
+      "run": 1,
+      "browserRequests": [
+        {
+          "label": "private-document",
+          "startMs": 2.2797920000002705
+        },
+        {
+          "label": "bff-tasks",
+          "startMs": 297.9500830000002
+        },
+        {
+          "label": "bff-overview",
+          "startMs": 298.031125
+        },
+        {
+          "label": "bff-notifications",
+          "startMs": 298.1767920000002
+        }
+      ],
+      "upstreamRequests": [
+        {
+          "label": "me",
+          "startMs": 102.858792
+        },
+        {
+          "label": "organizations",
+          "startMs": 103.01087499999994
+        },
+        {
+          "label": "tasks",
+          "startMs": 318.43154200000026
+        },
+        {
+          "label": "other-fixture-request",
+          "startMs": 318.6424999999999
+        },
+        {
+          "label": "notifications",
+          "startMs": 319.4128330000003
+        }
+      ],
+      "timings": {
+        "navigation": [
+          {
+            "responseStart": 104.5,
+            "domContentLoaded": 223.09999999403954,
+            "load": 223.39999997615814
+          }
+        ],
+        "paints": [
+          {
+            "name": "first-paint",
+            "time": 156
+          },
+          {
+            "name": "first-contentful-paint",
+            "time": 352
+          }
+        ],
+        "usefulContent": [
+          {
+            "name": "fixture-shell",
+            "time": 295.59999999403954
+          },
+          {
+            "name": "fixture-useful-tasks",
+            "time": 401.5
+          }
+        ]
+      }
+    },
+    {
+      "run": 2,
+      "browserRequests": [
+        {
+          "label": "private-document",
+          "startMs": 1.671125000000302
+        },
+        {
+          "label": "bff-tasks",
+          "startMs": 298.6733750000003
+        },
+        {
+          "label": "bff-overview",
+          "startMs": 298.7475000000004
+        },
+        {
+          "label": "bff-notifications",
+          "startMs": 298.8012910000002
+        }
+      ],
+      "upstreamRequests": [
+        {
+          "label": "me",
+          "startMs": 7.379916000000321
+        },
+        {
+          "label": "organizations",
+          "startMs": 7.492583000000195
+        },
+        {
+          "label": "tasks",
+          "startMs": 302.55837500000007
+        },
+        {
+          "label": "other-fixture-request",
+          "startMs": 302.8485830000004
+        },
+        {
+          "label": "notifications",
+          "startMs": 303.0260000000003
+        }
+      ],
+      "timings": {
+        "navigation": [
+          {
+            "responseStart": 7,
+            "domContentLoaded": 100.2000000178814,
+            "load": 100.40000000596046
+          }
+        ],
+        "paints": [
+          {
+            "name": "first-paint",
+            "time": 32
+          },
+          {
+            "name": "first-contentful-paint",
+            "time": 328
+          }
+        ],
+        "usefulContent": [
+          {
+            "name": "fixture-shell",
+            "time": 296.40000000596046
+          },
+          {
+            "name": "fixture-useful-tasks",
+            "time": 385.90000000596046
+          }
+        ]
+      }
+    },
+    {
+      "run": 3,
+      "browserRequests": [
+        {
+          "label": "private-document",
+          "startMs": 1.5255419999994047
+        },
+        {
+          "label": "bff-tasks",
+          "startMs": 298.2313749999994
+        },
+        {
+          "label": "bff-overview",
+          "startMs": 298.31145800000013
+        },
+        {
+          "label": "bff-notifications",
+          "startMs": 298.37645799999973
+        }
+      ],
+      "upstreamRequests": [
+        {
+          "label": "me",
+          "startMs": 6.3249580000001515
+        },
+        {
+          "label": "organizations",
+          "startMs": 6.38904199999979
+        },
+        {
+          "label": "tasks",
+          "startMs": 301.76274999999987
+        },
+        {
+          "label": "other-fixture-request",
+          "startMs": 301.8492499999993
+        },
+        {
+          "label": "notifications",
+          "startMs": 302.08066699999927
+        }
+      ],
+      "timings": {
+        "navigation": [
+          {
+            "responseStart": 5.800000011920929,
+            "domContentLoaded": 99,
+            "load": 99.09999999403954
+          }
+        ],
+        "paints": [
+          {
+            "name": "first-paint",
+            "time": 32
+          },
+          {
+            "name": "first-contentful-paint",
+            "time": 328
+          }
+        ],
+        "usefulContent": [
+          {
+            "name": "fixture-shell",
+            "time": 296
+          },
+          {
+            "name": "fixture-useful-tasks",
+            "time": 385.59999999403954
+          }
+        ]
+      }
+    }
+  ],
+  "visuals": []
+}

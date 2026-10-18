@@ -42,6 +42,7 @@ class PortfolioDocument:
     contract_id: str
     title: str
     text: str
+    evidence_kind: str = "Retained source"
 
 
 class DocumentExtractor(Protocol):

@@ -1,0 +1,93 @@
+{
+  "source": "public/lenslayer-dashboard@2x.jpg",
+  "sourceSha256": "23dded8ad80dd79d735026d79e50e3aee355a62f7642683323b9b6c26b5703bf",
+  "sharp": {
+    "aom": "3.13.1",
+    "archive": "3.8.2",
+    "cairo": "1.18.4",
+    "cgif": "0.5.0",
+    "exif": "0.6.25",
+    "expat": "2.7.3",
+    "ffi": "3.5.2",
+    "fontconfig": "2.17.1",
+    "freetype": "2.14.1",
+    "fribidi": "1.0.16",
+    "glib": "2.86.1",
+    "harfbuzz": "12.1.0",
+    "heif": "1.20.2",
+    "highway": "1.3.0",
+    "imagequant": "2.4.1",
+    "lcms": "2.17",
+    "mozjpeg": "0826579",
+    "pango": "1.57.0",
+    "pixman": "0.46.4",
+    "png": "1.6.50",
+    "proxy-libintl": "0.5",
+    "rsvg": "2.61.2",
+    "spng": "0.7.4",
+    "tiff": "4.7.1",
+    "vips": "8.17.3",
+    "webp": "1.6.0",
+    "xml2": "2.15.1",
+    "zlib-ng": "2.2.5",
+    "sharp": "0.34.5"
+  },
+  "variants": [
+    {
+      "file": "dashboard-v1-480.avif",
+      "width": 480,
+      "height": 252,
+      "bytes": 8072,
+      "sha256": "586809071c9ed726ff9336006647a28b280d7ce673a0f67b6c4a6ce0fe4404b6"
+    },
+    {
+      "file": "dashboard-v1-480.webp",
+      "width": 480,
+      "height": 252,
+      "bytes": 10712,
+      "sha256": "e7ea1c60fefa159fe3f2ee27908ae3121e8488350da00deded356f4f97cac8e8"
+    },
+    {
+      "file": "dashboard-v1-768.avif",
+      "width": 768,
+      "height": 404,
+      "bytes": 17221,
+      "sha256": "cf8c1329b62f0c712b8e42caf37b3ee42223b9630354a78da45bb1e870f91644"
+    },
+    {
+      "file": "dashboard-v1-768.webp",
+      "width": 768,
+      "height": 404,
+      "bytes": 22128,
+      "sha256": "175b3221fc0fec827360db638cea8b3b970adc9025aa4f7ca4cb21037d76ab9b"
+    },
+    {
+      "file": "dashboard-v1-1152.avif",
+      "width": 1152,
+      "height": 605,
+      "bytes": 31961,
+      "sha256": "8c647b7cd4c8b9c883287e7dfce74e70fdf99099276d7faf0a6fec69f89630c4"
+    },
+    {
+      "file": "dashboard-v1-1152.webp",
+      "width": 1152,
+      "height": 605,
+      "bytes": 39750,
+      "sha256": "fc08a6c40c781d28e517248bedf00899bee87c94d42cd0029f54be4e70e8ade3"
+    },
+    {
+      "file": "dashboard-v1-1728.avif",
+      "width": 1728,
+      "height": 908,
+      "bytes": 63034,
+      "sha256": "6c1329544c7d80871223c33b6b1b8e3a68288a6042bd179b3f8b5ebb1641859d"
+    },
+    {
+      "file": "dashboard-v1-1728.webp",
+      "width": 1728,
+      "height": 908,
+      "bytes": 77292,
+      "sha256": "7df8a79e68b39a66567e24c0d14f058dd50146827145263366f08c344e2c9b3d"
+    }
+  ]
+}

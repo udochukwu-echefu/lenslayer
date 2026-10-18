@@ -76,21 +76,25 @@ class GovernanceServiceMixin:
         user: User,
         question: str,
     ) -> PortfolioQuestionResponse:
-        self.workspace.membership(organization_id, user)
-        reviews = self.session.execute(
-            select(Contract, ContractReview)
-            .join(ContractReview, ContractReview.contract_id == Contract.id)
-            .where(Contract.organization_id == organization_id)
-        ).all()
-        documents = [
-            PortfolioDocument(
-                contract_id=contract.id,
-                title=contract.title,
-                text=(review.source_text if not source_expired(contract) else None) or json_dump(json_load(review.analysis_json, {})),
-            )
-            for contract, review in reviews
-        ]
-        result = self.review_workflow.answer_portfolio(documents, question)
+        from .qa import fingerprint, portfolio_documents
+        from ..document_intelligence.qa import QATimings, current_timings
+        import time
+        timing = QATimings()
+        token = current_timings.set(timing)
+        try:
+            documents = portfolio_documents(self, organization_id, user, question)
+            timing.retrieval_ms = (time.monotonic() - timing.started) * 1000
+            result = self.review_workflow.answer_portfolio(documents, question)
+            self.session.expire_all()
+            if fingerprint(portfolio_documents(self, organization_id, user, question)) != fingerprint(documents):
+                raise HTTPException(status_code=409, detail="Evidence changed. Ask again.")
+        except BaseException:
+            timing.record("failed")
+            raise
+        else:
+            timing.record("generated")
+        finally:
+            current_timings.reset(token)
         sources = [
             PortfolioQuestionSource(
                 contract_id=source.contract_id or "",
@@ -111,7 +115,6 @@ class GovernanceServiceMixin:
             user.id,
             "portfolio.question_answered",
             detail={
-                "question": question[:240],
                 "source_count": len(sources),
                 "generated_by": result.generated_by,
             },

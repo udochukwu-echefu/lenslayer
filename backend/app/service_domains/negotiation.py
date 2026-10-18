@@ -7,6 +7,7 @@ import hashlib
 
 from fastapi import HTTPException
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
 from ..malware import scan_upload
 from ..models import (
@@ -140,6 +141,10 @@ class NegotiationServiceMixin:
             require_source_available(contract)
             contract.updated_at = utcnow()
             self.session.commit()
+        except IntegrityError:
+            self.session.rollback()
+            self.object_store.delete(storage_key)
+            raise HTTPException(409, "A version was uploaded concurrently. Refresh and try again.") from None
         except Exception:
             self.session.rollback()
             self.object_store.delete(storage_key)

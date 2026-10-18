@@ -1,0 +1,9 @@
+{
+  "original_sha256": "0a0da750bc139bb207b55d8b99efea66790d09a5606a365044b0a1fe26dcf2be",
+  "source_sha": "53dbd8b4855f6593e383d598b4d4b4d938760c39",
+  "adaptations": [
+    "checkout explicitly on sys.path",
+    "__file__ points into separate output directory"
+  ],
+  "workload_modified": false
+}
