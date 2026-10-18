@@ -2,21 +2,22 @@
 import asyncio
 import hashlib
 import unittest
+from datetime import timedelta
 from unittest.mock import patch
 
 import httpx
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, delete, event
 from sqlalchemy.orm import sessionmaker
 
 from backend.app.api import qa_stream
 from backend.app.api.dependencies import ServiceDep, UserDep
-from backend.app.models import Contract, ContractReview, User
-from tests.test_qa_streaming import QAStreamingTests, Exchange
+from backend.app.models import Contract, ContractReview, Membership, User, utcnow
+from tests.test_qa_streaming import Exchange
 from tests import test_qa_streaming as fixtures
 from tests.postgres_support import DisposablePostgres, postgres_enabled
 
 
-class StreamResourceTests(QAStreamingTests):
+class StreamResourceTests(fixtures.QAStreamingTests):
     def setUp(self):
         super().setUp()
         with self.db.session_factory() as session:
@@ -130,6 +131,45 @@ class StreamResourceTests(QAStreamingTests):
         self.model.release.set()
         self.assertFalse((await exchange.finish())["completed"])
         self.assertEqual(self.audits(), [])
+
+    async def test_portfolio_used_source_revocation_expiry_deletion_and_replacement(self):
+        for change in ("revocation", "expiry", "deletion", "replacement"):
+            self.setUp_case()
+            exchange = Exchange(self.app, "/api/v1/organizations/org/portfolio/questions/stream")
+            await exchange.until("answer")
+            with self.db.session_factory() as session:
+                if change == "revocation":
+                    session.execute(delete(Membership))
+                elif change == "expiry":
+                    session.get(Contract, "c").expires_at = utcnow() - timedelta(seconds=1)
+                elif change == "deletion":
+                    session.execute(delete(ContractReview))
+                else:
+                    session.get(ContractReview, "r").id = "replacement-review"
+                session.commit()
+            self.model.release.set()
+            self.assertFalse((await exchange.finish())["completed"], change)
+            self.assertEqual(self.audits(), [])
+            self.assertEqual(self.db.engine.pool.checkedout(), 0)
+
+    async def test_disconnect_before_first_content_closes_provider_and_all_checkouts(self):
+        entered, closed = asyncio.Event(), asyncio.Event()
+        async def waiting(_prompt):
+            try:
+                entered.set()
+                await asyncio.Event().wait()
+                yield None
+            finally:
+                closed.set()
+        with patch.object(self.model, "astream", waiting):
+            exchange = Exchange(self.app, self.path)
+            await exchange.until("evidence")
+            await asyncio.wait_for(entered.wait(), 2)
+            self.assertEqual(self.db.engine.pool.checkedout(), 0)
+            await exchange.disconnect()
+            self.assertTrue(closed.is_set())
+            self.assertEqual(self.db.engine.pool.checkedout(), 0)
+            self.assertEqual(self.audits(), [])
 
 
 @unittest.skipUnless(postgres_enabled(), "Disposable PostgreSQL not opted in")

@@ -73,3 +73,25 @@ it("unmounts and clears private query state on BFF revocation before redirecting
   expect(clients[0].getQueryCache().getAll()).toHaveLength(0);
   expect(state.replace).toHaveBeenCalledWith("/auth/session-expired?callbackUrl=%2Ftasks");
 });
+
+it("keeps one QueryClient and fresh cached records while same-account route children change", async () => {
+  const view = render(<Providers session={state.session} bootstrap={bootstrap}><Probe /></Providers>);
+  act(() => clients[0].setQueryData(["private-records", "same-org"], "CACHED-A"));
+  await waitFor(() => expect(screen.getByText(/CACHED-A/)).toBeInTheDocument());
+  view.rerender(<Providers session={state.session} bootstrap={bootstrap}><section aria-label="Another section"><Probe /></section></Providers>);
+  expect(clients).toHaveLength(1);
+  expect(screen.getByText(/CACHED-A/)).toBeInTheDocument();
+});
+
+it("expires a persistent private cache at its original session deadline without polling", async () => {
+  vi.useFakeTimers();
+  try {
+    state.session = { user: { id: "account-a" }, expires: new Date(Date.now() + 1000).toISOString() };
+    render(<Providers session={state.session} bootstrap={bootstrap}><Probe /></Providers>);
+    act(() => clients[0].setQueryData(["private-records", "same-org"], "PRIVATE-A"));
+    await act(async () => vi.advanceTimersByTimeAsync(1000));
+    expect(clients[0].getQueryCache().getAll()).toHaveLength(0);
+    expect(screen.queryByText(/Account A/)).not.toBeInTheDocument();
+    expect(state.replace).toHaveBeenCalledWith("/auth/session-expired?callbackUrl=%2Ftasks");
+  } finally { vi.useRealTimers(); }
+});

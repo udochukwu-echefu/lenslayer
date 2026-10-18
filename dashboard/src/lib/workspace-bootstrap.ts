@@ -11,7 +11,7 @@ export type WorkspaceBootstrap = {
 };
 
 export function sessionAccount(session: Session | null | undefined) {
-  return session?.user?.id && !session.error ? session.user.id : null;
+  return session?.user?.id && !session.error && Date.parse(session.expires) > Date.now() ? session.user.id : null;
 }
 
 export function workspaceQueryKey(kind: "me" | "organizations", mode: string, account: string | null) {

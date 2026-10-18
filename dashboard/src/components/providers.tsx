@@ -36,6 +36,21 @@ function AccountBoundary({ children, workspace, bootstrap }: { children: React.R
     return () => window.removeEventListener("lenslayer:session-invalidated", reject);
   }, []);
   useEffect(() => {
+    if (!session?.user?.id || session.error) return;
+    const expires = Date.parse(session.expires);
+    if (!Number.isFinite(expires)) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const check = () => {
+      const remaining = expires - Date.now();
+      if (remaining <= 0) {
+        seedAuthenticatedSession(null);
+        window.dispatchEvent(new Event("lenslayer:session-invalidated"));
+      } else timer = setTimeout(check, Math.min(remaining, 2_147_483_647));
+    };
+    check();
+    return () => clearTimeout(timer);
+  }, [session?.user?.id, session?.expires, session?.error]);
+  useEffect(() => {
     if (rejected) router.replace(`/auth/session-expired?callbackUrl=${encodeURIComponent(pathname || "/")}`);
   }, [pathname, rejected, router]);
   // A different account (or expiry/signout/error) gets a NEW cache and remounted
