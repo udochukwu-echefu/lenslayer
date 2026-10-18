@@ -57,7 +57,7 @@ class LifecycleServiceMixin:
             title=payload["title"].strip(),
             description=payload.get("description", "").strip(),
             amount=payload.get("amount", "").strip(),
-            due_at=payload["due_at"],
+            due_at=aware(payload["due_at"]),
             reminder_days=payload.get("reminder_days", 7),
             recurrence=payload.get("recurrence", "none"),
         )
@@ -107,6 +107,8 @@ class LifecycleServiceMixin:
                 value = changes[field]
                 if isinstance(value, str) and field in {"title", "description", "amount"}:
                     value = value.strip()
+                if field == "due_at":
+                    value = aware(value)
                 setattr(item, field, value)
         if changes.get("status") and changes["status"] != item.status:
             item.status = changes["status"]

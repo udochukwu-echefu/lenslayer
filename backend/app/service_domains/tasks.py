@@ -82,7 +82,7 @@ class TasksServiceMixin:
             category=payload.get("category", "follow_up"),
             priority=payload.get("priority", "normal"),
             status=payload.get("status", "open"),
-            due_at=payload.get("due_at"),
+            due_at=aware(payload["due_at"]) if payload.get("due_at") is not None else None,
             source_kind=source_kind,
             source_reference_json=json_dump(payload.get("source_reference", {})),
             completed_at=utcnow() if payload.get("status") == "done" else None,
@@ -127,6 +127,8 @@ class TasksServiceMixin:
                     continue
                 if field in {"title", "description"} and isinstance(value, str):
                     value = value.strip()
+                if field == "due_at" and value is not None:
+                    value = aware(value)
                 setattr(task, field, value)
         if "status" in changes and changes["status"] is not None:
             task.status = changes["status"]

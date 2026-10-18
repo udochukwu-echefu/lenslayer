@@ -143,6 +143,39 @@ class WorkspaceQueryTests(unittest.TestCase):
                 self.assertNotIn("source_text", row)
         self.assertEqual(self.get("query/search", {"q": "100%"}).json()["items"][0]["id"], "contract-000000")
 
+    def test_equivalent_timezone_instants_and_overview_overflow(self):
+        utc = self.day.isoformat()
+        equivalent = self.day.astimezone(timezone(timedelta(hours=2))).isoformat()
+        for collection in ["tasks", "lifecycle"]:
+            first = self.get(f"query/{collection}", {"due_before": utc, "due_after": utc}).json()
+            second = self.get(f"query/{collection}", {"due_before": equivalent, "due_after": equivalent}).json()
+            self.assertEqual(first, second)
+        first = self.get("query/overview", {"day_start": utc}).json()["counts"]
+        second = self.get("query/overview", {"day_start": equivalent}).json()["counts"]
+        self.assertEqual(first, second)
+        self.assertEqual(self.get("query/overview", {"day_start": "9999-12-31T00:00:00Z"}).status_code, 422)
+
+    def test_deadline_writes_normalize_timezone_for_sqlite_and_postgres(self):
+        equivalent = self.day.astimezone(timezone(timedelta(hours=2))).isoformat()
+        response = self.client.post(f"/api/v1/organizations/{self.organization_id}/tasks", headers=self.headers,
+                                    json={"title": "Offset deadline fixture", "due_at": equivalent})
+        self.assertEqual(response.status_code, 201, response.text)
+        task_id = response.json()["id"]
+        exact = {"q": "Offset deadline fixture", "due_before": self.day.isoformat(), "due_after": self.day.isoformat()}
+        self.assertEqual(self.get("query/tasks", exact).json()["total"], 1)
+        changed = (self.day + timedelta(days=1)).astimezone(timezone(timedelta(hours=-5))).isoformat()
+        response = self.client.patch(f"/api/v1/organizations/{self.organization_id}/tasks/{task_id}", headers=self.headers, json={"due_at": changed})
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(self.get("query/tasks", exact).json()["total"], 0)
+        life = self.client.post(f"/api/v1/organizations/{self.organization_id}/contracts/contract-000000/lifecycle", headers=self.headers,
+                               json={"kind": "renewal", "title": "Offset lifecycle fixture", "due_at": equivalent})
+        self.assertEqual(life.status_code, 201, life.text)
+        exact["q"] = "Offset lifecycle fixture"
+        self.assertEqual(self.get("query/lifecycle", exact).json()["total"], 1)
+        response = self.client.patch(f"/api/v1/organizations/{self.organization_id}/lifecycle/{life.json()['id']}", headers=self.headers, json={"due_at": changed})
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(self.get("query/lifecycle", exact).json()["total"], 0)
+
     def test_tenant_and_viewer_boundaries_and_private_headers(self):
         for route in ["query/contracts", "query/tasks", "query/lifecycle", "query/overview", "query/search?q=Supplier"]:
             self.assertEqual(self.get(route, organization_id=self.other_id).status_code, 403)

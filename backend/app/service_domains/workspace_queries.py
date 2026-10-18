@@ -6,7 +6,7 @@ pages retain the true count; consumers can restart after concurrent mutations.
 """
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from itertools import zip_longest
 from urllib.parse import quote
 
@@ -46,7 +46,10 @@ def statuses(value: str | None, allowed: set[str]):
 def aware_bound(value: datetime | None) -> datetime | None:
     if value is not None and (value.tzinfo is None or value.utcoffset() is None):
         raise HTTPException(422, "Dates must include a timezone.")
-    return value
+    try:
+        return value.astimezone(timezone.utc) if value is not None else None
+    except (OverflowError, ValueError):
+        raise HTTPException(422, "Date is outside the supported range.") from None
 
 
 class WorkspaceQueriesServiceMixin:
@@ -115,10 +118,11 @@ class WorkspaceQueriesServiceMixin:
         for column, value in [(WorkflowTask.assigned_to_user_id, assigned_to_user_id), (WorkflowTask.contract_id, contract_id), (WorkflowTask.category, category)]:
             if value is not None:
                 query = query.where(column == value)
-        if aware_bound(due_before):
-            query = query.where(WorkflowTask.due_at <= due_before)
-        if aware_bound(due_after):
-            query = query.where(WorkflowTask.due_at >= due_after)
+        before, after = aware_bound(due_before), aware_bound(due_after)
+        if before is not None:
+            query = query.where(WorkflowTask.due_at <= before)
+        if after is not None:
+            query = query.where(WorkflowTask.due_at >= after)
         return query.where(text_filter(search_terms(q), [WorkflowTask.title, Contract.title, Contract.counterparty, User.display_name, cast(WorkflowTask.due_at, String)]))
 
     def _task_items(self, rows):
@@ -138,10 +142,11 @@ class WorkspaceQueriesServiceMixin:
             query = query.where(LifecycleItem.status.in_(selected))
         if contract_id is not None:
             query = query.where(LifecycleItem.contract_id == contract_id)
-        if aware_bound(due_before):
-            query = query.where(LifecycleItem.due_at <= due_before)
-        if aware_bound(due_after):
-            query = query.where(LifecycleItem.due_at >= due_after)
+        before, after = aware_bound(due_before), aware_bound(due_after)
+        if before is not None:
+            query = query.where(LifecycleItem.due_at <= before)
+        if after is not None:
+            query = query.where(LifecycleItem.due_at >= after)
         query = query.where(text_filter(search_terms(q), [LifecycleItem.title, Contract.title, Contract.counterparty, cast(LifecycleItem.due_at, String)])).options(joinedload(LifecycleItem.contract), joinedload(LifecycleItem.owner))
         return self._record_page(query, LifecycleItem, lambda rows: [self.lifecycle_response(row) for row in rows],
                                  limit=limit, offset=offset, sort=sort, descending=descending,
@@ -170,7 +175,10 @@ class WorkspaceQueriesServiceMixin:
         self.workspace.membership(organization_id, user)
         now = utcnow()
         start = aware_bound(day_start) or now.replace(hour=0, minute=0, second=0, microsecond=0)
-        end = aware_bound(week_end) or start + timedelta(days=8)
+        try:
+            end = aware_bound(week_end) or start + timedelta(days=8)
+        except OverflowError:
+            raise HTTPException(422, "Date is outside the supported range.") from None
         if not start < end or end - start > timedelta(days=32):
             raise HTTPException(422, "Choose an overview date range of at most 32 days.")
         def count_if(condition):
