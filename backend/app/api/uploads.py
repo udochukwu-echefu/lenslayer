@@ -25,6 +25,15 @@ def upload_limiter(request):
     return state.upload_limiter
 
 
+def release_admission(limiter, admission):
+    # Called only on the event loop. Both owners must have finished before the
+    # next parser/body is admitted. Raw request cancellation cannot free a live
+    # worker; worker completion cannot free a still-live parser/endpoint frame.
+    if admission["request_done"] and (not admission["transferred"] or admission["worker_done"]) and not admission["released"]:
+        admission["released"] = True
+        limiter.release_on_behalf_of(admission["borrower"])
+
+
 def authorize_upload(request):
     """Short pre-parse check, closed before waiting; execution rechecks access."""
     from .dependencies import get_current_user, public_api_token
@@ -62,7 +71,7 @@ class UploadRoute(APIRoute):
                 raise HTTPException(503, "Upload capacity is busy. Try again later.", headers={"Retry-After": "2"})
             borrower = object()
             await limiter.acquire_on_behalf_of(borrower)
-            admission = {"borrower": borrower, "transferred": False}
+            admission = {"borrower": borrower, "transferred": False, "request_done": False, "worker_done": False, "released": False}
             request.state.upload_admission = admission
             parser = None
             try:
@@ -89,8 +98,8 @@ class UploadRoute(APIRoute):
                     # All these are SpooledTemporaryFiles, not request ORM state.
                     for file in parser._files_to_close_on_error:
                         file.close()
-                if not admission["transferred"]:
-                    limiter.release_on_behalf_of(borrower)
+                admission["request_done"] = True
+                release_admission(limiter, admission)
         return admitted
 
 
@@ -115,6 +124,13 @@ async def run_upload(request: Request, operation: Callable[[PlatformService], T]
     started = False
     cancelled_before_start = False
 
+    def worker_finished():
+        if admission:
+            admission["worker_done"] = True
+            release_admission(limiter, admission)
+        else:
+            limiter.release_on_behalf_of(borrower)
+
     def execute() -> T:
         nonlocal started
         with start_lock:
@@ -131,7 +147,7 @@ async def run_upload(request: Request, operation: Callable[[PlatformService], T]
             # The worker, not its waiting request, owns an admitted slot. Raw
             # asyncio Task.cancel() bypasses AnyIO's cancel-scope shielding, but
             # must not admit another write until this session has closed.
-            anyio.from_thread.run_sync(limiter.release_on_behalf_of, borrower)
+            anyio.from_thread.run_sync(worker_finished)
 
     # A running write cannot safely be killed. Keep its slot until commit or
     # rollback/object cleanup and session close, even on cancellation. Admission
@@ -146,5 +162,5 @@ async def run_upload(request: Request, operation: Callable[[PlatformService], T]
                 # Cancellation can win between admission and thread startup.
                 # A scheduled-but-not-started worker must then skip the write.
                 cancelled_before_start = True
-                limiter.release_on_behalf_of(borrower)
+                worker_finished()
         raise
