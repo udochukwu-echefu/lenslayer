@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { useCreateWorkspace, useWorkspace } from "./workspace-provider";
 import { ApiError, isPublicAccessEnabled } from "@/lib/api";
+import { PageLoading } from "./page-states";
 
 function slugify(value: string) {
   return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 120);
@@ -40,7 +41,7 @@ export function WorkspaceGate({ children }: { children: React.ReactNode }) {
   if (isStaticDeveloperGuide) return children;
 
   if (isLoading || privateSessionExpired || (authRequired && sessionStatus !== "authenticated")) {
-    return <main className="gate"><LoaderCircle className="gate-spinner" aria-label="Loading workspace" /><p>Opening your workspace…</p></main>;
+    return <main className="gate"><LoaderCircle className="gate-spinner" aria-label="Loading workspace" /><p>Opening your workspace…</p><PageLoading rows={3} /></main>;
   }
 
   if (error) {

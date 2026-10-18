@@ -2,9 +2,10 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useMemo, useState, useSyncExternalStore } from "react";
 import { api, isDemoWorkspace, isPublicAccessEnabled } from "@/lib/api";
 import type { Organization, Role, User } from "@/lib/types";
+import { sessionAccount, workspaceQueryKey } from "@/lib/workspace-bootstrap";
 
 type WorkspaceValue = {
   organizations: Organization[];
@@ -22,6 +23,14 @@ type WorkspaceValue = {
 
 const WorkspaceContext = createContext<WorkspaceValue | null>(null);
 const storageKey = "lenslayer.activeOrganization";
+const subscribeHydration = () => () => {};
+const browserSnapshot = () => true;
+const serverSnapshot = () => false;
+
+function rememberedOrganization() {
+  try { return typeof window === "undefined" ? null : window.localStorage.getItem(storageKey); }
+  catch { return null; }
+}
 
 export function resolveWorkspaceAccess(publicAccess: boolean, sessionStatus: "authenticated" | "loading" | "unauthenticated") {
   const useDemoWorkspace = publicAccess && sessionStatus === "unauthenticated";
@@ -32,30 +41,36 @@ export function resolveWorkspaceAccess(publicAccess: boolean, sessionStatus: "au
 }
 
 export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
-  const { status: sessionStatus } = useSession();
-  const [activeId, setActiveId] = useState<string | null>(() => typeof window === "undefined" ? null : window.localStorage.getItem(storageKey));
+  const { data: session, status: sessionStatus } = useSession();
+  const [activeId, setActiveId] = useState<string | null>(rememberedOrganization);
+  // Server HTML cannot know localStorage. Its hydration snapshot must not paint
+  // the first workspace's records before restoring a different remembered one.
+  const selectionReady = useSyncExternalStore(subscribeHydration, browserSnapshot, serverSnapshot);
   const publicAccess = isPublicAccessEnabled();
-  const { useDemoWorkspace, canLoadWorkspace } = resolveWorkspaceAccess(publicAccess, sessionStatus);
+  const access = resolveWorkspaceAccess(publicAccess, sessionStatus);
+  const account = sessionAccount(session);
+  const useDemoWorkspace = access.useDemoWorkspace;
+  const canLoadWorkspace = access.canLoadWorkspace && (useDemoWorkspace || Boolean(account));
   const workspaceMode = useDemoWorkspace ? "demo" : "private";
-  const organizationsQuery = useQuery({ queryKey: ["organizations", workspaceMode], queryFn: () => api.organizations(useDemoWorkspace), enabled: canLoadWorkspace });
-  const userQuery = useQuery({ queryKey: ["me", workspaceMode], queryFn: () => api.me(useDemoWorkspace), enabled: canLoadWorkspace });
+  const organizationsQuery = useQuery({ queryKey: workspaceQueryKey("organizations", workspaceMode, account), queryFn: () => api.organizations(useDemoWorkspace), enabled: canLoadWorkspace });
+  const userQuery = useQuery({ queryKey: workspaceQueryKey("me", workspaceMode, account), queryFn: () => api.me(useDemoWorkspace), enabled: canLoadWorkspace });
 
-  const activeOrganization = organizationsQuery.data?.find((item) => item.id === activeId) ?? organizationsQuery.data?.[0] ?? null;
+  const activeOrganization = canLoadWorkspace && selectionReady ? organizationsQuery.data?.find((item) => item.id === activeId) ?? organizationsQuery.data?.[0] ?? null : null;
   const activeRole = activeOrganization?.role ?? null;
 
   const value = useMemo<WorkspaceValue>(() => ({
-    organizations: organizationsQuery.data ?? [],
+    organizations: canLoadWorkspace ? organizationsQuery.data ?? [] : [],
     activeOrganization,
     activeRole,
     canUpload: activeRole === "owner" || activeRole === "admin" || activeRole === "reviewer",
     canDelete: activeRole === "owner" || activeRole === "admin",
     canManageTeam: activeRole === "owner" || activeRole === "admin",
     isDemo: isDemoWorkspace(activeOrganization?.id),
-    user: userQuery.data ?? null,
-    isLoading: sessionStatus === "loading" || organizationsQuery.isLoading || userQuery.isLoading,
+    user: canLoadWorkspace ? userQuery.data ?? null : null,
+    isLoading: !selectionReady || sessionStatus === "loading" || organizationsQuery.isLoading || userQuery.isLoading,
     error: (organizationsQuery.error ?? userQuery.error) as Error | null,
-    selectOrganization: (id) => { setActiveId(id); window.localStorage.setItem(storageKey, id); },
-  }), [activeOrganization, activeRole, organizationsQuery.data, organizationsQuery.error, organizationsQuery.isLoading, sessionStatus, userQuery.data, userQuery.error, userQuery.isLoading]);
+    selectOrganization: (id) => { if (!organizationsQuery.data?.some((item) => item.id === id)) return; setActiveId(id); try { window.localStorage.setItem(storageKey, id); } catch { /* in-memory selection still works */ } },
+  }), [activeOrganization, activeRole, canLoadWorkspace, organizationsQuery.data, organizationsQuery.error, organizationsQuery.isLoading, selectionReady, sessionStatus, userQuery.data, userQuery.error, userQuery.isLoading]);
 
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;
 }

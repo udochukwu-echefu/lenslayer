@@ -2,8 +2,37 @@
 import { headers } from "next/headers";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./auth";
+import type { Session } from "next-auth";
+import type { JWT } from "next-auth/jwt";
 
 export type TrustedSession = { subject: string; sessionId: string; accessToken: string };
+
+function trustedToken(token: JWT): TrustedSession | null {
+  if (token.error || typeof token.sub !== "string" || typeof token.accessToken !== "string" ||
+      typeof token.browserSessionId !== "string" || !/^[0-9a-f-]{36}$/.test(token.browserSessionId) ||
+      !token.accessTokenExpires || token.accessTokenExpires <= Date.now()) return null;
+  return { subject: token.sub, sessionId: token.browserSessionId, accessToken: token.accessToken };
+}
+
+// Only private route layouts call this. One refresh-capable session read provides
+// both a browser-safe projection and credentials for request-local API reads.
+export async function readPrivateWorkspaceSession(): Promise<{ session: Session | null; trusted: TrustedSession | null }> {
+  if (!(await headers()).get("cookie")) return { session: null, trusted: null };
+  let trusted: TrustedSession | null = null;
+  let browserExpires = "";
+  const session = await getServerSession({ ...authOptions, callbacks: { ...authOptions.callbacks,
+    async session({ session, token }) {
+      trusted = trustedToken(token);
+      const expires = typeof token.exp === "number" ? new Date(token.exp * 1000).toISOString() : session.expires;
+      browserExpires = expires;
+      return { expires, ...(token.error ? { error: token.error } : {}),
+        user: { id: token.sub, name: session.user?.name, email: session.user?.email, image: session.user?.image } };
+    },
+  } });
+  // NextAuth v4 strips expires in RSCs (read-only cookies). Keep the verified
+  // JWT's original hard expiry, never a newly invented sliding browser expiry.
+  return { session: session ? { ...session, expires: browserExpires } : null, trusted };
+}
 
 export function trustedSessionMutationAllowed(request: Request) {
   try {
@@ -20,10 +49,7 @@ export async function readTrustedSession(): Promise<TrustedSession | null> {
   // PRIVATE projection is used only inside the BFF, never /api/auth/session.
   const session = await getServerSession({ ...authOptions, callbacks: { ...authOptions.callbacks,
     async session({ token }) {
-      if (token.error || typeof token.sub !== "string" || typeof token.accessToken !== "string" ||
-          typeof token.browserSessionId !== "string" || !/^[0-9a-f-]{36}$/.test(token.browserSessionId) ||
-          !token.accessTokenExpires || token.accessTokenExpires <= Date.now()) return null as never;
-      return { subject: token.sub, sessionId: token.browserSessionId, accessToken: token.accessToken } as never;
+      return trustedToken(token) as never;
     },
   } }) as unknown as TrustedSession | null;
   return session;
