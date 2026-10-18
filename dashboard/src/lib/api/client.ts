@@ -147,6 +147,7 @@ export async function request<T>(
     headers,
     cache: "no-store",
   });
+  if (generation !== sessionGeneration) throw new ApiError("The account changed. Try again in the current workspace.", 401);
   if (!response.ok) {
     if (response.status === 401 && !publicPreview && typeof window !== "undefined") {
       seedAuthenticatedSession(null);
@@ -167,7 +168,9 @@ export async function request<T>(
     );
   }
   if (response.status === 204) return undefined as T;
-  return response.json() as Promise<T>;
+  const value = await response.json() as T;
+  if (generation !== sessionGeneration) throw new ApiError("The account changed. Try again in the current workspace.", 401);
+  return value;
 }
 
 export async function download(path: string, filename: string) {

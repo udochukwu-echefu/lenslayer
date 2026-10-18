@@ -62,6 +62,18 @@ it("does not preflight exact anonymous shared/invitation previews, but does for 
   expect(getSession).toHaveBeenCalledOnce();
 });
 
+it("rejects late old-account response data after account replacement", async () => {
+  let resolve!: (value: Response) => void;
+  vi.mocked(fetch).mockImplementation(() => new Promise((r) => { resolve = r; }));
+  const { request, seedAuthenticatedSession } = await import("./api/client");
+  seedAuthenticatedSession(session);
+  const pending = request("/me");
+  await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+  seedAuthenticatedSession({ ...session, user: { id: "another-account" } });
+  resolve(Response.json({ id: "old-private-account" }));
+  await expect(pending).rejects.toMatchObject({ status: 401 });
+});
+
 it("invalidates the session hint on private 401, not an unavailable public invitation", async () => {
   const listener = vi.fn(); window.addEventListener("lenslayer:session-invalidated", listener);
   try {

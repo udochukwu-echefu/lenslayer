@@ -24,8 +24,8 @@ export default function CalendarPage() {
   const due_after = new Date(month.getFullYear(), month.getMonth(), 1).toISOString();
   const due_before = new Date(month.getFullYear(), month.getMonth() + 1, 1).toISOString();
   const [descending, setDescending] = useState(false);
-  const tasksQuery = useTaskPage(organizationId, { status: "open,in_progress,done", due_after, due_before, descending });
-  const lifecycleQuery = useLifecyclePage(organizationId, { status: "active", due_after, due_before, descending });
+  const tasksQuery = useTaskPage(organizationId, { status: "open,in_progress,done", due_after, due_before, due_before_exclusive: true, descending });
+  const lifecycleQuery = useLifecyclePage(organizationId, { status: "active", due_after, due_before, due_before_exclusive: true, descending });
   const dueTasks = useMemo(() => tasksQuery.data?.items ?? [], [tasksQuery.data]);
   const lifecycleItems = useMemo(() => lifecycleQuery.data?.items ?? [], [lifecycleQuery.data]);
   const calendar = useMemo(() => {

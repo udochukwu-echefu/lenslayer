@@ -3,7 +3,7 @@ import { isDemoWorkspace, PUBLIC_ACCESS_ENABLED } from "../workspace-mode";
 import { request } from "./client";
 
 export type QueryPage<T> = { items: T[]; total: number; offset: number; limit: number };
-export type PageFilters = { limit?: number; offset?: number; q?: string; status?: string; descending?: boolean };
+export type PageFilters = { limit?: number; offset?: number; q?: string; status?: string; descending?: boolean; due_before_exclusive?: boolean };
 export type ContractFilters = PageFilters & { sort?: "updated_at" | "created_at" | "title" | "counterparty" | "contract_type" | "status" };
 export type TaskFilters = PageFilters & { sort?: "due_at" | "created_at" | "title" | "status" | "priority"; assigned_to_user_id?: string; contract_id?: string; due_before?: string; due_after?: string; category?: TaskCategory };
 export type LifecycleFilters = PageFilters & { sort?: "due_at" | "created_at" | "title" | "status" | "kind"; contract_id?: string; due_before?: string; due_after?: string };

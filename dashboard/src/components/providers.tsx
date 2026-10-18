@@ -48,7 +48,7 @@ function AccountBoundary({ children, workspace, bootstrap }: { children: React.R
   </AccountQueries>;
 }
 
-export function Providers({ children, session, bootstrap }: { children: React.ReactNode; session: Session | null; bootstrap?: WorkspaceBootstrap | null }) {
+export function Providers({ children, session, bootstrap }: { children: React.ReactNode; session?: Session | null; bootstrap?: WorkspaceBootstrap | null }) {
   return <SessionProvider session={session}><AccountBoundary workspace bootstrap={bootstrap}>{children}</AccountBoundary></SessionProvider>;
 }
 

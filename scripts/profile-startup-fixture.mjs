@@ -25,7 +25,10 @@ const fixture = createServer(async (request, response) => {
   apiRequests.push({ label, startMs: performance.now() - started });
   // Equal, deterministic synthetic upstream work for both revisions.
   await new Promise((r) => setTimeout(r, 80));
-  const body = label === "me" ? { id: "synthetic-user", email: "synthetic@example.test", display_name: "Synthetic Reviewer" } : label === "organizations" ? [{ id: "synthetic-org", name: "Synthetic Workspace", slug: "synthetic", role: "owner", created_at: "2026-01-01T00:00:00Z" }] : path.startsWith("/api/v1/invitations/") ? {
+  const body = path.endsWith("/query/overview") ? {
+    counts: { contracts: 0, ready: 0, failed: 0, processing: 0, attention: 0, active_tasks: 0, completed_tasks: 0, overdue_tasks: 0, upcoming_tasks: 0, upcoming_notice_deadlines: 0, due_soon_tasks: 0 },
+    recent_contracts: [], attention_contracts: [], my_tasks: [], upcoming_tasks: [], upcoming_lifecycle: [], as_of: "2026-10-18T00:00:00Z",
+  } : path.includes("/query/") ? { items: [], total: 0, offset: 0, limit: 25 } : label === "me" ? { id: "synthetic-user", email: "synthetic@example.test", display_name: "Synthetic Reviewer" } : label === "organizations" ? [{ id: "synthetic-org", name: "Synthetic Workspace", slug: "synthetic", role: "owner", created_at: "2026-01-01T00:00:00Z" }] : path.startsWith("/api/v1/invitations/") ? {
     organization_name: "Synthetic Workspace", email_hint: "s***@example.test", role: "reviewer", status: "pending", expires_at: "2099-01-01T00:00:00Z",
   } : path.startsWith("/api/v1/shared/") ? {
     shared_for: "Synthetic review", contract_title: "Fictional supplier agreement", counterparty: "Synthetic Supplier", contract_type: "Services", overall_attention: "Medium", executive_summary: "Synthetic evidence only. Review the pricing terms before signing.", expires_at: "2099-01-01T00:00:00Z",
@@ -94,6 +97,8 @@ try {
       const listener = (request) => { const path = new URL(request.url()).pathname; if (path.startsWith("/api/auth/")) requests.push(path); };
       page.on("request", listener);
       await page.goto(`${origin}${route}`, { waitUntil: "networkidle0" });
+      if (route.startsWith("/invite/")) await page.waitForSelector(".invite-page h1");
+      if (route.startsWith("/shared/")) await page.waitForSelector(".shared-hero");
       await page.evaluate(() => document.fonts.ready);
       const name = `${route.replaceAll("/", "-").slice(1)}-${width}-${theme}`;
       await page.screenshot({ path: resolve(output, `${name}.png`), fullPage: true });
@@ -110,7 +115,8 @@ try {
     }
     await context.close();
   }
-  writeFileSync(resolve(output, "fixture-traces.json"), JSON.stringify({ revision, synthetic: true, upstreamDelayMs: 80, browser: await browser.version(), traces, visuals }, null, 2));
+  writeFileSync(resolve(output, "fixture-traces.json"), JSON.stringify({ revision, synthetic: true, upstreamDelayMs: 80, browser: await browser.version(),
+    conditions: { viewport: { width: 390, height: 844, deviceScaleFactor: 1 }, cpuSlowdown: 1, network: "loopback + deterministic 80ms upstream; NOT a production or 4G trace", cache: "new browser context each sample; Next server warm state varies" }, traces, visuals }, null, 2));
   console.log(JSON.stringify({ revision, traces, visuals }, null, 2));
 } finally {
   if (browser) await browser.close();

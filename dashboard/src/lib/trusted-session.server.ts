@@ -2,7 +2,7 @@
 import { headers } from "next/headers";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./auth";
-import type { Session } from "next-auth";
+import type { NextAuthOptions, Session } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 
 export type TrustedSession = { subject: string; sessionId: string; accessToken: string };
@@ -14,21 +14,29 @@ function trustedToken(token: JWT): TrustedSession | null {
   return { subject: token.sub, sessionId: token.browserSessionId, accessToken: token.accessToken };
 }
 
-// Only private route layouts call this. One refresh-capable session read provides
+// Only private route layouts call this. One verified, read-only session provides
 // both a browser-safe projection and credentials for request-local API reads.
-export async function readPrivateWorkspaceSession(): Promise<{ session: Session | null; trusted: TrustedSession | null }> {
+export async function readPrivateWorkspaceSession(): Promise<{ session: Session | null | undefined; trusted: TrustedSession | null }> {
   if (!(await headers()).get("cookie")) return { session: null, trusted: null };
   let trusted: TrustedSession | null = null;
   let browserExpires = "";
-  const session = await getServerSession({ ...authOptions, callbacks: { ...authOptions.callbacks,
+  let needsRefresh = false;
+  const options: NextAuthOptions = { ...authOptions, callbacks: { ...authOptions.callbacks,
+    // RSC cookies are read-only. Refreshing a rotating provider grant here can
+    // consume it without persisting its replacement. Let /api/auth/session or
+    // the BFF refresh in a cookie-writing route instead.
+    async jwt({ token }) { return token; },
     async session({ session, token }) {
+      needsRefresh = !token.accessTokenExpires || token.accessTokenExpires <= Date.now() + 60_000;
       trusted = trustedToken(token);
       const expires = typeof token.exp === "number" ? new Date(token.exp * 1000).toISOString() : session.expires;
       browserExpires = expires;
       return { expires, ...(token.error ? { error: token.error } : {}),
         user: { id: token.sub, name: session.user?.name, email: session.user?.email, image: session.user?.image } };
     },
-  } });
+  } };
+  const session = await getServerSession(options);
+  if (session && needsRefresh) return { session: undefined, trusted: null };
   // NextAuth v4 strips expires in RSCs (read-only cookies). Keep the verified
   // JWT's original hard expiry, never a newly invented sliding browser expiry.
   return { session: session ? { ...session, expires: browserExpires } : null, trusted };
