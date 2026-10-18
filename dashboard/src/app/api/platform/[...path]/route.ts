@@ -54,6 +54,8 @@ async function proxy(request: Request, context: { params: Promise<{ path: string
     if (contentDisposition) outgoing.set("content-disposition", contentDisposition);
     const retryAfter = response.headers.get("retry-after");
     if (retryAfter) outgoing.set("retry-after", retryAfter);
+    const requestId = response.headers.get("x-request-id");
+    if (requestId && /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(requestId)) outgoing.set("X-Request-ID", requestId);
     if (contentType?.includes("application/x-ndjson")) outgoing.set("X-Accel-Buffering", "no");
     return new Response(response.body, { status: response.status, headers: outgoing });
   } catch {

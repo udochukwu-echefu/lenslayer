@@ -10,7 +10,7 @@ import httpx
 
 from backend.app.document_intelligence.analysis import get_llm, get_qa_llm
 from backend.app.document_intelligence.adapters import RetainedTextQuestionAnswerer
-from backend.app.document_intelligence.qa import QATimings, count_async_attempt, current_timings
+from backend.app.document_intelligence.qa import QATimings, StreamFailure, StreamFailureCode, count_async_attempt, current_timings
 
 
 class FakeSSE(httpx.AsyncByteStream):
@@ -29,6 +29,47 @@ class FakeSSE(httpx.AsyncByteStream):
 
 
 class QAProviderTests(unittest.IsolatedAsyncioTestCase):
+    async def test_real_sdk_requires_explicit_stop_even_after_complete_looking_text(self):
+        from langchain_openai import ChatOpenAI
+
+        for reasons in (("stop",), ("length",), (), ("content_filter",), ("unknown",), ("stop", "length")):
+            with self.subTest(reasons=reasons):
+                class Body(httpx.AsyncByteStream):
+                    closed = False
+
+                    async def __aiter__(self):
+                        yield b'data: {"id":"fake","choices":[{"index":0,"delta":{"content":"Notice [Source 1]"}}]}\n\n'
+                        for reason in reasons:
+                            chunk = {"id": "fake", "choices": [{"index": 0, "delta": {}, "finish_reason": reason}]}
+                            yield f"data: {json.dumps(chunk)}\n\n".encode()
+                        yield b'data: [DONE]\n\n'
+
+                    async def aclose(self):
+                        self.closed = True
+
+                body = Body()
+                calls = []
+
+                async def handle(request):
+                    calls.append(request)
+                    return httpx.Response(200, headers={"content-type": "text/event-stream"}, stream=body)
+
+                async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as client:
+                    model = ChatOpenAI(api_key="synthetic-not-a-credential", base_url="https://fake.invalid/v1",
+                                       model="fake", max_retries=2, http_async_client=client)
+                    adapter = RetainedTextQuestionAnswerer(lambda: model, lambda: True)
+                    iterator = adapter.stream(adapter.prepare("Notice is sixty days.", "What notice?"))
+                    self.assertEqual(await anext(iterator), "Notice [Source 1]")
+                    if reasons == ("stop",):
+                        self.assertEqual([piece async for piece in iterator], [])
+                    else:
+                        with self.assertRaises(StreamFailure) as failure:
+                            async for _ in iterator:
+                                pass
+                        self.assertEqual(failure.exception.code, StreamFailureCode.PROVIDER_INCOMPLETE)
+                    self.assertTrue(body.closed)
+                    self.assertEqual(len(calls), 1)
+
     async def test_real_sdk_pre_response_retry_limit_and_cancellation_close_http_body(self):
         from langchain_openai import ChatOpenAI
         sse = FakeSSE()
@@ -63,6 +104,43 @@ class QAProviderTests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(calls[0].get("max_completion_tokens", calls[0].get("max_tokens")), 1536)
             finally:
                 current_timings.reset(token)
+
+    async def test_real_sdk_partial_transport_failure_never_replays_even_after_stop(self):
+        from langchain_openai import ChatOpenAI
+
+        for stop_first in (False, True):
+            with self.subTest(stop_first=stop_first):
+                class BrokenBody(httpx.AsyncByteStream):
+                    closed = False
+
+                    async def __aiter__(self):
+                        yield b'data: {"id":"fake","choices":[{"index":0,"delta":{"content":"Notice [Source 1]"}}]}\n\n'
+                        if stop_first:
+                            yield b'data: {"id":"fake","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}\n\n'
+                        raise httpx.ReadError("PRIVATE_TRANSPORT_FAILURE")
+
+                    async def aclose(self):
+                        self.closed = True
+
+                body = BrokenBody()
+                calls = []
+
+                async def handle(request):
+                    calls.append(request)
+                    return httpx.Response(200, headers={"content-type": "text/event-stream"}, stream=body)
+
+                async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as client:
+                    model = ChatOpenAI(api_key="synthetic-not-a-credential", base_url="https://fake.invalid/v1",
+                                       model="fake", max_retries=2, http_async_client=client)
+                    adapter = RetainedTextQuestionAnswerer(lambda: model, lambda: True)
+                    iterator = adapter.stream(adapter.prepare("Notice is sixty days.", "What notice?"))
+                    self.assertEqual(await anext(iterator), "Notice [Source 1]")
+                    with self.assertRaises(StreamFailure) as failure:
+                        async for _ in iterator:
+                            pass
+                    self.assertEqual(str(failure.exception), "provider_incomplete")
+                    self.assertTrue(body.closed)
+                    self.assertEqual(len(calls), 1)
 
     async def test_exhausted_sdk_retries_are_not_replayed_by_answerer(self):
         from langchain_openai import ChatOpenAI

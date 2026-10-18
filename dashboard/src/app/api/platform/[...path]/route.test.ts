@@ -52,7 +52,7 @@ describe("credential response proxy", () => {
     const fetcher = vi.fn().mockResolvedValue(new Response("Admission limit reached", {
       status: 503,
       headers: {
-        "Retry-After": retryAfter, "Content-Type": "text/plain", "Content-Disposition": "inline",
+        "Retry-After": retryAfter, "Content-Type": "text/plain", "Content-Disposition": "inline", "X-Request-ID": "request-safe-123",
         "Cache-Control": "public, max-age=3600", "Set-Cookie": "private=value", "X-Backend-Secret": "private",
       },
     }));
@@ -66,13 +66,20 @@ describe("credential response proxy", () => {
       expect(upload.bodyUsed).toBe(false);
       expect(response!.status).toBe(503);
       expect(Object.fromEntries(response!.headers)).toEqual({
-        "retry-after": retryAfter, "content-type": "text/plain", "content-disposition": "inline", "cache-control": "private, no-store",
+        "retry-after": retryAfter, "content-type": "text/plain", "content-disposition": "inline", "cache-control": "private, no-store", "x-request-id": "request-safe-123",
       });
       expect(await response!.text()).toBe("Admission limit reached");
     } finally {
       source.close();
       await pending;
     }
+  });
+  it.each(["unsafe <private>", "a".repeat(129), "private,cookie=value", ""])("filters unsafe backend request IDs (%s)", async (requestId) => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("ok", { headers: {
+      "X-Request-ID": requestId, "Set-Cookie": "private=value", "X-Backend-Secret": "private",
+    } })));
+    const outgoing = await POST(request(), context);
+    expect(Object.fromEntries(outgoing.headers)).toEqual({ "cache-control": "private, no-store", "content-type": "text/plain;charset=UTF-8" });
   });
   it("forwards streaming bytes before completion and propagates client abort to upstream", async () => {
     const controller = new AbortController();
@@ -81,7 +88,7 @@ describe("credential response proxy", () => {
     const fetcher = vi.fn().mockImplementation((_url, init) => {
       init.signal.addEventListener("abort", upstreamStopped);
       return Promise.resolve(new Response(new ReadableStream<Uint8Array>({ start(value) { source = value; } }), {
-        headers: { "content-type": "application/x-ndjson" },
+        headers: { "content-type": "application/x-ndjson", "X-Request-ID": "request-stream-123", "Set-Cookie": "private=value", "X-Backend-Secret": "private" },
       }));
     });
     vi.stubGlobal("fetch", fetcher);
@@ -90,6 +97,9 @@ describe("credential response proxy", () => {
     expect(fetcher.mock.calls[0][1].signal).toBe(incoming.signal);
     expect(outgoing.headers.get("Cache-Control")).toBe("private, no-store");
     expect(outgoing.headers.get("X-Accel-Buffering")).toBe("no");
+    expect(outgoing.headers.get("X-Request-ID")).toBe("request-stream-123");
+    expect(outgoing.headers.has("Set-Cookie")).toBe(false);
+    expect(outgoing.headers.has("X-Backend-Secret")).toBe(false);
     const reader = outgoing.body!.getReader();
     source.enqueue(new TextEncoder().encode('{"type":"answer"}\n'));
     expect(new TextDecoder().decode((await reader.read()).value)).toContain('"answer"');
@@ -176,7 +186,7 @@ describe("credential response proxy", () => {
     vi.stubGlobal("fetch", fetcher);
     const incoming = new Request(request(), { headers: {
       Authorization: "Bearer synthetic-token", "Content-Type": "application/json",
-      Cookie: "private=value", "X-LensLayer-User": "spoofed", "X-Private": "private",
+      Cookie: "private=value", "X-LensLayer-User": "spoofed", "X-Private": "private", "X-Request-ID": "spoofed-request",
     } });
     expect((await POST(incoming, context)).status).toBe(200);
     expect(Object.fromEntries(fetcher.mock.calls[0][1].headers)).toEqual({ authorization: "Bearer synthetic-token", "content-type": "application/json" });

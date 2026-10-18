@@ -12,7 +12,7 @@ import anyio
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 
-from ..document_intelligence.qa import QATimings, current_timings
+from ..document_intelligence.qa import QATimings, StreamFailure, StreamFailureCode, current_timings
 from ..models import User
 from ..schemas import ContractQuestionCreate
 from ..security import resolve_principal
@@ -104,6 +104,8 @@ async def response(request, organization_id, contract_id, user_id, question):
                 await check()
                 yield frame("status", phase="generating", provisional=True)
                 sources = [asdict(source) for source in answer.result.sources]
+                if len(sources) > 8:
+                    raise StreamFailure(StreamFailureCode.GENERATION_FAILED)
                 yield frame("evidence", sources=sources, provisional=True)
                 pieces = []
                 size = 0
@@ -126,30 +128,42 @@ async def response(request, organization_id, contract_id, user_id, question):
                         last_check = time.monotonic()
                     size += len(piece)
                     if size > 32_000:
-                        raise ValueError("Answer exceeds Q&A bound")
+                        raise StreamFailure(StreamFailureCode.GENERATION_FAILED)
                     pieces.append(piece)
                     yield frame("answer", delta=piece, provisional=True)
                 text = "".join(pieces).strip()
                 if answer.result.generated_by == "model":
+                    # Normalize citation punctuation/spacing only; preserve numbers for validation.
+                    # Canonicalize the whole answer so mixed valid/invalid forms cannot pass.
+                    text = re.sub(r"\[Source[^\S\r\n]+(\d+)\]|【Source[^\S\r\n]+(\d+)】",
+                                  lambda match: f"[Source {match[1] or match[2]}]", text)
                     citations = set(re.findall(r"\[Source (\d+)\]", text))
                     allowed = {str(i) for i in range(1, len(sources) + 1)}
                     if not citations or not citations <= allowed:
-                        raise ValueError("Missing or invalid source citations")
+                        raise StreamFailure(StreamFailureCode.CITATION_INVALID)
                 if not text:
-                    raise ValueError("Empty answer")
+                    raise StreamFailure(StreamFailureCode.GENERATION_FAILED)
                 result = dict(answer=text, sources=sources, generated_by=answer.result.generated_by,
                               request_id=request_id)
                 await asyncio.sleep(0)  # Cancellation checkpoint before final-only audit.
-                await check(result)
+                try:
+                    await check(result)
+                except HTTPException:
+                    raise
+                except Exception:
+                    raise StreamFailure(StreamFailureCode.FINALIZATION_FAILED) from None
                 outcome = "complete"
                 yield frame("final", completed=True, provisional=False, result=result, timings=timing.values())
         except asyncio.CancelledError:
             raise
         except Exception as exc:
-            outcome = "failed"
-            code = "timeout" if isinstance(exc, TimeoutError) else "evidence_or_access_changed" if isinstance(exc, HTTPException) else "generation_failed"
+            code = (exc.code if isinstance(exc, StreamFailure) else
+                    StreamFailureCode.TIMEOUT if isinstance(exc, TimeoutError) else
+                    StreamFailureCode.EVIDENCE_OR_ACCESS_CHANGED if isinstance(exc, HTTPException) else
+                    StreamFailureCode.GENERATION_FAILED)
+            outcome = code.value
             # Never forward provider exception content, prompts or credentials.
-            yield frame("error", code=code, message="Answer incomplete. Please try again.", provisional=True)
+            yield frame("error", code=code.value, message="Answer incomplete. Please try again.", provisional=True)
             yield frame("final", completed=False, provisional=True, timings=timing.values())
         finally:
             with anyio.CancelScope(shield=True):
