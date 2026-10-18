@@ -111,6 +111,11 @@ class WorkspaceQueryTests(unittest.TestCase):
         dates = self.get("query/lifecycle", {"status": "active", "due_after": self.day.isoformat(), "due_before": self.day.isoformat(), "limit": 100}).json()
         self.assertEqual(dates["total"], 13)
         self.assertTrue(all(row["due_at"].startswith("2026-10-18") for row in dates["items"]))
+        exclusive = self.get("query/lifecycle", {"due_before": self.day.isoformat(), "due_before_exclusive": True}).json()
+        self.assertEqual(exclusive["total"], 0)
+        counts = self.get("query/overview", {"day_start": self.day.isoformat()}).json()["counts"]
+        overdue = self.get("query/tasks", {"status": "open,in_progress", "due_before": self.day.isoformat(), "due_before_exclusive": True}).json()
+        self.assertEqual(overdue["total"], counts["overdue_tasks"])
 
     def test_bounds_validation_empty_out_of_range_and_live_deletes(self):
         for params in [{"limit": 101}, {"limit": 0}, {"offset": -1}, {"offset": 1000001}, {"sort": "source_text"}, {"status": "not-real"}, {"q": "x" * 201}, {"q": "a b c d e f g h i"}]:

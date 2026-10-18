@@ -35,6 +35,7 @@ class TaskOptions(PageOptions):
     contract_id: str | None = Field(default=None, max_length=64)
     due_before: datetime | None = None
     due_after: datetime | None = None
+    due_before_exclusive: bool = False
     category: str | None = Field(default=None, max_length=64)
 
 
@@ -44,6 +45,7 @@ class LifecycleOptions(PageOptions):
     contract_id: str | None = Field(default=None, max_length=64)
     due_before: datetime | None = None
     due_after: datetime | None = None
+    due_before_exclusive: bool = False
 
 
 @router.get("/contracts", response_model=RecordPage[ContractResponse])
