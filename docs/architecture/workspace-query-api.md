@@ -46,6 +46,20 @@ Counts are SQL aggregates, independent of preview lengths. Contract counts inclu
 
 `day_start` defaults to current UTC midnight. Clients can supply local midnight converted to ISO UTC to retain date-only overdue semantics. `week_end` defaults to eight days after start; range must be positive and at most 32 days. These are display filters, not security or authorization inputs. Every query is still membership-scoped.
 
+## Count-only Tasks projection
+
+`GET /organizations/{organization_id}/query/tasks/counts?day_start=...` returns exactly `{active_tasks,completed_tasks,overdue_tasks}` using one aggregate plus existing identity/membership reads. Tasks uses this instead of fetching unrelated Overview previews. The full Overview contract is unchanged. Query keys are `["tasks",org,"counts",day_start]`, so normal task mutations invalidate both pages and counts and account/workspace isolation remains unchanged. Same-fixture measurement: 12 SELECTs/12218 JSON bytes for Overview versus 3 SELECTs/62 bytes for task counts; this measured reduction justified the narrow additive projection.
+
+## Complete calendar grid
+
+`GET /organizations/{organization_id}/query/calendar?month=2026-10-01&grid_start=2026-09-28&timezone=America/New_York`
+
+Returns `{days:[{date,total,items}],month_total,grid_total,timezone}`. Exactly 42 days, at most three small navigation previews per day (126 rows maximum), not source bodies. `month` must be the first local date; grid start must fall no more than six days before that month and the range must contain it. Valid IANA timezone is required; date/overflow/zone errors are422. ZoneInfo converts **each local midnight separately** to UTC, preserving23/25-hour DST days, not a fixed24-hour UTC step. Each day interval is `[midnight,next_midnight)`.
+
+One authorized SQL union of noncancelled dated tasks and active lifecycle items computes per-day counts and stable due/kind/ID preview order using windows, then returns only the first three rows per day. Counts and previews share a statement snapshot; SQL scanning/sorting still depends on matches. `month_total` excludes the adjacent displayed dates; `grid_total` includes them. Grid occupancy/overflow never depends on agenda page/sort. Agenda details still use bounded task/lifecycle pages; exports remain unchanged. The explicit demo adapter returns the same shape without private API fallback. Task/lifecycle/contract mutations invalidate `calendar-grid` along with the existing summaries/pages/search.
+
+Regressions in `tests.test_calendar_grid` and `dashboard/src/components/calendar-grid.test.tsx` cover31-day task+life distributions, dense days, adjacent months, empty ranges, DST instants, tenant denial, payload/query bounds and unchanged occupancy when either agenda page/sort changes. Repeat the same suite on disposable PostgreSQL. No recursive page downloads or one-request-per-day pattern.
+
 ## Verification and rollback
 
 Run `python -m unittest tests.test_workspace_queries -v` and `python -m tests.test_workspace_queries --benchmark --output /approved/path/query-results.json` using the repository's Python environment. The fixture compares old/new routes on the same 1,000 synthetic records per collection, one warmup and five samples. It separates decoded JSON size from calculated gzip size (not observed HTTP transfer).

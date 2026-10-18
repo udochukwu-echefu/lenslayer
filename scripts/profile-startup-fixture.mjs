@@ -7,11 +7,15 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { performance } from "node:perf_hooks";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 
 const [worktree, output, revision, puppeteerModule, portText = "3215"] = process.argv.slice(2);
 if (!worktree || !output || !revision || !puppeteerModule) throw new Error("Missing fixture arguments");
 const port = Number(portText);
 const mobile = process.env.PROFILE_MOBILE === "1";
+const navigation = process.env.PROFILE_NAVIGATION === "1";
+const noPrefetch = process.env.PROFILE_NO_PREFETCH === "1";
 const origin = `http://127.0.0.1:${port}`;
 const secret = "synthetic-local-startup-fixture-never-a-production-secret";
 const require = createRequire(pathToFileURL(resolve(worktree, "dashboard/package.json")));
@@ -26,7 +30,8 @@ const fixture = createServer(async (request, response) => {
   apiRequests.push({ label, startMs: performance.now() - started });
   // Equal, deterministic synthetic upstream work for both revisions.
   await new Promise((r) => setTimeout(r, 80));
-  const body = path.endsWith("/query/overview") ? {
+  if (new URL(request.url, "http://fixture.invalid").searchParams.get("q") === "cancellation-probe") await new Promise((r) => setTimeout(r, 500));
+  const body = path.endsWith("/query/tasks/counts") ? { active_tasks: 0, completed_tasks: 0, overdue_tasks: 0 } : path.endsWith("/query/overview") ? {
     counts: { contracts: 0, ready: 0, failed: 0, processing: 0, attention: 0, active_tasks: 0, completed_tasks: 0, overdue_tasks: 0, upcoming_tasks: 0, upcoming_notice_deadlines: 0, due_soon_tasks: 0 },
     recent_contracts: [], attention_contracts: [], my_tasks: [], upcoming_tasks: [], upcoming_lifecycle: [], as_of: "2026-10-18T00:00:00Z",
   } : path.includes("/query/") ? { items: [], total: 0, offset: 0, limit: 25 } : label === "me" ? { id: "synthetic-user", email: "synthetic@example.test", display_name: "Synthetic Reviewer" } : label === "organizations" ? [{ id: "synthetic-org", name: "Synthetic Workspace", slug: "synthetic", role: "owner", created_at: "2026-01-01T00:00:00Z" }] : path.startsWith("/api/v1/invitations/") ? {
@@ -55,6 +60,8 @@ try {
   browser = await puppeteer.launch({ executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", headless: true, args: ["--no-sandbox"] });
   const traces = [];
   const fixtureMetadata = { revision, synthetic: true, upstreamDelayMs: 80, browser: await browser.version(),
+    node: process.version, harnessSHA256: createHash("sha256").update(readFileSync(new URL(import.meta.url))).digest("hex"),
+    build: "npm ci && npm run build (dashboard); isolated allowlisted fake-auth runtime env", navigation, noPrefetch,
     conditions: { viewport: { width: 390, height: 844, deviceScaleFactor: 1 }, cpuSlowdown: mobile ? 4 : 1,
       network: mobile ? "CDP 150ms latency, 1.6Mbit/s down, 750Kbit/s up + 80ms synthetic upstream" : "loopback + deterministic 80ms upstream",
       syntheticNotProduction: true, cache: "new browser context each sample; Next server warm state varies" } };
@@ -69,16 +76,48 @@ try {
       await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
     }
     await page.evaluateOnNewDocument(() => {
+      const clients = new WeakMap(), shells = new WeakMap();
+      window.__fixtureNavigation = { clientIDs: [], mounts: 0, shellCount: 0, shellID: null };
+      // Observe actual QueryClient context values from React's supported devtools
+      // hook. No application instrumentation, credentials, keys or data recorded.
+      window.__REACT_DEVTOOLS_GLOBAL_HOOK__ = { supportsFiber: true, renderers: new Map(),
+        inject(renderer) { this.renderers.set(this.renderers.size + 1, renderer); return this.renderers.size; },
+        onCommitFiberRoot(_id, root) {
+          const active = new Set();
+          function visit(fiber) {
+            if (!fiber) return;
+            const value = fiber.memoizedProps?.value;
+            if (value && typeof value.getQueryCache === "function") {
+              if (!clients.has(value)) clients.set(value, ++window.__fixtureNavigation.mounts);
+              active.add(clients.get(value));
+            }
+            visit(fiber.child); visit(fiber.sibling);
+          }
+          visit(root.current);
+          window.__fixtureNavigation.clientIDs = [...active];
+        }, onCommitFiberUnmount() {}, checkDCE() {},
+      };
       const observer = new MutationObserver(() => {
+        const shell = document.querySelector(".app-shell");
+        if (shell) {
+          if (!shells.has(shell)) shells.set(shell, ++window.__fixtureNavigation.shellCount);
+          window.__fixtureNavigation.shellID = shells.get(shell);
+        }
         if (document.querySelector(".app-shell") && !performance.getEntriesByName("fixture-shell").length) performance.mark("fixture-shell");
         if (document.querySelector(".tasks-register") && !document.querySelector(".tasks-register .skeleton") && !performance.getEntriesByName("fixture-useful-tasks").length) performance.mark("fixture-useful-tasks");
       });
       observer.observe(document, { childList: true, subtree: true });
     });
+    if (noPrefetch) {
+      await page.setRequestInterception(true);
+      page.on("request", (request) => request.headers()["next-router-prefetch"] ? request.abort() : request.continue());
+    }
     const now = Math.floor(Date.now() / 1000);
     const cookie = await encode({ secret, token: { sub: "auth0|synthetic-only", name: "Synthetic Reviewer", email: "synthetic@example.test", browserSessionId: "1c34b57c-32b2-4bea-80d3-a0b5c903182d", accessToken: "synthetic-never-live-bearer", accessTokenExpires: Date.now() + 3600000, iat: now, exp: now + 3600 } });
     await context.setCookie({ name: "next-auth.session-token", value: cookie, url: origin, httpOnly: true, sameSite: "Lax" });
     const network = [];
+    const cancelled = [];
+    page.on("requestfailed", (request) => { if (request.url().includes("/api/platform/")) cancelled.push(new URL(request.url()).pathname); });
     page.on("request", (request) => {
       const path = new URL(request.url()).pathname;
       const label = path === "/tasks" ? "private-document" : path === "/api/auth/session" ? "session" : path.startsWith("/api/platform/") ? `bff-${path.split("/").at(-1)}` : null;
@@ -93,7 +132,30 @@ try {
       paints: performance.getEntriesByType("paint").map((e) => ({ name: e.name, time: e.startTime })),
       usefulContent: performance.getEntriesByType("mark").filter((e) => e.name.startsWith("fixture-")).map((e) => ({ name: e.name, time: e.startTime })),
     }));
-    traces.push({ run, browserRequests: network, upstreamRequests: [...apiRequests], timings });
+    const steps = [];
+    if (navigation) {
+      const capture = async (route, elapsed) => steps.push({ route, elapsed, ...(await page.evaluate(() => window.__fixtureNavigation)), browserRequests: [...network], upstreamRequests: [...apiRequests], cancelled: [...cancelled] });
+      await capture("/tasks", null);
+      for (const [route, selector] of [["/contracts", ".main-content .table-card"], ["/tasks", ".tasks-register"]]) {
+        const time = performance.now();
+        await page.evaluate((route) => document.querySelector(`.side-nav a[href="${route}"]`).click(), route);
+        await page.waitForFunction((route) => location.pathname === route, {}, route);
+        await page.waitForSelector(selector);
+        await page.waitForFunction((selector) => !document.querySelector(`${selector} .skeleton`), {}, selector);
+        await capture(route, performance.now() - time);
+      }
+      // A debounced in-flight filter must not survive leaving its observer.
+      await page.evaluate(() => document.querySelector('.side-nav a[href="/contracts"]').click());
+      await page.waitForSelector("#contract-search");
+      const filtering = page.waitForRequest((request) => new URL(request.url()).searchParams.get("q") === "cancellation-probe");
+      await page.type("#contract-search", "cancellation-probe");
+      await filtering;
+      await page.evaluate(() => document.querySelector('.side-nav a[href="/tasks"]').click());
+      await page.waitForSelector(".tasks-register");
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      await capture("/tasks-after-cancelled-filter", null);
+    }
+    traces.push({ run, browserRequests: network, upstreamRequests: [...apiRequests], timings, navigation: steps, noPrefetch });
     writeFileSync(resolve(output, "fixture-traces.json"), JSON.stringify({ ...fixtureMetadata, traces, visuals: [] }, null, 2));
     await page.screenshot({ path: resolve(output, `private-tasks-${run}.png`), fullPage: true });
     await context.close();

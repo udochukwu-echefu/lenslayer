@@ -1,0 +1,70 @@
+{
+  "product_revision": "691bf0b2f45244c1b1ae620306d975bb5c9bacdf",
+  "backend": {
+    "executed": 677,
+    "external_only_skips": 3,
+    "failures": 0,
+    "databases": "disposable local SQLite + PostgreSQL17.11"
+  },
+  "dashboard": {
+    "passed": 429,
+    "files": 56,
+    "lint_errors": 0,
+    "existing_lint_warnings": 1,
+    "production_build": "passed"
+  },
+  "calendar_strengthened_dst": {
+    "passed": 8,
+    "cases": "23/25-hour local midnights, SQLite and PostgreSQL"
+  },
+  "agent_clients": {
+    "sdk": 89,
+    "mcp": 10,
+    "planner": 23,
+    "external_example": 15,
+    "builds_and_package_review": "passed"
+  },
+  "staging_helpers": {
+    "node_passed": 58,
+    "python_passed": 33,
+    "live_services": false
+  },
+  "evaluation": "passed, 1 synthetic fixture",
+  "disposable_integration": "passed after builds completed",
+  "landing": "byte-identical source to #21; canonical production build/check passed",
+  "ci": "Separate GitHub test result at the PR's current head; local passes are not CI evidence",
+  "local_log_hashes": {
+    "backend-postgres-final-691bf0b.log": {
+      "sha256_local_log": "7b7597e77ddfedf77c610921b58c886ab456f1645781015edd1fe825b7342053",
+      "bytes": 376841
+    },
+    "dashboard-final.log": {
+      "sha256_local_log": "47888704c7f95b56ed7ed8b65881749a57789742a262f815115073535333965c",
+      "bytes": 333
+    },
+    "dashboard-lint-final.log": {
+      "sha256_local_log": "6124dff2e3e0554926e230cc1324e251b19c4c104427a470b67134c12a516c31",
+      "bytes": 531
+    },
+    "calendar-dst-final.log": {
+      "sha256_local_log": "f283e9a01d629a66f698b7f027d438b3b0346d6cd14b5c4b4ca93f10414ce349",
+      "bytes": 1751
+    },
+    "agents-final.log": {
+      "sha256_local_log": "da44381ad14e57e45acb93713c20b645ce6d8d03ce37f10402e447457ed023d3",
+      "bytes": 15211
+    },
+    "integration-final-ready.log": {
+      "sha256_local_log": "2ef2e5e0300aea82ce1af34dd8168a8720a73592001eb1c8a72a91b24e696af1",
+      "bytes": 1873
+    },
+    "staging-node-final.log": {
+      "sha256_local_log": "9b395206bb8761e6ea79a19601874e823a99d1b99800ebac1df1dcbfa47894d3",
+      "bytes": 4204
+    },
+    "staging-python-final.log": {
+      "sha256_local_log": "5917c2e1ce17d7ce99bee9d77eaca92058aeabee0d588398a2323a33305fbf67",
+      "bytes": 5684
+    }
+  }
+}

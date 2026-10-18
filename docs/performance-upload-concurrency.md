@@ -1,5 +1,7 @@
 # Batch 1: bounded upload execution
 
+Historical batch snapshot below; the [follow-up](#follow-up-admission-includes-multipart-parsing-and-payload-lifetime) supersedes its endpoint admission/multipart limits and adds separate short authorization preflight sessions.
+
 Local implementation on `perf/upload-concurrency`, based on `18f851679`.
 Scope: upload concurrency only; no frontend, schema, worker, infrastructure or
 deployment changes. The original performance recommendations and review were
@@ -59,3 +61,13 @@ latency and production concurrency tuning remain unmeasured.
 References: [FastAPI utility calls](https://fastapi.tiangolo.com/async/#other-utility-functions),
 [AnyIO worker threads](https://anyio.readthedocs.io/en/stable/threads.html),
 [SQLAlchemy session concurrency](https://docs.sqlalchemy.org/en/20/orm/session_basics.html#is-the-session-thread-safe-is-asyncsession-safe-to-share-in-concurrent-tasks).
+
+## Follow-up: admission includes multipart parsing and payload lifetime
+
+The original limiter covered processing sessions/threads, but routes read complete bytes before acquiring it. Owner probes measured eight full bodies at capacity two. The upload-specific `UploadRoute` now authorizes in a short independent pre-parse session, acquires admission **before FastAPI multipart parsing**, and rechecks authorization inside the existing owned write. No request ORM object crosses threads. Wrong identity, role, expired source or public API scope can fail before a slow scan slot where authentication permits.
+
+Per-process bound: `C=upload_concurrency` (unchanged default4); at most `2C` queued requests wait **without reading/parsing their bodies**; further requests get503 with `Retry-After: 2` (no silent retry/replay). Admission includes parsing/spools, endpoint materialization, worker session/write and cleanup. Both request/parser and worker must finish before release; raw task cancellation cannot release a live worker, and early worker completion cannot admit a new payload while the endpoint still owns its bytes. Queued/partially parsed cancellation releases its slot and closes created spools; running write cancellation leaves commit/rollback/object cleanup with the owning worker.
+
+The parser permits one file,32 fields/64KiB per field, and total multipart bytes at most configured file maximum+256KiB. Existing per-file25MiB checks remain. File data spools using Starlette's existing1MiB memory threshold. At most C full document byte values are materialized (read/join can temporarily hold roughly2×file bytes per active request, plus parser/transport buffers and adapter copies). Queue body bytes are not materialized in the endpoint. This is **not** a total RSS, upstream-proxy, socket-connection or ASGI-server buffer cap. No process RSS improvement is invented from counters; transport backpressure/deployment ingress still matters. Overload rejection must be surfaced to callers, never treated as202 or auto-replayed.
+
+`tests.test_upload_admission` exercises20 requests vs capacity2/backlog4 across contract, email, Google Drive, generic provider, public API and version routes with safe~2MiB bodies. Synchronized counts assert two parser calls/two full bodies, four waiters,14 explicit overloads before release, denied identities/roles without a parser/scan, responsive authenticated reads and all spools closed. Version text extraction is shortened in this resource test to avoid quadratic diffs over repeated megabyte text; size/admission/multipart/scanning/storage remain exercised. Existing tests retain scan rejection, storage/commit rollback, running/queued/raw cancellation and owned-session assertions. Concurrent version uniqueness conflicts now safely return409 after rollback/object cleanup rather than leaking an internal500; no retry or uniqueness relaxation.

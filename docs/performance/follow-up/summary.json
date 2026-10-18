@@ -1,0 +1,630 @@
+{
+  "navigation": {
+    "diagnostic": {
+      "before": {
+        "revision": "ca704aa272d1dc00548726a22fda1f91a40c587e",
+        "contracts_ms": {
+          "median": 404.432417,
+          "min": 393.0462919999991,
+          "max": 412.8955839999999
+        },
+        "tasks_revisit_ms": {
+          "median": 416.2887499999997,
+          "min": 415.63916700000027,
+          "max": 417.120958
+        },
+        "query_clients": [
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            1,
+            2,
+            3
+          ]
+        ],
+        "shells": [
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            1,
+            2,
+            3
+          ]
+        ],
+        "metadata_calls_first_sequence": {
+          "me": [
+            3,
+            3,
+            3
+          ],
+          "organizations": [
+            3,
+            3,
+            3
+          ]
+        },
+        "task_record_calls_first_sequence": [
+          2,
+          2,
+          2
+        ],
+        "cancelled_filters": [
+          [
+            "/api/platform/api/v1/organizations/synthetic-org/query/contracts"
+          ],
+          [
+            "/api/platform/api/v1/organizations/synthetic-org/query/contracts"
+          ],
+          [
+            "/api/platform/api/v1/organizations/synthetic-org/query/contracts"
+          ]
+        ]
+      },
+      "after": {
+        "revision": "691bf0b",
+        "contracts_ms": {
+          "median": 123.27050000000054,
+          "min": 115.26145899999983,
+          "max": 133.8363330000002
+        },
+        "tasks_revisit_ms": {
+          "median": 21.364542000000256,
+          "min": 19.994333000000097,
+          "max": 23.126166000000012
+        },
+        "query_clients": [
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1
+          ]
+        ],
+        "shells": [
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1
+          ]
+        ],
+        "metadata_calls_first_sequence": {
+          "me": [
+            1,
+            1,
+            1
+          ],
+          "organizations": [
+            1,
+            1,
+            1
+          ]
+        },
+        "task_record_calls_first_sequence": [
+          1,
+          1,
+          1
+        ],
+        "cancelled_filters": [
+          [
+            "/api/platform/api/v1/organizations/synthetic-org/query/contracts"
+          ],
+          [
+            "/api/platform/api/v1/organizations/synthetic-org/query/contracts"
+          ],
+          [
+            "/api/platform/api/v1/organizations/synthetic-org/query/contracts"
+          ]
+        ]
+      }
+    },
+    "normal": {
+      "before": {
+        "revision": "ca704aa272d1dc00548726a22fda1f91a40c587e",
+        "contracts_ms": {
+          "median": 402.79008299999987,
+          "min": 401.5010000000002,
+          "max": 419.29641600000014
+        },
+        "tasks_revisit_ms": {
+          "median": 415.52237499999865,
+          "min": 413.2227090000006,
+          "max": 416.00483299999996
+        },
+        "query_clients": [
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            1,
+            2,
+            3
+          ]
+        ],
+        "shells": [
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            1,
+            2,
+            3
+          ]
+        ],
+        "metadata_calls_first_sequence": {
+          "me": [
+            3,
+            3,
+            3
+          ],
+          "organizations": [
+            3,
+            3,
+            3
+          ]
+        },
+        "task_record_calls_first_sequence": [
+          2,
+          2,
+          2
+        ],
+        "cancelled_filters": [
+          [
+            "/api/platform/api/v1/organizations/synthetic-org/query/contracts"
+          ],
+          [
+            "/api/platform/api/v1/organizations/synthetic-org/query/contracts"
+          ],
+          [
+            "/api/platform/api/v1/organizations/synthetic-org/query/contracts"
+          ]
+        ]
+      },
+      "after": {
+        "revision": "691bf0b",
+        "contracts_ms": {
+          "median": 134.58550000000014,
+          "min": 131.01566700000058,
+          "max": 144.3028330000002
+        },
+        "tasks_revisit_ms": {
+          "median": 21.51037499999984,
+          "min": 20.5211249999993,
+          "max": 21.695916000000125
+        },
+        "query_clients": [
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1
+          ]
+        ],
+        "shells": [
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1
+          ]
+        ],
+        "metadata_calls_first_sequence": {
+          "me": [
+            1,
+            1,
+            1
+          ],
+          "organizations": [
+            1,
+            1,
+            1
+          ]
+        },
+        "task_record_calls_first_sequence": [
+          1,
+          1,
+          1
+        ],
+        "cancelled_filters": [
+          [
+            "/api/platform/api/v1/organizations/synthetic-org/query/contracts"
+          ],
+          [
+            "/api/platform/api/v1/organizations/synthetic-org/query/contracts"
+          ],
+          [
+            "/api/platform/api/v1/organizations/synthetic-org/query/contracts"
+          ]
+        ]
+      }
+    }
+  },
+  "qa": {
+    "before": {
+      "100": {
+        "first_content_ms": {
+          "median": 21.334084012778476,
+          "min": 17.260584019823,
+          "max": 21.95216601830907
+        },
+        "total_ms": {
+          "median": 150.99204200669192,
+          "min": 140.88029201957397,
+          "max": 151.16062501328997
+        },
+        "rank_passes": [
+          6,
+          6,
+          6
+        ],
+        "selects": [
+          31,
+          31,
+          31
+        ],
+        "full_text_bytes": [
+          2995200,
+          2995200,
+          2995200
+        ],
+        "pool_paused": [
+          1,
+          1,
+          1
+        ]
+      },
+      "1000": {
+        "first_content_ms": {
+          "median": 77.10462500108406,
+          "min": 76.09408401185647,
+          "max": 80.32641600584611
+        },
+        "total_ms": {
+          "median": 325.7418750145007,
+          "min": 323.33662497694604,
+          "max": 326.29187498241663
+        },
+        "rank_passes": [
+          6,
+          6,
+          6
+        ],
+        "selects": [
+          31,
+          31,
+          31
+        ],
+        "full_text_bytes": [
+          2995200,
+          2995200,
+          2995200
+        ],
+        "pool_paused": [
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    "after": {
+      "100": {
+        "first_content_ms": {
+          "median": 17.9470409930218,
+          "min": 13.155958004062995,
+          "max": 20.401791000040248
+        },
+        "total_ms": {
+          "median": 121.9636250170879,
+          "min": 113.48875000840053,
+          "max": 125.68566598929465
+        },
+        "rank_passes": [
+          1,
+          1,
+          1
+        ],
+        "selects": [
+          21,
+          21,
+          21
+        ],
+        "full_text_bytes": [
+          499200,
+          499200,
+          499200
+        ],
+        "pool_paused": [
+          0,
+          0,
+          0
+        ]
+      },
+      "1000": {
+        "first_content_ms": {
+          "median": 54.28587502683513,
+          "min": 43.15333400154486,
+          "max": 55.27683297987096
+        },
+        "total_ms": {
+          "median": 156.34233300806955,
+          "min": 144.8851249879226,
+          "max": 157.310457987478
+        },
+        "rank_passes": [
+          1,
+          1,
+          1
+        ],
+        "selects": [
+          21,
+          21,
+          21
+        ],
+        "full_text_bytes": [
+          499200,
+          499200,
+          499200
+        ],
+        "pool_paused": [
+          0,
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "postgres": {
+    "1000": {
+      "like_ranking": {
+        "median": 17.142,
+        "min": 16.999,
+        "max": 18.168
+      },
+      "window_first_page": {
+        "median": 0.513,
+        "min": 0.511,
+        "max": 0.538
+      },
+      "window_deep_offset": {
+        "median": 0.564,
+        "min": 0.561,
+        "max": 0.596
+      },
+      "filtered_title_sort": {
+        "median": 0.526,
+        "min": 0.521,
+        "max": 0.543
+      }
+    },
+    "10000": {
+      "like_ranking": {
+        "median": 179.393,
+        "min": 177.657,
+        "max": 182.303
+      },
+      "window_first_page": {
+        "median": 4.61,
+        "min": 4.604,
+        "max": 5.005
+      },
+      "window_deep_offset": {
+        "median": 5.509,
+        "min": 5.255,
+        "max": 5.717
+      },
+      "filtered_title_sort": {
+        "median": 5.373,
+        "min": 5.361,
+        "max": 5.673
+      }
+    }
+  },
+  "visuals": [
+    {
+      "file": "auth-signed-out-1440-dark.styles.json",
+      "identical": true,
+      "sha256": "7c2e814be3860107f55211413c679c44ea4f23d3cec87c6db7409302aec08207"
+    },
+    {
+      "file": "auth-signed-out-1440-light.styles.json",
+      "identical": true,
+      "sha256": "681fa80fc5a7ef3321038fefe48fdd2e695fb767e5a5c50f6559f802c8acd521"
+    },
+    {
+      "file": "auth-signed-out-390-dark.styles.json",
+      "identical": true,
+      "sha256": "12d3dcfa828530fc6856345f7fcc3f1bc05d58f2c7f02240b70ff504103e4ed3"
+    },
+    {
+      "file": "auth-signed-out-390-light.styles.json",
+      "identical": true,
+      "sha256": "65493b88471ed1c31eb49befd5c05ff3820acd40b5d45d80282b3f350cfc4d32"
+    },
+    {
+      "file": "invite-synthetic-token-1440-dark.styles.json",
+      "identical": true,
+      "sha256": "09c5d8dff323efc07f17f4c253241fda35c308a456150feeab1e26cd0bc3d1d1"
+    },
+    {
+      "file": "invite-synthetic-token-1440-light.styles.json",
+      "identical": true,
+      "sha256": "9a5c7e6fdc9a6473f6223cdf11da636718d645ae045c5f3faa9562bffdde0fc0"
+    },
+    {
+      "file": "invite-synthetic-token-390-dark.styles.json",
+      "identical": true,
+      "sha256": "aa7ebad43e75e3f1ca1280fd472a820e12086679a611c8d4a75f332a03d21487"
+    },
+    {
+      "file": "invite-synthetic-token-390-light.styles.json",
+      "identical": true,
+      "sha256": "b162939d583e7132f0d3497083c9d67b1d396ce86d8ec08ece8eb14c056e4d4e"
+    },
+    {
+      "file": "sample-1440-dark.styles.json",
+      "identical": true,
+      "sha256": "e78e371e387ed73abacbec7e1552c70e09ffb7d2ab6fe621d865143f1146c05f"
+    },
+    {
+      "file": "sample-1440-light.styles.json",
+      "identical": true,
+      "sha256": "6b01e0df150fa8be4afceb62af68d3999ba9b7a83953affc9ee1f92b5ca1eadf"
+    },
+    {
+      "file": "sample-390-dark.styles.json",
+      "identical": true,
+      "sha256": "54a40c420cc1896258992b3244e57ca524579bc2bffa3072ff3f952f6fe6104a"
+    },
+    {
+      "file": "sample-390-light.styles.json",
+      "identical": true,
+      "sha256": "d53dad2cd28adecc6c578da461ddcfacf7de52a071788996066ecd045da12758"
+    },
+    {
+      "file": "settings-developers-1440-dark.styles.json",
+      "identical": true,
+      "sha256": "d17f9044e60637245bc6152aab2509dd287ce2b63e35b471867d69f9f73d70ef"
+    },
+    {
+      "file": "settings-developers-1440-light.styles.json",
+      "identical": true,
+      "sha256": "e829588cfaea7deaaf14271c43ca0b5b0142ece5993c63e594c3a870ebf6d0ed"
+    },
+    {
+      "file": "settings-developers-390-dark.styles.json",
+      "identical": true,
+      "sha256": "2b7e3c20977345f24f3089d05e35999eea4ee673248b071cad9fae8a9d996a82"
+    },
+    {
+      "file": "settings-developers-390-light.styles.json",
+      "identical": true,
+      "sha256": "53ddcd242f1217e6f06e5e2b34b9dda58331745f490284807de61d785c345776"
+    },
+    {
+      "file": "shared-synthetic-token-1440-dark.styles.json",
+      "identical": true,
+      "sha256": "73a05c98a82b8199cbfa80bb597b1c786b7b4ebba7045243fe3c4d67773235c3"
+    },
+    {
+      "file": "shared-synthetic-token-1440-light.styles.json",
+      "identical": true,
+      "sha256": "aa86b30d1fa4e00bc42bfe5a870b02823b701d3cb9f4c4814fbc9d098e784ab8"
+    },
+    {
+      "file": "shared-synthetic-token-390-dark.styles.json",
+      "identical": true,
+      "sha256": "01e2128f7fdf599166706535da3423cf8adae2b648c68c14b64f666416e61801"
+    },
+    {
+      "file": "shared-synthetic-token-390-light.styles.json",
+      "identical": true,
+      "sha256": "6f695e381a25ddbbb51c4370c70fcd914aa4e36376186b1830119b7e7ad8e31e"
+    },
+    {
+      "file": "signin-1440-dark.styles.json",
+      "identical": true,
+      "sha256": "6c6208244856a2555a88a64d5a829f639caa35c392e0be2f2ad8ff4ded156b6e"
+    },
+    {
+      "file": "signin-1440-light.styles.json",
+      "identical": true,
+      "sha256": "6c6208244856a2555a88a64d5a829f639caa35c392e0be2f2ad8ff4ded156b6e"
+    },
+    {
+      "file": "signin-390-dark.styles.json",
+      "identical": true,
+      "sha256": "468fec70cb8be366c06a7ab34052067f5a05f6c6decb1f4b63aab8081bc43876"
+    },
+    {
+      "file": "signin-390-light.styles.json",
+      "identical": true,
+      "sha256": "468fec70cb8be366c06a7ab34052067f5a05f6c6decb1f4b63aab8081bc43876"
+    },
+    {
+      "file": "signup-1440-dark.styles.json",
+      "identical": true,
+      "sha256": "127b85417445fbeeb786547d41f348db76f83421c26e310152938fe680f875f1"
+    },
+    {
+      "file": "signup-1440-light.styles.json",
+      "identical": true,
+      "sha256": "127b85417445fbeeb786547d41f348db76f83421c26e310152938fe680f875f1"
+    },
+    {
+      "file": "signup-390-dark.styles.json",
+      "identical": true,
+      "sha256": "d4621b57f95b92632827964d5c6506a57b399d94798b90eb9d8a71e61f76cb0b"
+    },
+    {
+      "file": "signup-390-light.styles.json",
+      "identical": true,
+      "sha256": "d4621b57f95b92632827964d5c6506a57b399d94798b90eb9d8a71e61f76cb0b"
+    }
+  ]
+}

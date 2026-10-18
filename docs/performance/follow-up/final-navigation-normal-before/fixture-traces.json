@@ -1,0 +1,2793 @@
+{
+  "revision": "ca704aa272d1dc00548726a22fda1f91a40c587e",
+  "synthetic": true,
+  "upstreamDelayMs": 80,
+  "browser": "Chrome/155.0.8059.80",
+  "node": "v24.15.0",
+  "harnessSHA256": "a0ee92562d5357945e774e472001bee4b911c715d51ae9172c2bda819756e1e0",
+  "build": "npm ci && npm run build (dashboard); isolated allowlisted fake-auth runtime env",
+  "navigation": true,
+  "noPrefetch": false,
+  "conditions": {
+    "viewport": {
+      "width": 390,
+      "height": 844,
+      "deviceScaleFactor": 1
+    },
+    "cpuSlowdown": 1,
+    "network": "loopback + deterministic 80ms upstream",
+    "syntheticNotProduction": true,
+    "cache": "new browser context each sample; Next server warm state varies"
+  },
+  "traces": [
+    {
+      "run": 1,
+      "browserRequests": [
+        {
+          "label": "private-document",
+          "startMs": 2.2542499999999563
+        },
+        {
+          "label": "bff-tasks",
+          "startMs": 297.796791
+        },
+        {
+          "label": "bff-overview",
+          "startMs": 297.87187500000005
+        },
+        {
+          "label": "bff-notifications",
+          "startMs": 297.936958
+        },
+        {
+          "label": "bff-contracts",
+          "startMs": 1332.547
+        },
+        {
+          "label": "bff-notifications",
+          "startMs": 1332.620583
+        },
+        {
+          "label": "private-document",
+          "startMs": 1437.5360409999998
+        },
+        {
+          "label": "bff-tasks",
+          "startMs": 1753.206333
+        },
+        {
+          "label": "bff-overview",
+          "startMs": 1753.4000409999999
+        },
+        {
+          "label": "bff-notifications",
+          "startMs": 1753.529458
+        },
+        {
+          "label": "bff-contracts",
+          "startMs": 2169.979875
+        },
+        {
+          "label": "bff-notifications",
+          "startMs": 2170.075541
+        },
+        {
+          "label": "bff-contracts",
+          "startMs": 2462.717333
+        },
+        {
+          "label": "private-document",
+          "startMs": 2465.601791
+        },
+        {
+          "label": "bff-tasks",
+          "startMs": 2791.9640409999997
+        },
+        {
+          "label": "bff-overview",
+          "startMs": 2792.1276249999996
+        },
+        {
+          "label": "bff-notifications",
+          "startMs": 2792.217083
+        }
+      ],
+      "upstreamRequests": [
+        {
+          "label": "me",
+          "startMs": 57.2650000000001
+        },
+        {
+          "label": "organizations",
+          "startMs": 57.43804100000011
+        },
+        {
+          "label": "tasks",
+          "startMs": 319.74762499999997
+        },
+        {
+          "label": "other-fixture-request",
+          "startMs": 319.96775
+        },
+        {
+          "label": "notifications",
+          "startMs": 320.9949160000001
+        },
+        {
+          "label": "me",
+          "startMs": 1031.9237910000002
+        },
+        {
+          "label": "organizations",
+          "startMs": 1032.1000410000001
+        },
+        {
+          "label": "contracts",
+          "startMs": 1339.7051660000002
+        },
+        {
+          "label": "notifications",
+          "startMs": 1339.8159580000001
+        },
+        {
+          "label": "me",
+          "startMs": 1440.8203330000001
+        },
+        {
+          "label": "organizations",
+          "startMs": 1440.8780000000002
+        },
+        {
+          "label": "tasks",
+          "startMs": 1761.4395
+        },
+        {
+          "label": "other-fixture-request",
+          "startMs": 1761.682875
+        },
+        {
+          "label": "notifications",
+          "startMs": 1761.978291
+        },
+        {
+          "label": "me",
+          "startMs": 1861.816291
+        },
+        {
+          "label": "organizations",
+          "startMs": 1861.879375
+        },
+        {
+          "label": "contracts",
+          "startMs": 2174.772541
+        },
+        {
+          "label": "notifications",
+          "startMs": 2175.014166
+        },
+        {
+          "label": "contracts",
+          "startMs": 2466.136708
+        },
+        {
+          "label": "me",
+          "startMs": 2474.043583
+        },
+        {
+          "label": "organizations",
+          "startMs": 2474.111416
+        },
+        {
+          "label": "tasks",
+          "startMs": 2798.496375
+        },
+        {
+          "label": "other-fixture-request",
+          "startMs": 2798.6837499999997
+        },
+        {
+          "label": "notifications",
+          "startMs": 2798.8678750000004
+        }
+      ],
+      "timings": {
+        "navigation": [
+          {
+            "responseStart": 58.5,
+            "domContentLoaded": 173,
+            "load": 173.2000000178814
+          }
+        ],
+        "paints": [
+          {
+            "name": "first-paint",
+            "time": 120
+          },
+          {
+            "name": "first-contentful-paint",
+            "time": 348
+          }
+        ],
+        "usefulContent": [
+          {
+            "name": "fixture-shell",
+            "time": 295.5
+          },
+          {
+            "name": "fixture-useful-tasks",
+            "time": 402.59999999403954
+          }
+        ]
+      },
+      "navigation": [
+        {
+          "route": "/tasks",
+          "elapsed": null,
+          "clientIDs": [
+            1
+          ],
+          "mounts": 1,
+          "shellCount": 1,
+          "shellID": 1,
+          "browserRequests": [
+            {
+              "label": "private-document",
+              "startMs": 2.2542499999999563
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 297.796791
+            },
+            {
+              "label": "bff-overview",
+              "startMs": 297.87187500000005
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 297.936958
+            }
+          ],
+          "upstreamRequests": [
+            {
+              "label": "me",
+              "startMs": 57.2650000000001
+            },
+            {
+              "label": "organizations",
+              "startMs": 57.43804100000011
+            },
+            {
+              "label": "tasks",
+              "startMs": 319.74762499999997
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 319.96775
+            },
+            {
+              "label": "notifications",
+              "startMs": 320.9949160000001
+            }
+          ],
+          "cancelled": []
+        },
+        {
+          "route": "/contracts",
+          "elapsed": 419.29641600000014,
+          "clientIDs": [
+            2
+          ],
+          "mounts": 2,
+          "shellCount": 2,
+          "shellID": 2,
+          "browserRequests": [
+            {
+              "label": "private-document",
+              "startMs": 2.2542499999999563
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 297.796791
+            },
+            {
+              "label": "bff-overview",
+              "startMs": 297.87187500000005
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 297.936958
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 1332.547
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 1332.620583
+            }
+          ],
+          "upstreamRequests": [
+            {
+              "label": "me",
+              "startMs": 57.2650000000001
+            },
+            {
+              "label": "organizations",
+              "startMs": 57.43804100000011
+            },
+            {
+              "label": "tasks",
+              "startMs": 319.74762499999997
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 319.96775
+            },
+            {
+              "label": "notifications",
+              "startMs": 320.9949160000001
+            },
+            {
+              "label": "me",
+              "startMs": 1031.9237910000002
+            },
+            {
+              "label": "organizations",
+              "startMs": 1032.1000410000001
+            },
+            {
+              "label": "contracts",
+              "startMs": 1339.7051660000002
+            },
+            {
+              "label": "notifications",
+              "startMs": 1339.8159580000001
+            }
+          ],
+          "cancelled": []
+        },
+        {
+          "route": "/tasks",
+          "elapsed": 416.00483299999996,
+          "clientIDs": [
+            3
+          ],
+          "mounts": 3,
+          "shellCount": 3,
+          "shellID": 3,
+          "browserRequests": [
+            {
+              "label": "private-document",
+              "startMs": 2.2542499999999563
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 297.796791
+            },
+            {
+              "label": "bff-overview",
+              "startMs": 297.87187500000005
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 297.936958
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 1332.547
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 1332.620583
+            },
+            {
+              "label": "private-document",
+              "startMs": 1437.5360409999998
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 1753.206333
+            },
+            {
+              "label": "bff-overview",
+              "startMs": 1753.4000409999999
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 1753.529458
+            }
+          ],
+          "upstreamRequests": [
+            {
+              "label": "me",
+              "startMs": 57.2650000000001
+            },
+            {
+              "label": "organizations",
+              "startMs": 57.43804100000011
+            },
+            {
+              "label": "tasks",
+              "startMs": 319.74762499999997
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 319.96775
+            },
+            {
+              "label": "notifications",
+              "startMs": 320.9949160000001
+            },
+            {
+              "label": "me",
+              "startMs": 1031.9237910000002
+            },
+            {
+              "label": "organizations",
+              "startMs": 1032.1000410000001
+            },
+            {
+              "label": "contracts",
+              "startMs": 1339.7051660000002
+            },
+            {
+              "label": "notifications",
+              "startMs": 1339.8159580000001
+            },
+            {
+              "label": "me",
+              "startMs": 1440.8203330000001
+            },
+            {
+              "label": "organizations",
+              "startMs": 1440.8780000000002
+            },
+            {
+              "label": "tasks",
+              "startMs": 1761.4395
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 1761.682875
+            },
+            {
+              "label": "notifications",
+              "startMs": 1761.978291
+            }
+          ],
+          "cancelled": []
+        },
+        {
+          "route": "/tasks-after-cancelled-filter",
+          "elapsed": null,
+          "clientIDs": [
+            5
+          ],
+          "mounts": 5,
+          "shellCount": 5,
+          "shellID": 5,
+          "browserRequests": [
+            {
+              "label": "private-document",
+              "startMs": 2.2542499999999563
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 297.796791
+            },
+            {
+              "label": "bff-overview",
+              "startMs": 297.87187500000005
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 297.936958
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 1332.547
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 1332.620583
+            },
+            {
+              "label": "private-document",
+              "startMs": 1437.5360409999998
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 1753.206333
+            },
+            {
+              "label": "bff-overview",
+              "startMs": 1753.4000409999999
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 1753.529458
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 2169.979875
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 2170.075541
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 2462.717333
+            },
+            {
+              "label": "private-document",
+              "startMs": 2465.601791
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 2791.9640409999997
+            },
+            {
+              "label": "bff-overview",
+              "startMs": 2792.1276249999996
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 2792.217083
+            }
+          ],
+          "upstreamRequests": [
+            {
+              "label": "me",
+              "startMs": 57.2650000000001
+            },
+            {
+              "label": "organizations",
+              "startMs": 57.43804100000011
+            },
+            {
+              "label": "tasks",
+              "startMs": 319.74762499999997
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 319.96775
+            },
+            {
+              "label": "notifications",
+              "startMs": 320.9949160000001
+            },
+            {
+              "label": "me",
+              "startMs": 1031.9237910000002
+            },
+            {
+              "label": "organizations",
+              "startMs": 1032.1000410000001
+            },
+            {
+              "label": "contracts",
+              "startMs": 1339.7051660000002
+            },
+            {
+              "label": "notifications",
+              "startMs": 1339.8159580000001
+            },
+            {
+              "label": "me",
+              "startMs": 1440.8203330000001
+            },
+            {
+              "label": "organizations",
+              "startMs": 1440.8780000000002
+            },
+            {
+              "label": "tasks",
+              "startMs": 1761.4395
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 1761.682875
+            },
+            {
+              "label": "notifications",
+              "startMs": 1761.978291
+            },
+            {
+              "label": "me",
+              "startMs": 1861.816291
+            },
+            {
+              "label": "organizations",
+              "startMs": 1861.879375
+            },
+            {
+              "label": "contracts",
+              "startMs": 2174.772541
+            },
+            {
+              "label": "notifications",
+              "startMs": 2175.014166
+            },
+            {
+              "label": "contracts",
+              "startMs": 2466.136708
+            },
+            {
+              "label": "me",
+              "startMs": 2474.043583
+            },
+            {
+              "label": "organizations",
+              "startMs": 2474.111416
+            },
+            {
+              "label": "tasks",
+              "startMs": 2798.496375
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 2798.6837499999997
+            },
+            {
+              "label": "notifications",
+              "startMs": 2798.8678750000004
+            }
+          ],
+          "cancelled": [
+            "/api/platform/api/v1/organizations/synthetic-org/query/contracts"
+          ]
+        }
+      ],
+      "noPrefetch": false
+    },
+    {
+      "run": 2,
+      "browserRequests": [
+        {
+          "label": "private-document",
+          "startMs": 2.057749999999942
+        },
+        {
+          "label": "bff-tasks",
+          "startMs": 298.6432080000004
+        },
+        {
+          "label": "bff-overview",
+          "startMs": 298.7032500000005
+        },
+        {
+          "label": "bff-notifications",
+          "startMs": 298.75087500000063
+        },
+        {
+          "label": "bff-contracts",
+          "startMs": 1321.270791
+        },
+        {
+          "label": "bff-notifications",
+          "startMs": 1321.3568330000007
+        },
+        {
+          "label": "private-document",
+          "startMs": 1416.4036660000002
+        },
+        {
+          "label": "bff-tasks",
+          "startMs": 1736.6740410000002
+        },
+        {
+          "label": "bff-overview",
+          "startMs": 1736.8168329999999
+        },
+        {
+          "label": "bff-notifications",
+          "startMs": 1736.891708
+        },
+        {
+          "label": "bff-contracts",
+          "startMs": 2148.1888750000007
+        },
+        {
+          "label": "bff-notifications",
+          "startMs": 2148.3024160000004
+        },
+        {
+          "label": "bff-contracts",
+          "startMs": 2450.8072500000007
+        },
+        {
+          "label": "private-document",
+          "startMs": 2452.864125
+        },
+        {
+          "label": "bff-tasks",
+          "startMs": 2774.3295830000006
+        },
+        {
+          "label": "bff-overview",
+          "startMs": 2774.4262500000004
+        },
+        {
+          "label": "bff-notifications",
+          "startMs": 2774.481291
+        }
+      ],
+      "upstreamRequests": [
+        {
+          "label": "me",
+          "startMs": 8.674041000000216
+        },
+        {
+          "label": "organizations",
+          "startMs": 8.734083000000282
+        },
+        {
+          "label": "tasks",
+          "startMs": 301.4256660000001
+        },
+        {
+          "label": "other-fixture-request",
+          "startMs": 301.5435000000007
+        },
+        {
+          "label": "notifications",
+          "startMs": 301.6483330000001
+        },
+        {
+          "label": "me",
+          "startMs": 1021.7099580000004
+        },
+        {
+          "label": "organizations",
+          "startMs": 1021.8269580000006
+        },
+        {
+          "label": "contracts",
+          "startMs": 1323.5368750000007
+        },
+        {
+          "label": "notifications",
+          "startMs": 1323.6995830000005
+        },
+        {
+          "label": "me",
+          "startMs": 1421.915
+        },
+        {
+          "label": "organizations",
+          "startMs": 1422.06275
+        },
+        {
+          "label": "tasks",
+          "startMs": 1741.3058330000003
+        },
+        {
+          "label": "other-fixture-request",
+          "startMs": 1741.5467910000007
+        },
+        {
+          "label": "notifications",
+          "startMs": 1741.7685000000001
+        },
+        {
+          "label": "me",
+          "startMs": 1838.4451660000004
+        },
+        {
+          "label": "organizations",
+          "startMs": 1838.5714160000007
+        },
+        {
+          "label": "contracts",
+          "startMs": 2152.1575410000005
+        },
+        {
+          "label": "notifications",
+          "startMs": 2152.2754160000004
+        },
+        {
+          "label": "contracts",
+          "startMs": 2457.7178330000006
+        },
+        {
+          "label": "me",
+          "startMs": 2459.214916
+        },
+        {
+          "label": "organizations",
+          "startMs": 2459.3097080000007
+        },
+        {
+          "label": "tasks",
+          "startMs": 2779.4570830000002
+        },
+        {
+          "label": "other-fixture-request",
+          "startMs": 2779.6180000000004
+        },
+        {
+          "label": "notifications",
+          "startMs": 2779.8412910000006
+        }
+      ],
+      "timings": {
+        "navigation": [
+          {
+            "responseStart": 8.099999994039536,
+            "domContentLoaded": 101.90000000596046,
+            "load": 102.2000000178814
+          }
+        ],
+        "paints": [
+          {
+            "name": "first-paint",
+            "time": 32
+          },
+          {
+            "name": "first-contentful-paint",
+            "time": 328
+          }
+        ],
+        "usefulContent": [
+          {
+            "name": "fixture-shell",
+            "time": 296.40000000596046
+          },
+          {
+            "name": "fixture-useful-tasks",
+            "time": 385.59999999403954
+          }
+        ]
+      },
+      "navigation": [
+        {
+          "route": "/tasks",
+          "elapsed": null,
+          "clientIDs": [
+            1
+          ],
+          "mounts": 1,
+          "shellCount": 1,
+          "shellID": 1,
+          "browserRequests": [
+            {
+              "label": "private-document",
+              "startMs": 2.057749999999942
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 298.6432080000004
+            },
+            {
+              "label": "bff-overview",
+              "startMs": 298.7032500000005
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 298.75087500000063
+            }
+          ],
+          "upstreamRequests": [
+            {
+              "label": "me",
+              "startMs": 8.674041000000216
+            },
+            {
+              "label": "organizations",
+              "startMs": 8.734083000000282
+            },
+            {
+              "label": "tasks",
+              "startMs": 301.4256660000001
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 301.5435000000007
+            },
+            {
+              "label": "notifications",
+              "startMs": 301.6483330000001
+            }
+          ],
+          "cancelled": []
+        },
+        {
+          "route": "/contracts",
+          "elapsed": 402.79008299999987,
+          "clientIDs": [
+            2
+          ],
+          "mounts": 2,
+          "shellCount": 2,
+          "shellID": 2,
+          "browserRequests": [
+            {
+              "label": "private-document",
+              "startMs": 2.057749999999942
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 298.6432080000004
+            },
+            {
+              "label": "bff-overview",
+              "startMs": 298.7032500000005
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 298.75087500000063
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 1321.270791
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 1321.3568330000007
+            }
+          ],
+          "upstreamRequests": [
+            {
+              "label": "me",
+              "startMs": 8.674041000000216
+            },
+            {
+              "label": "organizations",
+              "startMs": 8.734083000000282
+            },
+            {
+              "label": "tasks",
+              "startMs": 301.4256660000001
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 301.5435000000007
+            },
+            {
+              "label": "notifications",
+              "startMs": 301.6483330000001
+            },
+            {
+              "label": "me",
+              "startMs": 1021.7099580000004
+            },
+            {
+              "label": "organizations",
+              "startMs": 1021.8269580000006
+            },
+            {
+              "label": "contracts",
+              "startMs": 1323.5368750000007
+            },
+            {
+              "label": "notifications",
+              "startMs": 1323.6995830000005
+            }
+          ],
+          "cancelled": []
+        },
+        {
+          "route": "/tasks",
+          "elapsed": 413.2227090000006,
+          "clientIDs": [
+            3
+          ],
+          "mounts": 3,
+          "shellCount": 3,
+          "shellID": 3,
+          "browserRequests": [
+            {
+              "label": "private-document",
+              "startMs": 2.057749999999942
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 298.6432080000004
+            },
+            {
+              "label": "bff-overview",
+              "startMs": 298.7032500000005
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 298.75087500000063
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 1321.270791
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 1321.3568330000007
+            },
+            {
+              "label": "private-document",
+              "startMs": 1416.4036660000002
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 1736.6740410000002
+            },
+            {
+              "label": "bff-overview",
+              "startMs": 1736.8168329999999
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 1736.891708
+            }
+          ],
+          "upstreamRequests": [
+            {
+              "label": "me",
+              "startMs": 8.674041000000216
+            },
+            {
+              "label": "organizations",
+              "startMs": 8.734083000000282
+            },
+            {
+              "label": "tasks",
+              "startMs": 301.4256660000001
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 301.5435000000007
+            },
+            {
+              "label": "notifications",
+              "startMs": 301.6483330000001
+            },
+            {
+              "label": "me",
+              "startMs": 1021.7099580000004
+            },
+            {
+              "label": "organizations",
+              "startMs": 1021.8269580000006
+            },
+            {
+              "label": "contracts",
+              "startMs": 1323.5368750000007
+            },
+            {
+              "label": "notifications",
+              "startMs": 1323.6995830000005
+            },
+            {
+              "label": "me",
+              "startMs": 1421.915
+            },
+            {
+              "label": "organizations",
+              "startMs": 1422.06275
+            },
+            {
+              "label": "tasks",
+              "startMs": 1741.3058330000003
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 1741.5467910000007
+            },
+            {
+              "label": "notifications",
+              "startMs": 1741.7685000000001
+            }
+          ],
+          "cancelled": []
+        },
+        {
+          "route": "/tasks-after-cancelled-filter",
+          "elapsed": null,
+          "clientIDs": [
+            5
+          ],
+          "mounts": 5,
+          "shellCount": 5,
+          "shellID": 5,
+          "browserRequests": [
+            {
+              "label": "private-document",
+              "startMs": 2.057749999999942
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 298.6432080000004
+            },
+            {
+              "label": "bff-overview",
+              "startMs": 298.7032500000005
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 298.75087500000063
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 1321.270791
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 1321.3568330000007
+            },
+            {
+              "label": "private-document",
+              "startMs": 1416.4036660000002
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 1736.6740410000002
+            },
+            {
+              "label": "bff-overview",
+              "startMs": 1736.8168329999999
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 1736.891708
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 2148.1888750000007
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 2148.3024160000004
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 2450.8072500000007
+            },
+            {
+              "label": "private-document",
+              "startMs": 2452.864125
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 2774.3295830000006
+            },
+            {
+              "label": "bff-overview",
+              "startMs": 2774.4262500000004
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 2774.481291
+            }
+          ],
+          "upstreamRequests": [
+            {
+              "label": "me",
+              "startMs": 8.674041000000216
+            },
+            {
+              "label": "organizations",
+              "startMs": 8.734083000000282
+            },
+            {
+              "label": "tasks",
+              "startMs": 301.4256660000001
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 301.5435000000007
+            },
+            {
+              "label": "notifications",
+              "startMs": 301.6483330000001
+            },
+            {
+              "label": "me",
+              "startMs": 1021.7099580000004
+            },
+            {
+              "label": "organizations",
+              "startMs": 1021.8269580000006
+            },
+            {
+              "label": "contracts",
+              "startMs": 1323.5368750000007
+            },
+            {
+              "label": "notifications",
+              "startMs": 1323.6995830000005
+            },
+            {
+              "label": "me",
+              "startMs": 1421.915
+            },
+            {
+              "label": "organizations",
+              "startMs": 1422.06275
+            },
+            {
+              "label": "tasks",
+              "startMs": 1741.3058330000003
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 1741.5467910000007
+            },
+            {
+              "label": "notifications",
+              "startMs": 1741.7685000000001
+            },
+            {
+              "label": "me",
+              "startMs": 1838.4451660000004
+            },
+            {
+              "label": "organizations",
+              "startMs": 1838.5714160000007
+            },
+            {
+              "label": "contracts",
+              "startMs": 2152.1575410000005
+            },
+            {
+              "label": "notifications",
+              "startMs": 2152.2754160000004
+            },
+            {
+              "label": "contracts",
+              "startMs": 2457.7178330000006
+            },
+            {
+              "label": "me",
+              "startMs": 2459.214916
+            },
+            {
+              "label": "organizations",
+              "startMs": 2459.3097080000007
+            },
+            {
+              "label": "tasks",
+              "startMs": 2779.4570830000002
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 2779.6180000000004
+            },
+            {
+              "label": "notifications",
+              "startMs": 2779.8412910000006
+            }
+          ],
+          "cancelled": [
+            "/api/platform/api/v1/organizations/synthetic-org/query/contracts"
+          ]
+        }
+      ],
+      "noPrefetch": false
+    },
+    {
+      "run": 3,
+      "browserRequests": [
+        {
+          "label": "private-document",
+          "startMs": 1.9862079999984417
+        },
+        {
+          "label": "bff-tasks",
+          "startMs": 297.61383299999943
+        },
+        {
+          "label": "bff-overview",
+          "startMs": 301.2840419999993
+        },
+        {
+          "label": "bff-notifications",
+          "startMs": 301.3765829999993
+        },
+        {
+          "label": "bff-contracts",
+          "startMs": 1328.503417
+        },
+        {
+          "label": "bff-notifications",
+          "startMs": 1328.556208
+        },
+        {
+          "label": "private-document",
+          "startMs": 1420.836625
+        },
+        {
+          "label": "bff-tasks",
+          "startMs": 1734.900416999999
+        },
+        {
+          "label": "bff-overview",
+          "startMs": 1735.025416999999
+        },
+        {
+          "label": "bff-notifications",
+          "startMs": 1735.365416999999
+        },
+        {
+          "label": "bff-contracts",
+          "startMs": 2159.8993329999994
+        },
+        {
+          "label": "bff-notifications",
+          "startMs": 2160.024707999999
+        },
+        {
+          "label": "bff-contracts",
+          "startMs": 2459.3113749999993
+        },
+        {
+          "label": "private-document",
+          "startMs": 2461.347749999999
+        },
+        {
+          "label": "bff-tasks",
+          "startMs": 2775.666958
+        },
+        {
+          "label": "bff-overview",
+          "startMs": 2775.8047079999997
+        },
+        {
+          "label": "bff-notifications",
+          "startMs": 2775.861666999999
+        }
+      ],
+      "upstreamRequests": [
+        {
+          "label": "me",
+          "startMs": 7.187582999998995
+        },
+        {
+          "label": "organizations",
+          "startMs": 7.246374999998807
+        },
+        {
+          "label": "tasks",
+          "startMs": 303.0305419999986
+        },
+        {
+          "label": "other-fixture-request",
+          "startMs": 303.10499999999956
+        },
+        {
+          "label": "notifications",
+          "startMs": 303.2233749999996
+        },
+        {
+          "label": "me",
+          "startMs": 1026.3245419999985
+        },
+        {
+          "label": "organizations",
+          "startMs": 1026.5137079999986
+        },
+        {
+          "label": "contracts",
+          "startMs": 1332.8736669999998
+        },
+        {
+          "label": "notifications",
+          "startMs": 1333.0792919999985
+        },
+        {
+          "label": "me",
+          "startMs": 1423.8836249999986
+        },
+        {
+          "label": "organizations",
+          "startMs": 1423.9631669999999
+        },
+        {
+          "label": "tasks",
+          "startMs": 1740.3024579999983
+        },
+        {
+          "label": "other-fixture-request",
+          "startMs": 1740.5233329999992
+        },
+        {
+          "label": "notifications",
+          "startMs": 1740.6212499999983
+        },
+        {
+          "label": "me",
+          "startMs": 1842.4569169999995
+        },
+        {
+          "label": "organizations",
+          "startMs": 1842.5598329999993
+        },
+        {
+          "label": "contracts",
+          "startMs": 2164.3384579999984
+        },
+        {
+          "label": "notifications",
+          "startMs": 2164.5489579999994
+        },
+        {
+          "label": "contracts",
+          "startMs": 2464.952874999999
+        },
+        {
+          "label": "me",
+          "startMs": 2465.3468329999996
+        },
+        {
+          "label": "organizations",
+          "startMs": 2465.484208
+        },
+        {
+          "label": "tasks",
+          "startMs": 2779.89675
+        },
+        {
+          "label": "other-fixture-request",
+          "startMs": 2779.988541999999
+        },
+        {
+          "label": "notifications",
+          "startMs": 2780.134624999999
+        }
+      ],
+      "timings": {
+        "navigation": [
+          {
+            "responseStart": 6.5,
+            "domContentLoaded": 100.5,
+            "load": 100.7000000178814
+          }
+        ],
+        "paints": [
+          {
+            "name": "first-paint",
+            "time": 52
+          },
+          {
+            "name": "first-contentful-paint",
+            "time": 320
+          }
+        ],
+        "usefulContent": [
+          {
+            "name": "fixture-shell",
+            "time": 295.30000001192093
+          },
+          {
+            "name": "fixture-useful-tasks",
+            "time": 386.09999999403954
+          }
+        ]
+      },
+      "navigation": [
+        {
+          "route": "/tasks",
+          "elapsed": null,
+          "clientIDs": [
+            1
+          ],
+          "mounts": 1,
+          "shellCount": 1,
+          "shellID": 1,
+          "browserRequests": [
+            {
+              "label": "private-document",
+              "startMs": 1.9862079999984417
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 297.61383299999943
+            },
+            {
+              "label": "bff-overview",
+              "startMs": 301.2840419999993
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 301.3765829999993
+            }
+          ],
+          "upstreamRequests": [
+            {
+              "label": "me",
+              "startMs": 7.187582999998995
+            },
+            {
+              "label": "organizations",
+              "startMs": 7.246374999998807
+            },
+            {
+              "label": "tasks",
+              "startMs": 303.0305419999986
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 303.10499999999956
+            },
+            {
+              "label": "notifications",
+              "startMs": 303.2233749999996
+            }
+          ],
+          "cancelled": []
+        },
+        {
+          "route": "/contracts",
+          "elapsed": 401.5010000000002,
+          "clientIDs": [
+            2
+          ],
+          "mounts": 2,
+          "shellCount": 2,
+          "shellID": 2,
+          "browserRequests": [
+            {
+              "label": "private-document",
+              "startMs": 1.9862079999984417
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 297.61383299999943
+            },
+            {
+              "label": "bff-overview",
+              "startMs": 301.2840419999993
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 301.3765829999993
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 1328.503417
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 1328.556208
+            }
+          ],
+          "upstreamRequests": [
+            {
+              "label": "me",
+              "startMs": 7.187582999998995
+            },
+            {
+              "label": "organizations",
+              "startMs": 7.246374999998807
+            },
+            {
+              "label": "tasks",
+              "startMs": 303.0305419999986
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 303.10499999999956
+            },
+            {
+              "label": "notifications",
+              "startMs": 303.2233749999996
+            },
+            {
+              "label": "me",
+              "startMs": 1026.3245419999985
+            },
+            {
+              "label": "organizations",
+              "startMs": 1026.5137079999986
+            },
+            {
+              "label": "contracts",
+              "startMs": 1332.8736669999998
+            },
+            {
+              "label": "notifications",
+              "startMs": 1333.0792919999985
+            }
+          ],
+          "cancelled": []
+        },
+        {
+          "route": "/tasks",
+          "elapsed": 415.52237499999865,
+          "clientIDs": [
+            3
+          ],
+          "mounts": 3,
+          "shellCount": 3,
+          "shellID": 3,
+          "browserRequests": [
+            {
+              "label": "private-document",
+              "startMs": 1.9862079999984417
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 297.61383299999943
+            },
+            {
+              "label": "bff-overview",
+              "startMs": 301.2840419999993
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 301.3765829999993
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 1328.503417
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 1328.556208
+            },
+            {
+              "label": "private-document",
+              "startMs": 1420.836625
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 1734.900416999999
+            },
+            {
+              "label": "bff-overview",
+              "startMs": 1735.025416999999
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 1735.365416999999
+            }
+          ],
+          "upstreamRequests": [
+            {
+              "label": "me",
+              "startMs": 7.187582999998995
+            },
+            {
+              "label": "organizations",
+              "startMs": 7.246374999998807
+            },
+            {
+              "label": "tasks",
+              "startMs": 303.0305419999986
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 303.10499999999956
+            },
+            {
+              "label": "notifications",
+              "startMs": 303.2233749999996
+            },
+            {
+              "label": "me",
+              "startMs": 1026.3245419999985
+            },
+            {
+              "label": "organizations",
+              "startMs": 1026.5137079999986
+            },
+            {
+              "label": "contracts",
+              "startMs": 1332.8736669999998
+            },
+            {
+              "label": "notifications",
+              "startMs": 1333.0792919999985
+            },
+            {
+              "label": "me",
+              "startMs": 1423.8836249999986
+            },
+            {
+              "label": "organizations",
+              "startMs": 1423.9631669999999
+            },
+            {
+              "label": "tasks",
+              "startMs": 1740.3024579999983
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 1740.5233329999992
+            },
+            {
+              "label": "notifications",
+              "startMs": 1740.6212499999983
+            }
+          ],
+          "cancelled": []
+        },
+        {
+          "route": "/tasks-after-cancelled-filter",
+          "elapsed": null,
+          "clientIDs": [
+            5
+          ],
+          "mounts": 5,
+          "shellCount": 5,
+          "shellID": 5,
+          "browserRequests": [
+            {
+              "label": "private-document",
+              "startMs": 1.9862079999984417
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 297.61383299999943
+            },
+            {
+              "label": "bff-overview",
+              "startMs": 301.2840419999993
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 301.3765829999993
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 1328.503417
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 1328.556208
+            },
+            {
+              "label": "private-document",
+              "startMs": 1420.836625
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 1734.900416999999
+            },
+            {
+              "label": "bff-overview",
+              "startMs": 1735.025416999999
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 1735.365416999999
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 2159.8993329999994
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 2160.024707999999
+            },
+            {
+              "label": "bff-contracts",
+              "startMs": 2459.3113749999993
+            },
+            {
+              "label": "private-document",
+              "startMs": 2461.347749999999
+            },
+            {
+              "label": "bff-tasks",
+              "startMs": 2775.666958
+            },
+            {
+              "label": "bff-overview",
+              "startMs": 2775.8047079999997
+            },
+            {
+              "label": "bff-notifications",
+              "startMs": 2775.861666999999
+            }
+          ],
+          "upstreamRequests": [
+            {
+              "label": "me",
+              "startMs": 7.187582999998995
+            },
+            {
+              "label": "organizations",
+              "startMs": 7.246374999998807
+            },
+            {
+              "label": "tasks",
+              "startMs": 303.0305419999986
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 303.10499999999956
+            },
+            {
+              "label": "notifications",
+              "startMs": 303.2233749999996
+            },
+            {
+              "label": "me",
+              "startMs": 1026.3245419999985
+            },
+            {
+              "label": "organizations",
+              "startMs": 1026.5137079999986
+            },
+            {
+              "label": "contracts",
+              "startMs": 1332.8736669999998
+            },
+            {
+              "label": "notifications",
+              "startMs": 1333.0792919999985
+            },
+            {
+              "label": "me",
+              "startMs": 1423.8836249999986
+            },
+            {
+              "label": "organizations",
+              "startMs": 1423.9631669999999
+            },
+            {
+              "label": "tasks",
+              "startMs": 1740.3024579999983
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 1740.5233329999992
+            },
+            {
+              "label": "notifications",
+              "startMs": 1740.6212499999983
+            },
+            {
+              "label": "me",
+              "startMs": 1842.4569169999995
+            },
+            {
+              "label": "organizations",
+              "startMs": 1842.5598329999993
+            },
+            {
+              "label": "contracts",
+              "startMs": 2164.3384579999984
+            },
+            {
+              "label": "notifications",
+              "startMs": 2164.5489579999994
+            },
+            {
+              "label": "contracts",
+              "startMs": 2464.952874999999
+            },
+            {
+              "label": "me",
+              "startMs": 2465.3468329999996
+            },
+            {
+              "label": "organizations",
+              "startMs": 2465.484208
+            },
+            {
+              "label": "tasks",
+              "startMs": 2779.89675
+            },
+            {
+              "label": "other-fixture-request",
+              "startMs": 2779.988541999999
+            },
+            {
+              "label": "notifications",
+              "startMs": 2780.134624999999
+            }
+          ],
+          "cancelled": [
+            "/api/platform/api/v1/organizations/synthetic-org/query/contracts"
+          ]
+        }
+      ],
+      "noPrefetch": false
+    }
+  ],
+  "visuals": [
+    {
+      "route": "/sample",
+      "width": 390,
+      "theme": "light",
+      "authRequests": [],
+      "requests": [
+        "/sample",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/3j99h-_6y5hbw.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/signin",
+        "/signin",
+        "/signin"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/signin",
+      "width": 390,
+      "theme": "light",
+      "authRequests": [],
+      "requests": [
+        "/signin",
+        "/lenslayer-lockup.svg",
+        "/_next/image",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/3gmr8kia38jn5.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/3nthti7qo2750.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/",
+        "/signup",
+        "/",
+        "/signup",
+        "/signup"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/signup",
+      "width": 390,
+      "theme": "light",
+      "authRequests": [],
+      "requests": [
+        "/signup",
+        "/lenslayer-lockup.svg",
+        "/_next/image",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/3gmr8kia38jn5.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/3nthti7qo2750.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/",
+        "/signin",
+        "/",
+        "/signin",
+        "/signin"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/auth/signed-out",
+      "width": 390,
+      "theme": "light",
+      "authRequests": [],
+      "requests": [
+        "/auth/signed-out",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/2ktg6tbxn_si4.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/signin",
+        "/sample",
+        "/signin",
+        "/sample",
+        "/_next/static/chunks/3j99h-_6y5hbw.js"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/invite/synthetic-token",
+      "width": 390,
+      "theme": "light",
+      "authRequests": [
+        "/api/auth/session"
+      ],
+      "requests": [
+        "/invite/synthetic-token",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/2pshc4rb3_jx9.js",
+        "/_next/static/chunks/3-dhb-na8c4-4.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/1nnvna42_xauz.js",
+        "/_next/static/chunks/3h8mg4bbqa1zk.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/api/platform/api/v1/invitations/synthetic-token",
+        "/api/auth/session",
+        "/favicon.ico",
+        "/api/platform/api/v1/invitations/synthetic-token",
+        "/signin",
+        "/signup",
+        "/signin",
+        "/signup",
+        "/signin",
+        "/signup"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/shared/synthetic-token",
+      "width": 390,
+      "theme": "light",
+      "authRequests": [],
+      "requests": [
+        "/shared/synthetic-token",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/2-5lp4wqd97qh.js",
+        "/_next/static/chunks/0vnwfqceaelgz.js",
+        "/_next/static/chunks/2enxv-qz1vs0c.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/api/platform/api/v1/shared/synthetic-token",
+        "/favicon.ico"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/settings/developers",
+      "width": 390,
+      "theme": "light",
+      "authRequests": [],
+      "requests": [
+        "/settings/developers",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/0rylse1nqh231.css",
+        "/_next/static/chunks/3-z0y43rkkxxd.css",
+        "/_next/static/chunks/1qdwd-vjk7nai.css",
+        "/_next/static/chunks/1p5skfjlhdo5d.css",
+        "/_next/static/chunks/2m5j9ptus9bm0.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/30u_1w7owunue.js",
+        "/_next/static/chunks/39w2dhfmpn3gd.js",
+        "/_next/static/chunks/3-dhb-na8c4-4.js",
+        "/_next/static/chunks/1nnvna42_xauz.js",
+        "/_next/static/chunks/0zxfsa2ol5gfq.js",
+        "/_next/static/chunks/3kf1i_z4kpgjw.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/2v2pnwkfznzxt.js",
+        "/_next/static/chunks/36nih1ws4ne6u.js",
+        "/_next/static/chunks/1785yfkis18sm.js",
+        "/_next/static/chunks/1gb5tyb8yefx1.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/_next/static/chunks/0enzvbt4bz7n-.js",
+        "/agent-tasks",
+        "/signin",
+        "/settings/general",
+        "/settings/identity",
+        "/settings/security",
+        "/settings/data",
+        "/settings/notifications",
+        "/settings/integrations",
+        "/settings/developers",
+        "/agent-tasks",
+        "/signin"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/sample",
+      "width": 390,
+      "theme": "dark",
+      "authRequests": [],
+      "requests": [
+        "/sample",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/3j99h-_6y5hbw.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/signin",
+        "/signin",
+        "/signin"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/signin",
+      "width": 390,
+      "theme": "dark",
+      "authRequests": [],
+      "requests": [
+        "/signin",
+        "/lenslayer-lockup.svg",
+        "/_next/image",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/3gmr8kia38jn5.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/3nthti7qo2750.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/",
+        "/signup",
+        "/",
+        "/signup",
+        "/signup"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/signup",
+      "width": 390,
+      "theme": "dark",
+      "authRequests": [],
+      "requests": [
+        "/signup",
+        "/lenslayer-lockup.svg",
+        "/_next/image",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/3gmr8kia38jn5.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/3nthti7qo2750.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/",
+        "/signin",
+        "/",
+        "/signin",
+        "/signin"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/auth/signed-out",
+      "width": 390,
+      "theme": "dark",
+      "authRequests": [],
+      "requests": [
+        "/auth/signed-out",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/2ktg6tbxn_si4.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/signin",
+        "/sample",
+        "/signin",
+        "/sample",
+        "/_next/static/chunks/3j99h-_6y5hbw.js"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/invite/synthetic-token",
+      "width": 390,
+      "theme": "dark",
+      "authRequests": [
+        "/api/auth/session"
+      ],
+      "requests": [
+        "/invite/synthetic-token",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/2pshc4rb3_jx9.js",
+        "/_next/static/chunks/3-dhb-na8c4-4.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/1nnvna42_xauz.js",
+        "/_next/static/chunks/3h8mg4bbqa1zk.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/api/platform/api/v1/invitations/synthetic-token",
+        "/api/auth/session",
+        "/favicon.ico",
+        "/api/platform/api/v1/invitations/synthetic-token",
+        "/signin",
+        "/signup",
+        "/signup",
+        "/signin",
+        "/signup",
+        "/signin"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/shared/synthetic-token",
+      "width": 390,
+      "theme": "dark",
+      "authRequests": [],
+      "requests": [
+        "/shared/synthetic-token",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/2-5lp4wqd97qh.js",
+        "/_next/static/chunks/0vnwfqceaelgz.js",
+        "/_next/static/chunks/2enxv-qz1vs0c.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/api/platform/api/v1/shared/synthetic-token",
+        "/favicon.ico"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/settings/developers",
+      "width": 390,
+      "theme": "dark",
+      "authRequests": [],
+      "requests": [
+        "/settings/developers",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/0rylse1nqh231.css",
+        "/_next/static/chunks/3-z0y43rkkxxd.css",
+        "/_next/static/chunks/1qdwd-vjk7nai.css",
+        "/_next/static/chunks/1p5skfjlhdo5d.css",
+        "/_next/static/chunks/2m5j9ptus9bm0.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/30u_1w7owunue.js",
+        "/_next/static/chunks/39w2dhfmpn3gd.js",
+        "/_next/static/chunks/3-dhb-na8c4-4.js",
+        "/_next/static/chunks/1nnvna42_xauz.js",
+        "/_next/static/chunks/0zxfsa2ol5gfq.js",
+        "/_next/static/chunks/3kf1i_z4kpgjw.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/2v2pnwkfznzxt.js",
+        "/_next/static/chunks/36nih1ws4ne6u.js",
+        "/_next/static/chunks/1785yfkis18sm.js",
+        "/_next/static/chunks/1gb5tyb8yefx1.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/_next/static/chunks/0enzvbt4bz7n-.js",
+        "/agent-tasks",
+        "/signin",
+        "/settings/general",
+        "/settings/identity",
+        "/settings/security",
+        "/settings/data",
+        "/settings/notifications",
+        "/settings/integrations",
+        "/settings/developers",
+        "/agent-tasks",
+        "/signin"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/sample",
+      "width": 1440,
+      "theme": "light",
+      "authRequests": [],
+      "requests": [
+        "/sample",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/3j99h-_6y5hbw.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/signin",
+        "/signin",
+        "/signin"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/signin",
+      "width": 1440,
+      "theme": "light",
+      "authRequests": [],
+      "requests": [
+        "/signin",
+        "/lenslayer-lockup.svg",
+        "/_next/image",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/3gmr8kia38jn5.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/3nthti7qo2750.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/",
+        "/signup",
+        "/",
+        "/signup",
+        "/signup",
+        "/_next/image"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/signup",
+      "width": 1440,
+      "theme": "light",
+      "authRequests": [],
+      "requests": [
+        "/signup",
+        "/lenslayer-lockup.svg",
+        "/_next/image",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/3gmr8kia38jn5.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/3nthti7qo2750.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/",
+        "/signin",
+        "/",
+        "/signin",
+        "/signin",
+        "/_next/image"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/auth/signed-out",
+      "width": 1440,
+      "theme": "light",
+      "authRequests": [],
+      "requests": [
+        "/auth/signed-out",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/2ktg6tbxn_si4.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/signin",
+        "/sample",
+        "/signin",
+        "/sample",
+        "/_next/static/chunks/3j99h-_6y5hbw.js"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/invite/synthetic-token",
+      "width": 1440,
+      "theme": "light",
+      "authRequests": [
+        "/api/auth/session"
+      ],
+      "requests": [
+        "/invite/synthetic-token",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/2pshc4rb3_jx9.js",
+        "/_next/static/chunks/3-dhb-na8c4-4.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/1nnvna42_xauz.js",
+        "/_next/static/chunks/3h8mg4bbqa1zk.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/api/platform/api/v1/invitations/synthetic-token",
+        "/api/auth/session",
+        "/favicon.ico",
+        "/api/platform/api/v1/invitations/synthetic-token",
+        "/signin",
+        "/signup",
+        "/signin",
+        "/signup",
+        "/signin",
+        "/signup"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/shared/synthetic-token",
+      "width": 1440,
+      "theme": "light",
+      "authRequests": [],
+      "requests": [
+        "/shared/synthetic-token",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/2-5lp4wqd97qh.js",
+        "/_next/static/chunks/0vnwfqceaelgz.js",
+        "/_next/static/chunks/2enxv-qz1vs0c.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/api/platform/api/v1/shared/synthetic-token",
+        "/favicon.ico"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/settings/developers",
+      "width": 1440,
+      "theme": "light",
+      "authRequests": [],
+      "requests": [
+        "/settings/developers",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/0rylse1nqh231.css",
+        "/_next/static/chunks/3-z0y43rkkxxd.css",
+        "/_next/static/chunks/1qdwd-vjk7nai.css",
+        "/_next/static/chunks/1p5skfjlhdo5d.css",
+        "/_next/static/chunks/2m5j9ptus9bm0.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/30u_1w7owunue.js",
+        "/_next/static/chunks/39w2dhfmpn3gd.js",
+        "/_next/static/chunks/3-dhb-na8c4-4.js",
+        "/_next/static/chunks/1nnvna42_xauz.js",
+        "/_next/static/chunks/0zxfsa2ol5gfq.js",
+        "/_next/static/chunks/3kf1i_z4kpgjw.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/2v2pnwkfznzxt.js",
+        "/_next/static/chunks/36nih1ws4ne6u.js",
+        "/_next/static/chunks/1785yfkis18sm.js",
+        "/_next/static/chunks/1gb5tyb8yefx1.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/_next/static/chunks/0enzvbt4bz7n-.js",
+        "/agent-tasks",
+        "/signin",
+        "/settings/general",
+        "/settings/identity",
+        "/settings/security",
+        "/settings/data",
+        "/settings/notifications",
+        "/settings/integrations",
+        "/settings/developers",
+        "/agent-tasks",
+        "/signin"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/sample",
+      "width": 1440,
+      "theme": "dark",
+      "authRequests": [],
+      "requests": [
+        "/sample",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/3j99h-_6y5hbw.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/signin",
+        "/signin",
+        "/signin"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/signin",
+      "width": 1440,
+      "theme": "dark",
+      "authRequests": [],
+      "requests": [
+        "/signin",
+        "/lenslayer-lockup.svg",
+        "/_next/image",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/3gmr8kia38jn5.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/3nthti7qo2750.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/",
+        "/signup",
+        "/",
+        "/signup",
+        "/signup",
+        "/_next/image"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/signup",
+      "width": 1440,
+      "theme": "dark",
+      "authRequests": [],
+      "requests": [
+        "/signup",
+        "/lenslayer-lockup.svg",
+        "/_next/image",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/3gmr8kia38jn5.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/3nthti7qo2750.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/",
+        "/signin",
+        "/",
+        "/signin",
+        "/signin",
+        "/_next/image"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/auth/signed-out",
+      "width": 1440,
+      "theme": "dark",
+      "authRequests": [],
+      "requests": [
+        "/auth/signed-out",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/2ktg6tbxn_si4.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/signin",
+        "/sample",
+        "/signin",
+        "/sample",
+        "/_next/static/chunks/3j99h-_6y5hbw.js"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/invite/synthetic-token",
+      "width": 1440,
+      "theme": "dark",
+      "authRequests": [
+        "/api/auth/session"
+      ],
+      "requests": [
+        "/invite/synthetic-token",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/2pshc4rb3_jx9.js",
+        "/_next/static/chunks/3-dhb-na8c4-4.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/1nnvna42_xauz.js",
+        "/_next/static/chunks/3h8mg4bbqa1zk.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/api/platform/api/v1/invitations/synthetic-token",
+        "/api/auth/session",
+        "/favicon.ico",
+        "/api/platform/api/v1/invitations/synthetic-token",
+        "/signin",
+        "/signup",
+        "/signin",
+        "/signup",
+        "/signin",
+        "/signup"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/shared/synthetic-token",
+      "width": 1440,
+      "theme": "dark",
+      "authRequests": [],
+      "requests": [
+        "/shared/synthetic-token",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/1vp6ly3qd7kuf.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/2-5lp4wqd97qh.js",
+        "/_next/static/chunks/0vnwfqceaelgz.js",
+        "/_next/static/chunks/2enxv-qz1vs0c.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/api/platform/api/v1/shared/synthetic-token",
+        "/favicon.ico"
+      ],
+      "errors": []
+    },
+    {
+      "route": "/settings/developers",
+      "width": 1440,
+      "theme": "dark",
+      "authRequests": [],
+      "requests": [
+        "/settings/developers",
+        "/_next/static/chunks/2dghz_lyfqbmu.css",
+        "/_next/static/chunks/0rylse1nqh231.css",
+        "/_next/static/chunks/3-z0y43rkkxxd.css",
+        "/_next/static/chunks/1qdwd-vjk7nai.css",
+        "/_next/static/chunks/1p5skfjlhdo5d.css",
+        "/_next/static/chunks/2m5j9ptus9bm0.css",
+        "/_next/static/chunks/3s6nzrbk-8mnv.js",
+        "/_next/static/chunks/33g_4yfdp1_l_.js",
+        "/_next/static/chunks/3jn2i5cr_2j-y.js",
+        "/_next/static/chunks/1hh62nn16zhzj.js",
+        "/_next/static/chunks/turbopack-2qzoplh0wv6yt.js",
+        "/_next/static/chunks/2axli2g7ewcif.js",
+        "/_next/static/chunks/34dqk9pqu1uo3.js",
+        "/_next/static/chunks/30u_1w7owunue.js",
+        "/_next/static/chunks/39w2dhfmpn3gd.js",
+        "/_next/static/chunks/3-dhb-na8c4-4.js",
+        "/_next/static/chunks/1nnvna42_xauz.js",
+        "/_next/static/chunks/0zxfsa2ol5gfq.js",
+        "/_next/static/chunks/3kf1i_z4kpgjw.js",
+        "/_next/static/chunks/37kemsraobmzv.js",
+        "/_next/static/chunks/2v2pnwkfznzxt.js",
+        "/_next/static/chunks/36nih1ws4ne6u.js",
+        "/_next/static/chunks/1785yfkis18sm.js",
+        "/_next/static/chunks/1gb5tyb8yefx1.js",
+        "/_next/static/media/figtree-latin-wght-normal.08sr_7r2rzxl4.woff2",
+        "/favicon.ico",
+        "/_next/static/chunks/0enzvbt4bz7n-.js",
+        "/agent-tasks",
+        "/signin",
+        "/settings/general",
+        "/settings/identity",
+        "/settings/security",
+        "/settings/data",
+        "/settings/notifications",
+        "/settings/integrations",
+        "/settings/developers",
+        "/agent-tasks",
+        "/signin"
+      ],
+      "errors": []
+    }
+  ]
+}

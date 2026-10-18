@@ -1,6 +1,6 @@
 import { getDemoResponse } from "./demo-data";
 import type { Contract, LifecycleItem, WorkflowTask } from "./types";
-import type { OverviewWindow, PageFilters, QueryPage, WorkspaceOverview } from "./api/workspace-queries";
+import type { CalendarGrid, CalendarWindow, OverviewWindow, PageFilters, QueryPage, WorkspaceOverview } from "./api/workspace-queries";
 
 type Filters = PageFilters & { sort?: string; contract_id?: string; assigned_to_user_id?: string; category?: string; due_before?: string; due_after?: string };
 type Row = { id: string; status: string; title: string };
@@ -35,6 +35,28 @@ export function demoWorkspaceQuery(id: string, resource: string, filters: object
   if (resource === "contracts") return demoPage(collection<Contract>("contracts"), filters, "updated_at", true);
   if (resource === "tasks") return demoPage(collection<WorkflowTask>("tasks"), filters, "due_at");
   if (resource === "lifecycle") return demoPage(collection<LifecycleItem>("lifecycle"), filters, "due_at");
+  if (resource === "tasks/counts") {
+    const tasks = collection<WorkflowTask>("tasks");
+    const { day_start } = filters as { day_start: string };
+    return { active_tasks: tasks.filter((task) => ["open", "in_progress"].includes(task.status)).length,
+      completed_tasks: tasks.filter((task) => task.status === "done").length,
+      overdue_tasks: tasks.filter((task) => ["open", "in_progress"].includes(task.status) && task.due_at && timestamp(task.due_at) < timestamp(day_start)).length };
+  }
+  if (resource === "calendar") {
+    const { month, grid_start, timezone } = filters as CalendarWindow;
+    const formatter = new Intl.DateTimeFormat("en-CA", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit" });
+    const items = [
+      ...collection<WorkflowTask>("tasks").filter((row) => row.due_at && ["open", "in_progress", "done"].includes(row.status)).map((row) => ({ id: row.id, title: row.title, contract_id: row.contract_id, due_at: row.due_at!, kind: "task" as const, category: row.priority, status: row.status, escalated: false })),
+      ...collection<LifecycleItem>("lifecycle").filter((row) => row.status === "active").map((row) => ({ id: row.id, title: row.title, contract_id: row.contract_id, due_at: row.due_at, kind: "lifecycle" as const, category: row.kind, status: row.status, escalated: Boolean(row.escalated_at) })),
+    ].sort((a, b) => timestamp(a.due_at) - timestamp(b.due_at) || a.kind.localeCompare(b.kind) || a.id.localeCompare(b.id));
+    const days = Array.from({ length: 42 }, (_, i) => {
+      const date = new Date(`${grid_start}T12:00:00Z`); date.setUTCDate(date.getUTCDate() + i);
+      const key = date.toISOString().slice(0, 10);
+      const rows = items.filter((item) => formatter.format(new Date(item.due_at)) === key);
+      return { date: key, total: rows.length, items: rows.slice(0, 3) };
+    });
+    return { days, month_total: days.filter((day) => day.date.slice(0, 7) === month.slice(0, 7)).reduce((n, day) => n + day.total, 0), grid_total: days.reduce((n, day) => n + day.total, 0), timezone } satisfies CalendarGrid;
+  }
   const contracts = collection<Contract>("contracts"), tasks = collection<WorkflowTask>("tasks");
   if (resource === "search") {
     const { q, limit = 7 } = filters as { q: string; limit?: number };

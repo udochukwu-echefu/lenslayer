@@ -210,6 +210,18 @@ class WorkspaceQueryTests(unittest.TestCase):
             self.assertLessEqual(len(result[key]), maximum)
         self.assertEqual(result["counts"]["overdue_tasks"] + result["counts"]["upcoming_tasks"], 80)
 
+    def test_task_count_projection_matches_overview_without_preview_work(self):
+        filters = {"day_start": self.day.isoformat()}
+        full, full_queries, _ = self.measured("query/overview", filters)
+        counts, queries, _ = self.measured("query/tasks/counts", filters)
+        self.assertEqual(counts.json(), {key: full.json()["counts"][key] for key in ["active_tasks", "completed_tasks", "overdue_tasks"]})
+        self.assertLessEqual(queries, 3)
+        self.assertLess(queries, full_queries)
+        self.assertLess(len(counts.content), 100)
+        self.assertEqual(counts.headers["cache-control"], "private, no-store")
+        self.assertEqual(self.get("query/tasks/counts", filters, organization_id=self.other_id).status_code, 403)
+        self.assertEqual(self.get("query/tasks/counts", {"day_start": "2026-10-18"}).status_code, 422)
+
     def test_materialization_and_query_count_bounded_with_large_fixture_and_job_history(self):
         self.seed(879, start=121)
         with self.db.session_factory() as session:
@@ -246,7 +258,7 @@ def benchmark(output=None):
         case.setUp()
         case.seed(879, start=121)
         results = {}
-        for route in ["contracts", "tasks", "lifecycle", "query/contracts", "query/tasks", "query/lifecycle", "query/overview", "query/search?q=Supplier"]:
+        for route in ["contracts", "tasks", "lifecycle", "query/contracts", "query/tasks", "query/lifecycle", "query/overview", "query/tasks/counts", "query/search?q=Supplier"]:
             case.measured(route)
             runs = [case.measured(route) for _ in range(5)]
             response = runs[0][0]

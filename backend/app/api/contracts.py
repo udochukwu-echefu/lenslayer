@@ -14,10 +14,10 @@ from ..schemas import (
 from ..review_trigger import queue_review_worker
 from ..services import PlatformService
 from .dependencies import ServiceDep, UserDep, get_current_user, read_upload
-from .uploads import run_upload
+from .uploads import UploadRoute, run_upload
 
 
-router = APIRouter()
+router = APIRouter(route_class=UploadRoute)
 
 
 @router.post(

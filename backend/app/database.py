@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Generator
+import hashlib
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
@@ -19,6 +20,10 @@ class Database:
         if settings.database_url.startswith("sqlite"):
             kwargs["connect_args"] = {"check_same_thread": False}
         self.engine: Engine = create_engine(settings.database_url, **kwargs)
+        if self.engine.dialect.name == "sqlite":
+            @event.listens_for(self.engine, "connect")
+            def sqlite_fingerprint(connection, _record):
+                connection.create_function("ll_sha256", 1, lambda value: hashlib.sha256((value or "").encode()).hexdigest(), deterministic=True)
         self.session_factory = sessionmaker(bind=self.engine, expire_on_commit=False)
 
     def create_schema(self) -> None:

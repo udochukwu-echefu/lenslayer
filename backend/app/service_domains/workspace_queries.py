@@ -53,6 +53,15 @@ def aware_bound(value: datetime | None) -> datetime | None:
 
 
 class WorkspaceQueriesServiceMixin:
+    def workspace_task_counts(self, organization_id, user, *, day_start=None):
+        self.workspace.membership(organization_id, user)
+        start = aware_bound(day_start) or utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        active = WorkflowTask.status.in_(["open", "in_progress"])
+        row = self.session.execute(select(*(func.coalesce(func.sum(case((condition, 1), else_=0)), 0)
+            for condition in [active, WorkflowTask.status == "done", and_(active, WorkflowTask.due_at < start)]))
+            .where(WorkflowTask.organization_id == organization_id)).one()
+        return dict(zip(["active_tasks", "completed_tasks", "overdue_tasks"], row))
+
     @staticmethod
     def _ordered(query, model, sort, allowed, descending):
         if sort not in allowed:

@@ -1,0 +1,189 @@
+{
+  "source_sha": "691bf0b2f45244c1b1ae620306d975bb5c9bacdf",
+  "harness_sha256": "2891d5776d791ca8b000f92f1ca953571be3f8a58676522a66eae1d29684a9f3",
+  "tools": {
+    "sqlalchemy": "2.0.51",
+    "fastapi": "0.141.1",
+    "anyio": "4.14.2",
+    "langchain-core": "1.4.1"
+  },
+  "sqlite": "3.50.4",
+  "python": "3.14.4",
+  "conditions": "disposable SQLite; one untimed fake-stream warmup then 3 serial samples/size; 20.8KB synthetic sources; fake provider paused for 3 \u00d7 30ms heartbeat intervals; no paid calls; not total-provider speed proof",
+  "samples": [
+    {
+      "portfolio_records": 100,
+      "source_bytes_each": 20800,
+      "runs": [
+        {
+          "trial": 1,
+          "rank_passes": 1,
+          "rank_ms": [
+            4.58399998024106
+          ],
+          "materialized": [
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            }
+          ],
+          "selects": 21,
+          "hash_only_checks": 5,
+          "first_content_ms": 13.155958004062995,
+          "total_ms": 113.48875000840053,
+          "timings": {
+            "retrieval_ms": 11.29,
+            "provider_ms": 97.06,
+            "first_content_ms": 12.5,
+            "total_ms": 112.58,
+            "retry_count": 0,
+            "queue_ms": 3.0
+          },
+          "pool_paused": 0,
+          "pool_after": 0
+        },
+        {
+          "trial": 2,
+          "rank_passes": 1,
+          "rank_ms": [
+            6.602874986128882
+          ],
+          "materialized": [
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            }
+          ],
+          "selects": 21,
+          "hash_only_checks": 5,
+          "first_content_ms": 17.9470409930218,
+          "total_ms": 121.9636250170879,
+          "timings": {
+            "retrieval_ms": 15.68,
+            "provider_ms": 99.25,
+            "first_content_ms": 17.17,
+            "total_ms": 120.87,
+            "retry_count": 0,
+            "queue_ms": 3.0
+          },
+          "pool_paused": 0,
+          "pool_after": 0
+        },
+        {
+          "trial": 3,
+          "rank_passes": 1,
+          "rank_ms": [
+            7.731167017482221
+          ],
+          "materialized": [
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            }
+          ],
+          "selects": 21,
+          "hash_only_checks": 5,
+          "first_content_ms": 20.401791000040248,
+          "total_ms": 125.68566598929465,
+          "timings": {
+            "retrieval_ms": 17.87,
+            "provider_ms": 99.96,
+            "first_content_ms": 19.45,
+            "total_ms": 124.41,
+            "retry_count": 0,
+            "queue_ms": 3.0
+          },
+          "pool_paused": 0,
+          "pool_after": 0
+        }
+      ]
+    },
+    {
+      "portfolio_records": 1000,
+      "source_bytes_each": 20800,
+      "runs": [
+        {
+          "trial": 1,
+          "rank_passes": 1,
+          "rank_ms": [
+            34.32770798099227
+          ],
+          "materialized": [
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            }
+          ],
+          "selects": 21,
+          "hash_only_checks": 5,
+          "first_content_ms": 43.15333400154486,
+          "total_ms": 144.8851249879226,
+          "timings": {
+            "retrieval_ms": 41.08,
+            "provider_ms": 98.21,
+            "first_content_ms": 42.39,
+            "total_ms": 143.86,
+            "retry_count": 0,
+            "queue_ms": 3.0
+          },
+          "pool_paused": 0,
+          "pool_after": 0
+        },
+        {
+          "trial": 2,
+          "rank_passes": 1,
+          "rank_ms": [
+            44.13241698057391
+          ],
+          "materialized": [
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            }
+          ],
+          "selects": 21,
+          "hash_only_checks": 5,
+          "first_content_ms": 54.28587502683513,
+          "total_ms": 156.34233300806955,
+          "timings": {
+            "retrieval_ms": 51.8,
+            "provider_ms": 97.84,
+            "first_content_ms": 53.49,
+            "total_ms": 155.19,
+            "retry_count": 0,
+            "queue_ms": 3.0
+          },
+          "pool_paused": 0,
+          "pool_after": 0
+        },
+        {
+          "trial": 3,
+          "rank_passes": 1,
+          "rank_ms": [
+            45.07270801695995
+          ],
+          "materialized": [
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            }
+          ],
+          "selects": 21,
+          "hash_only_checks": 5,
+          "first_content_ms": 55.27683297987096,
+          "total_ms": 157.310457987478,
+          "timings": {
+            "retrieval_ms": 52.85,
+            "provider_ms": 97.74,
+            "first_content_ms": 54.49,
+            "total_ms": 156.22,
+            "retry_count": 0,
+            "queue_ms": 3.0
+          },
+          "pool_paused": 0,
+          "pool_after": 0
+        }
+      ]
+    }
+  ]
+}

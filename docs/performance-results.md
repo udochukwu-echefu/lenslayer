@@ -1,5 +1,7 @@
 # Performance results and review record
 
+**Follow-up:** the owner's review of #21 found five remaining resource/correctness gaps not covered by the original results below. [PR #22 repair report](performance-follow-up.md) contains fixes, full-stream/pool/admission regressions, actual repeated browser navigation, measured count-only projection and larger disposable-PG plans. Original evidence/results below remain intact; do not interpret them as proving the five defects were absent.
+
 ## Scope and revisions
 
 Implemented and locally verified all eight finding tracks; no merge/deployment or external activation. Focused PRs: #13 collaboration, #14 uploads, #15 bounded API, #16 bounded UI (depends on #15), #17 landing, #18 startup, #19 Q&A, #20 exhausted document leases. `perf/combined-review` is the resolved integration and authoritative cross-batch regression/evidence snapshot. See `performance-implementation.md` and `performance-rollout.md` for statuses and owner-only follow-ups.

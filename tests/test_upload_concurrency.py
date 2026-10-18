@@ -106,7 +106,10 @@ class UploadConcurrencyTests(unittest.IsolatedAsyncioTestCase):
                 inner.owner = threading.get_ident()
                 inner.closed_by_test = False
                 inner.identity_calls = 0
-                sessions.append(inner)
+                # Pre-parse auth has its own short closed session, never a
+                # processing slot/session or an ORM object captured by a write.
+                if not inner.info.get("upload_preflight"):
+                    sessions.append(inner)
                 self.assertNotEqual(inner.owner, event_loop_thread)
                 self.assertLessEqual(
                     sum(not session.closed_by_test for session in sessions),
@@ -205,7 +208,8 @@ class UploadConcurrencyTests(unittest.IsolatedAsyncioTestCase):
 
         def identity(service, principal):
             self.assertNotEqual(threading.get_ident(), loop_thread)
-            gate()
+            if not service.session.info.get("upload_preflight"):
+                gate()
             return original(service, principal)
 
         with self.owned_sessions() as sessions, patch.object(PlatformService, "ensure_user", identity):

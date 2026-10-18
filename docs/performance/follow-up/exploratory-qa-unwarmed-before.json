@@ -1,0 +1,336 @@
+{
+  "source_sha": "ca704aa272d1dc00548726a22fda1f91a40c587e",
+  "python": "3.14.4",
+  "conditions": "disposable SQLite; 3 serial samples/size; 20KB synthetic sources; fake provider paused for 3 \u00d7 30ms heartbeat intervals; no paid calls; not total-provider speed proof",
+  "samples": [
+    {
+      "portfolio_records": 100,
+      "source_bytes_each": 20800,
+      "runs": [
+        {
+          "trial": 1,
+          "rank_passes": 7,
+          "rank_ms": [
+            9.490583994193003,
+            6.599832995561883,
+            5.763416993431747,
+            6.664207990979776,
+            5.483708024257794,
+            11.461166985100135,
+            4.921625019051135
+          ],
+          "materialized": [
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            }
+          ],
+          "selects": 36,
+          "hash_only_checks": 0,
+          "first_content_ms": 2931.5570000035223,
+          "total_ms": 3082.584499992663,
+          "timings": {
+            "retrieval_ms": 19.6,
+            "provider_ms": 3030.03,
+            "first_content_ms": 2911.57,
+            "total_ms": 3067.75,
+            "retry_count": 0,
+            "queue_ms": 3.0
+          },
+          "pool_paused": 1,
+          "pool_after": 0
+        },
+        {
+          "trial": 2,
+          "rank_passes": 6,
+          "rank_ms": [
+            5.408583005191758,
+            10.424833017168567,
+            4.9921250029001385,
+            10.1859999995213,
+            5.408625002019107,
+            9.546791989123449
+          ],
+          "materialized": [
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            }
+          ],
+          "selects": 31,
+          "hash_only_checks": 0,
+          "first_content_ms": 45.00625000218861,
+          "total_ms": 201.42933298484422,
+          "timings": {
+            "retrieval_ms": 22.19,
+            "provider_ms": 138.64,
+            "first_content_ms": 35.54,
+            "total_ms": 190.64,
+            "retry_count": 0,
+            "queue_ms": 3.0
+          },
+          "pool_paused": 1,
+          "pool_after": 0
+        },
+        {
+          "trial": 3,
+          "rank_passes": 6,
+          "rank_ms": [
+            8.680790982907638,
+            5.955375003395602,
+            8.568666991777718,
+            7.250958005897701,
+            7.518416998209432,
+            4.843875009100884
+          ],
+          "materialized": [
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            }
+          ],
+          "selects": 31,
+          "hash_only_checks": 0,
+          "first_content_ms": 51.206667005317286,
+          "total_ms": 199.6021670056507,
+          "timings": {
+            "retrieval_ms": 21.46,
+            "provider_ms": 138.3,
+            "first_content_ms": 34.04,
+            "total_ms": 182.43,
+            "retry_count": 0,
+            "queue_ms": 3.0
+          },
+          "pool_paused": 1,
+          "pool_after": 0
+        }
+      ]
+    },
+    {
+      "portfolio_records": 1000,
+      "source_bytes_each": 20800,
+      "runs": [
+        {
+          "trial": 1,
+          "rank_passes": 6,
+          "rank_ms": [
+            44.49154200847261,
+            40.01808300381526,
+            39.32612499920651,
+            59.1071670060046,
+            43.30312501406297,
+            67.05166699248366
+          ],
+          "materialized": [
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            }
+          ],
+          "selects": 31,
+          "hash_only_checks": 0,
+          "first_content_ms": 113.44962500152178,
+          "total_ms": 451.38616699841805,
+          "timings": {
+            "retrieval_ms": 55.74,
+            "provider_ms": 263.03,
+            "first_content_ms": 99.95,
+            "total_ms": 437.35,
+            "retry_count": 0,
+            "queue_ms": 3.0
+          },
+          "pool_paused": 1,
+          "pool_after": 0
+        },
+        {
+          "trial": 2,
+          "rank_passes": 6,
+          "rank_ms": [
+            37.96816698741168,
+            42.367791989818215,
+            86.63270800025202,
+            58.60679200850427,
+            68.27233301009983,
+            50.51512498175725
+          ],
+          "materialized": [
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            }
+          ],
+          "selects": 31,
+          "hash_only_checks": 0,
+          "first_content_ms": 101.90808397601359,
+          "total_ms": 513.6286249908153,
+          "timings": {
+            "retrieval_ms": 46.53,
+            "provider_ms": 352.64,
+            "first_content_ms": 92.28,
+            "total_ms": 501.73,
+            "retry_count": 0,
+            "queue_ms": 3.0
+          },
+          "pool_paused": 1,
+          "pool_after": 0
+        },
+        {
+          "trial": 3,
+          "rank_passes": 6,
+          "rank_ms": [
+            47.036292002303526,
+            55.86970801232383,
+            47.277582983952016,
+            41.80170898325741,
+            42.11295899585821,
+            54.85887499526143
+          ],
+          "materialized": [
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            },
+            {
+              "rows": 24,
+              "source_bytes": 499200
+            }
+          ],
+          "selects": 31,
+          "hash_only_checks": 0,
+          "first_content_ms": 158.25066599063575,
+          "total_ms": 461.40304100117646,
+          "timings": {
+            "retrieval_ms": 82.2,
+            "provider_ms": 241.5,
+            "first_content_ms": 151.15,
+            "total_ms": 452.72,
+            "retry_count": 0,
+            "queue_ms": 3.0
+          },
+          "pool_paused": 1,
+          "pool_after": 0
+        }
+      ]
+    }
+  ]
+}

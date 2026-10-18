@@ -1,14 +1,15 @@
 """Opt-in bounded read contract. Legacy array routes remain complete."""
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, Response
 from pydantic import BaseModel, Field
 
 from ..schemas import ContractResponse, LifecycleItemResponse, TaskResponse
-from ..workspace_query_schemas import RecordPage, SearchResponse, WorkspaceOverview
+from ..workspace_query_schemas import CalendarGrid, RecordPage, SearchResponse, TaskCounts, WorkspaceOverview
+from ..service_domains.calendar_grid import calendar_grid
 from .dependencies import ServiceDep, UserDep
 
 
@@ -58,6 +59,11 @@ def tasks(organization_id: str, service: ServiceDep, user: UserDep, options: Ann
     return service.query_tasks(organization_id, user, **options.model_dump())
 
 
+@router.get("/tasks/counts", response_model=TaskCounts)
+def task_counts(organization_id: str, service: ServiceDep, user: UserDep, day_start: datetime | None = None):
+    return service.workspace_task_counts(organization_id, user, day_start=day_start)
+
+
 @router.get("/lifecycle", response_model=RecordPage[LifecycleItemResponse])
 def lifecycle(organization_id: str, service: ServiceDep, user: UserDep, options: Annotated[LifecycleOptions, Query()]):
     return service.query_lifecycle(organization_id, user, **options.model_dump())
@@ -71,3 +77,9 @@ def search(organization_id: str, service: ServiceDep, user: UserDep, q: Annotate
 @router.get("/overview", response_model=WorkspaceOverview)
 def overview(organization_id: str, service: ServiceDep, user: UserDep, day_start: datetime | None = None, week_end: datetime | None = None):
     return service.workspace_overview(organization_id, user, day_start=day_start, week_end=week_end)
+
+
+@router.get("/calendar", response_model=CalendarGrid)
+def calendar(organization_id: str, service: ServiceDep, user: UserDep, month: date, grid_start: date,
+             timezone: Annotated[str, Query(max_length=100)] = "UTC"):
+    return calendar_grid(service, organization_id, user, month, grid_start, timezone)
