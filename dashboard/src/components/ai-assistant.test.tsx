@@ -1,18 +1,18 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AiAssistant } from "./ai-assistant";
-import { api } from "@/lib/api";
+import { streamQuestion, type QAEvent } from "@/lib/api/qa-stream";
 import type { PortfolioAnswer } from "@/lib/types";
 
 const workspace = vi.hoisted(() => ({
   activeOrganization: { id: "workspace-a" },
 }));
 vi.mock("./workspace-provider", () => ({ useWorkspace: () => workspace }));
-vi.mock("@/lib/api", () => ({ api: { askPortfolio: vi.fn() } }));
+vi.mock("@/lib/api/qa-stream", () => ({ streamQuestion: vi.fn() }));
 
 beforeEach(() => {
   workspace.activeOrganization = { id: "workspace-a" };
-  vi.mocked(api.askPortfolio).mockReset();
+  vi.mocked(streamQuestion).mockReset();
   vi.stubGlobal("matchMedia", vi.fn().mockReturnValue({ matches: true }));
   Element.prototype.scrollTo = vi.fn();
 });
@@ -45,7 +45,7 @@ describe("AI assistant workspace isolation", () => {
   it("shows completed answers immediately without a simulated streaming delay", async () => {
     vi.stubGlobal("matchMedia", vi.fn().mockReturnValue({ matches: false }));
     let resolve!: (answer: PortfolioAnswer) => void;
-    vi.mocked(api.askPortfolio).mockReturnValue(
+    vi.mocked(streamQuestion).mockReturnValue(
       new Promise((done) => {
         resolve = done;
       }),
@@ -70,7 +70,7 @@ describe("AI assistant workspace isolation", () => {
   });
 
   it("clears the previous workspace conversation when switching workspaces", async () => {
-    vi.mocked(api.askPortfolio).mockResolvedValue(answer);
+    vi.mocked(streamQuestion).mockResolvedValue(answer);
     const { rerender } = render(<AiAssistant />);
     askQuestion();
     expect(await screen.findByText(answer.answer)).toBeInTheDocument();
@@ -81,19 +81,37 @@ describe("AI assistant workspace isolation", () => {
 
   it("does not append a late answer from the previous workspace", async () => {
     let resolve!: (answer: PortfolioAnswer) => void;
-    vi.mocked(api.askPortfolio).mockReturnValue(
+    vi.mocked(streamQuestion).mockReturnValue(
       new Promise((done) => {
         resolve = done;
       }),
     );
     const { rerender } = render(<AiAssistant />);
     askQuestion();
-    expect(api.askPortfolio).toHaveBeenCalledWith("workspace-a", question);
+    expect(streamQuestion).toHaveBeenCalledWith("/organizations/workspace-a/portfolio/questions", question, expect.any(Function), expect.any(AbortSignal), undefined);
+    const signal = vi.mocked(streamQuestion).mock.calls[0][3];
     switchWorkspace(rerender);
+    expect(signal.aborted).toBe(true);
     await act(async () => {
       resolve(answer);
     });
     expect(screen.queryByText(answer.answer)).not.toBeInTheDocument();
     expect(screen.getByText("Start with your agreements")).toBeInTheDocument();
+  });
+
+  it("renders provisional content before completion and stops the request on close", async () => {
+    let onEvent!: (event: QAEvent) => void;
+    vi.mocked(streamQuestion).mockImplementation((_path, _question, callback) => {
+      onEvent = callback;
+      return new Promise(() => {});
+    });
+    render(<AiAssistant />);
+    askQuestion();
+    act(() => onEvent({ type: "answer", request_id: "r", seq: 1, delta: "Provisional notice", provisional: true }));
+    expect(screen.getByText("Provisional notice")).toBeInTheDocument();
+    expect(screen.getByText("Provisional answer, not yet verified")).toBeInTheDocument();
+    expect(screen.queryByText("Context used")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Close AI assistant" }));
+    expect(vi.mocked(streamQuestion).mock.calls[0][3].aborted).toBe(true);
   });
 });

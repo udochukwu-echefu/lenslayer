@@ -15,6 +15,29 @@ const context = { params: Promise.resolve({ path: ["api", "v1", "organizations",
 const request = () => new Request("http://localhost:3000/api/platform/api/v1/organizations/org-1/agents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: "Agent" }) });
 
 describe("credential response proxy", () => {
+  it("forwards streaming bytes before completion and propagates client abort to upstream", async () => {
+    const controller = new AbortController();
+    let source!: ReadableStreamDefaultController<Uint8Array>;
+    const upstreamStopped = vi.fn();
+    const fetcher = vi.fn().mockImplementation((_url, init) => {
+      init.signal.addEventListener("abort", upstreamStopped);
+      return Promise.resolve(new Response(new ReadableStream<Uint8Array>({ start(value) { source = value; } }), {
+        headers: { "content-type": "application/x-ndjson" },
+      }));
+    });
+    vi.stubGlobal("fetch", fetcher);
+    const incoming = new Request(request(), { signal: controller.signal });
+    const outgoing = await POST(incoming, context);
+    expect(fetcher.mock.calls[0][1].signal).toBe(incoming.signal);
+    expect(outgoing.headers.get("Cache-Control")).toBe("private, no-store");
+    expect(outgoing.headers.get("X-Accel-Buffering")).toBe("no");
+    const reader = outgoing.body!.getReader();
+    source.enqueue(new TextEncoder().encode('{"type":"answer"}\n'));
+    expect(new TextDecoder().decode((await reader.read()).value)).toContain('"answer"');
+    controller.abort();
+    expect(upstreamStopped).toHaveBeenCalledOnce();
+    await reader.cancel();
+  });
   it("bridges server cookie credentials without changing API paths; rejects cookie CSRF", async () => {
     vi.mocked(readTrustedSession).mockResolvedValue({ subject: "auth0|fixture", sessionId: "server-session", accessToken: "server-human-bearer" });
     const fetcher = vi.fn().mockImplementation(() => Promise.resolve(Response.json({ id: "safe-response" })));

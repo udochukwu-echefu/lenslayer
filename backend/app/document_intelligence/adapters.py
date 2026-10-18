@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from .ports import ExtractionResult, PortfolioDocument, QAResult, QASource, VersionComparison
+from .qa import PreparedAnswer, complete, stream
 
 
 QUESTION_STOP_WORDS = {
@@ -132,12 +133,22 @@ class RetainedTextQuestionAnswerer:
         self._model_factory = model_factory
         self._model_enabled = model_enabled or (lambda: bool(os.environ.get("GROQ_API_KEY")))
 
-    def answer(
+    def model(self):
+        from .analysis import get_qa_llm
+        return self._model_factory() if self._model_factory else get_qa_llm()
+
+    def answer(self, source_text, question, review_context=None):
+        return complete(self, self.prepare(source_text, question, review_context))
+
+    def stream(self, prepared):
+        return stream(self, prepared)
+
+    def prepare(
         self,
         source_text: str,
         question: str,
         review_context: Mapping[str, Any] | None = None,
-    ) -> QAResult:
+    ) -> PreparedAnswer:
         tokens = _question_tokens(question)
         blocks = [item.strip() for item in re.split(r"\n{2,}", source_text) if item.strip()]
         scored = [
@@ -154,12 +165,12 @@ class RetainedTextQuestionAnswerer:
             for index, block in enumerate(selected, start=1)
         ]
         if not sources:
-            return QAResult(answer="", sources=[], generated_by="extractive")
+            return PreparedAnswer(QAResult(answer="", sources=[], generated_by="extractive"))
 
+        prompt = ""
         if self._model_enabled():
-            from .analysis import get_llm, review_context_text
+            from .analysis import review_context_text
 
-            model = self._model_factory() if self._model_factory else get_llm()
             evidence = "\n\n".join(
                 f"[{source.label}] {source.location}\n{source.excerpt}" for source in sources
             )
@@ -171,7 +182,7 @@ class RetainedTextQuestionAnswerer:
                 f"REVIEW CONTEXT\n{review_context_text(dict(review_context or {}))}\n\n"
                 f"QUESTION\n{question.strip()}\n\nEVIDENCE\n{evidence}"
             )
-            answer = str(model.invoke(prompt).content).strip()
+            answer = ""
             generated_by = "model"
         else:
             answer = (
@@ -179,7 +190,7 @@ class RetainedTextQuestionAnswerer:
                 "environment, so confirm the wording directly in the document before acting."
             )
             generated_by = "extractive"
-        return QAResult(answer=answer, sources=sources, generated_by=generated_by)
+        return PreparedAnswer(QAResult(answer=answer, sources=sources, generated_by=generated_by), prompt)
 
 
 class PortfolioEvidenceQuestionAnswerer:
@@ -191,15 +202,25 @@ class PortfolioEvidenceQuestionAnswerer:
         self._model_factory = model_factory
         self._model_enabled = model_enabled or (lambda: bool(os.environ.get("GROQ_API_KEY")))
 
+    def model(self):
+        from .analysis import get_qa_llm
+        return self._model_factory() if self._model_factory else get_qa_llm()
+
     def answer(self, documents: Sequence[PortfolioDocument], question: str) -> QAResult:
+        return complete(self, self.prepare(documents, question))
+
+    def stream(self, prepared):
+        return stream(self, prepared)
+
+    def prepare(self, documents: Sequence[PortfolioDocument], question: str) -> PreparedAnswer:
         tokens = _question_tokens(question)
         candidates: list[tuple[int, PortfolioDocument, str, str]] = []
         for document in documents:
             blocks = [item.strip() for item in re.split(r"\n{2,}", document.text) if item.strip()]
-            for index, block in enumerate(blocks[:80]):
+            for index, block in enumerate(blocks):
                 score = sum(block.casefold().count(token) for token in tokens)
                 if score:
-                    candidates.append((score, document, f"Excerpt {index + 1}", " ".join(block.split())[:900]))
+                    candidates.append((score, document, f"{document.evidence_kind}, excerpt {index + 1}", " ".join(block.split())[:900]))
         selected = sorted(candidates, key=lambda item: item[0], reverse=True)[:8]
         sources = [
             QASource(
@@ -212,16 +233,14 @@ class PortfolioEvidenceQuestionAnswerer:
             for index, (_, document, location, excerpt) in enumerate(selected, 1)
         ]
         if not sources:
-            return QAResult(
+            return PreparedAnswer(QAResult(
                 answer="No retained contract evidence matched that question.",
                 sources=[],
                 generated_by="extractive",
-            )
+            ))
 
+        prompt = ""
         if self._model_enabled():
-            from .analysis import get_llm
-
-            model = self._model_factory() if self._model_factory else get_llm()
             evidence = "\n\n".join(
                 f"[{source.label}] {source.contract_title}, {source.location}\n{source.excerpt}"
                 for source in sources
@@ -232,7 +251,7 @@ class PortfolioEvidenceQuestionAnswerer:
                 "contract triage, not legal advice.\n\n"
                 f"QUESTION\n{question}\n\nEVIDENCE\n{evidence}"
             )
-            answer = str(model.invoke(prompt).content).strip()
+            answer = ""
             generated_by = "model"
         else:
             answer = (
@@ -240,4 +259,4 @@ class PortfolioEvidenceQuestionAnswerer:
                 "Review the cited excerpts below before acting."
             )
             generated_by = "extractive"
-        return QAResult(answer=answer, sources=sources, generated_by=generated_by)
+        return PreparedAnswer(QAResult(answer=answer, sources=sources, generated_by=generated_by), prompt)

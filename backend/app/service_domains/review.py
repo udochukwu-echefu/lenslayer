@@ -51,21 +51,25 @@ class ReviewServiceMixin:
         user: User,
         question: str,
     ) -> tuple[str, list[dict[str, str]], str]:
-        contract = self.contracts.get_contract(organization_id, contract_id, user)
-        require_source_available(contract)
-        review = self.contracts.get_review(organization_id, contract_id, user)
-        source_text = (review.source_text or "").strip()
-        if not source_text:
-            raise HTTPException(
-                status_code=409,
-                detail="Contract Q&A requires retained source text. Upload the contract again with source-text retention enabled.",
-            )
-        contract = self.contracts.get_contract(organization_id, contract_id, user)
-        result = self.review_workflow.answer_contract(
-            source_text,
-            question,
-            json_load(contract.review_context_json, {}),
-        )
+        from .qa import contract_input
+        from ..document_intelligence.qa import QATimings, current_timings
+        import time
+        timing = QATimings()
+        token = current_timings.set(timing)
+        try:
+            source_text, context = contract_input(self, organization_id, contract_id, user)
+            timing.retrieval_ms = (time.monotonic() - timing.started) * 1000
+            result = self.review_workflow.answer_contract(source_text, question, context)
+            self.session.expire_all()
+            if contract_input(self, organization_id, contract_id, user) != (source_text, context):
+                raise HTTPException(status_code=409, detail="Evidence changed. Ask again.")
+        except BaseException:
+            timing.record("failed")
+            raise
+        else:
+            timing.record("generated")
+        finally:
+            current_timings.reset(token)
         sources = [
             {
                 "label": source.label,
@@ -82,7 +86,6 @@ class ReviewServiceMixin:
             "review.question_answered",
             contract_id,
             {
-                "question": question.strip()[:240],
                 "source_count": len(sources),
                 "generated_by": result.generated_by,
             },
