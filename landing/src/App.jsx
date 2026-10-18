@@ -7,10 +7,11 @@ import AgentCapabilities from "./components/landing/agent-capabilities"
 import FaqSection from "./components/landing/faq-section"
 import { RoundLink } from "./components/landing/hero-components"
 import ThemeToggle from "./components/landing/theme-toggle"
+import { resolveAppUrl } from "./app-url.js"
 
-const APP_URL = (import.meta.env.VITE_APP_URL ?? "http://localhost:3000").replace(/\/$/, "")
+const APP_URL = resolveAppUrl(import.meta.env.DEV ? import.meta.env.VITE_APP_URL : undefined, import.meta.env.PROD)
 const SAMPLE_URL = `${APP_URL}/runs`
-const REVIEW_URL = `${APP_URL}/sample`
+const REVIEW_URL = `${APP_URL}/`
 const DOCS_URL = `${APP_URL}/developers`
 const SIGN_IN_URL = `${APP_URL}/signin`
 const navigation = [{ label: "The workflow", href: "#workflow" }, { label: "Permissions", href: "#control" }, { label: "Developer guide", href: DOCS_URL }]
@@ -62,7 +63,7 @@ function App() {
         <div className="hero-composition shell">
           <div className="hero-intro">
              <h1 id="hero-title">Agentic document<br /><span>intelligence for teams.</span></h1>
-             <div className="hero-copy"><p>Understand your documents. Surface risks and obligations, ask questions with source-linked answers, and review decisions together. When it’s time to act, agents can prepare follow-up tasks for your team to approve.</p><div className="hero-ctas"><RoundLink href={SIGN_IN_URL}>Open your workspace</RoundLink><a className="hero-secondary" href={REVIEW_URL}>Explore sample review <ArrowDown aria-hidden="true" /></a></div></div>
+              <div className="hero-copy"><p>Understand your documents. Surface risks and obligations, ask questions with source-linked answers, and review decisions together. When it’s time to act, agents can prepare follow-up tasks for your team to approve.</p><div className="hero-ctas"><RoundLink href={SIGN_IN_URL}>Open your workspace</RoundLink><a className="hero-secondary" href={REVIEW_URL}>Explore workspace <ArrowDown aria-hidden="true" /></a></div></div>
           </div>
         </div>
         <figure className="workspace-preview shell" id="product">

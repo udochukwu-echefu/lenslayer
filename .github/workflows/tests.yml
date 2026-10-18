@@ -120,6 +120,10 @@ jobs:
         working-directory: landing
         run: npm run check
 
+      - name: Verify canonical landing app links
+        working-directory: landing
+        run: npm run test:cta
+
       - name: Build landing
         working-directory: landing
         env:
