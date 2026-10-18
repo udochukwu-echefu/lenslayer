@@ -31,14 +31,13 @@ function App() {
 
     const ease = "cubic-bezier(.16,1,.3,1)"
     const recipes = {
-      "hero-copy": [{ opacity: 0, transform: "translate3d(0,24px,0)", clipPath: "inset(0 0 18% 0)" }, { opacity: 1, transform: "none", clipPath: "inset(0 0 0 0)" }],
       stage: [{ opacity: 0, transform: "translate3d(0,34px,0) scale(.985)", clipPath: "inset(7% 0 0 0 round 18px)" }, { opacity: 1, transform: "none", clipPath: "inset(0 0 0 0 round 0)" }],
       "copy-left": [{ opacity: 0, transform: "translate3d(-24px,0,0)" }, { opacity: 1, transform: "none" }],
       "visual-right": [{ opacity: 0, transform: "translate3d(32px,0,0) scale(.985)" }, { opacity: 1, transform: "none" }],
       line: [{ opacity: 0, transform: "translate3d(0,12px,0)", clipPath: "inset(0 100% 0 0)" }, { opacity: 1, transform: "none", clipPath: "inset(0 0 0 0)" }],
       closing: [{ opacity: 0, transform: "translate3d(0,20px,0)" }, { opacity: 1, transform: "none" }],
     }
-    const durations = { "hero-copy": 820, stage: 920, "copy-left": 720, "visual-right": 820, line: 760, closing: 760 }
+    const durations = { stage: 920, "copy-left": 720, "visual-right": 820, line: 760, closing: 760 }
     const observer = new IntersectionObserver((entries) => entries.forEach(({ isIntersecting, target }) => {
       if (!isIntersecting) return
       const motion = target.dataset.motion
@@ -61,13 +60,17 @@ function App() {
     <main id="main">
       <section className="hero" aria-labelledby="hero-title">
         <div className="hero-composition shell">
-          <div className="hero-intro" data-motion="hero-copy">
+          <div className="hero-intro">
              <h1 id="hero-title">Agentic document<br /><span>intelligence for teams.</span></h1>
              <div className="hero-copy"><p>Understand your documents. Surface risks and obligations, ask questions with source-linked answers, and review decisions together. When it’s time to act, agents can prepare follow-up tasks for your team to approve.</p><div className="hero-ctas"><RoundLink href={SIGN_IN_URL}>Open your workspace</RoundLink><a className="hero-secondary" href={REVIEW_URL}>Explore sample review <ArrowDown aria-hidden="true" /></a></div></div>
           </div>
         </div>
-        <figure className="workspace-preview shell" id="product" data-motion="stage">
-          <img className="dashboard-capture" src="/lenslayer-dashboard@2x.jpg" width="1728" height="908" decoding="async" alt="Relay Software sample workspace with IT support, hardware, office lease, hosting, website design and payroll agreements" />
+        <figure className="workspace-preview shell" id="product">
+          <picture>
+            <source type="image/avif" srcSet="/hero/dashboard-v1-480.avif 480w, /hero/dashboard-v1-768.avif 768w, /hero/dashboard-v1-1152.avif 1152w, /hero/dashboard-v1-1728.avif 1728w" sizes="(max-width: 560px) calc(100vw - 40px), min(91vw, 1240px)" />
+            <source type="image/webp" srcSet="/hero/dashboard-v1-480.webp 480w, /hero/dashboard-v1-768.webp 768w, /hero/dashboard-v1-1152.webp 1152w, /hero/dashboard-v1-1728.webp 1728w" sizes="(max-width: 560px) calc(100vw - 40px), min(91vw, 1240px)" />
+            <img className="dashboard-capture" src="/lenslayer-dashboard@2x.jpg" width="1728" height="908" loading="eager" fetchPriority="high" decoding="async" alt="Relay Software sample workspace with IT support, hardware, office lease, hosting, website design and payroll agreements" />
+          </picture>
           <figcaption className="workspace-caption">Relay Software's sample contract register. The companies and agreements are fictional; this is a read-only demo.</figcaption>
         </figure>
       </section>

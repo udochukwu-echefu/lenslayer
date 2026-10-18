@@ -17,12 +17,12 @@
       name="description"
       content="Agentic document intelligence for teams. Surface risks and obligations, ask source-linked questions, review decisions together, and prepare agent-assisted follow-up tasks."
     />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Figtree:wght@400;450;500;550;600;650;700&display=swap"
-      rel="stylesheet"
-    />
+    <link rel="preload" href="/src/assets/fonts/figtree-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/src/assets/fonts/instrument-serif-italic-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <!-- Match the picture's preferred source and shell width, without downloading a second format. -->
+    <link rel="preload" as="image" type="image/avif" fetchpriority="high"
+      imagesrcset="/hero/dashboard-v1-480.avif 480w, /hero/dashboard-v1-768.avif 768w, /hero/dashboard-v1-1152.avif 1152w, /hero/dashboard-v1-1728.avif 1728w"
+      imagesizes="(max-width: 560px) calc(100vw - 40px), min(91vw, 1240px)" />
     <title>LensLayer | Agentic document intelligence for teams</title>
   </head>
   <body>
