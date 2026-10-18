@@ -40,8 +40,11 @@ async function proxy(request: Request, context: { params: Promise<{ path: string
   const method = request.method.toUpperCase();
 
   try {
-    const body = method === "GET" || method === "HEAD" ? undefined : await request.arrayBuffer();
-    const response = await fetch(upstreamUrl(request, path), { method, headers, body, cache: "no-store", redirect: "manual", signal: request.signal });
+    const body = method === "GET" || method === "HEAD" ? undefined : request.body;
+    // Node requires duplex for streamed uploads; Next/Cloudflare accept the same init.
+    const init: RequestInit & { duplex?: "half" } = { method, headers, body, cache: "no-store", redirect: "manual", signal: request.signal };
+    if (body) init.duplex = "half";
+    const response = await fetch(upstreamUrl(request, path), init);
     const outgoing = new Headers();
     // API records and one-time credentials must not enter intermediary caches.
     outgoing.set("Cache-Control", "private, no-store");
@@ -49,6 +52,8 @@ async function proxy(request: Request, context: { params: Promise<{ path: string
     if (contentType) outgoing.set("content-type", contentType);
     const contentDisposition = response.headers.get("content-disposition");
     if (contentDisposition) outgoing.set("content-disposition", contentDisposition);
+    const retryAfter = response.headers.get("retry-after");
+    if (retryAfter) outgoing.set("retry-after", retryAfter);
     if (contentType?.includes("application/x-ndjson")) outgoing.set("X-Accel-Buffering", "no");
     return new Response(response.body, { status: response.status, headers: outgoing });
   } catch {
