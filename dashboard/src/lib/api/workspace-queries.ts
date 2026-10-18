@@ -10,6 +10,8 @@ export type LifecycleFilters = PageFilters & { sort?: "due_at" | "created_at" | 
 export type SearchItem = { id: string; kind: "contract" | "task"; title: string; meta: string; href: string };
 export type WorkspaceSearch = { items: SearchItem[]; query: string };
 export type OverviewWindow = { day_start: string; week_end: string };
+export type CalendarWindow = { month: string; grid_start: string; timezone: string };
+export type CalendarGrid = { days: Array<{ date: string; total: number; items: Array<{ id: string; title: string; contract_id: string | null; due_at: string; kind: "task" | "lifecycle"; category: string; status: string; escalated: boolean }> }>; month_total: number; grid_total: number; timezone: string };
 export type WorkspaceOverview = {
   counts: { contracts: number; ready: number; failed: number; processing: number; attention: number; active_tasks: number; completed_tasks: number; overdue_tasks: number; upcoming_tasks: number; upcoming_notice_deadlines: number; due_soon_tasks: number };
   recent_contracts: Contract[]; attention_contracts: Contract[]; my_tasks: WorkflowTask[];
@@ -37,6 +39,7 @@ async function query<T>(organizationId: string, resource: string, filters: objec
 }
 
 export const workspaceQueriesApi = {
+  queryCalendar: (id: string, window: CalendarWindow, options?: QueryOptions) => query<CalendarGrid>(id, "calendar", window, options),
   queryContracts: (id: string, filters: ContractFilters = {}, options?: QueryOptions) => query<QueryPage<Contract>>(id, "contracts", { limit: 25, offset: 0, ...filters }, options),
   queryTasks: (id: string, filters: TaskFilters = {}, options?: QueryOptions) => query<QueryPage<WorkflowTask>>(id, "tasks", { limit: 25, offset: 0, ...filters }, options),
   queryLifecycle: (id: string, filters: LifecycleFilters = {}, options?: QueryOptions) => query<QueryPage<LifecycleItem>>(id, "lifecycle", { limit: 25, offset: 0, ...filters }, options),

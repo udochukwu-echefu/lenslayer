@@ -1,7 +1,7 @@
 """Additive bounded workspace reads; legacy array endpoints are unchanged."""
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Generic, Literal, TypeVar
 
 from pydantic import BaseModel
@@ -53,3 +53,27 @@ class WorkspaceOverview(BaseModel):
     upcoming_tasks: list[TaskResponse]
     upcoming_lifecycle: list[LifecycleItemResponse]
     as_of: datetime
+
+
+class CalendarPreview(BaseModel):
+    id: str
+    title: str
+    contract_id: str | None
+    due_at: datetime
+    kind: Literal["task", "lifecycle"]
+    category: str
+    status: str
+    escalated: bool
+
+
+class CalendarDay(BaseModel):
+    date: date
+    total: int
+    items: list[CalendarPreview]
+
+
+class CalendarGrid(BaseModel):
+    days: list[CalendarDay]
+    month_total: int
+    grid_total: int
+    timezone: str

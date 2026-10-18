@@ -61,4 +61,26 @@ def contract_input(service, organization_id, contract_id, user):
 def fingerprint(documents):
     # Used in memory only, never persisted/logged. Detect deletion, expiry or
     # replacement while generation was outside a transaction.
-    return {d.contract_id: hashlib.sha256((d.evidence_kind + d.text).encode()).hexdigest() for d in documents}
+    return {d.contract_id: (d.title, d.evidence_kind, hashlib.sha256(d.text.encode()).hexdigest()) for d in documents}
+
+
+def revalidate_portfolio(service, organization_id, snapshot):
+    """Exact prepared records only: no ranking, ORM reports or source transfer.
+
+    Hash current content in the database, detecting in-place edits without an
+    assumed immutable version/timestamp. SHA-256 is built into PostgreSQL; local
+    SQLite connections register the equivalent deterministic function.
+    """
+    if not snapshot:
+        return {}
+    if len(snapshot) > PORTFOLIO_CANDIDATES:
+        raise ValueError("Evidence snapshot exceeds candidate bound")
+    text, available = effective_text()
+    digest = (func.encode(func.sha256(func.convert_to(text, "UTF8")), "hex")
+              if service.session.bind.dialect.name == "postgresql" else func.ll_sha256(text))
+    rows = service.session.execute(select(Contract.id, Contract.title, ContractReview.id, available, digest)
+        .join(ContractReview, ContractReview.contract_id == Contract.id)
+        .where(Contract.organization_id == organization_id, ContractReview.organization_id == organization_id,
+               Contract.id.in_(snapshot))).all()
+    return {id: (title, f"{'Retained source' if retained else 'Structured review'} {review}", value)
+            for id, title, review, retained, value in rows}

@@ -7,13 +7,68 @@ from threading import Lock
 from typing import TypeVar
 
 import anyio
-from fastapi import Request
+from fastapi import HTTPException, Request
+from fastapi.routing import APIRoute
 from pydantic import BaseModel
 
 from ..services import PlatformService
 
 
 T = TypeVar("T", bound=BaseModel)
+
+
+def upload_limiter(request):
+    state = request.app.state
+    if not hasattr(state, "upload_limiter"):
+        state.upload_limiter = anyio.CapacityLimiter(state.settings.upload_concurrency)
+    return state.upload_limiter
+
+
+def authorize_upload(request):
+    """Short pre-parse check, closed before waiting; execution rechecks access."""
+    from .dependencies import get_current_user, public_api_token
+    with request.app.state.database.session_factory(info={"upload_preflight": True}) as session:
+        service = PlatformService(session, request.app.state.settings, request.app.state.object_store,
+                                  request.app.state.review_workflow)
+        if request.url.path.endswith("/public/contracts"):
+            service.authenticate_api_key(public_api_token(request), "contracts:write")
+        else:
+            user = get_current_user(request, service)
+            service.require_roles(request.path_params["organization_id"], user, {"owner", "admin", "reviewer"}, "Upload permission required.")
+            if contract_id := request.path_params.get("contract_id"):
+                from ..source_retention import require_source_available
+                require_source_available(service.get_contract(request.path_params["organization_id"], contract_id, user))
+
+
+class UploadRoute(APIRoute):
+    """Admission before FastAPI multipart parsing, only on the six upload actions.
+
+    A fixed per-process backlog of twice capacity waits without consuming bodies.
+    Excess requests get 503/Retry-After. Each admitted request owns its parse/spool,
+    endpoint bytes and blocking write slot until cleanup. Not a network/proxy
+    connection cap; the ASGI server still supplies transport backpressure.
+    """
+    def get_route_handler(self):
+        handler = super().get_route_handler()
+        names = {"create_contract", "intake_forwarded_email", "import_google_drive_file", "import_provider_file", "public_api_upload_contract", "upload_contract_version"}
+        if self.endpoint.__name__ not in names:
+            return handler
+
+        async def admitted(request):
+            await anyio.to_thread.run_sync(authorize_upload, request)
+            limiter = upload_limiter(request)
+            if limiter.statistics().tasks_waiting >= 2 * limiter.total_tokens:
+                raise HTTPException(503, "Upload capacity is busy. Try again later.", headers={"Retry-After": "2"})
+            borrower = object()
+            await limiter.acquire_on_behalf_of(borrower)
+            admission = {"borrower": borrower, "transferred": False}
+            request.state.upload_admission = admission
+            try:
+                return await handler(request)
+            finally:
+                if not admission["transferred"]:
+                    limiter.release_on_behalf_of(borrower)
+        return admitted
 
 
 async def run_upload(request: Request, operation: Callable[[PlatformService], T]) -> T:
@@ -26,12 +81,13 @@ async def run_upload(request: Request, operation: Callable[[PlatformService], T]
     state = request.app.state
     # Initialized on the app's event loop, without an intervening await. Never
     # share a limiter across app instances (or create a session while queued).
-    if not hasattr(state, "upload_limiter"):
-        state.upload_limiter = anyio.CapacityLimiter(state.settings.upload_concurrency)
-
-    limiter = state.upload_limiter
-    borrower = object()
-    await limiter.acquire_on_behalf_of(borrower)
+    limiter = upload_limiter(request)
+    admission = getattr(request.state, "upload_admission", None)
+    borrower = admission["borrower"] if admission else object()
+    if admission:
+        admission["transferred"] = True
+    else:
+        await limiter.acquire_on_behalf_of(borrower)
     start_lock = Lock()
     started = False
     cancelled_before_start = False

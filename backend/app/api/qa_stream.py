@@ -6,9 +6,10 @@ import json
 import re
 import time
 from uuid import uuid4
+from typing import Annotated
 
 import anyio
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 
 from ..document_intelligence.qa import QATimings, current_timings
@@ -16,12 +17,23 @@ from ..models import User
 from ..schemas import ContractQuestionCreate
 from ..security import resolve_principal
 from ..services import PlatformService
-from ..service_domains.qa import contract_input, fingerprint, portfolio_documents
-from .dependencies import UserDep
+from ..service_domains.qa import contract_input, fingerprint, portfolio_documents, revalidate_portfolio
+from .dependencies import get_current_user
 
 router = APIRouter()
 STREAM_TIMEOUT_SECONDS = 120
 HEARTBEAT_SECONDS = 10
+
+
+def stream_identity(request: Request) -> str:
+    # No yielded request session and no detached/lazy ORM object in the stream.
+    with request.app.state.database.session_factory() as session:
+        service = PlatformService(session, request.app.state.settings, request.app.state.object_store,
+                                  request.app.state.review_workflow)
+        return get_current_user(request, service).id
+
+
+StreamIdentity = Annotated[str, Depends(stream_identity)]
 
 
 def operation(request, organization_id, contract_id, user_id, question, prepared=None, result=None):
@@ -39,11 +51,13 @@ def operation(request, organization_id, contract_id, user_id, question, prepared
             snapshot = hashlib.sha256((text + json.dumps(context, sort_keys=True)).encode()).hexdigest()
             if prepared is None:
                 adapter, answer = service.review_workflow.prepare_contract_answer(text, question, context)
-        else:
+        elif prepared is None:
             documents = portfolio_documents(service, organization_id, user, question)
-            snapshot = fingerprint(documents)
-            if prepared is None:
-                adapter, answer = service.review_workflow.prepare_portfolio_answer(documents, question)
+            adapter, answer = service.review_workflow.prepare_portfolio_answer(documents, question)
+            used = {source.contract_id for source in answer.result.sources}
+            snapshot = fingerprint([document for document in documents if document.contract_id in used])
+        else:
+            snapshot = revalidate_portfolio(service, organization_id, prepared[2])
         if prepared is None:
             return adapter, answer, snapshot
         if prepared[2] != snapshot:
@@ -155,10 +169,10 @@ async def response(request, organization_id, contract_id, user_id, question):
 
 @router.post("/organizations/{organization_id}/contracts/{contract_id}/questions/stream", tags=["reviews"])
 async def contract_stream(organization_id: str, contract_id: str, request: Request,
-                          payload: ContractQuestionCreate, user: UserDep):
-    return await response(request, organization_id, contract_id, user.id, payload.question)
+                          payload: ContractQuestionCreate, user_id: StreamIdentity):
+    return await response(request, organization_id, contract_id, user_id, payload.question)
 
 
 @router.post("/organizations/{organization_id}/portfolio/questions/stream", tags=["governance"])
-async def portfolio_stream(organization_id: str, request: Request, payload: ContractQuestionCreate, user: UserDep):
-    return await response(request, organization_id, None, user.id, payload.question)
+async def portfolio_stream(organization_id: str, request: Request, payload: ContractQuestionCreate, user_id: StreamIdentity):
+    return await response(request, organization_id, None, user_id, payload.question)

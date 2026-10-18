@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "./api";
-import type { ContractFilters, TaskFilters, LifecycleFilters, OverviewWindow } from "./api/workspace-queries";
+import type { CalendarWindow, ContractFilters, TaskFilters, LifecycleFilters, OverviewWindow } from "./api/workspace-queries";
 
 export function useDebouncedValue<T>(value: T, delay = 250) {
   const [debounced, setDebounced] = useState(value);
@@ -20,6 +20,10 @@ export function overviewWindow(now = new Date()): OverviewWindow {
 export function useWorkspaceOverview(organizationId: string) {
   const [window] = useState(() => overviewWindow());
   return useQuery({ queryKey: ["overview", organizationId, window], queryFn: ({ signal }) => api.queryOverview(organizationId, window, { signal }), enabled: Boolean(organizationId), refetchInterval: (query) => query.state.data?.counts.processing ? 5000 : false });
+}
+
+export function useCalendarGrid(organizationId: string, window: CalendarWindow) {
+  return useQuery({ queryKey: ["calendar-grid", organizationId, window], queryFn: ({ signal }) => api.queryCalendar(organizationId, window, { signal }), enabled: Boolean(organizationId) });
 }
 
 function usePageState(organizationId: string, filters: object) {

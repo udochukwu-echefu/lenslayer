@@ -119,7 +119,7 @@ export function ContractDetail({ contractId }: { contractId: string }) {
   const jobsQuery = useQuery({ queryKey: ["jobs", organizationId, contractId], queryFn: () => api.jobs(organizationId, contractId), enabled: Boolean(organizationId) });
   const tasksQuery = useTaskPage(organizationId, { contract_id: contractId });
   const activityQuery = useQuery({ queryKey: ["contract-activity", organizationId, contractId], queryFn: () => api.contractActivity(organizationId, contractId), enabled: Boolean(organizationId) && tab === "activity" });
-  const deleteMutation = useMutation({ mutationFn: () => api.deleteContract(organizationId, contractId), onSuccess: async () => { await Promise.all(["contracts", "tasks", "lifecycle", "overview", "workspace-search"].map((root) => queryClient.invalidateQueries({ queryKey: [root, organizationId] }))); router.replace("/contracts"); } });
+  const deleteMutation = useMutation({ mutationFn: () => api.deleteContract(organizationId, contractId), onSuccess: async () => { await Promise.all(["contracts", "tasks", "lifecycle", "overview", "workspace-search", "calendar-grid"].map((root) => queryClient.invalidateQueries({ queryKey: [root, organizationId] }))); router.replace("/contracts"); } });
   const questionMutation = useQuestionStream<Awaited<ReturnType<typeof api.askContract>>>(`/organizations/${organizationId}/contracts/${contractId}/questions`, isDemo);
   const contract = contractQuery.data;
   const review = reviewQuery.data;

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import SettingsPage from "./page";
 import SettingsSectionPage from "./[section]/page";
-import DevelopersPage from "../developers/page";
+import DevelopersPage from "../../developers/page";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { settingsSections } from "@/components/settings/sections";
 

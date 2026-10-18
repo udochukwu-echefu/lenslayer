@@ -87,7 +87,7 @@ it("refreshes aggregate counts after a task mutation, not just the paginated tas
 
 it("invalidates all scoped pages, search and summary, but not another workspace", async () => {
   const { client } = setup();
-  const keys = ["contracts", "tasks", "lifecycle", "overview", "workspace-search"];
+  const keys = ["contracts", "tasks", "lifecycle", "overview", "workspace-search", "calendar-grid"];
   for (const root of keys) { client.setQueryData([root, "org-1", { offset: 25 }], "one"); client.setQueryData([root, "org-2", { offset: 25 }], "two"); }
   await act(async () => { await invalidateWorkspaceRecords(client, "org-1", "contracts", "tasks", "lifecycle"); });
   for (const root of keys) {

@@ -12,6 +12,8 @@ const [worktree, output, revision, puppeteerModule, portText = "3215"] = process
 if (!worktree || !output || !revision || !puppeteerModule) throw new Error("Missing fixture arguments");
 const port = Number(portText);
 const mobile = process.env.PROFILE_MOBILE === "1";
+const navigation = process.env.PROFILE_NAVIGATION === "1";
+const noPrefetch = process.env.PROFILE_NO_PREFETCH === "1";
 const origin = `http://127.0.0.1:${port}`;
 const secret = "synthetic-local-startup-fixture-never-a-production-secret";
 const require = createRequire(pathToFileURL(resolve(worktree, "dashboard/package.json")));
@@ -69,16 +71,48 @@ try {
       await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
     }
     await page.evaluateOnNewDocument(() => {
+      const clients = new WeakMap(), shells = new WeakMap();
+      window.__fixtureNavigation = { clientIDs: [], mounts: 0, shellCount: 0, shellID: null };
+      // Observe actual QueryClient context values from React's supported devtools
+      // hook. No application instrumentation, credentials, keys or data recorded.
+      window.__REACT_DEVTOOLS_GLOBAL_HOOK__ = { supportsFiber: true, renderers: new Map(),
+        inject(renderer) { this.renderers.set(this.renderers.size + 1, renderer); return this.renderers.size; },
+        onCommitFiberRoot(_id, root) {
+          const active = new Set();
+          function visit(fiber) {
+            if (!fiber) return;
+            const value = fiber.memoizedProps?.value;
+            if (value && typeof value.getQueryCache === "function") {
+              if (!clients.has(value)) clients.set(value, ++window.__fixtureNavigation.mounts);
+              active.add(clients.get(value));
+            }
+            visit(fiber.child); visit(fiber.sibling);
+          }
+          visit(root.current);
+          window.__fixtureNavigation.clientIDs = [...active];
+        }, onCommitFiberUnmount() {}, checkDCE() {},
+      };
       const observer = new MutationObserver(() => {
+        const shell = document.querySelector(".app-shell");
+        if (shell) {
+          if (!shells.has(shell)) shells.set(shell, ++window.__fixtureNavigation.shellCount);
+          window.__fixtureNavigation.shellID = shells.get(shell);
+        }
         if (document.querySelector(".app-shell") && !performance.getEntriesByName("fixture-shell").length) performance.mark("fixture-shell");
         if (document.querySelector(".tasks-register") && !document.querySelector(".tasks-register .skeleton") && !performance.getEntriesByName("fixture-useful-tasks").length) performance.mark("fixture-useful-tasks");
       });
       observer.observe(document, { childList: true, subtree: true });
     });
+    if (noPrefetch) {
+      await page.setRequestInterception(true);
+      page.on("request", (request) => request.headers()["next-router-prefetch"] ? request.abort() : request.continue());
+    }
     const now = Math.floor(Date.now() / 1000);
     const cookie = await encode({ secret, token: { sub: "auth0|synthetic-only", name: "Synthetic Reviewer", email: "synthetic@example.test", browserSessionId: "1c34b57c-32b2-4bea-80d3-a0b5c903182d", accessToken: "synthetic-never-live-bearer", accessTokenExpires: Date.now() + 3600000, iat: now, exp: now + 3600 } });
     await context.setCookie({ name: "next-auth.session-token", value: cookie, url: origin, httpOnly: true, sameSite: "Lax" });
     const network = [];
+    const cancelled = [];
+    page.on("requestfailed", (request) => { if (request.url().includes("/api/platform/")) cancelled.push(new URL(request.url()).pathname); });
     page.on("request", (request) => {
       const path = new URL(request.url()).pathname;
       const label = path === "/tasks" ? "private-document" : path === "/api/auth/session" ? "session" : path.startsWith("/api/platform/") ? `bff-${path.split("/").at(-1)}` : null;
@@ -93,7 +127,20 @@ try {
       paints: performance.getEntriesByType("paint").map((e) => ({ name: e.name, time: e.startTime })),
       usefulContent: performance.getEntriesByType("mark").filter((e) => e.name.startsWith("fixture-")).map((e) => ({ name: e.name, time: e.startTime })),
     }));
-    traces.push({ run, browserRequests: network, upstreamRequests: [...apiRequests], timings });
+    const steps = [];
+    if (navigation) {
+      const capture = async (route, elapsed) => steps.push({ route, elapsed, ...(await page.evaluate(() => window.__fixtureNavigation)), browserRequests: [...network], upstreamRequests: [...apiRequests], cancelled: [...cancelled] });
+      await capture("/tasks", null);
+      for (const [route, selector] of [["/contracts", ".main-content .table-card"], ["/tasks", ".tasks-register"]]) {
+        const time = performance.now();
+        await page.evaluate((route) => document.querySelector(`.side-nav a[href="${route}"]`).click(), route);
+        await page.waitForFunction((route) => location.pathname === route, {}, route);
+        await page.waitForSelector(selector);
+        await page.waitForFunction((selector) => !document.querySelector(`${selector} .skeleton`), {}, selector);
+        await capture(route, performance.now() - time);
+      }
+    }
+    traces.push({ run, browserRequests: network, upstreamRequests: [...apiRequests], timings, navigation: steps, noPrefetch });
     writeFileSync(resolve(output, "fixture-traces.json"), JSON.stringify({ ...fixtureMetadata, traces, visuals: [] }, null, 2));
     await page.screenshot({ path: resolve(output, `private-tasks-${run}.png`), fullPage: true });
     await context.close();
