@@ -9,6 +9,10 @@ export default [
   reactHooks.configs["recommended-latest"],
   reactRefresh.configs.vite,
   {
+    files: ["scripts/**/*.mjs"],
+    languageOptions: { globals: globals.node },
+  },
+  {
     files: ["**/*.{js,jsx}"],
     languageOptions: {
       ecmaVersion: 2022,
