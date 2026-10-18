@@ -18,7 +18,7 @@ function ContractQueue({ organizationId, status, title, description, empty }: { 
 }
 
 function TaskQueue({ organizationId, overdue, dayStart, weekEnd, count }: { organizationId: string; overdue?: boolean; dayStart: string; weekEnd: string; count: number }) {
-  const query = useTaskPage(organizationId, { status: "open,in_progress", due_before: overdue ? dayStart : weekEnd, due_after: overdue ? undefined : dayStart });
+  const query = useTaskPage(organizationId, { status: "open,in_progress", due_before: overdue ? dayStart : weekEnd, due_before_exclusive: true, due_after: overdue ? undefined : dayStart });
   return <section><div className="section-heading"><h2>{overdue ? "Overdue actions" : "Due in the next 7 days"} <span className={`count ${overdue ? "danger-count" : ""}`}>{count}</span></h2>{overdue && <p><TriangleAlert size={15} />Needs a human update</p>}</div>{query.isLoading ? <PageLoading rows={3} /> : query.error ? <PageError error={query.error} /> : <><TaskList tasks={query.data?.items ?? []} table /><QueryPagination total={query.data?.total ?? 0} offset={query.offset} limit={25} onOffsetChange={query.setOffset} label={overdue ? "Overdue actions" : "Due soon actions"} /></>}</section>;
 }
 

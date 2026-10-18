@@ -14,7 +14,7 @@ export function demoPage<T extends Row>(rows: T[], filters: Filters, defaultSort
     if (status && status !== "all" && !status.split(",").includes(row.status)) return false;
     for (const key of ["contract_id", "assigned_to_user_id", "category"] as const) if (filters[key] && field(row, key) !== filters[key]) return false;
     const due = field(row, "due_at") as string | null;
-    if (filters.due_before && (!due || timestamp(due) >= timestamp(filters.due_before))) return false;
+    if (filters.due_before && (!due || (filters.due_before_exclusive ? timestamp(due) >= timestamp(filters.due_before) : timestamp(due) > timestamp(filters.due_before)))) return false;
     if (filters.due_after && (!due || timestamp(due) < timestamp(filters.due_after))) return false;
     return !term || ["title", "source_name", "counterparty", "contract_type", "status", "contract_title", "assigned_to_name", "due_at", "kind"].some((key) => String(field(row, key) ?? "").toLowerCase().includes(term));
   }).sort((a, b) => {
@@ -59,7 +59,7 @@ export function demoWorkspaceQuery(id: string, resource: string, filters: object
       active_tasks: active.length, completed_tasks: tasks.filter((item) => item.status === "done").length,
       overdue_tasks: overdue.length, upcoming_tasks: upcoming.total,
       upcoming_notice_deadlines: lifecycle.filter((item) => item.status === "active" && ["notice", "renewal"].includes(item.kind) && timestamp(item.due_at) >= timestamp(day_start)).length,
-      due_soon_tasks: demoPage(active, { due_after: day_start, due_before: week_end }, "due_at").total,
+      due_soon_tasks: demoPage(active, { due_after: day_start, due_before: week_end, due_before_exclusive: true }, "due_at").total,
     },
     recent_contracts: demoPage(contracts, { limit: 5 }, "updated_at", true).items,
     attention_contracts: demoPage(contracts, { status: "ready,failed", limit: 5 }, "updated_at", true).items,
