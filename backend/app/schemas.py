@@ -3,7 +3,9 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator, model_validator
+
+from .review_errors import project_audit_detail, project_job
 
 
 class UserResponse(BaseModel):
@@ -210,6 +212,19 @@ class JobResponse(BaseModel):
     started_at: datetime | None
     completed_at: datetime | None
 
+    @model_validator(mode="before")
+    @classmethod
+    def project_diagnostics(cls, value: Any) -> Any:
+        # Copy ORM attributes or input JSON: never mutate the persisted record.
+        data = dict(value) if isinstance(value, dict) else {
+            name: getattr(value, name) for name in cls.model_fields
+        }
+        data.update(project_job(
+            data.get("status", ""), data.get("error_code"),
+            data.get("error_message"), data.get("progress_step"),
+        ))
+        return data
+
 
 class ReviewResponse(BaseModel):
     id: str
@@ -406,7 +421,14 @@ class LifecycleItemResponse(BaseModel):
     updated_at: datetime
 
 
-class ContractActivityResponse(BaseModel):
+class _ReviewAuditResponse(BaseModel):
+    @field_validator("detail", mode="before", check_fields=False)
+    @classmethod
+    def project_review_failure(cls, value: Any, info: ValidationInfo) -> Any:
+        return project_audit_detail(info.data.get("action", ""), value)
+
+
+class ContractActivityResponse(_ReviewAuditResponse):
     id: str
     action: str
     detail: dict[str, Any]
@@ -692,7 +714,7 @@ class WebhookDeliveryResponse(BaseModel):
     updated_at: datetime
 
 
-class AuditEventResponse(BaseModel):
+class AuditEventResponse(_ReviewAuditResponse):
     id: str
     action: str
     detail: dict[str, Any]
@@ -728,7 +750,7 @@ class ReportWorkloadItem(BaseModel):
     completed_in_period: int
 
 
-class ReportActivityItem(BaseModel):
+class ReportActivityItem(_ReviewAuditResponse):
     id: str
     action: str
     detail: dict[str, Any]
