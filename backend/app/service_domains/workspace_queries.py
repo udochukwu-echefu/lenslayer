@@ -110,7 +110,7 @@ class WorkspaceQueriesServiceMixin:
                                  limit=limit, offset=offset, sort=sort, descending=descending,
                                  allowed={"updated_at", "created_at", "title", "counterparty", "contract_type", "status"})
 
-    def _task_query(self, organization_id, *, q="", status=None, assigned_to_user_id=None, contract_id=None, due_before=None, due_after=None, category=None):
+    def _task_query(self, organization_id, *, q="", status=None, assigned_to_user_id=None, contract_id=None, due_before=None, due_after=None, category=None, due_before_exclusive=False):
         query = select(WorkflowTask).outerjoin(Contract, Contract.id == WorkflowTask.contract_id).outerjoin(User, User.id == WorkflowTask.assigned_to_user_id).where(WorkflowTask.organization_id == organization_id)
         selected = statuses(status, {"open", "in_progress", "done", "cancelled"})
         if selected:
@@ -120,7 +120,7 @@ class WorkspaceQueriesServiceMixin:
                 query = query.where(column == value)
         before, after = aware_bound(due_before), aware_bound(due_after)
         if before is not None:
-            query = query.where(WorkflowTask.due_at <= before)
+            query = query.where(WorkflowTask.due_at < before if due_before_exclusive else WorkflowTask.due_at <= before)
         if after is not None:
             query = query.where(WorkflowTask.due_at >= after)
         return query.where(text_filter(search_terms(q), [WorkflowTask.title, Contract.title, Contract.counterparty, User.display_name, cast(WorkflowTask.due_at, String)]))
@@ -134,7 +134,7 @@ class WorkspaceQueriesServiceMixin:
         return self._record_page(query, WorkflowTask, self._task_items, limit=limit, offset=offset, sort=sort, descending=descending,
                                  allowed={"due_at", "created_at", "title", "status", "priority"})
 
-    def query_lifecycle(self, organization_id, user, *, q="", status=None, contract_id=None, due_before=None, due_after=None, limit=25, offset=0, sort="due_at", descending=False):
+    def query_lifecycle(self, organization_id, user, *, q="", status=None, contract_id=None, due_before=None, due_after=None, due_before_exclusive=False, limit=25, offset=0, sort="due_at", descending=False):
         self.workspace.membership(organization_id, user)
         query = select(LifecycleItem).join(Contract, Contract.id == LifecycleItem.contract_id).where(LifecycleItem.organization_id == organization_id)
         selected = statuses(status, {"active", "completed", "cancelled"})
@@ -144,7 +144,7 @@ class WorkspaceQueriesServiceMixin:
             query = query.where(LifecycleItem.contract_id == contract_id)
         before, after = aware_bound(due_before), aware_bound(due_after)
         if before is not None:
-            query = query.where(LifecycleItem.due_at <= before)
+            query = query.where(LifecycleItem.due_at < before if due_before_exclusive else LifecycleItem.due_at <= before)
         if after is not None:
             query = query.where(LifecycleItem.due_at >= after)
         query = query.where(text_filter(search_terms(q), [LifecycleItem.title, Contract.title, Contract.counterparty, cast(LifecycleItem.due_at, String)])).options(joinedload(LifecycleItem.contract), joinedload(LifecycleItem.owner))
