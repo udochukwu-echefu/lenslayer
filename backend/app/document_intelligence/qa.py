@@ -1,6 +1,7 @@
 """Document Q&A only: bounded generation and content-free request measurements."""
 from contextvars import ContextVar
 from dataclasses import dataclass, field
+from enum import Enum
 import logging
 import time
 
@@ -8,6 +9,23 @@ from .ports import QAResult
 
 logger = logging.getLogger(__name__)
 current_timings: ContextVar["QATimings | None"] = ContextVar("qa_timings", default=None)
+
+
+class StreamFailureCode(str, Enum):
+    PROVIDER_INCOMPLETE = "provider_incomplete"
+    CITATION_INVALID = "citation_invalid"
+    EVIDENCE_OR_ACCESS_CHANGED = "evidence_or_access_changed"
+    TIMEOUT = "timeout"
+    FINALIZATION_FAILED = "finalization_failed"
+    GENERATION_FAILED = "generation_failed"
+
+
+class StreamFailure(Exception):
+    """Only a fixed, content-free classification may cross stream boundaries."""
+
+    def __init__(self, code: StreamFailureCode):
+        self.code = StreamFailureCode(code)
+        super().__init__(self.code.value)
 
 
 @dataclass
@@ -84,19 +102,37 @@ async def stream(adapter, prepared):
         return
     started = time.monotonic()
     iterator = adapter.model().astream(prepared.prompt)
+    stopped = False
+    invalid_finish = False
     try:
         async for message in iterator:
+            metadata = getattr(message, "response_metadata", {}) or {}
             if timing:
-                timing.metadata(getattr(message, "response_metadata", {}))
-            if getattr(message, "response_metadata", {}).get("finish_reason") in {"length", "content_filter"}:
-                raise ValueError("Incomplete provider answer")
+                timing.metadata(metadata)
+            finish_reason = metadata.get("finish_reason")
+            if finish_reason is not None:
+                if finish_reason != "stop":
+                    invalid_finish = True
+                else:
+                    stopped = True
+            # Drain terminal metadata through the SDK so its HTTP context exits.
+            # Once rejected, no later stop or content can restore success.
+            if invalid_finish:
+                continue
             content = message.content
             if not isinstance(content, str):
-                raise ValueError("Unexpected model content format")
+                raise StreamFailure(StreamFailureCode.GENERATION_FAILED)
             if content:
                 if timing:
                     timing.content()
                 yield content
+        # SDK exhaustion (including [DONE]) is not a successful completion receipt.
+        if not stopped or invalid_finish:
+            raise StreamFailure(StreamFailureCode.PROVIDER_INCOMPLETE)
+    except StreamFailure:
+        raise
+    except Exception:
+        raise StreamFailure(StreamFailureCode.PROVIDER_INCOMPLETE) from None
     finally:
         await iterator.aclose()
         if timing:

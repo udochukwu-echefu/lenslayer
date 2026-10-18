@@ -31,6 +31,7 @@ class FakeModel:
         self.failure = False
         self.first = "Renewal is annual [Source 1]. "
         self.calls = 0
+        self.finish_reason = "stop"
 
     def invoke(self, prompt):
         return SimpleNamespace(content="Renewal is annual [Source 1].", response_metadata={})
@@ -43,7 +44,7 @@ class FakeModel:
             await self.release.wait()
             if self.failure:
                 raise RuntimeError("DO_NOT_LOG_PRIVATE_PROVIDER_EXCEPTION")
-            yield SimpleNamespace(content="Confirm the notice period.", response_metadata={"token_usage": {"queue_time": 0.003}})
+            yield SimpleNamespace(content="Confirm the notice period.", response_metadata={"finish_reason": self.finish_reason, "token_usage": {"queue_time": 0.003}})
         finally:
             self.closed.set()
 
@@ -163,14 +164,47 @@ class QAStreamingTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_failure_after_headers_is_safe_terminal_incomplete_no_replay(self):
         self.model.failure = True
-        exchange = Exchange(self.app, self.path)
-        await exchange.until("answer")
-        self.model.release.set()
-        final = await exchange.finish()
+        with self.assertLogs("backend.app.document_intelligence.qa", level="INFO") as logs:
+            exchange = Exchange(self.app, self.path)
+            await exchange.until("answer")
+            self.model.release.set()
+            final = await exchange.finish()
         self.assertFalse(final["completed"])
         self.assertNotIn("result", final)
         self.assertNotIn("DO_NOT_LOG", json.dumps(exchange.frames))
+        self.assertNotIn("DO_NOT_LOG", str([r.__dict__ for r in logs.records]))
+        self.assertEqual(next(f for f in exchange.frames if f["type"] == "error")["code"], "provider_incomplete")
         self.assertEqual(self.model.calls, 1)
+        self.assertEqual(self.audits(), [])
+
+    async def test_unsuccessful_or_missing_provider_finish_never_completes(self):
+        for reason in (None, "length", "content_filter", "unknown", "tool_calls"):
+            with self.subTest(reason=reason):
+                self.model.finish_reason = reason
+                self.model.release.set()
+                exchange = Exchange(self.app, self.path)
+                final = await exchange.finish()
+                self.assertFalse(final["completed"])
+                self.assertNotIn("result", final)
+                self.assertEqual(next(f for f in exchange.frames if f["type"] == "error")["code"], "provider_incomplete")
+        self.assertEqual(self.model.calls, 5)
+        self.assertEqual(self.audits(), [])
+
+    async def test_finalization_failure_is_content_free_and_never_completes(self):
+        original = qa_stream.operation
+
+        def operation(*args):
+            if len(args) == 7 and args[6] is not None:
+                raise RuntimeError("PRIVATE_FINALIZATION_TEXT")
+            return original(*args)
+
+        self.model.release.set()
+        with patch.object(qa_stream, "operation", operation), self.assertLogs("backend.app.document_intelligence.qa", level="INFO") as logs:
+            exchange = Exchange(self.app, self.path)
+            final = await exchange.finish()
+        self.assertFalse(final["completed"])
+        self.assertEqual(next(f for f in exchange.frames if f["type"] == "error")["code"], "finalization_failed")
+        self.assertNotIn("PRIVATE_FINALIZATION_TEXT", json.dumps(exchange.frames) + str([r.__dict__ for r in logs.records]))
         self.assertEqual(self.audits(), [])
 
     async def test_timeout_closes_provider_and_no_final_audit(self):
@@ -183,12 +217,63 @@ class QAStreamingTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(next(f for f in exchange.frames if f["type"] == "error")["code"], "timeout")
 
     async def test_missing_or_invalid_citation_cannot_complete(self):
-        for content in ("Unsupported answer", "Wrong [Source 99]"):
+        for content in ("Unsupported answer", "Wrong [Source 99]", "Wrong 【Source 99】",
+                        "Valid [Source 1] but wrong 【Source\u202f99】",
+                        "Valid [Source 1] but wrong 【Source 99】", "Wrong 【Source 0】",
+                        "No alias ［Source 1］", "No inference 【source 1】"):
             with self.subTest(content=content):
                 self.model.first = content
                 self.model.release.set()
-                final = await Exchange(self.app, self.path).finish()
+                exchange = Exchange(self.app, self.path)
+                final = await exchange.finish()
                 self.assertFalse(final["completed"])
+                self.assertEqual(next(f for f in exchange.frames if f["type"] == "error")["code"], "citation_invalid")
+        self.assertEqual(self.audits(), [])
+
+    async def test_staging_unicode_source_alias_is_canonicalized_only_in_final(self):
+        self.model.first = "Renewal is annual 【Source 1】. "
+        exchange = Exchange(self.app, self.path)
+        provisional = await exchange.until("answer")
+        self.assertIn("【Source 1】", provisional["delta"])
+        self.assertEqual(self.audits(), [])
+        self.model.release.set()
+        final = await exchange.finish()
+        self.assertTrue(final["completed"])
+        self.assertEqual(len(final["result"]["sources"]), 1)
+        self.assertEqual(final["result"]["answer"], "Renewal is annual [Source 1]. Confirm the notice period.")
+        self.assertEqual(len(self.audits()), 1)
+
+    async def test_unicode_alias_across_chunks_and_mixed_valid_forms(self):
+        async def chunks(_prompt):
+            for content in ("Notice 【Sou", "rce 1】 and [Source 1]."):
+                yield SimpleNamespace(content=content, response_metadata={})
+            yield SimpleNamespace(content="", response_metadata={"finish_reason": "stop"})
+
+        with patch.object(self.model, "astream", chunks):
+            exchange = Exchange(self.app, self.path)
+            final = await exchange.finish()
+        self.assertTrue(final["completed"])
+        self.assertEqual(final["result"]["answer"], "Notice [Source 1] and [Source 1].")
+        self.assertEqual([f["seq"] for f in exchange.frames], list(range(1, len(exchange.frames) + 1)))
+        self.assertEqual({f["request_id"] for f in exchange.frames}, {final["request_id"]})
+        self.assertEqual(len(self.audits()), 1)
+
+    async def test_staging_typographic_citation_spacing_keeps_exact_source_identity(self):
+        self.model.first = "Monthly fee USD 100 【Source\u202f1】; payable in 14 days [Source\u00a01]. "
+        self.model.release.set()
+        final = await Exchange(self.app, self.path).finish()
+        self.assertTrue(final["completed"])
+        self.assertIn("USD 100 [Source 1]; payable in 14 days [Source 1]", final["result"]["answer"])
+        self.assertEqual(len(final["result"]["sources"]), 1)
+        self.assertEqual(len(self.audits()), 1)
+
+    async def test_answer_text_bound_still_prevents_completion(self):
+        self.model.first = "[Source 1] " + "x" * 32_000
+        self.model.release.set()
+        exchange = Exchange(self.app, self.path)
+        final = await exchange.finish()
+        self.assertFalse(final["completed"])
+        self.assertEqual(next(f for f in exchange.frames if f["type"] == "error")["code"], "generation_failed")
         self.assertEqual(self.audits(), [])
 
     async def test_expiry_revocation_deletion_or_source_change_before_final_blocks_completion(self):

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { readQAStream, streamQuestion, type QAEvent } from "./qa-stream";
-import { request, resolveAuthenticatedSession } from "./client";
+import { QAStreamError, readQAStream, streamQuestion, type QAEvent } from "./qa-stream";
+import { ApiError, request, resolveAuthenticatedSession } from "./client";
 vi.mock("./client", () => ({
   API_PREFIX: "/api/platform/api/v1", ApiError: class extends Error {}, request: vi.fn(), resolveAuthenticatedSession: vi.fn().mockResolvedValue({}),
 }));
@@ -10,8 +10,95 @@ const answer = { answer: "Café 🙂 [Source 1]", sources: [{ label: "Source 1",
 const frame = (seq: number, type: string, data = {}) => JSON.stringify({ seq, request_id: "request-a", type, ...data }) + "\n";
 const final = () => frame(3, "final", { completed: true, provisional: false, result: answer });
 const response = (body: ReadableStream<Uint8Array>) => new Response(body, { headers: { "content-type": "application/x-ndjson" } });
+const textResponse = (text: string) => response(new ReadableStream({ start(controller) {
+  controller.enqueue(new TextEncoder().encode(text)); controller.close();
+} }));
 
 describe("incremental private Q&A transport", () => {
+  it.each([
+    ["provider_incomplete", "provider did not finish"],
+    ["citation_invalid", "invalid source citations"],
+    ["evidence_or_access_changed", "Evidence or access changed"],
+    ["timeout", "timed out"],
+    ["finalization_failed", "could not be finalized"],
+    ["generation_failed", "generation failed"],
+  ])("preserves validated %s diagnostics without trusting server messages", async (code, message) => {
+    const events: QAEvent[] = [];
+    const error = await readQAStream(textResponse(
+      frame(1, "answer", { delta: "Partial answer", provisional: true }) +
+      frame(2, "error", { code, completed: false, message: "synthetic-secret <script>unsafe</script>", detail: "private" }),
+    ), (event) => events.push(event)).catch((value) => value);
+    expect(error).toBeInstanceOf(QAStreamError);
+    expect(error).toMatchObject({ code, requestId: "request-a", seq: 2, completed: false });
+    expect(error.message).toContain(message);
+    expect(error.message).toContain("incomplete");
+    expect(JSON.stringify(error)).not.toMatch(/synthetic-secret|unsafe|private/);
+    expect(error.message).not.toContain("synthetic-secret");
+    expect(error.cause).toBeUndefined();
+    expect(events).toEqual([{ type: "answer", request_id: "request-a", seq: 1, delta: "Partial answer", provisional: true }]);
+  });
+
+  it.each([undefined, "unknown-secret-code", "__proto__", "constructor", { message: "private" }])("keeps missing/unknown codes generic (%j)", async (code) => {
+    await expect(readQAStream(textResponse(frame(1, "error", { code, message: "private" })), () => {}))
+      .rejects.toMatchObject({ name: "QAStreamError", code: undefined, message: "Answer incomplete. Please try again.", requestId: "request-a", seq: 1, completed: false });
+  });
+
+  it("treats completed:false as failure even with a plausible result and later success", async () => {
+    const onEvent = vi.fn();
+    await expect(readQAStream(textResponse(frame(1, "final", {
+      completed: false, provisional: false, result: answer, code: "finalization_failed", message: "private",
+    }) + final()), onEvent)).rejects.toMatchObject({ code: "finalization_failed", requestId: "request-a", seq: 1, completed: false });
+    expect(onEvent).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { request_id: "other", seq: 2 },
+    { request_id: "unsafe <private>", seq: 2 },
+    { request_id: "request-a\n", seq: 2 },
+    { request_id: "a".repeat(129), seq: 2 },
+    { request_id: "request-a", seq: 4 },
+    { request_id: "request-a", seq: 1.5 },
+  ])("does not retain metadata or codes from an invalid frame: %j", async (metadata) => {
+    await expect(readQAStream(textResponse(frame(1, "status") + frame(2, "error", {
+      ...metadata, code: "citation_invalid",
+    })), () => {})).rejects.toMatchObject({ code: undefined, requestId: "request-a", seq: 1 });
+  });
+
+  it("keeps EOF incomplete and sanitizes raw parser and reader exceptions", async () => {
+    await expect(readQAStream(textResponse(frame(1, "answer", { delta: "partial", provisional: true })), () => {}))
+      .rejects.toMatchObject({ name: "QAStreamError", completed: false, requestId: "request-a", seq: 1 });
+    for (const input of [textResponse('{"private-secret": invalid}\n'), response(new ReadableStream({ start(controller) {
+      controller.error(new Error("private-secret"));
+    } }))]) {
+      await expect(readQAStream(input, () => {})).rejects.toMatchObject({ name: "QAStreamError", message: "Answer incomplete. Please try again." });
+    }
+  });
+
+  it("distinguishes deadline expiry and sanitizes custom abort reasons", async () => {
+    const deadline = new AbortController();
+    const pending = readQAStream(response(new ReadableStream()), () => {}, deadline.signal);
+    deadline.abort(new DOMException("private-secret", "TimeoutError"));
+    await expect(pending).rejects.toMatchObject({ code: "timeout", completed: false });
+    const cancelled = new AbortController();
+    cancelled.abort(new Error("private-secret"));
+    await expect(readQAStream(textResponse(final()), () => {}, cancelled.signal))
+      .rejects.toMatchObject({ name: "AbortError", message: "Answer cancelled." });
+  });
+
+  it("never exposes fetch exceptions", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("private-secret")));
+    await expect(streamQuestion("/questions", "notice", () => {}, new AbortController().signal))
+      .rejects.toMatchObject({ name: "QAStreamError", message: "Answer incomplete. Please try again." });
+  });
+
+  it("preserves HTTP authentication failure handling without exposing the response body", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("private-server-detail", { status: 401 })));
+    const failure = await streamQuestion("/questions", "notice", () => {}, new AbortController().signal).catch((error) => error);
+    expect(failure).toBeInstanceOf(ApiError);
+    expect(failure.message).toBe("Answer unavailable (401).");
+    expect(failure.message).not.toContain("private-server-detail");
+  });
+
   it("handles every UTF-8 byte/chunk boundary, multiple frames and early content before final", async () => {
     let controller!: ReadableStreamDefaultController<Uint8Array>;
     const events: QAEvent[] = [];
