@@ -101,6 +101,74 @@ class PlatformApiTests(unittest.TestCase):
         self.assertEqual(listed[0]["id"], organization["id"])
         self.assertEqual(listed[0]["role"], "owner")
 
+    def test_historical_job_diagnostics_are_projected_without_database_changes(self):
+        from backend.app.models import ProcessingJob
+
+        organization = self.create_organization()
+        created = self.upload_contract(organization["id"]).json()
+        base = f"/api/v1/organizations/{organization['id']}/contracts"
+        contract_id, job_id = created["contract"]["id"], created["job"]["id"]
+        database = self.client.app.state.database
+        diagnostic = '{"error":{"code":"model_not_found","payload":"provider-secret"}}'
+        for status in ("failed", "queued", "running", "processing", "ready", "succeeded", "cancelled", "unknown"):
+            with self.subTest(status=status):
+                with database.session_factory() as session:
+                    job = session.get(ProcessingJob, job_id)
+                    job.status = status
+                    job.error_code = "RuntimeError"
+                    job.error_message = diagnostic
+                    job.progress_step = "provider-secret"
+                    session.commit()
+                for path in (f"{base}/{contract_id}/jobs", f"{base}/{contract_id}", base):
+                    response = self.client.get(path, headers=self.alice)
+                    self.assertEqual(response.status_code, 200, response.text)
+                    data = response.json()
+                    job = data[0] if path.endswith("/jobs") else (data[0] if isinstance(data, list) else data)["latest_job"]
+                    self.assertEqual(job["error_code"], "review_service_unavailable" if status == "failed" else "")
+                    self.assertNotIn("provider-secret", response.text)
+                    self.assertNotIn("model_not_found", response.text)
+                with database.session_factory() as session:
+                    job = session.get(ProcessingJob, job_id)
+                    self.assertEqual((job.status, job.error_code, job.error_message, job.progress_step),
+                                     (status, "RuntimeError", diagnostic, "provider-secret"))
+
+    def test_historical_failed_audits_are_projected_on_all_activity_endpoints(self):
+        import json
+        from backend.app.models import PlatformAuditEvent
+
+        organization = self.create_organization()
+        created = self.upload_contract(organization["id"]).json()
+        contract_id, job_id = created["contract"]["id"], created["job"]["id"]
+        database = self.client.app.state.database
+        stored = {}
+        with database.session_factory() as session:
+            for action, code in (("review.failed", "SourceRetentionExpired"), ("contract.review_failed", "SourceUnavailable"), ("review.failed", "unknown-code"), ("contract.updated", "unchanged")):
+                detail = {"job_id": job_id, "error_code": code, "error": {"request": {"payload": "provider-secret"}}, "unknown": ["provider-secret"]}
+                event = PlatformAuditEvent(organization_id=organization["id"], contract_id=contract_id,
+                                           actor_user_id=None, action=action, detail_json=json.dumps(detail))
+                session.add(event)
+                session.flush()
+                stored[event.id] = (event.detail_json, detail)
+            session.commit()
+        base = f"/api/v1/organizations/{organization['id']}"
+        for path in (f"{base}/contracts/{contract_id}/activity", f"{base}/audit-events", f"{base}/reports/overview?range=all"):
+            response = self.client.get(path, headers=self.alice)
+            self.assertEqual(response.status_code, 200, response.text)
+            data = response.json()
+            events = data["recent_activity"] if isinstance(data, dict) else data
+            found = {event["id"]: event for event in events if event["id"] in stored}
+            self.assertEqual(set(found), set(stored))
+            for event_id, event in found.items():
+                original = stored[event_id][1]
+                if event["action"] == "contract.updated":
+                    self.assertEqual(event["detail"], original)
+                else:
+                    code = {"SourceRetentionExpired": "source_retention_expired", "SourceUnavailable": "source_unavailable"}.get(original["error_code"], "review_failed")
+                    self.assertEqual(event["detail"], {"job_id": job_id, "error_code": code})
+        with database.session_factory() as session:
+            for event_id, (raw, _) in stored.items():
+                self.assertEqual(session.get(PlatformAuditEvent, event_id).detail_json, raw)
+
     def test_app_composition_root_accepts_review_workflow_factory(self):
         calls = []
 
