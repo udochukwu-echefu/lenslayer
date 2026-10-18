@@ -11,6 +11,7 @@ import { AppSelect } from "./app-select";
 import { taskSource } from "@/lib/task-source";
 import { useWorkspace } from "./workspace-provider";
 import { StatusBadge } from "./ui/status-badge";
+import { invalidateWorkspaceRecords } from "@/lib/invalidate-workspace-records";
 
 function dueState(task: WorkflowTask, now: number) {
   if (!task.due_at || ["done", "cancelled"].includes(task.status)) return "";
@@ -30,7 +31,7 @@ export function TaskList({ tasks, empty = "No actions match this view.", compact
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: TaskStatus }) => api.updateTask(organizationId, id, { status }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks", organizationId] }),
+    onSuccess: () => invalidateWorkspaceRecords(queryClient, organizationId, "tasks"),
   });
 
   if (!tasks.length) return <div className="task-empty"><Circle size={16} /><p>{empty}</p></div>;

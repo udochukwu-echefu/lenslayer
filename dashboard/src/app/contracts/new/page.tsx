@@ -9,6 +9,7 @@ import { AppSelect } from "@/components/app-select";
 import { useWorkspace } from "@/components/workspace-provider";
 import { PageLoading } from "@/components/page-states";
 import { api } from "@/lib/api";
+import { invalidateWorkspaceRecords } from "@/lib/invalidate-workspace-records";
 
 const MAX_SIZE = 25 * 1024 * 1024;
 const ACCEPTED = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain"];
@@ -23,7 +24,7 @@ export default function NewContractPage() {
   const mutation = useMutation({
     mutationFn: (form: FormData) => api.createContract(activeOrganization!.id, form),
     onSuccess: async ({ contract }) => {
-      await queryClient.invalidateQueries({ queryKey: ["contracts", activeOrganization?.id] });
+      await invalidateWorkspaceRecords(queryClient, contract.organization_id, "contracts");
       router.push(`/contracts/${contract.id}`);
     },
   });
