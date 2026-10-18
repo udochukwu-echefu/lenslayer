@@ -11,6 +11,7 @@ import { performance } from "node:perf_hooks";
 const [worktree, output, revision, puppeteerModule, portText = "3215"] = process.argv.slice(2);
 if (!worktree || !output || !revision || !puppeteerModule) throw new Error("Missing fixture arguments");
 const port = Number(portText);
+const mobile = process.env.PROFILE_MOBILE === "1";
 const origin = `http://127.0.0.1:${port}`;
 const secret = "synthetic-local-startup-fixture-never-a-production-secret";
 const require = createRequire(pathToFileURL(resolve(worktree, "dashboard/package.json")));
@@ -53,10 +54,20 @@ try {
   }
   browser = await puppeteer.launch({ executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", headless: true, args: ["--no-sandbox"] });
   const traces = [];
+  const fixtureMetadata = { revision, synthetic: true, upstreamDelayMs: 80, browser: await browser.version(),
+    conditions: { viewport: { width: 390, height: 844, deviceScaleFactor: 1 }, cpuSlowdown: mobile ? 4 : 1,
+      network: mobile ? "CDP 150ms latency, 1.6Mbit/s down, 750Kbit/s up + 80ms synthetic upstream" : "loopback + deterministic 80ms upstream",
+      syntheticNotProduction: true, cache: "new browser context each sample; Next server warm state varies" } };
   for (let run = 1; run <= 3; run++) {
     const context = await browser.createBrowserContext();
     const page = await context.newPage();
     await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 1 });
+    if (mobile) {
+      const cdp = await page.createCDPSession();
+      await cdp.send("Network.enable");
+      await cdp.send("Network.emulateNetworkConditions", { offline: false, latency: 150, downloadThroughput: 1_600_000 / 8, uploadThroughput: 750_000 / 8 });
+      await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+    }
     await page.evaluateOnNewDocument(() => {
       const observer = new MutationObserver(() => {
         if (document.querySelector(".app-shell") && !performance.getEntriesByName("fixture-shell").length) performance.mark("fixture-shell");
@@ -83,6 +94,7 @@ try {
       usefulContent: performance.getEntriesByType("mark").filter((e) => e.name.startsWith("fixture-")).map((e) => ({ name: e.name, time: e.startTime })),
     }));
     traces.push({ run, browserRequests: network, upstreamRequests: [...apiRequests], timings });
+    writeFileSync(resolve(output, "fixture-traces.json"), JSON.stringify({ ...fixtureMetadata, traces, visuals: [] }, null, 2));
     await page.screenshot({ path: resolve(output, `private-tasks-${run}.png`), fullPage: true });
     await context.close();
   }
@@ -94,12 +106,26 @@ try {
     await page.evaluateOnNewDocument((theme) => localStorage.setItem("lenslayer.theme", theme), theme);
     for (const route of ["/sample", "/signin", "/signup", "/auth/signed-out", "/invite/synthetic-token", "/shared/synthetic-token", "/settings/developers"]) {
       const requests = [];
+      const allRequests = [];
+      const errors = [];
+      const pending = new Set();
+      const begin = (request) => { pending.add(request.url()); allRequests.push(new URL(request.url()).pathname); };
+      const finish = (request) => pending.delete(request.url());
+      const pageError = (error) => errors.push(error.message);
+      page.on("pageerror", pageError);
+      page.on("request", begin); page.on("requestfinished", finish); page.on("requestfailed", finish);
       const listener = (request) => { const path = new URL(request.url()).pathname; if (path.startsWith("/api/auth/")) requests.push(path); };
       page.on("request", listener);
-      await page.goto(`${origin}${route}`, { waitUntil: "networkidle0" });
+      try {
+        await page.goto(`${origin}${route}`, { waitUntil: "domcontentloaded" });
+      } catch (error) {
+        writeFileSync(resolve(output, "visual-failure.json"), JSON.stringify({ route, width, theme, url: page.url(), pending: [...pending], error: error.message }, null, 2));
+        throw error;
+      }
       if (route.startsWith("/invite/")) await page.waitForSelector(".invite-page h1");
       if (route.startsWith("/shared/")) await page.waitForSelector(".shared-hero");
       await page.evaluate(() => document.fonts.ready);
+      await new Promise((resolve) => setTimeout(resolve, 600));
       const name = `${route.replaceAll("/", "-").slice(1)}-${width}-${theme}`;
       await page.screenshot({ path: resolve(output, `${name}.png`), fullPage: true });
       const styles = await page.evaluate(() => [...document.querySelectorAll("main, main *, .brand, .button")].map((el) => {
@@ -110,13 +136,14 @@ try {
         };
       }));
       writeFileSync(resolve(output, `${name}.styles.json`), JSON.stringify(styles, null, 2));
-      visuals.push({ route, width, theme, authRequests: requests });
+      visuals.push({ route, width, theme, authRequests: requests, requests: allRequests, errors });
       page.off("request", listener);
+      page.off("request", begin); page.off("requestfinished", finish); page.off("requestfailed", finish);
+      page.off("pageerror", pageError);
     }
     await context.close();
   }
-  writeFileSync(resolve(output, "fixture-traces.json"), JSON.stringify({ revision, synthetic: true, upstreamDelayMs: 80, browser: await browser.version(),
-    conditions: { viewport: { width: 390, height: 844, deviceScaleFactor: 1 }, cpuSlowdown: 1, network: "loopback + deterministic 80ms upstream; NOT a production or 4G trace", cache: "new browser context each sample; Next server warm state varies" }, traces, visuals }, null, 2));
+  writeFileSync(resolve(output, "fixture-traces.json"), JSON.stringify({ ...fixtureMetadata, traces, visuals }, null, 2));
   console.log(JSON.stringify({ revision, traces, visuals }, null, 2));
 } finally {
   if (browser) await browser.close();

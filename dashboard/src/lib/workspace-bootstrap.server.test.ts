@@ -73,3 +73,24 @@ it("does not share bootstrap data between requests", async () => {
   expect((await readWorkspaceBootstrap()).bootstrap?.user.id).toBe("b");
   expect(getServerSession).toHaveBeenCalledTimes(2);
 });
+
+it("bounds best-effort server hydration and falls back without exposing timed-out responses", async () => {
+  vi.useFakeTimers();
+  try {
+    const timeout = vi.spyOn(AbortSignal, "timeout").mockImplementation((ms) => {
+      expect(ms).toBe(750);
+      const controller = new AbortController();
+      setTimeout(() => controller.abort(new DOMException("Timed out", "TimeoutError")), ms);
+      return controller.signal;
+    });
+    vi.stubGlobal("fetch", vi.fn((_url, init: RequestInit) => new Promise((_resolve, reject) => {
+      init.signal!.addEventListener("abort", () => reject(init.signal!.reason));
+    })));
+    const pending = readWorkspaceBootstrap();
+    await vi.advanceTimersByTimeAsync(750);
+    const result = await pending;
+    expect(result.bootstrap).toBeNull();
+    expect(result.session?.user?.id).toBe(token.sub);
+    expect(timeout).toHaveBeenCalledTimes(2);
+  } finally { vi.useRealTimers(); }
+});
