@@ -1,12 +1,13 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { CalendarDays, ChevronLeft, ChevronRight, Download, Plus } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { PageError, PageLoading } from "@/components/page-states";
 import { useWorkspace } from "@/components/workspace-provider";
 import { api } from "@/lib/api";
+import { useLifecyclePage, useTaskPage } from "@/lib/workspace-query-hooks";
+import { QueryPagination } from "@/components/ui/query-pagination";
 import type { LifecycleItem, WorkflowTask } from "@/lib/types";
 import { formatDate, titleCase } from "@/lib/utils";
 
@@ -20,10 +21,13 @@ export default function CalendarPage() {
   const { activeOrganization, canUpload, isDemo } = useWorkspace();
   const organizationId = activeOrganization?.id ?? "";
   const [month, setMonth] = useState(() => { const value = new Date(); value.setDate(1); value.setHours(12, 0, 0, 0); return value; });
-  const tasksQuery = useQuery({ queryKey: ["tasks", organizationId], queryFn: () => api.tasks(organizationId), enabled: Boolean(organizationId) });
-  const lifecycleQuery = useQuery({ queryKey: ["lifecycle", organizationId], queryFn: () => api.lifecycle(organizationId, { status: "active" }), enabled: Boolean(organizationId) });
-  const dueTasks = useMemo(() => (tasksQuery.data ?? []).filter((task) => task.due_at && task.status !== "cancelled"), [tasksQuery.data]);
-  const lifecycleItems = useMemo(() => lifecycleQuery.data ?? [], [lifecycleQuery.data]);
+  const due_after = new Date(month.getFullYear(), month.getMonth(), 1).toISOString();
+  const due_before = new Date(month.getFullYear(), month.getMonth() + 1, 1).toISOString();
+  const [descending, setDescending] = useState(false);
+  const tasksQuery = useTaskPage(organizationId, { status: "open,in_progress,done", due_after, due_before, descending });
+  const lifecycleQuery = useLifecyclePage(organizationId, { status: "active", due_after, due_before, descending });
+  const dueTasks = useMemo(() => tasksQuery.data?.items ?? [], [tasksQuery.data]);
+  const lifecycleItems = useMemo(() => lifecycleQuery.data?.items ?? [], [lifecycleQuery.data]);
   const calendar = useMemo(() => {
     const first = new Date(month);
     const mondayOffset = (first.getDay() + 6) % 7;
@@ -52,7 +56,9 @@ export default function CalendarPage() {
   const loading = tasksQuery.isLoading || lifecycleQuery.isLoading;
   const error = tasksQuery.error || lifecycleQuery.error;
   return <div className="page calendar-page"><div className="page-heading"><div><h1 className="page-title">Calendar</h1><p className="page-description">Human-confirmed tasks, renewals, notice windows, obligations, and payment dates.</p></div><div className="page-heading-actions">{!isDemo && <button className="button secondary" type="button" onClick={() => void api.downloadCalendarExport(organizationId)}><Download size={15} />Export calendar</button>}{canUpload && <Link className="button" href="/tasks?new=1"><Plus size={16} />New task</Link>}</div></div>
-    <div className="calendar-toolbar"><div><button className="icon-button" type="button" onClick={() => moveMonth(-1)} aria-label="Previous month"><ChevronLeft size={18} /></button><button className="button ghost" type="button" onClick={() => { const value = new Date(); value.setDate(1); setMonth(value); }}>Today</button><button className="icon-button" type="button" onClick={() => moveMonth(1)} aria-label="Next month"><ChevronRight size={18} /></button></div><h2>{new Intl.DateTimeFormat("en", { month: "long", year: "numeric" }).format(month)}</h2><span>{monthTasks.length + monthLifecycle.length} dated items</span></div>
+    <div className="calendar-toolbar"><div><button className="icon-button" type="button" onClick={() => moveMonth(-1)} aria-label="Previous month"><ChevronLeft size={18} /></button><button className="button ghost" type="button" onClick={() => { const value = new Date(); value.setDate(1); setMonth(value); }}>Today</button><button className="icon-button" type="button" onClick={() => moveMonth(1)} aria-label="Next month"><ChevronRight size={18} /></button></div><h2>{new Intl.DateTimeFormat("en", { month: "long", year: "numeric" }).format(month)}</h2><span>{tasksQuery.data && lifecycleQuery.data ? tasksQuery.data.total + lifecycleQuery.data.total : "—"} dated items</span></div>
+    <button className="button secondary" type="button" onClick={() => setDescending((value) => !value)}>{descending ? "Latest dates first" : "Earliest dates first"}</button>
+    {!loading && !error && <><p className="field-help">Calendar and agenda show the current pages of tasks and lifecycle dates.</p><QueryPagination total={tasksQuery.data?.total ?? 0} offset={tasksQuery.offset} limit={25} onOffsetChange={tasksQuery.setOffset} label="Calendar tasks" /><QueryPagination total={lifecycleQuery.data?.total ?? 0} offset={lifecycleQuery.offset} limit={25} onOffsetChange={lifecycleQuery.setOffset} label="Calendar lifecycle dates" /></>}
     {loading ? <PageLoading rows={7} /> : error ? <PageError error={error} /> : <><section className="calendar-grid" aria-label={`${new Intl.DateTimeFormat("en", { month: "long", year: "numeric" }).format(month)} contract calendar`}>{weekdays.map((day) => <div className="calendar-weekday" key={day}>{day}</div>)}{calendar.map((day) => { const key = dateKey(day); const tasks = tasksByDay[key] ?? []; const lifecycle = lifecycleByDay[key] ?? []; const items = [...tasks.map((task) => ({ id: task.id, label: task.title, kind: "Task", href: task.contract_id ? `/contracts/${task.contract_id}?tab=actions` : "/tasks", className: `calendar-task ${task.priority} ${task.status === "done" ? "done" : ""}` })), ...lifecycle.map((item) => ({ id: item.id, label: item.title, kind: titleCase(item.kind), href: `/contracts/${item.contract_id}?tab=lifecycle`, className: `calendar-task lifecycle ${item.kind} ${item.escalated_at ? "escalated" : ""}` }))]; const outside = day.getMonth() !== month.getMonth(); return <div className={`calendar-day ${outside ? "outside" : ""} ${key === today ? "today" : ""}`} key={key}><time dateTime={key}>{day.getDate()}</time><div>{items.slice(0,3).map((item) => <Link className={item.className} href={item.href} key={item.id} title={`${item.kind}: ${item.label}`}><span className="calendar-event-kind">{item.kind}</span><span>{item.label}</span></Link>)}{items.length > 3 && <span className="calendar-more">+{items.length - 3} more</span>}</div></div>; })}</section><section className="calendar-agenda"><div className="section-heading"><h2>{new Intl.DateTimeFormat("en", { month: "long" }).format(month)} agenda</h2><p>{monthTasks.length + monthLifecycle.length} dated</p></div>{monthTasks.length + monthLifecycle.length ? [...monthTasks.map((task) => ({ id: task.id, dueAt: task.due_at!, title: task.title, subtitle: task.contract_title || "Workspace action", label: task.priority, href: task.contract_id ? `/contracts/${task.contract_id}?tab=actions` : "/tasks" })), ...monthLifecycle.map((item) => ({ id: item.id, dueAt: item.due_at, title: item.title, subtitle: item.contract_title, label: titleCase(item.kind), href: `/contracts/${item.contract_id}?tab=lifecycle` }))].sort((a,b) => new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime()).map((item) => <Link href={item.href} key={item.id}><time dateTime={item.dueAt}>{formatDate(item.dueAt, { weekday: "short", day: "numeric", month: "short" })}</time><div><strong>{item.title}</strong><span>{item.subtitle}</span></div><span className="task-priority normal">{item.label}</span></Link>) : <div className="task-empty"><CalendarDays size={16} /><p>No dated items this month.</p></div>}</section></>}
   </div>;
 }

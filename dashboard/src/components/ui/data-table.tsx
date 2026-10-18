@@ -30,6 +30,7 @@ export function DataTable<T>({
   empty,
   pageSize = 10,
   showFooter = false,
+  serverSort,
 }: {
   ariaLabel: string;
   columns: DataColumn<T>[];
@@ -39,11 +40,12 @@ export function DataTable<T>({
   empty: ReactNode;
   pageSize?: number;
   showFooter?: boolean;
+  serverSort?: { id: string; direction: "ascending" | "descending"; onChange: (id: string, descending: boolean) => void };
 }) {
   const [sort, setSort] = useState<{ id: string; direction: "ascending" | "descending" } | null>(null);
   const [page, setPage] = useState(0);
   const sorted = useMemo(() => {
-    if (!sort) return rows;
+    if (serverSort || !sort) return rows;
     const column = columns.find((item) => item.id === sort.id);
     if (!column?.sortValue) return rows;
     return [...rows].sort((left, right) => {
@@ -52,29 +54,31 @@ export function DataTable<T>({
       const order = typeof a === "number" && typeof b === "number" ? a - b : String(a).localeCompare(String(b), undefined, { numeric: true });
       return sort.direction === "ascending" ? order : -order;
     });
-  }, [columns, rows, sort]);
+  }, [columns, rows, sort, serverSort]);
   const pageCount = Math.max(1, Math.ceil(sorted.length / pageSize));
   const safePage = Math.min(page, pageCount - 1);
-  const visible = sorted.slice(safePage * pageSize, (safePage + 1) * pageSize);
+  const visible = serverSort ? rows : sorted.slice(safePage * pageSize, (safePage + 1) * pageSize);
   const pageLinks = paginationPages(pageCount, safePage);
   const firstVisible = safePage * pageSize + 1;
   const lastVisible = Math.min((safePage + 1) * pageSize, sorted.length);
 
   function toggleSort(column: DataColumn<T>) {
     if (!column.sortValue) return;
+    if (serverSort) { serverSort.onChange(column.id, serverSort.id === column.id && serverSort.direction === "ascending"); return; }
     setSort((current) => current?.id === column.id && current.direction === "ascending"
       ? { id: column.id, direction: "descending" }
       : { id: column.id, direction: "ascending" });
     setPage(0);
   }
 
+  const activeSort = serverSort ?? sort;
   if (!rows.length) return <>{empty}</>;
   return <div className="data-table-region">
     <div className="data-table-scroll">
       <table className="data-table">
         <caption className="sr-only">{ariaLabel}</caption>
-        <thead><tr>{columns.map((column) => <th key={column.id} scope="col" className={`${column.numeric ? "numeric" : ""} ${column.className ?? ""}`.trim()} aria-sort={sort?.id === column.id ? sort.direction : column.sortValue ? "none" : undefined}>
-          {column.sortValue ? <button type="button" onClick={() => toggleSort(column)}>{column.header}{sort?.id === column.id ? sort.direction === "ascending" ? <ArrowUp size={14} /> : <ArrowDown size={14} /> : <ArrowUpDown size={14} />}</button> : column.header}
+        <thead><tr>{columns.map((column) => <th key={column.id} scope="col" className={`${column.numeric ? "numeric" : ""} ${column.className ?? ""}`.trim()} aria-sort={activeSort?.id === column.id ? activeSort.direction : column.sortValue ? "none" : undefined}>
+          {column.sortValue ? <button type="button" onClick={() => toggleSort(column)}>{column.header}{activeSort?.id === column.id ? activeSort.direction === "ascending" ? <ArrowUp size={14} /> : <ArrowDown size={14} /> : <ArrowUpDown size={14} />}</button> : column.header}
         </th>)}</tr></thead>
         <tbody>{visible.map((row) => <tr key={rowKey(row)}>{columns.map((column) => <td key={column.id} className={`${column.numeric ? "numeric" : ""} ${column.className ?? ""}`.trim()}>{column.primary && rowHref ? <Link className="table-primary-link" href={rowHref(row)}>{column.cell(row)}</Link> : column.cell(row)}</td>)}</tr>)}</tbody>
       </table>

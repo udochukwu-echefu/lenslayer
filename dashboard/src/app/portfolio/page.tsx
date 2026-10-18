@@ -1,15 +1,16 @@
 "use client";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { ArrowUpRight, Search, Send } from "lucide-react";
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useState } from "react";
 import { AppSelect } from "@/components/app-select";
 import { ContractList } from "@/components/contract-list";
 import { PageError, PageLoading } from "@/components/page-states";
 import { TableCard } from "@/components/ui/table-card";
 import { useWorkspace } from "@/components/workspace-provider";
 import { api } from "@/lib/api";
+import { useContractPage, useDebouncedValue, useWorkspaceOverview } from "@/lib/workspace-query-hooks";
 
 export default function PortfolioPage() {
   const { activeOrganization } = useWorkspace();
@@ -17,13 +18,12 @@ export default function PortfolioPage() {
   const [search, setSearch] = useState("");
   const [question, setQuestion] = useState("");
   const [sourceFilter, setSourceFilter] = useState("all");
-  const contractsQuery = useQuery({ queryKey: ["contracts", organizationId], queryFn: () => api.contracts(organizationId), enabled: Boolean(organizationId) });
+  const q = useDebouncedValue(search.trim());
+  const contractsQuery = useContractPage(organizationId, { q, status: sourceFilter === "all" ? undefined : sourceFilter });
+  const overview = useWorkspaceOverview(organizationId);
   const questionMutation = useMutation({ mutationFn: (value: string) => api.askPortfolio(organizationId, value) });
-  const contracts = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    return (contractsQuery.data ?? []).filter((contract) => (sourceFilter === "all" || contract.status === sourceFilter) && (!query || [contract.title, contract.source_name, contract.counterparty, contract.contract_type, contract.status].some((value) => value?.toLowerCase().includes(query))));
-  }, [contractsQuery.data, search, sourceFilter]);
-  const hasContracts = Boolean(contractsQuery.data?.length);
+  const contracts = contractsQuery.data?.items ?? [];
+  const hasContracts = Boolean(overview.data?.counts.contracts);
   const suggestions = ["Which agreements renew automatically?", "Where are liability caps missing or unclear?", "Which notice deadlines fall in the next 60 days?"];
 
   return <div className="page portfolio-page">
@@ -40,8 +40,8 @@ export default function PortfolioPage() {
       {questionMutation.data && <div className="portfolio-answer"><div><span>{questionMutation.data.generated_by === "model" ? "Evidence-grounded answer" : "Retrieved evidence"}</span><p>{questionMutation.data.answer}</p></div><div className="portfolio-sources">{questionMutation.data.sources.map((source, index) => <Link href={`/contracts/${source.contract_id}?tab=ask`} key={`${source.contract_id}-${index}`}><span>{source.contract_title}<ArrowUpRight size={13} /></span><small>{source.location}</small><p>{source.excerpt}</p></Link>)}</div></div>}
     </section>
 
-    <TableCard className="portfolio-register" title="Contract register" description={`${contracts.length} visible sources`} actions={<div className="portfolio-register-tools"><label className="portfolio-search"><Search size={16} /><input id="portfolio-contract-filter" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search contracts" /></label><AppSelect className="portfolio-source-select" value={sourceFilter} ariaLabel="Filter portfolio sources by status" onValueChange={setSourceFilter} options={[{ value: "all", label: "All source states" }, { value: "reviewed", label: "Reviewed" }, { value: "ready", label: "Ready" }, { value: "processing", label: "Processing" }, { value: "failed", label: "Failed" }]} /></div>}>
-      {contractsQuery.isLoading ? <PageLoading rows={6} /> : contractsQuery.error ? <PageError error={contractsQuery.error} /> : <ContractList contracts={contracts} showFooter />}
+    <TableCard className="portfolio-register" title="Contract register" description={`${contractsQuery.data?.total ?? "—"} visible sources`} actions={<div className="portfolio-register-tools"><label className="portfolio-search"><Search size={16} /><input id="portfolio-contract-filter" value={search} maxLength={200} onChange={(event) => setSearch(event.target.value)} placeholder="Search contracts" /></label><AppSelect className="portfolio-source-select" value={sourceFilter} ariaLabel="Filter portfolio sources by status" onValueChange={setSourceFilter} options={[{ value: "all", label: "All source states" }, { value: "reviewed", label: "Reviewed" }, { value: "ready", label: "Ready" }, { value: "processing", label: "Processing" }, { value: "failed", label: "Failed" }]} /></div>}>
+      {contractsQuery.isLoading ? <PageLoading rows={6} /> : contractsQuery.error ? <PageError error={contractsQuery.error} /> : <ContractList contracts={contracts} paging={{ total: contractsQuery.data?.total ?? 0, offset: contractsQuery.offset, limit: 25, onOffsetChange: contractsQuery.setOffset, sort: contractsQuery.sort, onSortChange: contractsQuery.setSort }} />}
     </TableCard>
   </div>;
 }

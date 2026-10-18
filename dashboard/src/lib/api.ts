@@ -18,8 +18,10 @@ import { agentsApi } from "./api/agents";
 import { calendarApi } from "./api/calendar";
 import { hostedAgentsApi } from "./api/hosted-agents";
 import { contextApi } from "./api/context";
+import { workspaceQueriesApi } from "./api/workspace-queries";
 
 export const api = {
+  ...workspaceQueriesApi,
   ...workspaceApi,
   ...tasksApi,
   ...contractsApi,

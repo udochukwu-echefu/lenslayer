@@ -8,7 +8,7 @@ import { BarChart3, Bell, BookOpen, Bot, CalendarDays, CheckSquare2, ChevronDown
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { api } from "@/lib/api";
 import { initials } from "@/lib/utils";
 import { BrandMark } from "./brand-mark";
@@ -16,6 +16,7 @@ import { WorkspaceGate } from "./workspace-gate";
 import { useWorkspace } from "./workspace-provider";
 import { NotificationRow } from "./notification-row";
 import { ThemeToggle } from "./theme-toggle";
+import { WorkspaceSearch } from "./workspace-search";
 
 const AiAssistant = dynamic(() => import("./ai-assistant").then((module) => module.AiAssistant), { ssr: false });
 
@@ -57,9 +58,7 @@ function Navigation({ close }: { close?: () => void }) {
 
 function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const mobileTriggerRef = useRef<HTMLButtonElement>(null);
-  const [globalSearch, setGlobalSearch] = useState("");
   const pathname = usePathname();
   const { activeOrganization, organizations, selectOrganization, user, canUpload, isDemo } = useWorkspace();
   const queryClient = useQueryClient();
@@ -76,16 +75,6 @@ function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
   });
   const notifications = notificationsQuery.data ?? [];
   const unreadCount = notifications.filter((item) => !item.read_at).length;
-  const contractsQuery = useQuery({ queryKey: ["contracts", organizationId], queryFn: () => api.contracts(organizationId), enabled: Boolean(organizationId) });
-  const tasksQuery = useQuery({ queryKey: ["tasks", organizationId], queryFn: () => api.tasks(organizationId), enabled: Boolean(organizationId) });
-  const searchResults = useMemo(() => {
-    const term = globalSearch.trim().toLowerCase();
-    if (term.length < 2) return [];
-    const contracts = (contractsQuery.data ?? []).filter((item) => `${item.title} ${item.counterparty} ${item.contract_type} ${item.status}`.toLowerCase().includes(term)).slice(0, 4).map((item) => ({ id: item.id, href: `/contracts/${item.id}`, title: item.title, meta: `${item.counterparty} · ${item.status}` }));
-    const tasks = (tasksQuery.data ?? []).filter((item) => `${item.title} ${item.contract_title} ${item.assigned_to_name} ${item.due_at}`.toLowerCase().includes(term)).slice(0, 3).map((item) => ({ id: item.id, href: "/tasks", title: item.title, meta: `${item.contract_title ?? "Workspace action"} · task` }));
-    return [...contracts, ...tasks];
-  }, [contractsQuery.data, globalSearch, tasksQuery.data]);
-  const hasSearchableRecords = Boolean(contractsQuery.data?.length || tasksQuery.data?.length);
   return (
     <WorkspaceGate>
       <a className="skip-link" href="#main-content">Skip to content</a>
@@ -110,9 +99,8 @@ function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
                 </DropdownMenu.Content>
               </DropdownMenu.Portal>
             </DropdownMenu.Root>
-            {hasSearchableRecords && <div className={`global-search ${mobileSearchOpen ? "mobile-search-open" : ""}`}><label><Search size={16} /><span className="sr-only">Global search</span><input autoFocus={mobileSearchOpen} value={globalSearch} onChange={(event) => setGlobalSearch(event.target.value)} placeholder="Search contracts, tasks, parties, or dates" /></label>{mobileSearchOpen && <button className="icon-button mobile-search-close" type="button" aria-label="Close global search" onClick={() => { setMobileSearchOpen(false); setGlobalSearch(""); }}><X size={18} /></button>}{globalSearch.trim().length >= 2 && <div className="global-results">{searchResults.length ? searchResults.map((result) => <Link href={result.href} key={`${result.href}-${result.id}`} onClick={() => { setGlobalSearch(""); setMobileSearchOpen(false); }}><strong>{result.title}</strong><span>{result.meta}</span></Link>) : <p>No workspace records match this search.</p>}</div>}</div>}
+            <WorkspaceSearch organizationId={organizationId} />
             <div className="top-actions">
-              {hasSearchableRecords && <button className="icon-button mobile-search-trigger" type="button" aria-label="Search workspace" onClick={() => setMobileSearchOpen(true)}><Search size={18} /></button>}
               {canUpload && <Link href="/contracts/new" prefetch={false} className="button top-new"><Plus size={16} />New contract</Link>}
               <ThemeToggle />
               <DropdownMenu.Root>
