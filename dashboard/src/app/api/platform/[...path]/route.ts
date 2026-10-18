@@ -41,7 +41,7 @@ async function proxy(request: Request, context: { params: Promise<{ path: string
 
   try {
     const body = method === "GET" || method === "HEAD" ? undefined : await request.arrayBuffer();
-    const response = await fetch(upstreamUrl(request, path), { method, headers, body, cache: "no-store", redirect: "manual" });
+    const response = await fetch(upstreamUrl(request, path), { method, headers, body, cache: "no-store", redirect: "manual", signal: request.signal });
     const outgoing = new Headers();
     // API records and one-time credentials must not enter intermediary caches.
     outgoing.set("Cache-Control", "private, no-store");
@@ -49,6 +49,7 @@ async function proxy(request: Request, context: { params: Promise<{ path: string
     if (contentType) outgoing.set("content-type", contentType);
     const contentDisposition = response.headers.get("content-disposition");
     if (contentDisposition) outgoing.set("content-disposition", contentDisposition);
+    if (contentType?.includes("application/x-ndjson")) outgoing.set("X-Accel-Buffering", "no");
     return new Response(response.body, { status: response.status, headers: outgoing });
   } catch {
     // Fetch exceptions can include URLs, headers, or other credential-bearing data.

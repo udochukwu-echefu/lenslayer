@@ -16,7 +16,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { api } from "@/lib/api";
+import { streamQuestion } from "@/lib/api/qa-stream";
 import type { PortfolioAnswer } from "@/lib/types";
 import { useWorkspace } from "./workspace-provider";
 import { StructuredAnswer } from "./structured-answer";
@@ -27,6 +27,8 @@ type ChatMessage = {
   role: "viewer" | "assistant";
   text: string;
   answer?: PortfolioAnswer;
+  provisional?: boolean;
+  evidence?: PortfolioAnswer["sources"];
 };
 type AssistantPhase = "idle" | "loading" | "thinking";
 
@@ -44,13 +46,15 @@ export function AiAssistant() {
 }
 
 function WorkspaceAssistant() {
-  const { activeOrganization } = useWorkspace();
+  const { activeOrganization, isDemo } = useWorkspace();
   const [open, setOpen] = useState(false);
   const [question, setQuestion] = useState("");
   const [phase, setPhase] = useState<AssistantPhase>("idle");
   const [elapsed, setElapsed] = useState(0);
   const [error, setError] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const requestRef = useRef<AbortController | null>(null);
+  useEffect(() => () => requestRef.current?.abort(), []);
   const orbRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -317,28 +321,45 @@ function WorkspaceAssistant() {
         setPhase((current) => (current === "loading" ? "thinking" : current)),
       450,
     );
+    const abort = new AbortController();
+    requestRef.current = abort;
     try {
-      const answer = await api.askPortfolio(activeOrganization.id, text);
-      window.clearTimeout(thinkingTimer);
       const messageId = crypto.randomUUID();
-      setMessages((items) => [
-        ...items,
-        { id: messageId, role: "assistant", text: answer.answer, answer },
-      ]);
+      const answer = await streamQuestion<PortfolioAnswer>(`/organizations/${activeOrganization.id}/portfolio/questions`, text, (event) => {
+        if (abort.signal.aborted) return;
+        if (event.type === "evidence") {
+          const evidence = (event.sources ?? []).filter((source): source is PortfolioAnswer["sources"][number] => typeof source.contract_id === "string" && typeof source.contract_title === "string");
+          setMessages((items) => [...items, { id: messageId, role: "assistant", text: "", provisional: true, evidence }]);
+          return;
+        }
+        if (event.type !== "answer") return;
+        setMessages((items) => {
+          const existing = items.find((item) => item.id === messageId);
+          return existing ? items.map((item) => item.id === messageId ? { ...item, text: item.text + event.delta } : item) :
+            [...items, { id: messageId, role: "assistant", text: event.delta ?? "", provisional: true }];
+        });
+      }, abort.signal, isDemo);
+      if (abort.signal.aborted) return;
+      window.clearTimeout(thinkingTimer);
+      setMessages((items) => [...items.filter((item) => item.id !== messageId),
+        { id: messageId, role: "assistant", text: answer.answer, answer }]);
       setPhase("idle");
     } catch (cause) {
       window.clearTimeout(thinkingTimer);
+      if (abort.signal.aborted) return;
       setError(
         cause instanceof Error
           ? cause.message
           : "LensLayer could not retrieve an evidence-backed answer.",
       );
       setPhase("idle");
+    } finally {
+      window.clearTimeout(thinkingTimer);
     }
   }
 
   return (
-    <Dialog.Root open={open} onOpenChange={setOpen}>
+    <Dialog.Root open={open} onOpenChange={(value) => { setOpen(value); if (!value) { requestRef.current?.abort(); setPhase("idle"); } }}>
       <Dialog.Trigger asChild>
         <button
           ref={orbRef}
@@ -416,6 +437,7 @@ function WorkspaceAssistant() {
               </div>
             )}
             {messages.map((message) => {
+              const evidence = message.answer?.sources ?? message.evidence;
               if (message.role === "viewer")
                 return (
                   <div className="chat-message viewer" key={message.id}>
@@ -428,28 +450,28 @@ function WorkspaceAssistant() {
                   <div className="chat-answer-label">
                     <MessageCircle size={14} />
                     <span>
-                      {message.answer?.generated_by === "model"
+                      {message.provisional ? "Provisional answer, not yet verified" : message.answer?.generated_by === "model"
                         ? "LensLayer answer"
                         : "Evidence retrieval"}
                     </span>
                   </div>
                   <StructuredAnswer text={message.text} />
-                  {message.answer &&
-                    (message.answer.sources.length ? (
+                  {evidence &&
+                    (evidence.length ? (
                       <details className="ai-context">
                         <summary>
                           <Layers3 size={15} />
                           <div>
                             <strong>Context used</strong>
                             <span>
-                              {message.answer.sources.length} retained excerpt
-                              {message.answer.sources.length === 1 ? "" : "s"}
+                              {evidence.length} retained excerpt
+                              {evidence.length === 1 ? "" : "s"}
                             </span>
                           </div>
                           <ChevronDown size={15} />
                         </summary>
                         <div className="context-card-grid">
-                          {message.answer.sources.map((source, index) => (
+                          {evidence.map((source, index) => (
                             <EvidenceContextCard
                               key={`${source.contract_id}-${index}`}
                               title={source.contract_title}
@@ -560,6 +582,7 @@ function WorkspaceAssistant() {
                 <Send size={17} />
               </button>
             </div>
+            {busy && <button type="button" className="button secondary" onClick={() => { requestRef.current?.abort(); setPhase("idle"); setError("Answer stopped. Partial text is not a completed answer."); }}>Stop answer</button>}
             <p>Answers include sources. Human review owns every decision.</p>
           </form>
         </Dialog.Content>
