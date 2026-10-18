@@ -11,7 +11,8 @@ export async function readWorkspaceBootstrap() {
     const load = async (path: string) => {
       const response = await fetch(`${base}/api/v1/${path}`, {
         headers: { Authorization: `Bearer ${trusted.accessToken}` }, cache: "no-store",
-        redirect: "manual", signal: AbortSignal.timeout(10_000),
+        // The server projection is best-effort, not a wait for a cold API.
+        redirect: "manual", signal: AbortSignal.timeout(750),
       });
       if (!response.ok) throw new Error("Workspace bootstrap unavailable");
       return response.json();
