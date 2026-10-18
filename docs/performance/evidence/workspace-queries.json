@@ -1,0 +1,103 @@
+{
+  "source_sha": "53dbd8b4855f6593e383d598b4d4b4d938760c39",
+  "fixture": "1000 contracts + 1000 tasks + 1000 lifecycle items; synthetic short text; no provider calls; same fixture for both routes",
+  "conditions": "FastAPI TestClient, disposable SQLite, one warmup then five samples; gzip bytes are calculated, not measured transport",
+  "results": {
+    "contracts": {
+      "rows": 1000,
+      "total": 1000,
+      "decoded_json_bytes": 419394,
+      "gzip_json_bytes": 9841,
+      "select_queries": 5,
+      "median_ms": 23.0,
+      "range_ms": [
+        15.9,
+        37.7
+      ]
+    },
+    "tasks": {
+      "rows": 1000,
+      "total": 1000,
+      "decoded_json_bytes": 631001,
+      "gzip_json_bytes": 19732,
+      "select_queries": 3,
+      "median_ms": 28.68,
+      "range_ms": [
+        27.19,
+        32.21
+      ]
+    },
+    "lifecycle": {
+      "rows": 1000,
+      "total": 1000,
+      "decoded_json_bytes": 519501,
+      "gzip_json_bytes": 20141,
+      "select_queries": 3,
+      "median_ms": 24.22,
+      "range_ms": [
+        22.72,
+        47.33
+      ]
+    },
+    "query/contracts": {
+      "rows": 25,
+      "total": 1000,
+      "decoded_json_bytes": 10534,
+      "gzip_json_bytes": 598,
+      "select_queries": 4,
+      "median_ms": 6.17,
+      "range_ms": [
+        5.77,
+        6.61
+      ]
+    },
+    "query/tasks": {
+      "rows": 25,
+      "total": 1000,
+      "decoded_json_bytes": 15821,
+      "gzip_json_bytes": 912,
+      "select_queries": 3,
+      "median_ms": 8.4,
+      "range_ms": [
+        7.95,
+        10.8
+      ]
+    },
+    "query/lifecycle": {
+      "rows": 25,
+      "total": 1000,
+      "decoded_json_bytes": 13621,
+      "gzip_json_bytes": 886,
+      "select_queries": 3,
+      "median_ms": 8.03,
+      "range_ms": [
+        7.78,
+        8.55
+      ]
+    },
+    "query/overview": {
+      "rows": 0,
+      "total": null,
+      "decoded_json_bytes": 12218,
+      "gzip_json_bytes": 1081,
+      "select_queries": 12,
+      "median_ms": 9.33,
+      "range_ms": [
+        8.63,
+        10.84
+      ]
+    },
+    "query/search?q=Supplier": {
+      "rows": 10,
+      "total": null,
+      "decoded_json_bytes": 1458,
+      "gzip_json_bytes": 292,
+      "select_queries": 4,
+      "median_ms": 5.2,
+      "range_ms": [
+        4.78,
+        5.46
+      ]
+    }
+  }
+}

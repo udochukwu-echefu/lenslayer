@@ -1,0 +1,13 @@
+{
+  "collaboration": {
+    "comments": 20,
+    "select_queries": 4
+  },
+  "upload_concurrency": {
+    "baseline_health_median_ms": 0.87,
+    "injected_scan_delay_ms": 1000,
+    "health_during_upload_ms": 1.48,
+    "upload_status": 202
+  },
+  "scope": "loopback HTTP, disposable synthetic SQLite, fake scan; no paid models, external scanners or production access"
+}

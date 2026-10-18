@@ -1,0 +1,248 @@
+{
+  "started": "2026-10-18T08:34:50.210Z",
+  "sourceSha": "cdbadfeaedb3bc573632c251a49d00695bf7a4d9",
+  "gitStatus": "",
+  "node": "v24.15.0",
+  "npm": "11.12.1",
+  "chrome": "Google Chrome 155.0.8059.80",
+  "lighthouse": "13.5.0",
+  "os": {
+    "platform": "darwin",
+    "release": "25.5.0",
+    "arch": "arm64",
+    "cpu": "Apple M2 Pro",
+    "memoryBytes": 17179869184
+  },
+  "buildCommand": "VITE_APP_URL=https://app.lenslayer.online npm run build",
+  "serverCommand": "npm run preview -- --host 127.0.0.1 --port 4180 --strictPort",
+  "cache": "Fresh Chrome process/profile per run; Lighthouse default storage/cache reset; no warm-up; Vite preview unchanged; OS/DNS caches uncontrolled.",
+  "headers": {
+    "cache-control": "no-cache",
+    "connection": "keep-alive",
+    "content-encoding": "gzip",
+    "content-type": "text/html",
+    "date": "Sun, 18 Oct 2026 08:34:52 GMT",
+    "etag": "W/\"6f5-COhnU4aamHm8rRt+BgjZ2Ji+8+Q\"",
+    "keep-alive": "timeout=5",
+    "transfer-encoding": "chunked",
+    "vary": "Origin"
+  },
+  "sizes": [
+    {
+      "file": "assets/figtree-latin-CEHu_veL.woff2",
+      "bytes": 20184,
+      "gzipBytes": 20167,
+      "brotliBytes": 20127,
+      "sha256": "8330490a01c60c196eae00b823de8102275aaa5862e7b76a7af21b8745338928"
+    },
+    {
+      "file": "assets/figtree-latin-ext-C5tEHAKb.woff2",
+      "bytes": 10228,
+      "gzipBytes": 10251,
+      "brotliBytes": 10232,
+      "sha256": "f153aa07c1b16fbb12391c2512860c97819a0a9fd014f338b2b3f12496479d13"
+    },
+    {
+      "file": "assets/index-C-RXxP7t.css",
+      "bytes": 65671,
+      "gzipBytes": 14250,
+      "brotliBytes": 12490,
+      "sha256": "1977755b9a630bc662b13123b6d97355b9d8ffa0acfb11f8767351057f9e29d1"
+    },
+    {
+      "file": "assets/index-Dd3f1sSm.js",
+      "bytes": 223497,
+      "gzipBytes": 70639,
+      "brotliBytes": 60799,
+      "sha256": "e5e16066b089faf317c996c932ad982e89e01fe589c065dfd7a4a5c56ec3b1ca"
+    },
+    {
+      "file": "assets/instrument-serif-italic-latin-Dv3QvL_F.woff2",
+      "bytes": 15684,
+      "gzipBytes": 15690,
+      "brotliBytes": 15657,
+      "sha256": "6ee678c33f388dd7ba59700ebea635deb98821baafd817b09891f7927177f702"
+    },
+    {
+      "file": "assets/instrument-serif-italic-latin-ext-C_P1GZiG.woff2",
+      "bytes": 8444,
+      "gzipBytes": 8467,
+      "brotliBytes": 8448,
+      "sha256": "a04fc7ed18a8037149ce0bfda58076709d8e0840e136ed00abbdc196b7992443"
+    },
+    {
+      "file": "assets/lenslayer-lockup-DILXlwaM.svg",
+      "bytes": 7095,
+      "gzipBytes": 2991,
+      "brotliBytes": 2579,
+      "sha256": "b4bd23ef77df098e254c8cbc86937a33c7f47913f7c6979b0b862abb515525b1"
+    },
+    {
+      "file": "fonts/licenses/Figtree-OFL.txt",
+      "bytes": 4388,
+      "gzipBytes": 1977,
+      "brotliBytes": 1424,
+      "sha256": "140d37233e7f3ce7313798befa9600893bcceaf41a55fa0fa5ad52f7f657a268"
+    },
+    {
+      "file": "fonts/licenses/Instrument-Serif-OFL.txt",
+      "bytes": 4405,
+      "gzipBytes": 1975,
+      "brotliBytes": 1427,
+      "sha256": "129ed7618959716959f2941fdd5b49e0ad6e6c1d78726761786a00253d865521"
+    },
+    {
+      "file": "hero/dashboard-v1-1152.avif",
+      "bytes": 31961,
+      "gzipBytes": 31966,
+      "brotliBytes": 31965,
+      "sha256": "8c647b7cd4c8b9c883287e7dfce74e70fdf99099276d7faf0a6fec69f89630c4"
+    },
+    {
+      "file": "hero/dashboard-v1-1152.webp",
+      "bytes": 39750,
+      "gzipBytes": 39716,
+      "brotliBytes": 39754,
+      "sha256": "fc08a6c40c781d28e517248bedf00899bee87c94d42cd0029f54be4e70e8ade3"
+    },
+    {
+      "file": "hero/dashboard-v1-1728.avif",
+      "bytes": 63034,
+      "gzipBytes": 63045,
+      "brotliBytes": 63038,
+      "sha256": "6c1329544c7d80871223c33b6b1b8e3a68288a6042bd179b3f8b5ebb1641859d"
+    },
+    {
+      "file": "hero/dashboard-v1-1728.webp",
+      "bytes": 77292,
+      "gzipBytes": 76626,
+      "brotliBytes": 76507,
+      "sha256": "7df8a79e68b39a66567e24c0d14f058dd50146827145263366f08c344e2c9b3d"
+    },
+    {
+      "file": "hero/dashboard-v1-480.avif",
+      "bytes": 8072,
+      "gzipBytes": 8074,
+      "brotliBytes": 8023,
+      "sha256": "586809071c9ed726ff9336006647a28b280d7ce673a0f67b6c4a6ce0fe4404b6"
+    },
+    {
+      "file": "hero/dashboard-v1-480.webp",
+      "bytes": 10712,
+      "gzipBytes": 10735,
+      "brotliBytes": 10716,
+      "sha256": "e7ea1c60fefa159fe3f2ee27908ae3121e8488350da00deded356f4f97cac8e8"
+    },
+    {
+      "file": "hero/dashboard-v1-768.avif",
+      "bytes": 17221,
+      "gzipBytes": 17226,
+      "brotliBytes": 17162,
+      "sha256": "cf8c1329b62f0c712b8e42caf37b3ee42223b9630354a78da45bb1e870f91644"
+    },
+    {
+      "file": "hero/dashboard-v1-768.webp",
+      "bytes": 22128,
+      "gzipBytes": 22156,
+      "brotliBytes": 22132,
+      "sha256": "175b3221fc0fec827360db638cea8b3b970adc9025aa4f7ca4cb21037d76ab9b"
+    },
+    {
+      "file": "hero/manifest.json",
+      "bytes": 2437,
+      "gzipBytes": 916,
+      "brotliBytes": 823,
+      "sha256": "9e869790a495ffb159b7b4e11a345a39dee6028f2615b2e5c866f62dc0ebd9e9"
+    },
+    {
+      "file": "index.html",
+      "bytes": 1781,
+      "gzipBytes": 883,
+      "brotliBytes": 639,
+      "sha256": "005a8e299af3f300d4acf6f19f1d4b982617e80274e509de750809a4e84b17ab"
+    },
+    {
+      "file": "lenslayer-dashboard.png",
+      "bytes": 84535,
+      "gzipBytes": 68238,
+      "brotliBytes": 67645,
+      "sha256": "e4712afd6db9e8c8f935b07c8fc0c4815e426031c82dede3becee216241b96ca"
+    },
+    {
+      "file": "lenslayer-dashboard@2x.jpg",
+      "bytes": 173795,
+      "gzipBytes": 123975,
+      "brotliBytes": 119583,
+      "sha256": "23dded8ad80dd79d735026d79e50e3aee355a62f7642683323b9b6c26b5703bf"
+    },
+    {
+      "file": "lenslayer-lockup.svg",
+      "bytes": 6953,
+      "gzipBytes": 2873,
+      "brotliBytes": 2511,
+      "sha256": "570c385f24a916d56ad98451950fb78a14adc3f26f731efae5dd0bdc3b4324a9"
+    },
+    {
+      "file": "lenslayer-mark.svg",
+      "bytes": 559,
+      "gzipBytes": 302,
+      "brotliBytes": 261,
+      "sha256": "6e4d1e5e37123db3e3e1ed5ec3024653a239daaac4267f1fa0aab8c5d11af861"
+    },
+    {
+      "file": "references/shadcn-arrow-up-right.svg",
+      "bytes": 374,
+      "gzipBytes": 260,
+      "brotliBytes": 204,
+      "sha256": "5d1e9e573f6022791e6ffb351147fd25fac7c715bdfb7ebed3e5bf038aae29d2"
+    }
+  ],
+  "commands": [
+    {
+      "executable": "npx",
+      "args": [
+        "--yes",
+        "lighthouse@13.5.0",
+        "http://127.0.0.1:4180/",
+        "--only-categories=performance",
+        "--output=json",
+        "--output=html",
+        "--output-path=/private/var/folders/th/p6pw8fpd5492qwl6c3dp9wpc0000gn/T/opencode/performance-evidence/landing/final-canonical/run-1",
+        "--chrome-flags=--headless=new --no-first-run --no-default-browser-check",
+        "--quiet"
+      ],
+      "CHROME_PATH": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    },
+    {
+      "executable": "npx",
+      "args": [
+        "--yes",
+        "lighthouse@13.5.0",
+        "http://127.0.0.1:4180/",
+        "--only-categories=performance",
+        "--output=json",
+        "--output=html",
+        "--output-path=/private/var/folders/th/p6pw8fpd5492qwl6c3dp9wpc0000gn/T/opencode/performance-evidence/landing/final-canonical/run-2",
+        "--chrome-flags=--headless=new --no-first-run --no-default-browser-check",
+        "--quiet"
+      ],
+      "CHROME_PATH": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    },
+    {
+      "executable": "npx",
+      "args": [
+        "--yes",
+        "lighthouse@13.5.0",
+        "http://127.0.0.1:4180/",
+        "--only-categories=performance",
+        "--output=json",
+        "--output=html",
+        "--output-path=/private/var/folders/th/p6pw8fpd5492qwl6c3dp9wpc0000gn/T/opencode/performance-evidence/landing/final-canonical/run-3",
+        "--chrome-flags=--headless=new --no-first-run --no-default-browser-check",
+        "--quiet"
+      ],
+      "CHROME_PATH": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    }
+  ],
+  "finished": "2026-10-18T08:35:25.715Z"
+}

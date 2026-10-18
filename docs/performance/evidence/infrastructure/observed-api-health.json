@@ -1,0 +1,44 @@
+{
+  "at": "2026-10-17T23:10:33.084348+00:00",
+  "target": "existing-production-health",
+  "method": "GET /health/live",
+  "count": 3,
+  "conditions": "Separate curl processes; no cookies/auth; cache/instance state uncontrolled; first-observed is not cold-start proof",
+  "samples": [
+    {
+      "sample": 1,
+      "http_code": 200,
+      "time_namelookup": 0.297027,
+      "time_connect": 0.42511,
+      "time_appconnect": 0.569238,
+      "time_starttransfer": 9.721434,
+      "time_total": 9.721533,
+      "size_download": 67
+    },
+    {
+      "sample": 2,
+      "http_code": 200,
+      "time_namelookup": 0.002517,
+      "time_connect": 0.136986,
+      "time_appconnect": 0.262111,
+      "time_starttransfer": 0.398194,
+      "time_total": 0.398294,
+      "size_download": 67
+    },
+    {
+      "sample": 3,
+      "http_code": 200,
+      "time_namelookup": 0.00287,
+      "time_connect": 0.124439,
+      "time_appconnect": 0.253437,
+      "time_starttransfer": 0.394063,
+      "time_total": 0.394167,
+      "size_download": 67
+    }
+  ],
+  "median_ms": 398.294,
+  "range_ms": [
+    394.167,
+    9721.533000000001
+  ]
+}

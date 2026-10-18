@@ -13,7 +13,7 @@ if (!directory || !revision) throw new Error("Usage: node scripts/profile-public
 mkdirSync(directory, { recursive: true });
 const configuration = {
   lighthouse: "13.5.0", url: url.href, source: revision,
-  build: "npm ci && npm run build; npm run start -- --port 3214 (dashboard)",
+  build: `npm ci && npm run build; npm run start -- --port ${url.port} (dashboard)`,
   formFactor: "mobile", throttlingMethod: "simulate", cache: "fresh Chrome storage per run (Lighthouse default)",
   flags: ["--only-categories=performance", "--chrome-flags=--headless --no-sandbox", "--output=json", "--output=html", "--quiet"],
 };

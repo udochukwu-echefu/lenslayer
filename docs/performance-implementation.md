@@ -2,10 +2,9 @@
 
 ## Baseline and boundaries
 
-- Remote `main`: `179cfb544e2a2802aa0c95cb330364913c75b045` (PR #10 merged).
-- PR #11 was **open**, head `87ddff8c0d755ff32d02571d69d52651c6e701da`.
-- PR #12 was **open**, head `a12076e270f1f74fc47b4dafb62061157bb6471d`.
-- Local integration baseline: `18f851679478d0b63fc54526031e558095fcb16f`, combining those exact heads. This is **not remote main** and does not imply either pending PR was merged or deployed. Rebase/recheck performance PRs after the owner merges dependencies.
+- Initial remote `main`: `179cfb544e2a2802aa0c95cb330364913c75b045` (PR #10 merged).
+- Initial dependency snapshot: `18f851679478d0b63fc54526031e558095fcb16f`, combining #11 head `87ddff8c0d755ff32d02571d69d52651c6e701da` and #12 head `a12076e270f1f74fc47b4dafb62061157bb6471d` while both were open.
+- Fresh fetch confirmed #11/#12 **merged**, with current main `e16c4711eb1220c438aae4e74138a3da5581e392`. `git diff 18f851679 origin/main --exit-code` is empty: identical baseline bytes, different history. Performance branches incorporate actual main; #13/#14 are retargeted to main and #16 explicitly depends on #15. No performance PR was merged or deployed.
 - The owner's dirty checkout and launch-video files are untouched. Implementation uses isolated worktrees; no production migrations, paid calls, deployment, warming, IAM/resource activation or merges are authorized.
 - Prior audit scores are reported single-run lab evidence, not comparable baseline medians. Canonical application: `https://app.lenslayer.online`.
 
@@ -13,14 +12,14 @@
 
 | Finding | Baseline evidence | Change / acceptance | Status |
 | --- | --- | --- | --- |
-| 1 Upload blocking | Original and independent fake-scanner loopback reproduction | Complete blocking unit/session ownership, bounded execution, synchronized concurrency/error tests | In progress |
-| 2 Overfetching | Full shell lists, array-only APIs, local table slicing | Additive bounded query API, scoped search, aggregate summaries, caller migration, payload/tenant tests | In progress |
-| 3 Landing delivery | Blocking font CSS, JPEG, initial reveals in PR #11 | Self-host fonts, responsive screenshot, immediate hero, repeated mobile samples and visual checks | In progress |
-| 4 Private waterfall | Session coalescing/cache already exists; exact redundant stage needs measurement | Preserve fresh checks; isolate account caches; measure and remove proven waits | In progress |
-| 5 Public startup | `/sample` already skips WorkspaceProvider | Split actual public providers/module/style ownership; repeated lab/network checks | In progress |
-| 6 Collaboration N+1 | Independent 20 distinct-author comments → 24 SELECTs | Eager-load all serializer relationships; 1/20/100 distinct-user tests for all three lists | In progress |
-| 7 Q&A | Complete model invocation, full portfolio source loading; limits not typical latencies | Bounded relevant candidates, safe timings, compatible streaming, cancellation/final-only audits | In progress |
-| 8 Infrastructure | Minimum-zero/request-based workers; geography/cold starts not newly measured | Keep idle costs unchanged; reproducible timing/dispatch/PG procedures and justified code fixes only | Awaiting evidence |
+| 1 Upload blocking | Independent fake 1s scan: unrelated health stalled 1020.88ms | [#14](https://github.com/udochukwu-echefu/lenslayer/pull/14), `backend/app/api/uploads.py`; owned sessions, bound four, synchronized scan/storage/cancellation tests; unchanged reproduction now 1.48ms | Implemented/verified locally |
+| 2 Overfetching | Full shell arrays and local slicing | [#15](https://github.com/udochukwu-echefu/lenslayer/pull/15), [#16](https://github.com/udochukwu-echefu/lenslayer/pull/16); additive bounded queries/search/SQL aggregates; 1000-row fixture and disposable PostgreSQL; legacy arrays complete; UTC and half-open dates corrected | Implemented/verified locally |
+| 3 Landing delivery | Blocking external font CSS, JPEG, initial reveals | [#17](https://github.com/udochukwu-echefu/lenslayer/pull/17); existing licensed fonts, responsive images, eager hero; three mobile runs and 80 visual/interaction checks | Implemented/verified in lab |
+| 4 Private waterfall | Session reads already coalesced/cached; browser session → metadata → records chain reproduced | [#18](https://github.com/udochukwu-echefu/lenslayer/pull/18); private safe projection, parallel metadata, account caches, unchanged fresh/BFF checks; read-only refresh rotation fixed. Trace/latency tradeoffs in `performance-results.md` | Implemented; production benefit awaits measurement |
+| 5 Public startup | `/sample` already skipped WorkspaceProvider but fetched session and shared universal CSS/modules | #18; public route providers/styles split without deleting workspace rules; generated-style regression check; final public lab reports and phone/desktop light/dark comparisons | Implemented/verified in lab |
+| 6 Collaboration N+1 | 20 distinct-author comments: 24 SELECTs | [#13](https://github.com/udochukwu-echefu/lenslayer/pull/13); comments/decisions/approvals now 4/4/4 SELECTs at 1/20/100 records; independent reproduction now 4 | Implemented/verified locally |
+| 7 Q&A | Full portfolio source materialization; complete JSON generation; timeout/token values were limits, not latency | [#19](https://github.com/udochukwu-echefu/lenslayer/pull/19); SQL relevance before 24-candidate materialization; older-source tests; safe timings and additive NDJSON; contract/portfolio/assistant cancellation/final-only completion; Groq QA only | Implemented/verified with fake providers |
+| 8 Infrastructure | No attributed cold-start/dispatch/provider/DB-region traces | [#20](https://github.com/udochukwu-echefu/lenslayer/pull/20): bounded recovery of demonstrated final-attempt crash defect; concurrency/retention/idle tests in SQLite and PostgreSQL; read-only PG plans retained, no DDL justified | Code defect fixed; external attribution awaits owner measurements |
 
 ## Independent-review corrections (binding)
 
@@ -30,6 +29,8 @@
 4. Upload offloading must own its session and complete blocking unit, use bounded concurrency, and preserve scan-before-use and failure cleanup.
 5. BFF already forwards response bodies. Streaming is an additive protocol, not an assumed buffering fix. Preserve partial/final distinction, cancellation and atomic actions.
 6. Workers always remain minimum zero/request-based/bounded. API warming requires a separate owner decision. No region, production index, IAM, schedule or idle polling change is implied.
+
+All six corrections are applied, not merely acknowledged: public traces show no unnecessary auth requests, fresh-session/CSRF tests still pass, legacy arrays remain complete, owned upload cancellation is synchronized, NDJSON is additive to the already-streaming BFF, and no idle infrastructure is activated. See `performance-results.md` and `performance-rollout.md` for evidence, risks and owner-only steps. Constituent PRs are review slices; the combined-review PR contains resolved overlaps plus cross-batch regressions/evidence. Choose one merge strategy, not both.
 
 ## Batch 2 API contract and caller inventory
 

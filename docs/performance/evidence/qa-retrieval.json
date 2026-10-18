@@ -1,0 +1,112 @@
+{
+  "source_sha": "53dbd8b4855f6593e383d598b4d4b4d938760c39",
+  "working_tree": "Batch5 implementation (see accompanying commit)",
+  "python": "3.14.4",
+  "sqlalchemy": "2.0.51",
+  "database": "disposable SQLite",
+  "conditions": "same warm fixture per pair, three repetitions, no providers; no production latency claim",
+  "samples": [
+    {
+      "workspace_contracts": 1,
+      "repetitions": [
+        {
+          "before_ms": 1.61,
+          "after_ms": 2.975,
+          "before_candidates": 1,
+          "after_candidates": 1,
+          "before_source_bytes": 1006,
+          "after_source_bytes": 1006,
+          "older_relevant_found": true
+        },
+        {
+          "before_ms": 0.259,
+          "after_ms": 0.784,
+          "before_candidates": 1,
+          "after_candidates": 1,
+          "before_source_bytes": 1006,
+          "after_source_bytes": 1006,
+          "older_relevant_found": true
+        },
+        {
+          "before_ms": 0.236,
+          "after_ms": 0.938,
+          "before_candidates": 1,
+          "after_candidates": 1,
+          "before_source_bytes": 1006,
+          "after_source_bytes": 1006,
+          "older_relevant_found": true
+        }
+      ],
+      "before_median_ms": 0.259,
+      "after_median_ms": 0.938
+    },
+    {
+      "workspace_contracts": 100,
+      "repetitions": [
+        {
+          "before_ms": 1.934,
+          "after_ms": 2.416,
+          "before_candidates": 100,
+          "after_candidates": 24,
+          "before_source_bytes": 100006,
+          "after_source_bytes": 24006,
+          "older_relevant_found": true
+        },
+        {
+          "before_ms": 1.193,
+          "after_ms": 1.079,
+          "before_candidates": 100,
+          "after_candidates": 24,
+          "before_source_bytes": 100006,
+          "after_source_bytes": 24006,
+          "older_relevant_found": true
+        },
+        {
+          "before_ms": 1.445,
+          "after_ms": 1.337,
+          "before_candidates": 100,
+          "after_candidates": 24,
+          "before_source_bytes": 100006,
+          "after_source_bytes": 24006,
+          "older_relevant_found": true
+        }
+      ],
+      "before_median_ms": 1.445,
+      "after_median_ms": 1.337
+    },
+    {
+      "workspace_contracts": 1000,
+      "repetitions": [
+        {
+          "before_ms": 8.323,
+          "after_ms": 4.418,
+          "before_candidates": 1000,
+          "after_candidates": 24,
+          "before_source_bytes": 1000006,
+          "after_source_bytes": 24006,
+          "older_relevant_found": true
+        },
+        {
+          "before_ms": 9.227,
+          "after_ms": 2.954,
+          "before_candidates": 1000,
+          "after_candidates": 24,
+          "before_source_bytes": 1000006,
+          "after_source_bytes": 24006,
+          "older_relevant_found": true
+        },
+        {
+          "before_ms": 8.548,
+          "after_ms": 3.208,
+          "before_candidates": 1000,
+          "after_candidates": 24,
+          "before_source_bytes": 1000006,
+          "after_source_bytes": 24006,
+          "older_relevant_found": true
+        }
+      ],
+      "before_median_ms": 8.548,
+      "after_median_ms": 3.208
+    }
+  ]
+}
