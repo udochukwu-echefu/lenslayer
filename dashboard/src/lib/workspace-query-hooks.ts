@@ -26,6 +26,11 @@ export function useCalendarGrid(organizationId: string, window: CalendarWindow) 
   return useQuery({ queryKey: ["calendar-grid", organizationId, window], queryFn: ({ signal }) => api.queryCalendar(organizationId, window, { signal }), enabled: Boolean(organizationId) });
 }
 
+export function useTaskCounts(organizationId: string) {
+  const [window] = useState(() => overviewWindow());
+  return useQuery({ queryKey: ["tasks", organizationId, "counts", window.day_start], queryFn: ({ signal }) => api.queryTaskCounts(organizationId, window.day_start, { signal }), enabled: Boolean(organizationId) });
+}
+
 function usePageState(organizationId: string, filters: object) {
   const identity = JSON.stringify([organizationId, filters]);
   const [page, setPage] = useState({ identity, offset: 0 });

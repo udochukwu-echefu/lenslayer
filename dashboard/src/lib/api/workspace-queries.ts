@@ -39,6 +39,7 @@ async function query<T>(organizationId: string, resource: string, filters: objec
 }
 
 export const workspaceQueriesApi = {
+  queryTaskCounts: (id: string, day_start: string, options?: QueryOptions) => query<{ active_tasks: number; completed_tasks: number; overdue_tasks: number }>(id, "tasks/counts", { day_start }, options),
   queryCalendar: (id: string, window: CalendarWindow, options?: QueryOptions) => query<CalendarGrid>(id, "calendar", window, options),
   queryContracts: (id: string, filters: ContractFilters = {}, options?: QueryOptions) => query<QueryPage<Contract>>(id, "contracts", { limit: 25, offset: 0, ...filters }, options),
   queryTasks: (id: string, filters: TaskFilters = {}, options?: QueryOptions) => query<QueryPage<WorkflowTask>>(id, "tasks", { limit: 25, offset: 0, ...filters }, options),

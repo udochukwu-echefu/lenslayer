@@ -8,7 +8,7 @@ import { TaskComposer } from "@/components/task-composer";
 import { TaskList } from "@/components/task-list";
 import { useWorkspace } from "@/components/workspace-provider";
 import type { TaskCategory } from "@/lib/types";
-import { useDebouncedValue, useTaskPage, useWorkspaceOverview } from "@/lib/workspace-query-hooks";
+import { useDebouncedValue, useTaskPage, useTaskCounts } from "@/lib/workspace-query-hooks";
 import { QueryPagination } from "@/components/ui/query-pagination";
 import { AppSelect } from "@/components/app-select";
 import type { TaskFilters } from "@/lib/api/workspace-queries";
@@ -27,11 +27,11 @@ function TasksContent() {
   const [descending, setDescending] = useState(false);
   const q = useDebouncedValue(term.trim());
   const query = useTaskPage(organizationId, { q, status: scope === "all" ? undefined : scope === "done" ? "done" : "open,in_progress", assigned_to_user_id: scope === "mine" ? user?.id : undefined, sort, descending });
-  const overview = useWorkspaceOverview(organizationId);
+  const counts = useTaskCounts(organizationId);
   const visible = query.data?.items ?? [];
-  const overdue = overview.data?.counts.overdue_tasks ?? 0;
-  const completed = overview.data?.counts.completed_tasks;
-  const active = overview.data?.counts.active_tasks;
+  const overdue = counts.data?.overdue_tasks ?? 0;
+  const completed = counts.data?.completed_tasks;
+  const active = counts.data?.active_tasks;
   const sourceReference = search.get("sourceIndex") ? { finding_index: Number(search.get("sourceIndex")), source: "contract_review" } : {};
 
   return <div className="page tasks-page">

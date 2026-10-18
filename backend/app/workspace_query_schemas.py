@@ -77,3 +77,9 @@ class CalendarGrid(BaseModel):
     month_total: int
     grid_total: int
     timezone: str
+
+
+class TaskCounts(BaseModel):
+    active_tasks: int
+    completed_tasks: int
+    overdue_tasks: int

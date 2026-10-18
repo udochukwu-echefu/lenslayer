@@ -28,7 +28,8 @@ const fixture = createServer(async (request, response) => {
   apiRequests.push({ label, startMs: performance.now() - started });
   // Equal, deterministic synthetic upstream work for both revisions.
   await new Promise((r) => setTimeout(r, 80));
-  const body = path.endsWith("/query/overview") ? {
+  if (new URL(request.url, "http://fixture.invalid").searchParams.get("q") === "cancellation-probe") await new Promise((r) => setTimeout(r, 500));
+  const body = path.endsWith("/query/tasks/counts") ? { active_tasks: 0, completed_tasks: 0, overdue_tasks: 0 } : path.endsWith("/query/overview") ? {
     counts: { contracts: 0, ready: 0, failed: 0, processing: 0, attention: 0, active_tasks: 0, completed_tasks: 0, overdue_tasks: 0, upcoming_tasks: 0, upcoming_notice_deadlines: 0, due_soon_tasks: 0 },
     recent_contracts: [], attention_contracts: [], my_tasks: [], upcoming_tasks: [], upcoming_lifecycle: [], as_of: "2026-10-18T00:00:00Z",
   } : path.includes("/query/") ? { items: [], total: 0, offset: 0, limit: 25 } : label === "me" ? { id: "synthetic-user", email: "synthetic@example.test", display_name: "Synthetic Reviewer" } : label === "organizations" ? [{ id: "synthetic-org", name: "Synthetic Workspace", slug: "synthetic", role: "owner", created_at: "2026-01-01T00:00:00Z" }] : path.startsWith("/api/v1/invitations/") ? {
@@ -139,6 +140,16 @@ try {
         await page.waitForFunction((selector) => !document.querySelector(`${selector} .skeleton`), {}, selector);
         await capture(route, performance.now() - time);
       }
+      // A debounced in-flight filter must not survive leaving its observer.
+      await page.evaluate(() => document.querySelector('.side-nav a[href="/contracts"]').click());
+      await page.waitForSelector("#contract-search");
+      const filtering = page.waitForRequest((request) => new URL(request.url()).searchParams.get("q") === "cancellation-probe");
+      await page.type("#contract-search", "cancellation-probe");
+      await filtering;
+      await page.evaluate(() => document.querySelector('.side-nav a[href="/tasks"]').click());
+      await page.waitForSelector(".tasks-register");
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      await capture("/tasks-after-cancelled-filter", null);
     }
     traces.push({ run, browserRequests: network, upstreamRequests: [...apiRequests], timings, navigation: steps, noPrefetch });
     writeFileSync(resolve(output, "fixture-traces.json"), JSON.stringify({ ...fixtureMetadata, traces, visuals: [] }, null, 2));

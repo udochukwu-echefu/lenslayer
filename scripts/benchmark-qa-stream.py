@@ -73,7 +73,7 @@ async def sample(count):
                     "pool_paused": pool_during, "pool_after": fixture.db.engine.pool.checkedout()})
             finally:
                 event.remove(fixture.db.engine, "before_cursor_execute", capture)
-        return {"portfolio_records": count, "source_bytes_each": 20000, "runs": results}
+        return {"portfolio_records": count, "source_bytes_each": len(("Renewal notice provision. " * 800).encode()), "runs": results}
     finally:
         fixture.tearDown()
 

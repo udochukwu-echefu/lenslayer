@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, Query, Response
 from pydantic import BaseModel, Field
 
 from ..schemas import ContractResponse, LifecycleItemResponse, TaskResponse
-from ..workspace_query_schemas import CalendarGrid, RecordPage, SearchResponse, WorkspaceOverview
+from ..workspace_query_schemas import CalendarGrid, RecordPage, SearchResponse, TaskCounts, WorkspaceOverview
 from ..service_domains.calendar_grid import calendar_grid
 from .dependencies import ServiceDep, UserDep
 
@@ -57,6 +57,11 @@ def contracts(organization_id: str, service: ServiceDep, user: UserDep, options:
 @router.get("/tasks", response_model=RecordPage[TaskResponse])
 def tasks(organization_id: str, service: ServiceDep, user: UserDep, options: Annotated[TaskOptions, Query()]):
     return service.query_tasks(organization_id, user, **options.model_dump())
+
+
+@router.get("/tasks/counts", response_model=TaskCounts)
+def task_counts(organization_id: str, service: ServiceDep, user: UserDep, day_start: datetime | None = None):
+    return service.workspace_task_counts(organization_id, user, day_start=day_start)
 
 
 @router.get("/lifecycle", response_model=RecordPage[LifecycleItemResponse])

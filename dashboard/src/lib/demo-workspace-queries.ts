@@ -35,6 +35,13 @@ export function demoWorkspaceQuery(id: string, resource: string, filters: object
   if (resource === "contracts") return demoPage(collection<Contract>("contracts"), filters, "updated_at", true);
   if (resource === "tasks") return demoPage(collection<WorkflowTask>("tasks"), filters, "due_at");
   if (resource === "lifecycle") return demoPage(collection<LifecycleItem>("lifecycle"), filters, "due_at");
+  if (resource === "tasks/counts") {
+    const tasks = collection<WorkflowTask>("tasks");
+    const { day_start } = filters as { day_start: string };
+    return { active_tasks: tasks.filter((task) => ["open", "in_progress"].includes(task.status)).length,
+      completed_tasks: tasks.filter((task) => task.status === "done").length,
+      overdue_tasks: tasks.filter((task) => ["open", "in_progress"].includes(task.status) && task.due_at && timestamp(task.due_at) < timestamp(day_start)).length };
+  }
   if (resource === "calendar") {
     const { month, grid_start, timezone } = filters as CalendarWindow;
     const formatter = new Intl.DateTimeFormat("en-CA", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit" });

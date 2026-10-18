@@ -10,6 +10,7 @@ import anyio
 from fastapi import HTTPException, Request
 from fastapi.routing import APIRoute
 from pydantic import BaseModel
+from starlette.formparsers import MultiPartException, MultiPartParser
 
 from ..services import PlatformService
 
@@ -63,9 +64,31 @@ class UploadRoute(APIRoute):
             await limiter.acquire_on_behalf_of(borrower)
             admission = {"borrower": borrower, "transferred": False}
             request.state.upload_admission = admission
+            parser = None
             try:
+                # Parse only after admission. Explicit ownership also closes
+                # partially-created spools on raw task cancellation/disconnect,
+                # before Starlette can return a FormData to FastAPI's exit stack.
+                if request.headers.get("content-type", "").lower().startswith("multipart/form-data"):
+                    maximum = request.app.state.settings.max_upload_bytes + 256 * 1024
+                    async def bounded_stream():
+                        total = 0
+                        async for chunk in request.stream():
+                            total += len(chunk)
+                            if total > maximum:
+                                raise HTTPException(413, "The uploaded document exceeds the request limit.")
+                            yield chunk
+                    parser = MultiPartParser(request.headers, bounded_stream(), max_files=1, max_fields=32, max_part_size=64 * 1024)
+                    try:
+                        request._form = await parser.parse()
+                    except MultiPartException as exc:
+                        raise HTTPException(400, str(exc)) from None
                 return await handler(request)
             finally:
+                if parser is not None:
+                    # All these are SpooledTemporaryFiles, not request ORM state.
+                    for file in parser._files_to_close_on_error:
+                        file.close()
                 if not admission["transferred"]:
                     limiter.release_on_behalf_of(borrower)
         return admitted
