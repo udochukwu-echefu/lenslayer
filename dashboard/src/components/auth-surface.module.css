@@ -1,0 +1,74 @@
+/* Returning-session surface and explicitly rounded actions only. */
+.page {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 40px 20px;
+  background: var(--canvas);
+  color: var(--ink);
+}
+
+.panel {
+  width: min(460px, 100%);
+  min-width: 0;
+  display: grid;
+  gap: 32px;
+  padding: 40px;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: var(--surface);
+}
+
+.heading { display: grid; gap: 12px; }
+.heading h1 { margin: 0; font-size: 32px; font-weight: 650; line-height: 1.18; letter-spacing: 0; }
+.heading > p { margin: 0; color: var(--ink-muted); font-size: 15px; line-height: 1.6; }
+.heading .status { display: flex; align-items: center; gap: 8px; color: var(--ink-muted); font-size: 13px; font-weight: 550; line-height: 1.5; }
+.status svg { flex-shrink: 0; }
+
+.action { min-width: 0; display: grid; gap: 12px; }
+.action .control {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  height: auto;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.5;
+  white-space: normal;
+  transition: background 180ms cubic-bezier(.22, 1, .36, 1), border-color 180ms cubic-bezier(.22, 1, .36, 1);
+}
+.action .control:hover { background: var(--accent-hover); color: var(--accent-contrast); }
+.action .control > svg { width: 18px; height: 18px; flex-shrink: 0; }
+.action .control > svg:first-child, .action .control > svg:last-child { position: static; }
+/* Beat the legacy .auth-google-button .google-mark positioning in either load order. */
+.action .control > :global(.google-mark) { position: static; }
+.action .google { border-color: var(--line-strong); background: var(--surface); color: var(--ink); }
+.action .google:hover { border-color: var(--ink-faint); background: var(--surface-hover); color: var(--ink); }
+.action .control:disabled { cursor: wait; opacity: 1; transform: none; }
+.action .control[aria-busy="true"] { background: var(--accent); color: var(--accent-contrast); }
+.action .google[aria-busy="true"] { border-color: var(--line-strong); background: var(--surface-raised); color: var(--ink-muted); }
+.action .control:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 4px; }
+.spinner { animation: auth-spin 1s linear infinite; }
+.error { margin: 0; color: var(--danger); font-size: 13px; line-height: 1.6; text-align: center; }
+.configError { display: grid; gap: 6px; padding: 16px; border: 1px solid var(--line-strong); border-radius: 16px; background: var(--surface-raised); color: var(--ink); }
+.configError strong { font-size: 14px; }
+.configError span { color: var(--ink-muted); font-size: 13px; line-height: 1.6; }
+
+@keyframes auth-spin { to { transform: rotate(360deg); } }
+@media (max-width: 520px) {
+  .page { padding: 24px 16px; }
+  .panel { gap: 28px; padding: 32px 24px; border-radius: 24px; }
+  .heading h1 { font-size: 28px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .action .control { transition: none; }
+  .spinner { animation: none; }
+}
