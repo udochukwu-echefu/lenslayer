@@ -730,7 +730,7 @@ h1 span { color: var(--ref-rose); }
 .faq-item[data-open="true"] .faq-toggle { background: var(--ref-pink); border-color: var(--ref-rose); color: var(--ref-charcoal); }
 @media (hover: hover) { .faq-item button:hover .faq-toggle { background: var(--ref-pink); border-color: var(--ref-rose); color: var(--ref-charcoal); } }
 
-/* White page canvas with an explicitly selected, persistent dark theme. */
+/* White page canvas. The landing site is light only. */
 :root {
   color-scheme: light;
   --light-paper: oklch(100% 0 0);
@@ -742,58 +742,19 @@ h1 span { color: var(--ref-rose); }
   --theme-action-hover: oklch(32% .01 110);
 }
 .site, .header, .portfolio-section, .faq-section { background: var(--page-background); }
-.theme-toggle { display: grid; place-items: center; flex-shrink: 0; width: 44px; height: 44px; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: var(--paper); color: var(--ink); transition: background 160ms ease, border-color 160ms ease; }
-.theme-toggle:hover { background: var(--canvas); border-color: var(--muted); }
-.theme-toggle svg { width: 19px; height: 19px; }
-.theme-toggle-symbol { position: relative; display: block; width: 19px; height: 19px; }
-.theme-toggle-symbol svg { position: absolute; inset: 0; transition: opacity 220ms ease, transform 220ms var(--ease-out); }
-.theme-toggle-sun { opacity: 0; transform: rotate(-45deg) scale(.8); }
-.theme-toggle-moon { opacity: 1; transform: rotate(0) scale(1); }
-[data-theme="dark"] .theme-toggle-sun { opacity: 1; transform: rotate(0) scale(1); }
-[data-theme="dark"] .theme-toggle-moon { opacity: 0; transform: rotate(45deg) scale(.8); }
-
-/* Soft circular theme reveal, originating at the header toggle. */
-@property --theme-reveal-progress { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
-html[data-theme-reveal="active"], html[data-theme-reveal="active"] *, html[data-theme-reveal="active"] *::before, html[data-theme-reveal="active"] *::after { transition-duration: 0s !important; }
-html[data-theme-reveal="active"]::view-transition-old(root), html[data-theme-reveal="active"]::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
-html[data-theme-reveal="active"]::view-transition-group(root) { animation-duration: 520ms; }
-html[data-theme-reveal="active"]::view-transition-old(root) { z-index: 1; }
-html[data-theme-reveal="active"]::view-transition-new(root) { z-index: 2; clip-path: var(--theme-reveal-start); }
-html[data-theme-reveal-soft="active"]::view-transition-new(root) { clip-path: none; mask-image: radial-gradient(circle farthest-corner at var(--theme-reveal-center), black calc(var(--theme-reveal-progress) - .3%), transparent calc(var(--theme-reveal-progress) + .3%)); }
-
 /* Static grain at 20% opacity. Transparent flecks retain the white canvas. */
 .site { position: relative; isolation: isolate; }
 .site::after { content: ""; position: fixed; inset: 0; z-index: 30; pointer-events: none; opacity: .2; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 -1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)'/%3E%3C/svg%3E"); }
-[data-theme="dark"] .site::after { filter: invert(1); }
 @media (forced-colors: active) { .site::after { display: none; } }
-@media (prefers-reduced-motion: reduce) { .theme-toggle-symbol svg { transition: none; } }
 .round-link, .button { background: var(--theme-action); color: var(--theme-action-ink); }
 .round-link:hover, .button:hover { background: var(--theme-action-hover); }
 .round-link-light { background: var(--ref-pink); color: var(--ref-charcoal); }
 .round-link-light:hover { background: var(--ref-paper); }
 .faq-list, .faq-item, .faq-toggle { border-color: var(--line); }
 
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --page-background: var(--ref-charcoal);
-  --paper: oklch(25% .006 110);
-  --canvas: oklch(28% .008 110);
-  --raised: oklch(31% .009 110);
-  --ink: var(--ref-paper);
-  --muted: oklch(79% .012 95);
-  --faint: oklch(73% .013 95);
-  --line: oklch(39% .014 100);
-  --blue: var(--ref-pink);
-  --good: oklch(80% .09 130);
-  --warning: oklch(85% .1 85);
-  --theme-action: var(--ref-paper);
-  --theme-action-ink: var(--ref-charcoal);
-  --theme-action-hover: var(--ref-pink);
-}
 .closing .lens-mark { color-scheme: dark; }
-[data-theme="dark"] .round-link-light .round-link-icon { background: var(--ref-paper); }
 
-/* Brand pigments stay identical in both themes, including their white mixes. */
+/* Cards keep the reference pigments, including their white mixes. */
 .workflow-card, .portfolio-carousel-card, .control-card, .converter-card {
   --paper: var(--light-paper);
   --canvas: var(--ref-cream);
@@ -813,7 +774,7 @@ html[data-theme-reveal-soft="active"]::view-transition-new(root) { clip-path: no
 h1 span { color: var(--blue); }
 ::selection { background: var(--ref-pink); color: var(--ref-charcoal); }
 
-/* Agent workflow: a focused, dark stage within either page theme. */
+/* Agent workflow: a focused, dark stage on the light page. */
 .agent-section { padding-top: clamp(40px,5vw,72px); scroll-margin-top: 110px; }
 .agent-panel { position: relative; isolation: isolate; overflow: hidden; display: flex; flex-direction: column; align-items: center; padding: clamp(56px,6vw,88px) clamp(22px,5vw,64px); border: 1px solid oklch(35% .008 110); border-radius: 30px; background: var(--ref-charcoal); color: var(--ref-paper); text-align: center; }
 .agent-panel::before { content: ""; position: absolute; z-index: -1; inset: 0 0 auto; height: 290px; background-image: radial-gradient(oklch(75% .01 100 / .2) .8px, transparent .8px); background-size: 24px 24px; mask-image: linear-gradient(transparent, oklch(100% 0 0 / .6) 15%, transparent); pointer-events: none; }

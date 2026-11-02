@@ -25,8 +25,8 @@ const original = process.env.VITE_APP_URL
 const originalDocument = globalThis.document
 const originalWindow = globalThis.window
 const artifact = new URL("../dist/cta-verification.mjs", import.meta.url)
-// Initial render reads theme/motion preferences; effects are not run here.
-globalThis.document = { documentElement: { dataset: { theme: "light" } } }
+// Initial render reads page visibility and motion preferences; effects are not run here.
+globalThis.document = { hidden: false }
 globalThis.window = { matchMedia: () => ({ matches: true }) }
 try {
   for (const [index, value] of configuredValues.entries()) {

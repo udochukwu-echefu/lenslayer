@@ -29,47 +29,35 @@ try {
     // select a smaller candidate; verify delivery before taking screenshots.
     check(`${name}: hero fetched once, no duplicate preload/fallback`, requests.filter((url) => /dashboard.*\.(avif|webp|jpg)/.test(url)).length === 1)
     check(`${name}: hero visible without entrance animation`, await page.evaluate(() => [".hero-intro", ".workspace-preview"].every((selector) => { const e = document.querySelector(selector); return !e.dataset.motion && !e.getAnimations().length && getComputedStyle(e).opacity === "1" })))
-    for (const theme of ["light", "dark"]) {
-      if (theme === "dark") {
-        await page.getByRole("button", { name: "Switch to dark mode", exact: true }).click()
+    // Avoid Chromium's >16k-pixel full-page tiling artifact at phone DPR 3.
+    await page.screenshot({ path: path.join(evidence, `${name}.png`), fullPage: name === "desktop" })
+    const snapshot = await page.evaluate(() => ({ text: document.body.innerText, links: [...document.querySelectorAll("a")].map((e) => ({ text: e.textContent, href: e.getAttribute("href") })), boxes: [...document.querySelectorAll(".header,.hero-intro,h1,.hero-copy,.workspace-preview,.dashboard-capture,.workflow-section,.portfolio-section,.control-section,.faq-section,.brand")].map((e) => ({ selector: e.className || e.tagName, box: JSON.parse(JSON.stringify(e.getBoundingClientRect())), color: getComputedStyle(e).color, background: getComputedStyle(e).backgroundColor })), fonts: [...document.fonts].map((f) => ({ family: f.family, weight: f.weight, style: f.style, status: f.status })), image: document.querySelector(".dashboard-capture").currentSrc, overflow: document.documentElement.scrollWidth > window.innerWidth }))
+    output.captures[name] = snapshot
+    check(`${name}: no horizontal overflow`, !snapshot.overflow)
+    check(`${name}: responsive high-DPI AVIF selected`, snapshot.image.endsWith(name === "phone" ? "dashboard-v1-1152.avif" : "dashboard-v1-1728.avif"))
+    if (baseline) {
+      const before = baseline[name]
+      assert.equal(snapshot.text, before.text, `${name}: exact visible copy`)
+      assert.deepEqual(snapshot.links, before.links, `${name}: exact links`)
+      output.checks.push(`${name}: exact copy and links match baseline`)
+      for (let i = 0; i < before.boxes.length; i++) {
+        const a = before.boxes[i], b = snapshot.boxes[i]
+        assert.equal(b.color, a.color, `${b.selector} color`)
+        assert.equal(b.background, a.background, `${b.selector} background`)
+        for (const key of ["x", "y", "width", "height"]) assert.ok(Math.abs(a.box[key] - b.box[key]) < 1, `${name} ${b.selector} ${key}: ${a.box[key]} vs ${b.box[key]}`)
+      }
+      output.checks.push(`${name}: layout within 1 CSS pixel; colors unchanged`)
+    }
+    if (name === "phone") {
+      for (const section of ["workflow", "portfolio", "control", "faq", "closing"]) {
+        await page.locator(`.${section === "closing" ? "closing" : `${section}-section`}`).scrollIntoViewIfNeeded()
         await page.waitForTimeout(1200)
+        await page.screenshot({ path: path.join(evidence, `phone-${section}.png`) })
       }
-      // Avoid Chromium's >16k-pixel full-page tiling artifact at phone DPR 3.
-      await page.screenshot({ path: path.join(evidence, `${name}-${theme}.png`), fullPage: name === "desktop" })
-      const snapshot = await page.evaluate(() => ({ text: document.body.innerText, links: [...document.querySelectorAll("a")].map((e) => ({ text: e.textContent, href: e.getAttribute("href") })), boxes: [...document.querySelectorAll(".header,.hero-intro,h1,.hero-copy,.workspace-preview,.dashboard-capture,.workflow-section,.portfolio-section,.control-section,.faq-section,.brand")].map((e) => ({ selector: e.className || e.tagName, box: JSON.parse(JSON.stringify(e.getBoundingClientRect())), color: getComputedStyle(e).color, background: getComputedStyle(e).backgroundColor })), fonts: [...document.fonts].map((f) => ({ family: f.family, weight: f.weight, style: f.style, status: f.status })), image: document.querySelector(".dashboard-capture").currentSrc, overflow: document.documentElement.scrollWidth > window.innerWidth }))
-      output.captures[`${name}-${theme}`] = snapshot
-      check(`${name}/${theme}: no horizontal overflow`, !snapshot.overflow)
-      check(`${name}/${theme}: responsive high-DPI AVIF selected`, snapshot.image.endsWith(name === "phone" ? "dashboard-v1-1152.avif" : "dashboard-v1-1728.avif"))
-      if (baseline) {
-        const before = baseline[`${name}-${theme}`]
-        assert.equal(snapshot.text, before.text, `${name}/${theme}: exact visible copy`)
-        assert.deepEqual(snapshot.links, before.links, `${name}/${theme}: exact links`)
-        output.checks.push(`${name}/${theme}: exact copy and links match baseline`)
-        for (let i = 0; i < before.boxes.length; i++) {
-          const a = before.boxes[i], b = snapshot.boxes[i]
-          assert.equal(b.color, a.color, `${b.selector} color`)
-          assert.equal(b.background, a.background, `${b.selector} background`)
-          for (const key of ["x", "y", "width", "height"]) assert.ok(Math.abs(a.box[key] - b.box[key]) < 1, `${name}/${theme} ${b.selector} ${key}: ${a.box[key]} vs ${b.box[key]}`)
-        }
-        output.checks.push(`${name}/${theme}: layout within 1 CSS pixel; colors unchanged`)
-      }
-      if (name === "phone") {
-        for (const section of ["workflow", "portfolio", "control", "faq", "closing"]) {
-          await page.locator(`.${section === "closing" ? "closing" : `${section}-section`}`).scrollIntoViewIfNeeded()
-          await page.waitForTimeout(1200)
-          await page.screenshot({ path: path.join(evidence, `phone-${theme}-${section}.png`) })
-        }
-        await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }))
-      }
+      await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }))
     }
     check(`${name}: no external font requests`, requests.every((url) => !/fonts\.googleapis|fonts\.gstatic/.test(url)))
-    await page.reload({ waitUntil: "networkidle" })
-    check(`${name}: dark theme persists after reload`, await page.locator("html").getAttribute("data-theme") === "dark")
-    const themeButton = page.getByRole("button", { name: "Switch to light mode", exact: true })
-    await themeButton.focus()
-    await page.keyboard.press("Enter")
-    check(`${name}: keyboard theme toggle is immediate`, await page.locator("html").getAttribute("data-theme") === "light")
-    check(`${name}: theme transition cleanup`, !(await page.locator("html").getAttribute("data-theme-reveal")))
+    check(`${name}: light only, no theme toggle`, await page.getByRole("button", { name: /Switch to (dark|light) mode/ }).count() === 0 && await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme === "light"))
     await page.keyboard.press("Tab")
     check(`${name}: focus outline visible`, await page.evaluate(() => getComputedStyle(document.activeElement).outlineStyle !== "none"))
     if (name === "phone") {

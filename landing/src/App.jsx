@@ -6,7 +6,6 @@ import PortfolioDemo from "./components/landing/portfolio-demo"
 import AgentCapabilities from "./components/landing/agent-capabilities"
 import FaqSection from "./components/landing/faq-section"
 import { RoundLink } from "./components/landing/hero-components"
-import ThemeToggle from "./components/landing/theme-toggle"
 import { resolveAppUrl } from "./app-url.js"
 
 const APP_URL = resolveAppUrl(import.meta.env.DEV ? import.meta.env.VITE_APP_URL : undefined, import.meta.env.PROD)
@@ -55,7 +54,7 @@ function App() {
   return <div className="site" id="top">
     <a className="skip-link" href="#main">Skip to content</a>
     <header className="header">
-      <div className="shell header-inner"><Brand /><nav className="desktop-nav" aria-label="Primary navigation">{navigation.map((item) => <a href={item.href} key={item.href}>{item.label}</a>)}</nav><div className="header-actions"><ThemeToggle /><a className="header-secondary" href={SAMPLE_URL}>Explore sample</a><RoundLink compact href={SIGN_IN_URL}>Sign in</RoundLink><button type="button" className="menu-button" ref={menuButton} aria-label={menuOpen ? "Close navigation" : "Open navigation"} aria-expanded={menuOpen} aria-controls="mobile-navigation" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}</button></div></div>
+      <div className="shell header-inner"><Brand /><nav className="desktop-nav" aria-label="Primary navigation">{navigation.map((item) => <a href={item.href} key={item.href}>{item.label}</a>)}</nav><div className="header-actions"><a className="header-secondary" href={SAMPLE_URL}>Explore sample</a><RoundLink compact href={SIGN_IN_URL}>Sign in</RoundLink><button type="button" className="menu-button" ref={menuButton} aria-label={menuOpen ? "Close navigation" : "Open navigation"} aria-expanded={menuOpen} aria-controls="mobile-navigation" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}</button></div></div>
       <nav id="mobile-navigation" className="mobile-nav" aria-label="Mobile navigation" hidden={!menuOpen}>{navigation.map((item) => <a href={item.href} key={item.href} onClick={() => setMenuOpen(false)}>{item.label}<ArrowRight aria-hidden="true" /></a>)}<a href={SIGN_IN_URL}>Sign in <ArrowRight aria-hidden="true" /></a></nav>
     </header>
     <main id="main">
