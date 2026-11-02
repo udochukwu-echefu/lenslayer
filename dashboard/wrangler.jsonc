@@ -3,7 +3,7 @@
   "main": ".open-next/worker.js",
   "name": "lenslayer-dashboard",
   "compatibility_date": "2026-10-09",
-  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public", "enable_request_signal"],
   "workers_dev": false,
   "routes": [{ "pattern": "app.lenslayer.online", "custom_domain": true }],
   "assets": {
