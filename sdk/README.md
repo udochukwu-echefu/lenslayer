@@ -2,13 +2,13 @@
 
 A server-side TypeScript client for the implemented `/api/v1/agent` API. No runtime
 dependencies or framework. Requires Node 20.3+ (the repository uses Node 24.15).
-Version **0.1.0 is published** as
+Published on npm as
 [`@lenslayer/agent-sdk`](https://www.npmjs.com/package/@lenslayer/agent-sdk).
 This SDK package alone is licensed under the [MIT License](LICENSE), copyright
 2026 LensLayer. This does not relicense MCP, the backend, or the repository.
 
 ```sh
-npm install @lenslayer/agent-sdk@0.1.0
+npm install @lenslayer/agent-sdk
 ```
 
 Use an ESM server-side project (`"type": "module"` or an `.mjs` file):
@@ -35,17 +35,13 @@ Keep the token in server-side secret configuration, never browser code, public
 environment variables, source control or logs. Scope/expiry/revocation and human
 approval still apply; installing the SDK grants no authority.
 
-This repository README corrects the release status; the immutable npm 0.1.0
-tarball retains its historical README. No republish or new registry version is
-implied. See [current release status](https://github.com/udochukwu-echefu/lenslayer/blob/main/docs/deployment/current-release-status.md).
-
 ## Source validation and API boundaries
 
 From a source checkout, run `cd sdk`, `npm ci`, `npm test` and
 `npm run release:check` for local validation, not publication.
 
 For an installed-artifact check, run `npm pack --pack-destination /your/private/package-directory`
-from `sdk/`, then `npm install /your/private/package-directory/lenslayer-agent-sdk-0.1.0.tgz`
+from `sdk/`, then `npm install` the `.tgz` path it prints
 in a server-side client project. `prepack` builds declarations and ESM exports;
 the allowlist contains only seven named ESM modules/declarations, package metadata,
 README, LICENSE and changelog (18 files total).

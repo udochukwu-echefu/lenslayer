@@ -1,6 +1,11 @@
 # Changelog
 
-## 0.1.0 — unpublished
+## 0.1.1 — documentation only
+
+- The README now describes the published package. The 0.1.0 README still said
+  the SDK was "prepared locally and not published to npm". No code changes.
+
+## 0.1.0 — 16 October 2026
 
 - Server-only, dependency-free ESM client and TypeScript declarations for agent
   v1 runs, evidence, immutable task proposals, events and bounded polling.
@@ -11,4 +16,5 @@
   strict scope/shape checks; planning hits are not durable evidence receipts.
 - Explicit package allowlist, build-on-pack and installed-tarball smoke checks.
 
-No npm publication, hosted endpoint or external connector availability is implied.
+The SDK talks to an operator-supplied LensLayer API; no hosted endpoint or
+external connector availability is implied by installing it.
