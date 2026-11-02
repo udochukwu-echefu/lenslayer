@@ -198,7 +198,7 @@ def render_plan(config, output: Path, commit: str, digest=None, worker_origin=No
         requires_worker_origin=True, requires_image_digest=True)
     add("deploy-api-without-traffic", "deploy", ["run", "deploy", "lenslayer-api", *base, f"--service-account={runtime}",
         f"--image={image}", "--allow-unauthenticated", "--min-instances=0", "--max-instances=1", "--min=0", "--max=1",
-        "--cpu-throttling", "--cpu=1", "--memory=1Gi", "--concurrency=20", "--timeout=300", "--no-traffic", "--tag=agent-release",
+        "--cpu-throttling", "--cpu-boost", "--cpu=1", "--memory=1Gi", "--concurrency=20", "--timeout=300", "--no-traffic", "--tag=agent-release",
         f"--env-vars-file={output/'api-env.json'}", f"--set-secrets={runtime_secrets}"], requires_worker_origin=True, requires_image_digest=True)
     add("deploy-bounded-review-job", "deploy", ["run", "jobs", "deploy", "lenslayer-review-worker", *base,
         f"--service-account={runtime}", f"--image={image}", "--command=python", "--args=-m,backend.app.worker,--documents-only,--drain",

@@ -1,6 +1,7 @@
 # Current public release status
 
-As of **17 October 2026**, combining public release facts, registry metadata and
+Updated **2 November 2026** with the releases since 17 October. The rest is as of
+**17 October 2026**, combining public release facts, registry metadata and
 the release operator’s sanitized production checks. The specific observations
 below distinguish the completed synthetic Calendar task from a public Calendar launch.
 
@@ -12,21 +13,22 @@ below distinguish the completed synthetic Calendar task from a public Calendar l
 | Production task | The original model-assisted proposal expired without dispatch. After the owner explicitly authorized a restart and the exact event, a fixed-workflow Calendar-only assignment succeeded with one dispatch and a matching Google Events GET receipt. Independent Google Calendar search showed exactly one matching private event. |
 | Production model | The private DeepSeek pilot is enabled with a durable **USD 1 total / three-admission ceiling**. One production assignment completed its decision gate with exactly one recorded model call and one **USD 0.319488 conservative reservation**. This reservation is capacity accounting, not a measured provider bill. The approved restart used fixed-workflow planning and made no additional paid model call. The original model proposal was accepted but its action approval expired; it is not recorded as a completed model-assisted run. |
 | Production Calendar | One owner-only pilot connection is stored, with exact `calendar.events.owned` scope, browser-session binding and a disposable owned-calendar target independently checked. The exact synthetic event passed provider read-back and an independent Calendar UI check, including its title, times, target calendar and private visibility. Its dispatch intent had no attendees, reminders or recurrence. Google OAuth remains External Testing; this is not a verified public integration. |
+| Since 17 October | Merged and deployed 18–19 October: performance work [#21](https://github.com/udochukwu-echefu/lenslayer/pull/21) with the [#22](https://github.com/udochukwu-echefu/lenslayer/pull/22) repairs, landing app links #23, Q&A stream completion #24, provider details hidden from failed reviews #25 and the rounded session-expired screen #26. Open for owner review on 2 November: #27–#31 (see the [checklist](../developer-release-checklist.md)). |
 | Old app address | The old production `workers.dev` root, sign-in, API proxy and callback paths return **404** without redirects, and the origin is absent from API CORS. The obsolete Auth0 callback was removed and verified after reload; localhost and canonical app allowlists were preserved. Fresh logout and Google sign-in returned the same owner to the selected workspace. Canonical app and separate staging sign-in pages return **200**. |
 
 ## Developer entry point
 
-Install `npm install @lenslayer/agent-sdk@0.1.0` in an ESM server-side Node 20.3+
+Install `npm install @lenslayer/agent-sdk` in an ESM server-side Node 20.3+
 project. Import `LensLayerClient` from `@lenslayer/agent-sdk`; see the
 [SDK README](../../sdk/README.md) for a read-only example and credential guidance.
 Use an operator-supplied backend API URL and a scoped `ll_agent_` token, not the
 dashboard URL or a user JWT. Never send the credential to the browser.
 
-The repository README is corrected independently of the published artifact.
-The immutable 0.1.0 tarball still contains its historical unpublished-status
-README; this documentation update neither republishes it nor creates a new
-registry release. Registry metadata advertises signatures/provenance; this update
-does not claim cryptographic verification of them.
+The README inside the published 0.1.0 package still says the SDK is "not
+published to npm". Published versions can't be edited, so 0.1.1 is a
+documentation-only patch that's prepared in the repository and waits for an
+attended owner release. Registry metadata advertises signatures and provenance;
+this page doesn't claim to have verified them.
 
 ## Evidence boundaries
 

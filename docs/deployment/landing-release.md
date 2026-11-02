@@ -12,7 +12,7 @@ cd landing
 ../dashboard/node_modules/.bin/wrangler pages deploy dist --project-name lenslayer --branch main --commit-hash "$(git rev-parse HEAD)"
 ```
 
-Record the preceding production deployment ID before upload. Verify the new deployment and both public domains after upload: the current page copy, theme control, responsive image variants, locally served fonts, and the actual app-link destinations. Production app links always use `https://app.lenslayer.online`, including when an obsolete `VITE_APP_URL` remains in deployment settings. The CI regression check covers absent, retired-host and localhost overrides.
+Record the preceding production deployment ID before upload. Verify the new deployment and both public domains after upload: the current page copy, light-only theme, responsive image variants, locally served fonts, and the actual app-link destinations. Production app links always use `https://app.lenslayer.online`, including when an obsolete `VITE_APP_URL` remains in deployment settings. The CI regression check covers absent, retired-host and localhost overrides.
 
 The old `/sample` tour redirects to the workspace. Anonymous visitors enter the existing read-only fictional workspace; signed-in users retain their own workspace. There is no separate introductory wizard.
 

@@ -1,6 +1,8 @@
 # Performance rollout and owner-only measurements
 
-Nothing in this programme has been merged or deployed. No production DDL, paid provider request, queue, IAM, schedule, region or minimum-instance change is authorized.
+> **Status, 2 November 2026:** done. PR #21 (with the #22 repairs) merged on 18 October and is deployed to production. The steps below are kept as the record of how it was rolled out. Current work is in the [release checklist](developer-release-checklist.md).
+
+At the time of writing, nothing in this programme had been merged or deployed, and no production DDL, paid provider request, queue, IAM, schedule, region or minimum-instance change was authorized.
 
 ## Review and deployment order
 

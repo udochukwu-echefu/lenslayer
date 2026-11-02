@@ -20,7 +20,8 @@ async function fixture(run) {
       mkdirSync(dirname(target), { recursive: true });
       writeFileSync(target, name.startsWith("dist/") ? "// Synthetic preflight fixture only\n" : readFileSync(new URL(`../${name}`, import.meta.url)));
     }
-    const version = "0.1.0", sourceSha = "a".repeat(40), filename = `lenslayer-agent-sdk-${version}.tgz`;
+    // The fixture packs the real package.json, so its version must match.
+    const version = JSON.parse(readFileSync(new URL("../package.json", import.meta.url))).version, sourceSha = "a".repeat(40), filename = `lenslayer-agent-sdk-${version}.tgz`;
     execFileSync("tar", ["-czf", join(reviewDir, filename), "-C", root, ...packageFiles.map((p) => `package/${p}`)]);
     const bytes = readFileSync(join(reviewDir, filename));
     const review = { schema: 1, repository, name: packageName, version, sourceSha, sourceDirty: false,

@@ -212,7 +212,7 @@ def render_plan(config: dict, output: Path, image_digest: str | None = None, wor
             f"--project={config['project_id']}", f"--region={config['region']}", "--wait"]},
         {"id": "deploy-api", "cwd": str(ROOT), "argv": ["gcloud", "run", "deploy", config["api_service"], *common,
             f"--image={image}", "--allow-unauthenticated", "--min-instances=0", "--max-instances=1",
-            "--cpu=1", "--memory=1Gi", "--concurrency=20", "--timeout=300", "--cpu-throttling",
+            "--cpu=1", "--memory=1Gi", "--concurrency=20", "--timeout=300", "--cpu-throttling", "--cpu-boost",
             f"--env-vars-file={api_env}", f"--set-secrets={bindings}", "--labels=environment=staging,application=lenslayer"]},
         {"id": "deploy-review-job", "cwd": str(ROOT), "argv": ["gcloud", "run", "jobs", "deploy", config["review_job"], *common,
             f"--image={image}", "--command=python", "--args=-m,backend.app.worker,--documents-only,--drain",

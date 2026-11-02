@@ -47,11 +47,13 @@ export function AuthEntry({ callbackUrl, configured, mode }: AuthEntryProps) {
           <section className="auth-editorial" aria-labelledby="auth-story-title">
             <Image
               className="auth-editorial-image"
-              src="/auth-editorial-panel.png"
+              src="/auth-editorial-panel.webp"
               fill
-              sizes="(max-width: 1050px) 0px, 604px"
+              sizes="604px"
               alt=""
-              priority
+              // Decorative and hidden below 1050px: lazy, so phones never fetch it.
+              // Cloudflare serves /_next/image originals, so skip the optimizer.
+              unoptimized
             />
             <div className="auth-editorial-shade" aria-hidden="true" />
             <h2 id="auth-story-title">
