@@ -2,6 +2,7 @@
 import unittest
 from unittest.mock import patch
 
+from tests import test_account_deletion as account_deletion
 from tests import test_agent_infrastructure as infrastructure
 from tests import test_calendar_workflows as calendar
 from tests import test_hosted_agents as hosted
@@ -18,12 +19,14 @@ class PostgresFixture:
             kwargs["database_url"] = self.pg.url
             return original_settings(**kwargs)
 
-        self.settings_patch = patch.object(infrastructure, "Settings", settings)
-        self.settings_patch.start()
+        self.settings_patches = [patch.object(module, "Settings", settings) for module in (infrastructure, account_deletion)]
+        for item in self.settings_patches:
+            item.start()
         try:
             super().setUp()
         except Exception:
-            self.settings_patch.stop()
+            for item in self.settings_patches:
+                item.stop()
             self.pg.close()
             raise
 
@@ -31,12 +34,18 @@ class PostgresFixture:
         try:
             super().tearDown()
         finally:
-            self.settings_patch.stop()
+            for item in self.settings_patches:
+                item.stop()
             self.pg.close()
 
 
 @unittest.skipUnless(postgres_enabled(), "PostgreSQL disposable-schema suite not opted in")
 class PostgresInfrastructureTests(PostgresFixture, infrastructure.AgentInfrastructureTests):
+    pass
+
+
+@unittest.skipUnless(postgres_enabled(), "PostgreSQL disposable-schema suite not opted in")
+class PostgresAccountDeletionTests(PostgresFixture, account_deletion.AccountDeletionTests):
     pass
 
 

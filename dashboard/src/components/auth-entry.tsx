@@ -4,6 +4,9 @@ import Link from "next/link";
 import { SignInButton } from "@/components/sign-in-button";
 import { oidcEmailConnection } from "@/lib/auth";
 
+const PRIVACY_URL = "https://lenslayer.online/privacy";
+const TERMS_URL = "https://lenslayer.online/terms";
+
 type AuthEntryProps = {
   callbackUrl: string;
   configured: boolean;
@@ -80,13 +83,15 @@ export function AuthEntry({ callbackUrl, configured, mode }: AuthEntryProps) {
                 <p>Enter your email and password on Auth0’s secure sign-in page. You can reset a forgotten password there.</p>
               </div>
 
+              {mode === "signup" && <p className="auth-consent">By creating an account, you agree to the <a href={TERMS_URL}>Terms</a> and acknowledge the <a href={PRIVACY_URL}>Privacy policy</a>.</p>}
+
               <p className="auth-switch">{content.switchLabel} <Link href={switchHref}>{content.switchAction}</Link></p>
             </div>
           </section>
         </div>
 
         <footer className="auth-footer">
-          <p><span>Privacy</span><span aria-hidden="true">·</span><span>Terms</span></p>
+          <p><a href={PRIVACY_URL}>Privacy</a><span aria-hidden="true">·</span><a href={TERMS_URL}>Terms</a></p>
           <p>Evidence before conclusion.</p>
         </footer>
       </div>

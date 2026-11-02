@@ -16,6 +16,20 @@ class UserResponse(BaseModel):
     display_name: str
 
 
+class AccountDeletionRequest(BaseModel):
+    confirmation: str = Field(max_length=32)
+
+
+class AccountDeletionPreview(BaseModel):
+    blocking_workspaces: list[str]
+
+
+class AccountDeletionResponse(BaseModel):
+    deleted_workspaces: int
+    left_workspaces: int
+    identity_removed: bool
+
+
 class OrganizationCreate(BaseModel):
     name: str = Field(min_length=2, max_length=255)
     slug: str = Field(pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$", min_length=2, max_length=120)

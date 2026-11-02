@@ -309,6 +309,9 @@ h2 { font-size: clamp(34px,3.65vw,51px); font-weight: 480; letter-spacing: -.045
 .footer-bottom { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 76px; border-top: 1px solid var(--line); color: var(--faint); font-size: 10px; }
 .footer-bottom a { min-height: 44px; display: flex; align-items: center; gap: 7px; }
 .footer-bottom svg { width: 12px; transform: rotate(-90deg); }
+.footer .footer-legal { display: flex; justify-content: start; gap: 0; margin: 0 auto 0 -10px; }
+.footer-legal a { padding-inline: 10px; font-size: 12px; color: var(--muted); }
+.footer-legal a:hover { color: var(--blue); }
 @media (min-width: 1500px) { .hero-intro { padding-block: 96px 78px; } }
 @media (min-width: 1001px) { .mobile-nav:not([hidden]) { display: none; } }
 @media (max-width: 1100px) {
@@ -836,4 +839,19 @@ h1 span { color: var(--blue); }
 }
 @media (max-width: 380px) {
   .hero h1 { font-size: clamp(36px,10.5vw,40px); }
+}
+
+/* Touch spacing, 2026-11-02: on phones, header and CTA tap targets stay 44px
+   tall and at least 8px apart. */
+.portfolio-carousel-pagination { gap: 8px; }
+.footer-bottom a { min-height: 44px; }
+@media (max-width: 560px) {
+  .header-actions { gap: 8px; }
+  .hero-ctas { gap: 12px; }
+  .agent-capability-options { gap: 8px; }
+  .agent-resource-links { gap: 8px; }
+}
+@media (max-width: 380px) {
+  .header-actions .round-link-compact { min-height: 44px; }
+  .menu-button { width: 44px; }
 }

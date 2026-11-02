@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from .service_domains.base import ServiceBase
+from .service_domains.account import AccountServiceMixin
 from .service_domains.workspace import WorkspaceServiceMixin
 from .service_domains.tasks import TasksServiceMixin
 from .service_domains.contracts import ContractsServiceMixin
@@ -22,6 +23,7 @@ class PlatformService(
     AgentGeneralizationServiceMixin,
     AgentsServiceMixin,
     CalendarServiceMixin,
+    AccountServiceMixin,
     WorkspaceServiceMixin,
     TasksServiceMixin,
     ContractsServiceMixin,

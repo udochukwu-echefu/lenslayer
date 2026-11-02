@@ -15,6 +15,11 @@ import { PUBLIC_ACCESS_ENABLED } from "../workspace-mode";
 export const workspaceApi = {
   me: (usePublicAccess = PUBLIC_ACCESS_ENABLED) =>
     request<User>("/me", undefined, usePublicAccess),
+  accountDeletionPreview: () =>
+    request<{ blocking_workspaces: string[] }>("/me/deletion", undefined, false),
+  deleteAccount: (confirmation: string) =>
+    jsonRequest<{ deleted_workspaces: number; left_workspaces: number; identity_removed: boolean }>(
+      "/me/deletion", "POST", { confirmation }, false),
   organizations: (usePublicAccess = PUBLIC_ACCESS_ENABLED) =>
     request<Organization[]>("/organizations", undefined, usePublicAccess),
   createOrganization: (payload: { name: string; slug: string }) =>

@@ -51,7 +51,10 @@ try {
     for (const route of ["signin", "runs", "", "developers", "convert"]) {
       assert.ok(hrefs.includes(`${canonical}/${route}`), `Missing canonical /${route} href`)
     }
-    for (const href of hrefs.filter((href) => !href.startsWith("#"))) {
+    // The footer's legal pages live on this site, not in the app.
+    const sitePages = ["/privacy", "/terms", "mailto:udo@lenslayer.online"]
+    for (const page of sitePages) assert.ok(hrefs.includes(page), `Missing footer link ${page}`)
+    for (const href of hrefs.filter((href) => !href.startsWith("#") && !sitePages.includes(href))) {
       assert.equal(new URL(href).origin, canonical, `Unexpected app href: ${href}`)
     }
     console.log(`Production CTA verification passed: ${value ?? "unset VITE_APP_URL"}`)

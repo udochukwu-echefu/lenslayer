@@ -125,7 +125,7 @@ function App() {
 
       <section className="closing" data-motion="closing" aria-labelledby="closing-title"><div className="shell closing-inner"><LensMark className="closing-mark" /><div><h2 id="closing-title">Build the first<br />verified workflow.</h2><p>Retain a source, scope a credential, and run your server-side client. REST, a local SDK, and stdio MCP use the same ledger.</p></div><div className="closing-actions"><RoundLink href={DOCS_URL} light>Developer guide</RoundLink><a className="closing-signin" href={SIGN_IN_URL}>Open your workspace <ArrowRight aria-hidden="true" /></a></div></div></section>
     </main>
-    <footer className="footer shell"><div className="footer-top"><Brand /></div><div className="footer-bottom"><span>© {new Date().getFullYear()} LensLayer</span><a href="#top">Back to top <ArrowRight aria-hidden="true" /></a></div></footer>
+    <footer className="footer shell"><div className="footer-top"><Brand /></div><div className="footer-bottom"><span>© {new Date().getFullYear()} LensLayer</span><nav className="footer-legal" aria-label="Legal"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:udo@lenslayer.online">Contact</a></nav><a href="#top">Back to top <ArrowRight aria-hidden="true" /></a></div></footer>
   </div>
 }
 export default App
