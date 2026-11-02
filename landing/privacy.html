@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ffffff" />
+    <script>
+      try {
+        if (localStorage.getItem("lenslayer-landing-theme") === "dark") {
+          document.documentElement.dataset.theme = "dark"
+          document.querySelector('meta[name="theme-color"]').content = "#191a17"
+        }
+      } catch { /* Storage may be unavailable in private browsing. */ }
+    </script>
+    <meta name="description" content="What LensLayer collects, which services process it, how long it is kept and how to delete it." />
+    <link rel="icon" href="/lenslayer-mark.svg" type="image/svg+xml" />
+    <title>Privacy policy | LensLayer</title>
+    <script type="module" src="/src/legal.js"></script>
+  </head>
+  <body>
+    <header class="legal-header"><div class="legal-shell"><a class="legal-home" href="/"><img src="/lenslayer-lockup.svg" alt="LensLayer home" width="132" height="28" /></a><nav aria-label="Legal"><a href="/privacy" aria-current="page">Privacy</a><a href="/terms">Terms</a></nav></div></header>
+    <main class="legal-shell legal-article">
+      <p class="legal-eyebrow">Last updated 2 November 2026</p>
+      <h1>Privacy policy</h1>
+      <p class="legal-lede">LensLayer reads the agreements you upload so it can flag risks, answer questions and help you track what you've agreed to. This page explains what that involves for your data, in plain terms.</p>
+
+      <h2>Who runs LensLayer</h2>
+      <p>LensLayer is an independent product run by its founder from Nigeria. For anything about your data, email <a href="mailto:udo@lenslayer.online">udo@lenslayer.online</a>. A person reads every message.</p>
+
+      <h2>What we collect</h2>
+      <ul>
+        <li><strong>Account details:</strong> your name, email address and the ID of the account you sign in with (email and password, or Google).</li>
+        <li><strong>What you put in a workspace:</strong> uploaded documents, the text we extract from them, reviews, questions and answers, tasks, comments and workspace settings.</li>
+        <li><strong>Agent activity:</strong> credentials you create for agents, what each agent was allowed to do, the actions it proposed, who approved them and the result.</li>
+        <li><strong>Technical logs:</strong> IP address, browser type, request times and errors. We use these to keep the service secure and to fix problems.</li>
+        <li><strong>Google Calendar (invite-only pilot):</strong> if you connect a calendar, we read and create events only on the single calendar you choose.</li>
+      </ul>
+      <p>We don't run advertising, analytics or session-recording tools, and we never sell your data. We don't use your documents to train AI models.</p>
+
+      <h2>Services that process your data</h2>
+      <p>We use these providers to run LensLayer. Each one receives only what it needs for its part of the job.</p>
+      <div class="legal-table" role="region" aria-label="Data processors"><table>
+        <thead><tr><th scope="col">Provider</th><th scope="col">What it does for us</th><th scope="col">Data it handles</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Auth0 (Okta)</th><td data-label="What it does for us">Sign-in, password reset and email verification</td><td data-label="Data it handles">Name, email, login history</td></tr>
+          <tr><th scope="row">Google Cloud (Belgium region)</th><td data-label="What it does for us">Runs our API and background jobs</td><td data-label="Data it handles">Everything in transit, briefly in memory</td></tr>
+          <tr><th scope="row">Neon</th><td data-label="What it does for us">Our database</td><td data-label="Data it handles">Account and workspace records, extracted text you chose to keep</td></tr>
+          <tr><th scope="row">Cloudflare</th><td data-label="What it does for us">Hosts this website and the app, stores uploaded files (R2) and forwards our email</td><td data-label="Data it handles">Uploaded files, request logs</td></tr>
+          <tr><th scope="row">Cloudmersive</th><td data-label="What it does for us">Scans each upload for malware before we open it</td><td data-label="Data it handles">The uploaded file</td></tr>
+          <tr><th scope="row">Groq</th><td data-label="What it does for us">Runs the AI model that reviews documents and answers questions</td><td data-label="Data it handles">Document text and your question</td></tr>
+          <tr><th scope="row">DeepSeek</th><td data-label="What it does for us">Plans steps for hosted agents, only when you run one</td><td data-label="Data it handles">The task and the excerpts it needs</td></tr>
+          <tr><th scope="row">Resend</th><td data-label="What it does for us">Sends invitations and review notifications</td><td data-label="Data it handles">Recipient email and the message</td></tr>
+          <tr><th scope="row">Google</th><td data-label="What it does for us">Calendar access, only if you connect it</td><td data-label="Data it handles">Events on the calendar you chose</td></tr>
+        </tbody>
+      </table></div>
+      <p>Some of these providers process data outside your country, including in the United States and the EU. We use them through their standard data processing terms.</p>
+
+      <h2>How long we keep it</h2>
+      <ul>
+        <li><strong>Uploaded files</strong> are deleted once the review finishes, unless your workspace chooses to keep originals. Workspaces set how long kept documents last (30 days by default).</li>
+        <li><strong>Reviews, tasks and workspace records</strong> stay until you delete them, a workspace owner deletes them, or you delete your account.</li>
+        <li><strong>Technical logs</strong> are kept for about 30 days.</li>
+      </ul>
+
+      <h2>Deleting your account</h2>
+      <p>Go to <a href="https://app.lenslayer.online/settings/identity">Settings → Identity → Delete account</a>. Here's what happens:</p>
+      <ul>
+        <li>Workspaces where you're the only member are deleted, with all their files.</li>
+        <li>In shared workspaces, you're removed and any API keys or agent credentials you created stop working. Your past activity there stays visible to the team as "Deleted user".</li>
+        <li>Your name and email are erased from LensLayer, and your sign-in account is removed from Auth0.</li>
+      </ul>
+      <p>If you're the only owner of a shared workspace, make someone else an owner first. You can also email us and we'll do it for you within 30 days.</p>
+
+      <h2>Your rights</h2>
+      <p>You can ask us for a copy of your data, ask us to correct it, object to how we use it or ask us to delete it. These rights come from the Nigeria Data Protection Act 2023 and, if you're in the EU or UK, the GDPR. Email <a href="mailto:udo@lenslayer.online">udo@lenslayer.online</a> and we'll reply within 30 days. If you're unhappy with our answer, you can complain to your local data protection authority.</p>
+
+      <h2>Cookies</h2>
+      <p>This website sets no cookies. It remembers your light or dark theme choice in your browser's local storage. The app uses only the cookies needed to keep you signed in, so there's no cookie banner.</p>
+
+      <h2>Children</h2>
+      <p>LensLayer is a work tool and isn't meant for anyone under 18.</p>
+
+      <h2>Changes</h2>
+      <p>If we change how we handle your data, we'll update this page and the date at the top. If the change is significant, we'll also email account holders before it takes effect.</p>
+    </main>
+    <footer class="legal-shell legal-footer"><span>© 2026 LensLayer</span><nav aria-label="Footer"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:udo@lenslayer.online">Contact</a></nav></footer>
+  </body>
+</html>

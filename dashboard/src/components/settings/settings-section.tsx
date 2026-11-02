@@ -10,6 +10,7 @@ import { api } from "@/lib/api";
 import { canAdministerAgents } from "@/lib/agent-state";
 import { formatDate, titleCase } from "@/lib/utils";
 import { ApiKeys, IntegrationSettings } from "./settings-integrations";
+import { DeleteAccount } from "./delete-account";
 import { policyFields, settingsSections, type SettingsDraft, type SettingsPatch, type SettingsSectionId } from "./sections";
 import { useSettingsDrafts } from "./settings-workspace";
 
@@ -52,6 +53,7 @@ function Identity() {
       <div><dt>Your role</dt><dd>{titleCase(activeRole ?? "No role")}</dd></div>
       <div><dt>Created</dt><dd>{formatDate(activeOrganization?.created_at)}</dd></div>
     </dl><p className="settings-access-note">{isDemo ? "This identity belongs to the isolated synthetic demo." : "Actions are attributed to your signed-in identity and active workspace. Changing workspaces does not widen your role."}</p>
+    {!isDemo && user?.id && <DeleteAccount />}
   </>;
 }
 

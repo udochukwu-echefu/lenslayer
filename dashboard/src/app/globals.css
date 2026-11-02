@@ -621,7 +621,11 @@ table.sr-only { display: block; max-width: 1px; }
 .auth-portal .auth-switch a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .auth-footer { display: flex; align-items: center; justify-content: space-between; gap: 24px; color: var(--auth-faint); font-size: 12px; line-height: 1.2; }
 .auth-footer p { margin: 0; }
-.auth-footer p:first-child { display: flex; gap: 8px; }
+.auth-footer p:first-child { display: flex; align-items: center; gap: 8px; }
+.auth-footer a { display: inline-flex; align-items: center; min-height: 44px; color: inherit; text-underline-offset: 3px; }
+.auth-footer a:hover { color: var(--auth-muted); text-decoration: underline; }
+.auth-portal .auth-consent { margin: 24px 0 0; color: var(--auth-muted); font-size: 13px; line-height: 1.55; text-align: center; }
+.auth-portal .auth-consent a { color: var(--auth-accent-hover); text-underline-offset: 3px; }
 .auth-footer p:last-child { color: var(--auth-muted); font-weight: 520; }
 @media (max-width: 1120px) {
   .auth-main { width: min(920px,100%); grid-template-columns: minmax(400px,520px) minmax(360px,400px); gap: clamp(48px,6vw,80px); }
