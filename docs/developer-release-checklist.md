@@ -1,65 +1,65 @@
-# Developer/product release checklist
+# Release checklist
 
-Updated **17 October 2026**. See [current public release status](deployment/current-release-status.md)
-for the release snapshot. This checklist separates established public releases
-from production acceptance still being handled by root.
+Updated **2 November 2026**. [Current release status](deployment/current-release-status.md)
+has the evidence behind each "done" item. Only the owner merges to `main`, deploys
+to production or publishes to npm.
 
-## Public release facts
+## Waiting on the owner
 
-- [x] Publish [`@lenslayer/agent-sdk@0.1.0`](https://www.npmjs.com/package/@lenslayer/agent-sdk).
-  MIT applies to the SDK alone; MCP/backend/repository are not relicensed.
-- [x] Merge core backend [PR #5](https://github.com/udochukwu-echefu/lenslayer/pull/5),
-  UI [PR #6](https://github.com/udochukwu-echefu/lenslayer/pull/6) and app domain
-  [PR #7](https://github.com/udochukwu-echefu/lenslayer/pull/7).
-- [x] Establish **https://app.lenslayer.online** as the canonical dashboard.
-  Main has separate Settings pages, Developer guide inside Settings, Runs inside
-  Agents and custom select controls.
-- [x] Correct repository SDK install/import/status guidance. The npm 0.1.0 tarball
-  is immutable and retains its historical README; this is not a new registry release.
+Merge and deploy in this order. Each PR says what to rebuild.
 
-## Developer integration checks
+- [ ] **[#27](https://github.com/udochukwu-echefu/lenslayer/pull/27): dependency patches.** Includes
+  the critical Next.js image-optimizer RCE and about 30 pypdf CVEs reachable through uploads.
+  Rebuild the API image and the dashboard.
+- [ ] **[#28](https://github.com/udochukwu-echefu/lenslayer/pull/28): account deletion, `/privacy`, `/terms`.**
+  Before deploying, create an Auth0 Machine to Machine app with only `delete:users`
+  and set `LENSLAYER_PLATFORM_AUTH0_MANAGEMENT_DOMAIN`, `_CLIENT_ID` and `_CLIENT_SECRET`
+  in Secret Manager. Without them, the privacy page's promise to remove the Auth0
+  login isn't kept automatically. Deploy the landing site, the API and the dashboard.
+- [ ] **[#29](https://github.com/udochukwu-echefu/lenslayer/pull/29): mobile tap spacing.** Stacked on #28.
+- [ ] **[#30](https://github.com/udochukwu-echefu/lenslayer/pull/30): onboarding fixes**, then do its
+  five-minute live sign-up, verification, workspace and password-reset check in a private window.
+- [ ] **[#31](https://github.com/udochukwu-echefu/lenslayer/pull/31): cold-start wake, `--cpu-boost`,
+  Q&A cancel, 92 KB sign-in image.** After deploying, ask a portfolio question on staging,
+  press Stop within a second, and confirm the API log shows the stream cancelled.
+- [ ] **Publish `@lenslayer/agent-sdk@0.1.1`.** It's a documentation-only patch, because the 0.1.0 README
+  on npm still says "not published to npm". Follow [the distribution procedure](../sdk/DISTRIBUTION.md):
+  it needs your GitHub approval and npm sign-in with MFA.
+- [ ] **Staging:** renew its temporary R2 credentials if staging stays in use.
 
-- Install `npm install @lenslayer/agent-sdk@0.1.0` in an ESM server-side Node 20.3+
-  project. Follow the [SDK README](../sdk/README.md) for actual exports and usage.
-- Obtain an operator-supplied backend API URL and owner/admin-issued scoped
-  `ll_agent_` credential. The dashboard URL is not the SDK API base URL.
-  Never use a user JWT or expose credentials in browser code/public environment
-  variables, source control or logs.
-- Start with `client.tools()` to inspect available grants. API methods do not
-  imply a grant or provider readiness. Human approval, evidence, fixed scope,
-  deadlines and idempotency still apply; the SDK cannot self-approve.
-- For source changes, run `npm ci`, `npm test` and `npm run release:check` from
-  `sdk/`. These are local build/test/package checks, not live acceptance or
-  publication authorization. Keep MCP local stdio; no hosted MCP OAuth is promised.
+## Decisions for the owner
 
-## Current production work — root owns private configuration and live checks
+- **API cold start.** The API takes 10.7s to answer after scaling to zero, measured 2 November.
+  #31 hides most of that behind sign-in for free. `--min-instances=1` removes it entirely but
+  keeps one instance running all the time.
+- **Legal review.** `/privacy` and `/terms` were written from what the code does, not by a lawyer.
+  Get them reviewed before taking payment. Governing law is set to Nigeria.
+- **Calendar** stays an owner-only pilot (Google OAuth in testing). A public launch needs
+  Google's app verification.
+- **DeepSeek** keeps its US$1 / three-admission lifetime cap.
 
-- [ ] Finish the one approved production task end to end; retain the exact approval,
-  action and verified read-back receipt. No new production success is claimed here.
-- [ ] Finish production DeepSeek planning configuration, data-transfer/retention
-  consent and bounded acceptance. Preserve spending/admission records; staging
-  evaluation/canary evidence is not a new paid-call approval or production proof.
-- [ ] Finish production Calendar configuration, human consent and provider/session
-  acceptance. On uncertain writes use read-back reconciliation, not another insert.
-- [ ] Retire the old `workers.dev` app address and verify the resulting behavior.
-  A merged custom-domain PR alone does not prove retirement.
+## Done
 
-Only root can close these items from actual approved live evidence. This source-only
-documentation update makes no claim about current private configuration, queue/model
-state, migrations, worker activation, production CI/image binding or new approvals.
+- `@lenslayer/agent-sdk@0.1.0` published on 16 October. MIT covers the SDK only.
+- Core platform PRs #5–#8 merged; **https://app.lenslayer.online** is the canonical dashboard.
+  The old `workers.dev` address returns 404 and has been removed from CORS and Auth0.
+- One approved production task ran end to end, with a verified Calendar read-back receipt.
+- DeepSeek planning pilot enabled under its cap; owner-only Calendar pilot connected.
+- 18–19 October, merged and deployed: performance work #21 and #22, landing app links #23,
+  Q&A stream completion #24, provider details hidden from failed reviews #25, rounded
+  session-expired screen #26.
 
-## Historical evidence, not today's pending-gate list
+## For SDK developers
 
-The [14–15 October acceptance record](architecture/agent-roadmap-acceptance-2026-10-14.md)
-preserves original test counts, fixture identities, staging results and limitations.
-It records the fresh SDK pre-expiry revocation denial and renewed Calendar
-existing-event GET/natural refresh as completed bounded staging proofs. Do not
-reopen those checks based on older unchecked checklist entries.
+- `npm install @lenslayer/agent-sdk` in a server-side ESM project on Node 20.3+. Start
+  with `client.tools()` to see what your credential is allowed to do.
+- Use the backend API URL your operator gives you and a scoped `ll_agent_` credential
+  issued by a workspace owner or admin. The dashboard URL is not the API URL. Never put
+  the credential in browser code, public env vars, source control or logs.
+- Agents can't approve their own actions: human approval, scope, deadlines and
+  idempotency still apply.
+- Changing the SDK: from `sdk/`, run `npm ci`, `npm test` and `npm run release:check`.
+  These are local checks, not permission to publish.
 
-Its draft PR #5, unpublished SDK and first-package bootstrap status is superseded
-by the public release facts above. Other historical unchecked items are not
-automatically current blockers or automatically passed: the release operator must assess relevance
-and retain source/runtime-specific evidence. A merge or npm listing does not prove
-cryptographic provenance verification, exhaustive operational/security acceptance,
-or production task/model/Calendar success. Future registry releases require their
-own owner review; see the [distribution procedure](../sdk/DISTRIBUTION.md).
+Older acceptance records under `docs/architecture/` and `docs/deployment/` are dated
+snapshots. Their unchecked boxes aren't a list of current blockers; this file is.
