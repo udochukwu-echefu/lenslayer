@@ -30,7 +30,7 @@ class ProductionReleaseTests(unittest.TestCase):
         self.assertFalse(config.get("preview_urls", False))
         self.assertEqual(config["compatibility_date"], "2026-10-09")
         self.assertEqual(config["compatibility_flags"],
-                         ["nodejs_compat", "global_fetch_strictly_public"])
+                         ["nodejs_compat", "global_fetch_strictly_public", "enable_request_signal"])
         self.assertEqual(config["main"], ".open-next/worker.js")
         self.assertEqual(config["assets"],
                          {"directory": ".open-next/assets", "binding": "ASSETS"})
