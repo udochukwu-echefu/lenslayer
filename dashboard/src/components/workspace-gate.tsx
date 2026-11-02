@@ -1,7 +1,8 @@
 "use client";
 
-import { AlertTriangle, ArrowRight, Building2, LoaderCircle } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { AlertTriangle, ArrowRight, Building2, LoaderCircle, MailCheck } from "lucide-react";
+import { signIn, useSession } from "next-auth/react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { useCreateWorkspace, useWorkspace } from "./workspace-provider";
@@ -10,6 +11,12 @@ import { PageLoading } from "./page-states";
 
 function slugify(value: string) {
   return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 120);
+}
+
+// People never see the slug, so a taken or unusable one must not block setup.
+function uniqueSlug(base: string) {
+  const suffix = crypto.randomUUID().slice(0, 6);
+  return base.length >= 2 ? `${base.slice(0, 113)}-${suffix}` : `workspace-${suffix}`;
 }
 
 export function unauthenticatedDestination(pathname: string) {
@@ -44,6 +51,22 @@ export function WorkspaceGate({ children }: { children: React.ReactNode }) {
     return <main className="gate"><LoaderCircle className="gate-spinner" aria-label="Loading workspace" /><p>Opening your workspace…</p><PageLoading rows={3} /></main>;
   }
 
+  // The API refuses unverified Auth0 emails; refreshing can't fix that, a new sign-in after verifying does.
+  if (error instanceof ApiError && error.status === 403 && /verify your email/i.test(error.message)) {
+    return (
+      <main className="gate">
+        <div className="gate-card">
+          <div className="gate-symbol"><MailCheck size={20} aria-hidden="true" /></div>
+          <p className="eyebrow">One more step</p>
+          <h1>Verify your email</h1>
+          <p>We sent a verification link to the address you signed up with. Open it (check spam if it isn&rsquo;t there), then come back here.</p>
+          <button className="button" type="button" onClick={() => void signIn("oidc", { callbackUrl: pathname || "/" })}>I&rsquo;ve verified my email<ArrowRight size={16} /></button>
+          <Link className="button secondary" href="/auth/signout">Use a different account</Link>
+        </div>
+      </main>
+    );
+  }
+
   if (error) {
     const unavailable = error instanceof ApiError && error.status === 503;
     return (
@@ -63,9 +86,16 @@ export function WorkspaceGate({ children }: { children: React.ReactNode }) {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const slug = slugify(name);
-    if (!slug) return;
-    await createWorkspace.mutateAsync({ name: name.trim(), slug });
+    const base = slugify(name);
+    const payload = { name: name.trim(), slug: base.length >= 2 ? base : uniqueSlug(base) };
+    try {
+      await createWorkspace.mutateAsync(payload);
+    } catch (failure) {
+      // createWorkspace.error renders anything other than a slug clash.
+      if (failure instanceof ApiError && failure.status === 409) {
+        await createWorkspace.mutateAsync({ ...payload, slug: uniqueSlug(base) }).catch(() => undefined);
+      }
+    }
   }
 
   return (
