@@ -4,6 +4,9 @@ from fastapi import APIRouter, BackgroundTasks, Request, Response, status
 from ..agent_wake import queue_agent_worker
 
 from ..schemas import (
+    AccountDeletionPreview,
+    AccountDeletionRequest,
+    AccountDeletionResponse,
     InvitationAcceptResponse,
     InvitationCreate,
     InvitationCreatedResponse,
@@ -29,6 +32,23 @@ def me(
     user: UserDep,
 ) -> UserResponse:
     return UserResponse.model_validate(user)
+
+
+@router.get("/me/deletion", response_model=AccountDeletionPreview, tags=["identity"])
+def account_deletion_preview(
+    service: ServiceDep,
+    user: UserDep,
+) -> AccountDeletionPreview:
+    return AccountDeletionPreview(blocking_workspaces=service.account_deletion_blockers(user))
+
+
+@router.post("/me/deletion", response_model=AccountDeletionResponse, tags=["identity"])
+def delete_account(
+    payload: AccountDeletionRequest,
+    service: ServiceDep,
+    user: UserDep,
+) -> AccountDeletionResponse:
+    return AccountDeletionResponse(**service.delete_account(user, payload.confirmation))
 
 
 @router.post(

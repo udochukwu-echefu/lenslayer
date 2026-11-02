@@ -36,6 +36,12 @@ class Settings(BaseSettings):
     oidc_name_claim: str = "name"
     oidc_email_verified_claim: str = "email_verified"
     oidc_require_verified_email: bool = False
+    # Optional Auth0 Management API client (scope delete:users) so account
+    # deletion also removes the login identity. Without it the identity is left
+    # for manual removal and the API reports identity_removed=false.
+    auth0_management_domain: str = ""
+    auth0_management_client_id: str = ""
+    auth0_management_client_secret: str = ""
 
     object_storage_backend: str = "local"
     object_storage_root: Path = Path(".lenslayer/platform-files")
