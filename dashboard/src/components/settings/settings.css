@@ -54,7 +54,7 @@
 .workspace-settings .settings-delete-blocked { color: var(--danger); font-size: 13px; }
 @media (max-width: 760px) {
   .workspace-settings .settings-sections-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
-  .workspace-settings .settings-section-nav { position: static; flex-direction: row; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--line); padding-bottom: 16px; }
+  .workspace-settings .settings-section-nav { position: static; flex-direction: row; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid var(--line); padding-bottom: 16px; }
   .workspace-settings .settings-section-nav a { padding-inline: 10px; }
   .workspace-settings .settings-facts > div { grid-template-columns: 115px minmax(0, 1fr); gap: 12px; }
   .workspace-settings .settings-records article { flex-wrap: wrap; }

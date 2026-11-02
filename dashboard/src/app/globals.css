@@ -2506,3 +2506,14 @@ body { font-size: var(--text-body); line-height: 1.5; }
 :root[data-theme="dark"] table { background: var(--workspace-surface); }
 :root[data-theme="dark"] table th { background: var(--workspace-raised); }
 :root[data-theme="dark"] table tbody tr:hover { background: var(--workspace-hover); }
+
+/* Touch spacing, 2026-11-02: adjacent tap targets stay at least 8px apart and
+   the Ask AI button never covers the last row on phones. */
+.task-tabs, .table-pagination nav, .calendar-toolbar > div, .suggested-questions { gap: 8px; }
+@media (max-width: 900px) {
+  .main-content { padding-bottom: 96px; }
+}
+@media (max-width: 540px) {
+  .topbar, .top-actions { gap: 8px; }
+  .top-new { width: 44px; min-height: 44px; }
+}
