@@ -12,10 +12,10 @@
   "dependencies": {
     "@lenslayer/agent-sdk": "file:../sdk",
     "@modelcontextprotocol/server": "2.3.1",
-    "zod": "4.4.3"
+    "zod": "4.6.7"
   },
   "devDependencies": {
-    "@modelcontextprotocol/client": "2.3.1",
+    "@modelcontextprotocol/client": "2.4.0",
     "@types/node": "24.10.1",
     "opencode-mcp-client-2-0": "npm:@modelcontextprotocol/client@2.0.0",
     "typescript": "5.9.3"
