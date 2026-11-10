@@ -6,11 +6,11 @@ product
 
 ## Users
 
-Legal, procurement, compliance, finance and operations teams that need to understand documents, review evidence and coordinate decisions and follow-up work. Developers can connect agents that need private context, scoped permission to act and durable proof of completion.
+Legal, procurement, finance and operations teams that review agreements together and need to keep track of what they have agreed to: risks, obligations, renewal and notice dates, and who owns the next step.
 
 ## Product Purpose
 
-LensLayer is agentic document intelligence for teams. It turns documents into source-linked findings, answers, obligations, comparisons and shared review decisions. Agents are a supporting feature: they can retrieve scoped evidence, propose follow-up tasks, wait for input or approval and verify exact outcomes. External agents use the API, SDK and MCP adapter; LensLayer's hosted runner uses the same execution records for bounded user assignments. The document workflows provide first-pass triage and professional-review handoff, without claiming legal advice. Lead public messaging with document intelligence and team collaboration, not agent infrastructure.
+LensLayer is contract review and renewal follow-through for teams. It gives each uploaded agreement a first-pass review of risks, obligations, payments and key dates, each linked to the clause it came from, and answers questions across agreements with source-linked citations. Teams record review decisions in a shared Overview queue, and renewal, notice and termination dates get an owner, a reminder and escalation when they slip. The review is first-pass triage and a hand-off to professional review, not legal advice, and it says what it could not read or confirm. Agents, runs and the document converter remain in the codebase behind build-time flags, but public messaging covers contract review and renewals only.
 
 ## Brand Personality
 

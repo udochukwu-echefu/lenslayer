@@ -1,6 +1,6 @@
 {
-  "source": "public/lenslayer-dashboard@2x.jpg",
-  "sourceSha256": "23dded8ad80dd79d735026d79e50e3aee355a62f7642683323b9b6c26b5703bf",
+  "source": "public/lenslayer-overview.jpg",
+  "sourceSha256": "4208d87e4f803975037f957222f44ddb7a54cb9ad773f27ee6cd62dea6b82403",
   "sharp": {
     "aom": "3.13.1",
     "archive": "3.8.2",
@@ -34,60 +34,60 @@
   },
   "variants": [
     {
-      "file": "dashboard-v1-480.avif",
+      "file": "overview-v2-480.avif",
       "width": 480,
       "height": 252,
-      "bytes": 8072,
-      "sha256": "586809071c9ed726ff9336006647a28b280d7ce673a0f67b6c4a6ce0fe4404b6"
+      "bytes": 7051,
+      "sha256": "4c3681f22897e459fabfac39372ef3ad3af4e8de7d29711578555c174afb0f1f"
     },
     {
-      "file": "dashboard-v1-480.webp",
+      "file": "overview-v2-480.webp",
       "width": 480,
       "height": 252,
-      "bytes": 10712,
-      "sha256": "e7ea1c60fefa159fe3f2ee27908ae3121e8488350da00deded356f4f97cac8e8"
+      "bytes": 9024,
+      "sha256": "42e7f126b8237be72bc3ab42be0fa583e0652a2ece360897f1aa15b944a6faa3"
     },
     {
-      "file": "dashboard-v1-768.avif",
+      "file": "overview-v2-768.avif",
       "width": 768,
       "height": 404,
-      "bytes": 17221,
-      "sha256": "cf8c1329b62f0c712b8e42caf37b3ee42223b9630354a78da45bb1e870f91644"
+      "bytes": 14119,
+      "sha256": "c0d45d13acc2ba39db00c28351dcdd8e89f77b611bc871a9dd06e754bb8f7d62"
     },
     {
-      "file": "dashboard-v1-768.webp",
+      "file": "overview-v2-768.webp",
       "width": 768,
       "height": 404,
-      "bytes": 22128,
-      "sha256": "175b3221fc0fec827360db638cea8b3b970adc9025aa4f7ca4cb21037d76ab9b"
+      "bytes": 18806,
+      "sha256": "603e92013a3ab691a80e9ad660d7a63a5365ceb86485d1f99d53928a7c9e957f"
     },
     {
-      "file": "dashboard-v1-1152.avif",
+      "file": "overview-v2-1152.avif",
       "width": 1152,
       "height": 605,
-      "bytes": 31961,
-      "sha256": "8c647b7cd4c8b9c883287e7dfce74e70fdf99099276d7faf0a6fec69f89630c4"
+      "bytes": 24744,
+      "sha256": "862fa6200f45657dfdef5157032b6f6794caf2267976e37f7e33c2f9d0e40b65"
     },
     {
-      "file": "dashboard-v1-1152.webp",
+      "file": "overview-v2-1152.webp",
       "width": 1152,
       "height": 605,
-      "bytes": 39750,
-      "sha256": "fc08a6c40c781d28e517248bedf00899bee87c94d42cd0029f54be4e70e8ade3"
+      "bytes": 32716,
+      "sha256": "48c1648fb6964cc2b77c88a7928ae19dc23cba7d98e43c25261fb8342af52735"
     },
     {
-      "file": "dashboard-v1-1728.avif",
+      "file": "overview-v2-1728.avif",
       "width": 1728,
       "height": 908,
-      "bytes": 63034,
-      "sha256": "6c1329544c7d80871223c33b6b1b8e3a68288a6042bd179b3f8b5ebb1641859d"
+      "bytes": 46219,
+      "sha256": "10383dce9d09089085b6fd79e060679e7509b81bff05c3e52d19e85e325accd0"
     },
     {
-      "file": "dashboard-v1-1728.webp",
+      "file": "overview-v2-1728.webp",
       "width": 1728,
       "height": 908,
-      "bytes": 77292,
-      "sha256": "7df8a79e68b39a66567e24c0d14f058dd50146827145263366f08c344e2c9b3d"
+      "bytes": 59966,
+      "sha256": "9ee84f627a153e363ce0d2dc58b5478a9a303630fc4e379a5de81df477c81231"
     }
   ]
 }

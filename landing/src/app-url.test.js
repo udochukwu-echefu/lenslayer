@@ -48,8 +48,12 @@ try {
     const { default: App } = await import(`${artifact.href}?case=${index}`)
     const html = renderToStaticMarkup(createElement(App))
     const hrefs = [...html.matchAll(/<a\b[^>]*\bhref="([^"]+)"/g)].map((match) => match[1])
-    for (const route of ["signin", "runs", "", "developers", "convert"]) {
+    for (const route of ["signin", "", "portfolio", "calendar", "contracts/demo-msa"]) {
       assert.ok(hrefs.includes(`${canonical}/${route}`), `Missing canonical /${route} href`)
+    }
+    // Agents, runs, the developer guide and the converter are frozen in the dashboard.
+    for (const frozen of ["/runs", "/agents", "/agent-tasks", "/developers", "/settings/developers", "/convert"]) {
+      assert.ok(!hrefs.some((href) => href.startsWith(`${canonical}${frozen}`)), `Landing page must not link to frozen ${frozen}`)
     }
     // The footer's legal pages live on this site, not in the app.
     const sitePages = ["/privacy", "/terms", "mailto:udo@lenslayer.online"]

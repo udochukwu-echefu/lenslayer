@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react"
-import { ArrowRight, BadgeCheck, FileSearch, UserCheck } from "lucide-react"
+import { ArrowRight, CircleHelp, FileSearch, Files } from "lucide-react"
 
+// Illustrative questions about the fictional agreements in the demo workspace.
 const questions = [
-  { label: "Evidence", question: "How much notice does Loopback need?", answer: "The latest IT support draft says 60 days before the annual renewal. The agent retrieves that clause and its source version, so Aisha can check the wording before approving a follow-up.", sources: [{ name: "Loopback IT support agreement", location: "Section 3.2 · Revised draft", quote: "The Term shall renew automatically unless either party gives not less than 60 days' written notice." }] },
-  { label: "Approval", question: "Who will handle the renewal decision?", answer: "The agent proposes a task for Chidi, due five days before the notice deadline. Aisha checks the assignee, date and instructions before approving it. The proposal waits until she makes that decision.", sources: [{ name: "Proposed follow-up for Chidi", location: "Awaiting Aisha's approval", quote: "Confirm the Loopback renewal decision with Aisha. Check whether we want another year of IT support." }] },
-  { label: "Receipt", question: "Was Chidi's follow-up created?", answer: "After approval, LensLayer creates the task and reads it back to check the assignee and due date. The run records the result. Chidi still needs to speak with Aisha and handle the renewal decision.", sources: [{ name: "Task creation receipt", location: "Sample completed run", quote: "Follow-up created for Chidi. Renewal decision still outstanding." }] },
+  { label: "Across agreements", tone: "yellow", icon: Files, question: "Which notice deadlines are coming up?", answer: "Loopback IT support renews automatically unless we give 60 days’ written notice. Worklane must receive the Allen Avenue break notice six months before the break date. Both dates are already on the Renewals calendar.", sourceLabel: "Sources", sources: [{ name: "Loopback IT support agreement", location: "Section 3.2 · Revised draft", contract: "demo-msa", quote: "The Term shall renew automatically unless either party gives not less than 60 days' written notice." }, { name: "28 Allen Avenue office lease", location: "Schedule 4, paragraph 2", contract: "demo-lease", quote: "The break notice must be received at the Landlord's registered office no later than six months before the Break Date." }] },
+  { label: "One agreement", tone: "pink", icon: FileSearch, question: "Are data claims covered by Loopback’s liability cap?", answer: "No. Section 12.3 makes us liable for data incidents without limit, outside the cap in Section 13.2. Loopback hasn’t agreed to change it yet, and Chidi has a task to settle it before Aisha signs.", sourceLabel: "Source", sources: [{ name: "Loopback IT support agreement", location: "Section 12.3 · Revised draft", contract: "demo-msa", quote: "Customer shall indemnify Supplier against all losses arising from any data incident, without limitation." }] },
+  { label: "What’s missing", tone: "blue", icon: CircleHelp, question: "When will Patchworks deliver the new laptops?", answer: "The agreement doesn’t fix a date. Clause 6.4 treats delivery dates as estimates, and the order schedule it refers to wasn’t in the uploaded PDF. Ask Patchworks for the schedule before planning around a date.", sourceLabel: "Closest source", sources: [{ name: "Patchworks equipment supply agreement", location: "Clause 6.4 · Schedule not included", contract: "demo-supplier", quote: "Delivery dates are estimates only and may be revised by Supplier at any time." }] },
 ]
-const stageIcons = [FileSearch, UserCheck, BadgeCheck]
 
 function CardLighting() {
   const patternId = useId()
@@ -34,7 +34,7 @@ function resetCardLighting(card) {
   delete card.dataset.lighting
 }
 
-export default function PortfolioDemo({ sampleUrl }) {
+export default function PortfolioDemo({ appUrl }) {
   const [active, setActive] = useState(0)
   const [paused, setPaused] = useState(false)
   const [focused, setFocused] = useState(false)
@@ -110,22 +110,22 @@ export default function PortfolioDemo({ sampleUrl }) {
   }
 
   return (
-    <div className="portfolio-carousel" ref={carouselRef} role="region" aria-roledescription="carousel" aria-label="Illustrative document workflow" onFocusCapture={() => setFocused(true)} onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false) }}>
+    <div className="portfolio-carousel" ref={carouselRef} role="region" aria-roledescription="carousel" aria-label="Example questions" onFocusCapture={() => setFocused(true)} onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false) }}>
       <div className="portfolio-carousel-viewport" aria-live={paused || reduceMotion ? "polite" : "off"} onPointerMove={tiltCard} onPointerLeave={clearLighting} onPointerDown={(event) => { if (event.pointerType === "touch") { swipeClick.current = false; swipeStart.current = { x: event.clientX, y: event.clientY } } }} onPointerCancel={() => { swipeStart.current = null; clearLighting() }} onPointerUp={(event) => { if (!swipeStart.current) return; const x = event.clientX - swipeStart.current.x; const y = event.clientY - swipeStart.current.y; swipeStart.current = null; if (Math.abs(x) > 45 && Math.abs(x) > Math.abs(y) * 1.2) { swipeClick.current = true; navigate(x < 0 ? 1 : -1) } }} onClickCapture={(event) => { if (swipeClick.current) { event.preventDefault(); event.stopPropagation(); swipeClick.current = false } }}>
         <div className="portfolio-carousel-track">
           {questions.map((query, index) => {
-            const Icon = stageIcons[index]
+            const Icon = query.icon
             const position = index === active ? "front" : index === (active + 1) % questions.length ? "right" : "left"
-            return <article className="portfolio-demo portfolio-carousel-card" data-position={position} data-stage={query.label.toLowerCase()} data-active={active === index} ref={(element) => { cards.current[index] = element }} key={query.label} id={`${id}-slide-${index}`} role="group" aria-roledescription="slide" aria-label={`${index + 1} of ${questions.length}: ${query.label}`} aria-hidden={active !== index} inert={active !== index}>
+            return <article className="portfolio-demo portfolio-carousel-card" data-position={position} data-tone={query.tone} data-active={active === index} ref={(element) => { cards.current[index] = element }} key={query.label} id={`${id}-slide-${index}`} role="group" aria-roledescription="slide" aria-label={`${index + 1} of ${questions.length}: ${query.label}`} aria-hidden={active !== index} inert={active !== index}>
               <CardLighting />
               <header className="portfolio-card-stage"><Icon aria-hidden="true" /><span>{query.label}</span></header>
               <div className="portfolio-answer">
                 <h3 className="sample-question">{query.question}</h3>
                 <p>{query.answer}</p>
                 <div className="answer-sources">
-                  <p>{index === 0 ? "Retained source" : "Workflow record"}</p>
+                  <p>{query.sourceLabel}</p>
                   {query.sources.map((source) => (
-                    <a href={sampleUrl} className="answer-source" key={source.name}>
+                    <a href={`${appUrl}/contracts/${source.contract}`} className="answer-source" key={source.name}>
                       <div><span>{source.name}</span><span>{source.location} <ArrowRight aria-hidden="true" /></span></div>
                       <blockquote>“{source.quote}”</blockquote>
                     </a>
@@ -136,8 +136,8 @@ export default function PortfolioDemo({ sampleUrl }) {
           })}
         </div>
       </div>
-      <div className="portfolio-carousel-pagination" role="group" aria-label="Walkthrough cards" onKeyDown={(event) => { if (event.key === "ArrowRight" || event.key === "ArrowLeft") { event.preventDefault(); navigate(event.key === "ArrowRight" ? 1 : -1) } }}>
-        {questions.map((question, index) => <button type="button" key={question.label} aria-label={`Show ${question.label.toLowerCase()} card and stop automatic rotation`} title={`Show ${question.label.toLowerCase()} card and stop automatic rotation`} aria-pressed={active === index} aria-controls={`${id}-slide-${index}`} onClick={() => { setActive(index); setPaused(true) }}><span className="portfolio-carousel-dot" />{active === index && running && <span className="portfolio-slide-progress" key={`${active}-progress`} aria-hidden="true" />}</button>)}
+      <div className="portfolio-carousel-pagination" role="group" aria-label="Example question cards" onKeyDown={(event) => { if (event.key === "ArrowRight" || event.key === "ArrowLeft") { event.preventDefault(); navigate(event.key === "ArrowRight" ? 1 : -1) } }}>
+        {questions.map((question, index) => <button type="button" key={question.label} aria-label={`Show the ${question.label.toLowerCase()} example and stop automatic rotation`} title={`Show the ${question.label.toLowerCase()} example and stop automatic rotation`} aria-pressed={active === index} aria-controls={`${id}-slide-${index}`} onClick={() => { setActive(index); setPaused(true) }}><span className="portfolio-carousel-dot" />{active === index && running && <span className="portfolio-slide-progress" key={`${active}-progress`} aria-hidden="true" />}</button>)}
       </div>
     </div>
   )

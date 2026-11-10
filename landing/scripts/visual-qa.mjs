@@ -27,14 +27,23 @@ try {
     await page.evaluate(() => document.fonts.ready)
     // Full-page screenshots temporarily alter Chromium device metrics and may
     // select a smaller candidate; verify delivery before taking screenshots.
-    check(`${name}: hero fetched once, no duplicate preload/fallback`, requests.filter((url) => /dashboard.*\.(avif|webp|jpg)/.test(url)).length === 1)
+    check(`${name}: hero fetched once, no duplicate preload/fallback`, requests.filter((url) => /(overview-v2-\d+|lenslayer-overview)\.(avif|webp|jpg)/.test(url)).length === 1)
     check(`${name}: hero visible without entrance animation`, await page.evaluate(() => [".hero-intro", ".workspace-preview"].every((selector) => { const e = document.querySelector(selector); return !e.dataset.motion && !e.getAnimations().length && getComputedStyle(e).opacity === "1" })))
     // Avoid Chromium's >16k-pixel full-page tiling artifact at phone DPR 3.
     await page.screenshot({ path: path.join(evidence, `${name}.png`), fullPage: name === "desktop" })
-    const snapshot = await page.evaluate(() => ({ text: document.body.innerText, links: [...document.querySelectorAll("a")].map((e) => ({ text: e.textContent, href: e.getAttribute("href") })), boxes: [...document.querySelectorAll(".header,.hero-intro,h1,.hero-copy,.workspace-preview,.dashboard-capture,.workflow-section,.portfolio-section,.control-section,.faq-section,.brand")].map((e) => ({ selector: e.className || e.tagName, box: JSON.parse(JSON.stringify(e.getBoundingClientRect())), color: getComputedStyle(e).color, background: getComputedStyle(e).backgroundColor })), fonts: [...document.fonts].map((f) => ({ family: f.family, weight: f.weight, style: f.style, status: f.status })), image: document.querySelector(".dashboard-capture").currentSrc, overflow: document.documentElement.scrollWidth > window.innerWidth }))
+    const snapshot = await page.evaluate(() => ({ text: document.body.innerText, links: [...document.querySelectorAll("a")].map((e) => ({ text: e.textContent, href: e.getAttribute("href") })), boxes: [...document.querySelectorAll(".header,.hero-intro,h1,.hero-copy,.workspace-preview,.dashboard-capture,.workflow-section,.portfolio-section,.control-section,.privacy-section,.faq-section,.brand")].map((e) => ({ selector: e.className || e.tagName, box: JSON.parse(JSON.stringify(e.getBoundingClientRect())), color: getComputedStyle(e).color, background: getComputedStyle(e).backgroundColor })), fonts: [...document.fonts].map((f) => ({ family: f.family, weight: f.weight, style: f.style, status: f.status })), image: document.querySelector(".dashboard-capture").currentSrc, overflow: document.documentElement.scrollWidth > window.innerWidth }))
     output.captures[name] = snapshot
     check(`${name}: no horizontal overflow`, !snapshot.overflow)
-    check(`${name}: responsive high-DPI AVIF selected`, snapshot.image.endsWith(name === "phone" ? "dashboard-v1-1152.avif" : "dashboard-v1-1728.avif"))
+    // The page sells contract review and renewals; frozen dashboard areas stay off it.
+    check(`${name}: no agent, SDK, MCP, developer or converter copy`, !/\bagents?\b|\bagentic\b|\bSDK\b|\bMCP\b|developer|converter/i.test(snapshot.text))
+    check(`${name}: meta description and title describe contract review`, await page.evaluate(() => /contract review/i.test(document.title) && /renewal/i.test(document.querySelector('meta[name="description"]').content) && !/agent/i.test(document.querySelector('meta[name="description"]').content)))
+    for (const [id, heading] of [["workflow", /From upload/], ["ask", /Answers that show/], ["renewals", /Nothing renews/], ["privacy", /stay yours/], ["faq", /Questions about/]]) {
+      check(`${name}: #${id} section present`, await page.locator(`section#${id} h2`).filter({ hasText: heading }).count() === 1)
+    }
+    check(`${name}: four workflow steps`, await page.locator(".workflow-card").count() === 4)
+    check(`${name}: three renewal cards`, await page.locator("#renewals .control-card").count() === 3)
+    check(`${name}: three privacy points with policy links`, await page.locator(".privacy-points li").count() === 3 && await page.locator('#privacy a[href="/privacy"]').count() === 1 && await page.locator('#privacy a[href="/terms"]').count() === 1)
+    check(`${name}: responsive high-DPI AVIF selected`, snapshot.image.endsWith(name === "phone" ? "overview-v2-1152.avif" : "overview-v2-1728.avif"))
     if (baseline) {
       const before = baseline[name]
       assert.equal(snapshot.text, before.text, `${name}: exact visible copy`)
@@ -49,7 +58,7 @@ try {
       output.checks.push(`${name}: layout within 1 CSS pixel; colors unchanged`)
     }
     if (name === "phone") {
-      for (const section of ["workflow", "portfolio", "control", "faq", "closing"]) {
+      for (const section of ["workflow", "portfolio", "control", "privacy", "faq", "closing"]) {
         await page.locator(`.${section === "closing" ? "closing" : `${section}-section`}`).scrollIntoViewIfNeeded()
         await page.waitForTimeout(1200)
         await page.screenshot({ path: path.join(evidence, `phone-${section}.png`) })
@@ -68,14 +77,16 @@ try {
       await page.keyboard.press("Escape")
       check("phone: Escape closes menu and restores focus", await menu.evaluate((e) => document.activeElement === e) && !(await page.locator("#mobile-navigation").isVisible()))
       await menu.click()
-      await page.locator("#mobile-navigation").getByRole("link", { name: "The workflow", exact: true }).click()
+      await page.locator("#mobile-navigation").getByRole("link", { name: "How it works", exact: true }).click()
       check("phone: anchor closes navigation", page.url().endsWith("#workflow") && !(await page.locator("#mobile-navigation").isVisible()))
     } else {
-      await page.locator(".desktop-nav").getByRole("link", { name: "The workflow", exact: true }).click()
-      check("desktop: workflow anchor", page.url().endsWith("#workflow"))
+      for (const [label, hash] of [["How it works", "#workflow"], ["Ask", "#ask"], ["Renewals", "#renewals"], ["Privacy", "#privacy"]]) {
+        await page.locator(".desktop-nav").getByRole("link", { name: label, exact: true }).click()
+        check(`desktop: ${label} anchor`, page.url().endsWith(hash))
+      }
     }
     check(`${name}: later stage motion remains`, await page.locator(".workflow-section [data-motion=stage]").count() === 1)
-    const controls = page.getByRole("group", { name: "Walkthrough cards", exact: true })
+    const controls = page.getByRole("group", { name: "Example question cards", exact: true })
     const evidenceButton = controls.getByRole("button").nth(0)
     await evidenceButton.scrollIntoViewIfNeeded()
     await evidenceButton.click()
@@ -84,7 +95,7 @@ try {
     check(`${name}: carousel arrow changes active slide`, await controls.getByRole("button").nth(1).getAttribute("aria-pressed") === "true")
     await page.keyboard.press("ArrowLeft")
     check(`${name}: carousel reverses`, await evidenceButton.getAttribute("aria-pressed") === "true")
-    const source = page.locator('.portfolio-carousel-card[data-position="front"] .answer-source')
+    const source = page.locator('.portfolio-carousel-card[data-position="front"] .answer-source').first()
     await source.focus()
     await page.keyboard.press("ArrowRight")
     check(`${name}: source-link arrows do not change slide or lose focus`, await source.evaluate((e) => document.activeElement === e) && await evidenceButton.getAttribute("aria-pressed") === "true")
@@ -101,7 +112,14 @@ try {
       await page.keyboard.press("Enter")
       check(`${name}: FAQ ${i + 1} closes`, await faq.nth(i).getAttribute("aria-expanded") === "false")
     }
-    check(`${name}: canonical app links and valid local anchors`, await page.evaluate(() => [...document.querySelectorAll("a")].every((a) => a.getAttribute("href").startsWith("#") ? !!document.getElementById(a.hash.slice(1)) : a.origin === "https://app.lenslayer.online")))
+    // Legal pages and the contact address live on this site; everything else opens the app.
+    check(`${name}: canonical app links, site legal pages and valid local anchors`, await page.evaluate(() => [...document.querySelectorAll("a")].every((a) => {
+      const href = a.getAttribute("href")
+      if (href.startsWith("#")) return !!document.getElementById(href.slice(1))
+      if (["/privacy", "/terms", "mailto:udo@lenslayer.online"].includes(href)) return true
+      return a.origin === "https://app.lenslayer.online"
+    })))
+    check(`${name}: no links to frozen dashboard areas`, await page.evaluate(() => [...document.querySelectorAll("a")].every((a) => !/^\/(runs|agents|agent-tasks|context|developers|settings\/developers|convert)(\/|$)/.test(a.pathname) || a.origin !== "https://app.lenslayer.online")))
     check(`${name}: no browser/request errors`, failures.length === 0)
     await context.close()
   }

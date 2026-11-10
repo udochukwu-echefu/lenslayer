@@ -2,7 +2,7 @@
 
 ## Final direction
 
-The landing page uses warm cream, charcoal, and soft pastel surfaces. Figtree remains the product typeface; Instrument Serif adds contrast to the hero headline. The page leads with the real workspace, then explains the contract workflow, source questions, and document controls. The workflow section uses a full-width charcoal background with light heading text.
+The landing page uses warm cream, charcoal, and soft pastel surfaces. Figtree remains the product typeface; Instrument Serif adds contrast to the hero headline. The page leads with the demo workspace's Overview, then covers the review workflow, source-linked questions, renewal dates and reminders, and document privacy. Since November 2026 it no longer pitches agents, the SDK, the developer guide or the document converter, which are frozen in the dashboard. The workflow section uses a full-width charcoal background with light heading text.
 
 The previews use explicitly synthetic agreements and people. No customer endorsements, logos, adoption metrics, or performance claims have been introduced.
 
@@ -20,10 +20,10 @@ The earlier reference research included Refero, Mobbin, beUI, Rare UI, shadcn/ui
 ## Components and behavior
 
 - Existing LensMark/Brand geometry uses unique SVG mask IDs.
-- The workspace preview is a fresh 2560 × 1600 capture of the local synthetic demo, rendered at twice the original resolution. It has no blue frame, caption, or audience strip.
+- The workspace preview is a 1728 × 908 capture of the Overview page in the synthetic demo workspace, taken from the dashboard with the five-item contract navigation (Overview, Agreements, Ask, Renewals, Settings). `scripts/generate-hero.mjs` builds the `overview-v2-*` AVIF and WebP variants from `public/lenslayer-overview.jpg`.
 - WorkflowCards shows all four stages and explanations without interaction.
-- PortfolioDemo has three preset questions, readable answers, and source excerpts in a panel that fits its content.
-- Document-control cards pair a title and icon with one explanation. Decorative microcopy and miniature diagrams were removed.
+- PortfolioDemo has three preset questions about the demo agreements (across agreements, one agreement, and a gap the documents don't settle), with source excerpts that link to the agreement in the demo workspace.
+- Renewal cards pair a title and icon with one explanation. The privacy card restates the privacy policy in three points and links to `/privacy` and `/terms`.
 - Mobile navigation supports Escape, focus return, and close-on-navigation.
 - CSS and WAAPI respect reduced motion. State transitions are immediate for keyboard interaction.
 - The hero headline and supporting copy remain. Decorative cards, the pink medallion, and the reassurance line were removed.
