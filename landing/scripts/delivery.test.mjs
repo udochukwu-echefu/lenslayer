@@ -24,31 +24,15 @@ test("all font subsets retain licensed upstream bytes", async () => {
   assert.equal((css.match(/font-family: "Instrument Serif";/g) || []).length, 2)
 })
 
-test("responsive AVIF/WebP bytes and dimensions match the source manifest", async () => {
-  const manifest = await json("public/hero/manifest.json")
-  assert.equal(hash(await readFile(new URL(manifest.source, root))), manifest.sourceSha256)
-  assert.equal(manifest.variants.length, 8)
-  for (const asset of manifest.variants) {
-    const data = await readFile(new URL(`public/hero/${asset.file}`, root))
-    assert.equal(data.length, asset.bytes)
-    assert.equal(hash(data), asset.sha256)
-    assert.ok(asset.width <= 1728)
-    assert.ok(Math.abs(asset.height - asset.width * 908 / 1728) <= 0.5)
-  }
-})
-
-test("HTML discovers the exact eager high-priority hero source before React", async () => {
+test("HTML loads local fonts early and keeps motion opt-out", async () => {
   const html = await text("index.html")
   const app = await text("src/App.jsx")
-  const preloadSet = html.match(/imagesrcset="([^"]+)"/)[1]
-  const preloadSizes = html.match(/imagesizes="([^"]+)"/)[1]
-  assert.equal(preloadSet, app.match(/type="image\/avif" srcSet="([^"]+)"/)[1])
-  assert.equal(preloadSizes, app.match(/type="image\/avif"[^>]*sizes="([^"]+)"/)[1])
-  assert.match(app, /loading="eager" fetchPriority="high"/)
-  assert.match(app, /width="1728" height="908"/)
   assert.doesNotMatch(html, /fonts\.googleapis|fonts\.gstatic/)
   assert.equal((html.match(/as="font"/g) || []).length, 2)
-  assert.doesNotMatch(app, /className="hero-intro" data-motion|className="workspace-preview shell"[^>]*data-motion/)
+  // No product screenshots: the hero is text and calls to action only.
+  assert.doesNotMatch(html, /rel="preload" as="image"/)
+  assert.doesNotMatch(app, /<picture|<img /)
+  assert.doesNotMatch(app, /className="hero-intro" data-motion/)
   assert.match(app, /<div data-motion="stage"><WorkflowCards/)
   assert.match(app, /prefers-reduced-motion/)
 })

@@ -22,10 +22,6 @@ const questions = [
     question: "Are our documents used to train AI models?",
     answer: "No. The text goes to our AI provider only to produce your review and answers. The privacy policy names every company that handles your data and says how long we keep each kind.",
   },
-  {
-    question: "What is the demo workspace?",
-    answer: "A read-only workspace for Relay Software, a made-up company with six contracts. Open it without an account and look through the reviews, answers and renewal dates. Nothing you do there touches a real workspace.",
-  },
 ]
 
 export default function FaqSection() {

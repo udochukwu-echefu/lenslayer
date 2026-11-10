@@ -2,9 +2,9 @@
 
 ## Final direction
 
-The landing page uses warm cream, charcoal, and soft pastel surfaces. Figtree remains the product typeface; Instrument Serif adds contrast to the hero headline. The page leads with the demo workspace's Overview, then covers the review workflow, source-linked questions, renewal dates and reminders, and document privacy. Since November 2026 it no longer pitches agents, the SDK, the developer guide or the document converter, which are frozen in the dashboard. The workflow section uses a full-width charcoal background with light heading text.
+The landing page uses warm cream, charcoal, and soft pastel surfaces. Figtree remains the product typeface; Instrument Serif adds contrast to the hero headline. The page leads with the headline and calls to action, then covers the review workflow, source-linked questions, renewal dates and reminders, and document privacy. Since November 2026 it no longer pitches agents, the SDK, the developer guide or the document converter, which are frozen in the dashboard. The workflow section uses a full-width charcoal background with light heading text.
 
-The previews use explicitly synthetic agreements and people. No customer endorsements, logos, adoption metrics, or performance claims have been introduced.
+Since November 2026 the page shows no product screenshots, demo workspace data or links into the demo. The hero is text and calls to action only, and every app link goes to sign-in. No customer endorsements, logos, adoption metrics, or performance claims have been introduced.
 
 ## Figma sources and component provenance
 
@@ -20,9 +20,8 @@ The earlier reference research included Refero, Mobbin, beUI, Rare UI, shadcn/ui
 ## Components and behavior
 
 - Existing LensMark/Brand geometry uses unique SVG mask IDs.
-- The workspace preview is a 1728 × 908 capture of the Overview page in the synthetic demo workspace, taken from the dashboard with the five-item contract navigation (Overview, Agreements, Ask, Renewals, Settings). `scripts/generate-hero.mjs` builds the `overview-v2-*` AVIF and WebP variants from `public/lenslayer-overview.jpg`.
 - WorkflowCards shows all four stages and explanations without interaction.
-- Ask (November 2026) follows a reference the owner supplied: a small centred eyebrow, a large centred statement with round icon badges set into the text and a greyed last line, then a four-card grid. The cards are a tall blue card with a real screenshot of the dashboard's Ask page answering a renewal question in the demo, under a white "60 days" figure card; a grey card with the demo contract count and the answer's own words; a yellow card with the number of quoted sources; and a dark card that links to Ask in the demo. The reference filled these with invented stats, a stock photo and a testimonial. Here every figure comes from the demo answer. Two earlier versions were dropped in review: an auto-rotating tilted card carousel, and a blue stage with clause chips and a floating source card.
+- Ask (November 2026) follows a reference the owner supplied: a small centred eyebrow, a large centred statement with round icon badges set into the text and a greyed last line, then a four-card grid. The tall blue card is a drawn contract page (decorative lines and a generic renewal clause, not anyone's contract) under a white "1 click" figure card. The grey card lists the three questions Ask suggests in every workspace, the yellow card the file types it reads, and the dark card links to sign-in. Two earlier versions were dropped in review: an auto-rotating tilted card carousel, and a blue stage with clause chips and a floating source card.
 - The page grain sits at 14% opacity, down 30% from 20%.
 - Renewal cards pair a title and icon with one explanation. The privacy card restates the privacy policy in three points and links to `/privacy` and `/terms`.
 - Mobile navigation supports Escape, focus return, and close-on-navigation.
@@ -37,4 +36,4 @@ The earlier reference research included Refero, Mobbin, beUI, Rare UI, shadcn/ui
 - Rechecked all three portfolio examples and mobile menu/Escape. All workflow explanations remain visible without selection.
 - Reduced-motion rules were inspected in source, not emulated at OS level.
 - `VITE_APP_URL` still controls application links, defaulting to localhost:3000. Dashboard sample/converter endpoints were not running during first-pass verification; this work does not claim end-to-end verification of those routes.
-- Local previews run at http://127.0.0.1:5173/ and http://127.0.0.1:3000/. The dashboard now shares the landing page's sage-and-graphite palette, and the landing hero uses a current capture of the populated demo workspace.
+- Local previews run at http://127.0.0.1:5173/ and http://127.0.0.1:3000/. The dashboard now shares the landing page's sage-and-graphite palette.

@@ -25,17 +25,17 @@ try {
     page.on("request", (request) => requests.push(request.url()))
     await page.goto("http://127.0.0.1:4180/", { waitUntil: "networkidle" })
     await page.evaluate(() => document.fonts.ready)
-    // Full-page screenshots temporarily alter Chromium device metrics and may
-    // select a smaller candidate; verify delivery before taking screenshots.
-    check(`${name}: hero fetched once, no duplicate preload/fallback`, requests.filter((url) => /(overview-v2-\d+|lenslayer-overview)\.(avif|webp|jpg)/.test(url)).length === 1)
-    check(`${name}: hero visible without entrance animation`, await page.evaluate(() => [".hero-intro", ".workspace-preview"].every((selector) => { const e = document.querySelector(selector); return !e.dataset.motion && !e.getAnimations().length && getComputedStyle(e).opacity === "1" })))
+    check(`${name}: hero visible without entrance animation`, await page.evaluate(() => [".hero-intro"].every((selector) => { const e = document.querySelector(selector); return !e.dataset.motion && !e.getAnimations().length && getComputedStyle(e).opacity === "1" })))
     // Avoid Chromium's >16k-pixel full-page tiling artifact at phone DPR 3.
     await page.screenshot({ path: path.join(evidence, `${name}.png`), fullPage: name === "desktop" })
-    const snapshot = await page.evaluate(() => ({ text: document.body.innerText, links: [...document.querySelectorAll("a")].map((e) => ({ text: e.textContent, href: e.getAttribute("href") })), boxes: [...document.querySelectorAll(".header,.hero-intro,h1,.hero-copy,.workspace-preview,.dashboard-capture,.workflow-section,.ask-section,.control-section,.privacy-section,.faq-section,.brand")].map((e) => ({ selector: e.className || e.tagName, box: JSON.parse(JSON.stringify(e.getBoundingClientRect())), color: getComputedStyle(e).color, background: getComputedStyle(e).backgroundColor })), fonts: [...document.fonts].map((f) => ({ family: f.family, weight: f.weight, style: f.style, status: f.status })), image: document.querySelector(".dashboard-capture").currentSrc, overflow: document.documentElement.scrollWidth > window.innerWidth }))
+    const snapshot = await page.evaluate(() => ({ text: document.body.innerText, links: [...document.querySelectorAll("a")].map((e) => ({ text: e.textContent, href: e.getAttribute("href") })), boxes: [...document.querySelectorAll(".header,.hero-intro,h1,.hero-copy,.workflow-section,.ask-section,.control-section,.privacy-section,.faq-section,.brand")].map((e) => ({ selector: e.className || e.tagName, box: JSON.parse(JSON.stringify(e.getBoundingClientRect())), color: getComputedStyle(e).color, background: getComputedStyle(e).backgroundColor })), fonts: [...document.fonts].map((f) => ({ family: f.family, weight: f.weight, style: f.style, status: f.status })), overflow: document.documentElement.scrollWidth > window.innerWidth }))
     output.captures[name] = snapshot
     check(`${name}: no horizontal overflow`, !snapshot.overflow)
     // The page sells contract review and renewals; frozen dashboard areas stay off it.
     check(`${name}: no agent, SDK, MCP, developer or converter copy`, !/\bagents?\b|\bagentic\b|\bSDK\b|\bMCP\b|developer|converter/i.test(snapshot.text))
+    // The demo workspace and its fictional data stay off the landing page.
+    check(`${name}: no demo wording or demo data`, !/\bdemo\b|Relay Software|Loopback|Workset|Worklane|Allen Avenue|Fieldnote|Patchworks|Dockside|Aisha|Chidi|Tomi Adeyemi|Nneka/i.test(snapshot.text) && await page.evaluate(() => [...document.images].every((image) => /lenslayer-(lockup|mark)/.test(image.src))))
+    check(`${name}: the only app link is sign-in`, await page.evaluate(() => [...document.querySelectorAll("a")].filter((a) => a.origin === "https://app.lenslayer.online").every((a) => a.pathname === "/signin")))
     check(`${name}: meta description and title describe contract review`, await page.evaluate(() => /contract review/i.test(document.title) && /renewal/i.test(document.querySelector('meta[name="description"]').content) && !/agent/i.test(document.querySelector('meta[name="description"]').content)))
     for (const [id, heading] of [["workflow", /From upload/], ["ask", /across your contracts/], ["renewals", /Stop renewing/], ["privacy", /What happens/], ["faq", /Questions about/]]) {
       check(`${name}: #${id} section present`, await page.locator(`section#${id} h2`).filter({ hasText: heading }).count() === 1)
@@ -44,7 +44,6 @@ try {
     check(`${name}: three renewal cards`, await page.locator("#renewals .control-card").count() === 3)
     check(`${name}: three privacy points with policy links`, await page.locator(".privacy-points li").count() === 3 && await page.locator('#privacy a[href="/privacy"]').count() === 1 && await page.locator('#privacy a[href="/terms"]').count() === 1)
     check(`${name}: grain overlay at 14% opacity`, await page.evaluate(() => getComputedStyle(document.querySelector(".site"), "::after").opacity === "0.14"))
-    check(`${name}: responsive high-DPI AVIF selected`, snapshot.image.endsWith(name === "phone" ? "overview-v2-1152.avif" : "overview-v2-1728.avif"))
     if (baseline) {
       const before = baseline[name]
       assert.equal(snapshot.text, before.text, `${name}: exact visible copy`)
@@ -89,12 +88,10 @@ try {
     check(`${name}: later stage motion remains`, await page.locator(".workflow-section [data-motion=stage]").count() === 1)
     // Ask: centred statement with icon badges over four cards built from the demo answer.
     check(`${name}: Ask has three icon badges and four cards`, await page.locator(".ask-heading .ask-badge[aria-hidden=true]").count() === 3 && await page.locator(".ask-card").count() === 4)
-    check(`${name}: Ask figures come from the demo answer`, JSON.stringify(await page.locator(".ask-figure").allTextContents()) === JSON.stringify(["60 days", "6", "3", "Open Ask "]))
-    await page.locator(".ask-card-image").scrollIntoViewIfNeeded()
-    check(`${name}: Ask screenshot decodes`, await page.locator(".ask-card-image img").evaluate(async (e) => { if (!e.complete) await new Promise((r) => e.addEventListener("load", r, { once: true })); return e.naturalWidth === 960 && /ask-answer\.(avif|webp)$/.test(e.currentSrc) }))
+    check(`${name}: Ask figures are product facts`, JSON.stringify(await page.locator(".ask-figure").allTextContents()) === JSON.stringify(["1 click", "All", "3", "Sign in "]))
     const askLink = page.locator("a.ask-card-dark")
     await askLink.focus()
-    check(`${name}: Open Ask card is a focusable link to Ask in the demo`, await askLink.evaluate((e) => document.activeElement === e) && await askLink.getAttribute("href") === "https://app.lenslayer.online/portfolio")
+    check(`${name}: Sign-in card is a focusable link to sign-in`, await askLink.evaluate((e) => document.activeElement === e) && await askLink.getAttribute("href") === "https://app.lenslayer.online/signin")
     await page.locator(".ask-grid").screenshot({ path: path.join(evidence, `${name}-ask.png`) })
     const faq = page.locator(".faq-item button")
     for (let i = 0; i < await faq.count(); i++) {
@@ -122,15 +119,6 @@ try {
   await page.locator(".ask-grid").scrollIntoViewIfNeeded()
   check("reduced motion: no reveal animations", await page.evaluate(() => document.getAnimations().length === 0))
   await reduced.close()
-  for (const [label, disabled, extension] of [["WebP", ["avif"], "webp"], ["JPEG", ["avif", "webp"], "jpg"]]) {
-    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 })
-    const page = await context.newPage()
-    const cdp = await context.newCDPSession(page)
-    await cdp.send("Emulation.setDisabledImageTypes", { imageTypes: disabled })
-    await page.goto("http://127.0.0.1:4180/", { waitUntil: "networkidle" })
-    check(`${label}: picture fallback decodes`, await page.locator(".dashboard-capture").evaluate((e, ext) => e.currentSrc.endsWith(ext) && e.complete && e.naturalWidth > 0, extension))
-    await context.close()
-  }
   output.passed = true
 } finally {
   await writeFile(path.join(evidence, "visual.json"), `${JSON.stringify(output, null, 2)}\n`)
