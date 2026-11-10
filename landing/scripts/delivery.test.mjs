@@ -49,6 +49,6 @@ test("HTML discovers the exact eager high-priority hero source before React", as
   assert.doesNotMatch(html, /fonts\.googleapis|fonts\.gstatic/)
   assert.equal((html.match(/as="font"/g) || []).length, 2)
   assert.doesNotMatch(app, /className="hero-intro" data-motion|className="workspace-preview shell"[^>]*data-motion/)
-  assert.match(app, /<div data-motion="stage"><WorkflowCards/)
+  assert.match(app, /<div data-motion="stage"><HowItWorksGrid/)
   assert.match(app, /prefers-reduced-motion/)
 })

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { ArrowRight, BellRing, CalendarClock, Menu, TriangleAlert, X } from "lucide-react"
 import { Brand, LensMark } from "./components/landing/brand"
-import WorkflowCards from "./components/landing/workflow-cards"
+import HowItWorksGrid, { HowItWorksHeading } from "./components/landing/how-it-works"
 import AskDemo from "./components/landing/ask-demo"
 import PrivacySection from "./components/landing/privacy-section"
 import FaqSection from "./components/landing/faq-section"
@@ -76,10 +76,10 @@ function App() {
         </figure>
       </section>
 
-      <section className="workflow-section" id="workflow" aria-labelledby="workflow-title">
+      <section className="how-section" id="workflow" aria-labelledby="how-title">
         <div className="shell">
-          <div data-motion="copy-left"><div className="section-heading"><h2 id="workflow-title">From upload<br /><span>to the next decision.</span></h2><p>For the legal, procurement, finance and ops people who are left holding a contract once it’s signed.</p></div></div>
-          <div data-motion="stage"><WorkflowCards /></div>
+          <HowItWorksHeading />
+          <div data-motion="stage"><HowItWorksGrid /></div>
         </div>
       </section>
 
