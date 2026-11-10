@@ -87,20 +87,20 @@ try {
       }
     }
     check(`${name}: later stage motion remains`, await page.locator(".workflow-section [data-motion=stage]").count() === 1)
-    // Ask: one answer sheet whose rows open the clause each part of the answer came from.
-    const rows = page.locator(".ask-row > button")
-    check(`${name}: Ask sheet lists four contracts`, await rows.count() === 4)
-    check(`${name}: first source open with highlighted clause`, await rows.nth(0).getAttribute("aria-expanded") === "true" && await page.locator(".ask-row").nth(0).locator("blockquote mark").isVisible())
-    await rows.nth(1).scrollIntoViewIfNeeded()
-    await rows.nth(1).focus()
+    // Ask: an answer card whose clause chips switch the source card beside it.
+    const chips = page.locator(".ask-chip")
+    const source = page.locator(".ask-source")
+    check(`${name}: Ask answer has four clause chips, first selected`, await chips.count() === 4 && await chips.nth(0).getAttribute("aria-pressed") === "true")
+    check(`${name}: source card quotes the selected clause with the key words marked`, await source.locator("blockquote mark").isVisible() && /Loopback/.test(await source.locator("strong").textContent()))
+    await chips.nth(1).scrollIntoViewIfNeeded()
+    await chips.nth(1).focus()
     await page.keyboard.press("Enter")
-    check(`${name}: keyboard opens the next source and closes the first`, await rows.nth(1).getAttribute("aria-expanded") === "true" && await rows.nth(0).getAttribute("aria-expanded") === "false" && await page.locator(".ask-row-source").nth(0).isHidden())
-    await page.keyboard.press("Enter")
-    check(`${name}: Enter closes the open source`, await rows.nth(1).getAttribute("aria-expanded") === "false" && await page.locator(".ask-row-source").nth(1).isHidden())
-    await rows.nth(3).click()
-    check(`${name}: unread contract explains why there is no quote`, await page.locator('.ask-row[data-unread] .ask-row-note').isVisible() && await page.locator('.ask-row[data-unread] blockquote').count() === 0)
-    check(`${name}: every source links to its contract in the demo`, (await page.locator(".ask-row-source a").evaluateAll((links) => links.map((e) => e.getAttribute("href")))).every((href) => /^https:\/\/app\.lenslayer\.online\/contracts\/demo-[a-z]+$/.test(href)))
-    await page.locator(".ask-sheet").screenshot({ path: path.join(evidence, `${name}-ask.png`) })
+    check(`${name}: keyboard switches the source and keeps focus on the chip`, await chips.nth(1).getAttribute("aria-pressed") === "true" && await chips.nth(0).getAttribute("aria-pressed") === "false" && /Workset/.test(await source.locator("strong").textContent()) && await chips.nth(1).evaluate((e) => document.activeElement === e))
+    await chips.nth(3).click()
+    check(`${name}: unread contract explains why there is no quote`, await source.getAttribute("data-unread") === "true" && await source.locator("blockquote").count() === 0 && /no text to quote/i.test(await source.textContent()))
+    check(`${name}: source links to its contract in the demo`, /^https:\/\/app\.lenslayer\.online\/contracts\/demo-marketing$/.test(await source.locator("a").getAttribute("href")))
+    await chips.nth(0).click()
+    await page.locator(".ask-stage").screenshot({ path: path.join(evidence, `${name}-ask.png`) })
     const faq = page.locator(".faq-item button")
     for (let i = 0; i < await faq.count(); i++) {
       await faq.nth(i).focus()
@@ -124,7 +124,7 @@ try {
   const reduced = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" })
   const page = await reduced.newPage()
   await page.goto("http://127.0.0.1:4180/", { waitUntil: "networkidle" })
-  await page.locator(".ask-sheet").scrollIntoViewIfNeeded()
+  await page.locator(".ask-stage").scrollIntoViewIfNeeded()
   check("reduced motion: no reveal animations", await page.evaluate(() => document.getAnimations().length === 0))
   await reduced.close()
   for (const [label, disabled, extension] of [["WebP", ["avif"], "webp"], ["JPEG", ["avif", "webp"], "jpg"]]) {

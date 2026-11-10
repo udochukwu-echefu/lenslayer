@@ -84,12 +84,13 @@ function App() {
       </section>
 
       <section className="ask-section" id="ask" aria-labelledby="ask-title">
-        <div className="shell">
-          <div className="control-heading ask-heading" data-motion="copy-left">
+        <div className="shell ask-grid">
+          <div className="ask-copy" data-motion="copy-left">
             <h2 id="ask-title">Ask a question.<br /><span>Get the clause back.</span></h2>
-            <div><p>Ask about one contract or all of them. You get a short answer and the wording it came from. If a contract doesn’t say, or couldn’t be read, the answer tells you.</p><a className="text-link" href={ASK_URL}>Try Ask in the demo <ArrowRight aria-hidden="true" /></a></div>
+            <p>Ask about one contract or all of them. You get a short answer, and every part of it links to the wording it came from. If a contract doesn’t say, or couldn’t be read, the answer tells you.</p>
+            <a className="outline-link" href={ASK_URL}>Try Ask in the demo <ArrowRight aria-hidden="true" /></a>
           </div>
-          <div data-motion="stage"><AskDemo appUrl={APP_URL} /></div>
+          <div data-motion="visual-right"><AskDemo appUrl={APP_URL} /></div>
         </div>
       </section>
 

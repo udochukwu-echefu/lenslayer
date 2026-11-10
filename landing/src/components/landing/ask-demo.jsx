@@ -1,76 +1,69 @@
 import { useId, useState } from "react"
-import { ArrowUpRight, ChevronDown } from "lucide-react"
+import { ArrowUpRight, FileText, FileWarning } from "lucide-react"
 
-// One question asked across the demo workspace's fictional agreements. The
+// One question asked across the demo workspace's fictional contracts. The
 // answer, clause references and quotes come from the demo data in the app.
-const rows = [
+const sources = [
   {
-    agreement: "Loopback IT support",
-    party: "Loopback IT",
-    finding: "Renews every year. 60 days’ written notice to stop it.",
-    clause: "§ 3.2",
+    chip: "Loopback § 3.2",
+    line: "Loopback IT support renews every year. Written notice is due 60 days before.",
+    title: "Loopback IT support agreement",
+    location: "Section 3.2 · Revised draft",
     contract: "demo-msa",
     quote: { before: "The Term shall renew automatically unless either party gives ", mark: "not less than 60 days' written notice", after: "." },
   },
   {
-    agreement: "Workset Payroll subscription",
-    party: "Workset Payroll",
-    finding: "Renews every year. 60 days’ written notice before the term ends.",
-    clause: "Order Form",
+    chip: "Workset Order Form",
+    line: "Workset Payroll renews at the end of each term, also with 60 days’ notice.",
+    title: "Workset Payroll annual subscription",
+    location: "Order Form · Term",
     contract: "demo-software",
     quote: { before: "Either party may prevent renewal by providing written notice ", mark: "at least 60 days before the end of the current subscription term", after: "." },
   },
   {
-    agreement: "28 Allen Avenue lease",
-    party: "Worklane Offices",
-    finding: "Runs on unless we use the break. Notice must arrive six months ahead.",
-    clause: "Sch. 4, para. 2",
+    chip: "Lease Sch. 4",
+    line: "The Allen Avenue lease runs on unless Worklane gets break notice six months before the break date.",
+    title: "28 Allen Avenue office lease",
+    location: "Schedule 4, paragraph 2",
     contract: "demo-lease",
     quote: { before: "The break notice must be received at the Landlord's registered office ", mark: "no later than six months before the Break Date", after: "." },
   },
   {
-    agreement: "Fieldnote website build",
-    party: "Fieldnote Studio",
-    finding: "Not checked. Pages of the scan are cut off.",
-    clause: "No text",
+    chip: "Not read",
+    line: "Fieldnote’s agreement wasn’t checked. Pages of the scan are cut off.",
+    title: "Fieldnote website development agreement",
+    location: "Review failed",
     contract: "demo-marketing",
     unread: true,
-    note: "There’s nothing to quote until Fieldnote sends a complete copy. The review is marked as failed, so it won’t be mistaken for a clean result.",
+    note: "There’s no text to quote. Ask Fieldnote for the original PDF and upload it again.",
   },
 ]
 
 export default function AskDemo({ appUrl }) {
-  const [open, setOpen] = useState(0)
+  const [active, setActive] = useState(0)
   const id = useId()
+  const source = sources[active]
+  const Icon = source.unread ? FileWarning : FileText
 
-  return <figure className="ask-sheet" aria-labelledby={`${id}-question`}>
-    <div className="ask-sheet-bar"><span>Ask</span><span>Relay Software demo · 6 contracts</span></div>
-    <div className="ask-exchange">
-      <p className="ask-label">Question</p>
-      <p className="ask-question" id={`${id}-question`}>Which of our contracts carry on by themselves, and how do we stop them?</p>
-      <p className="ask-label ask-label-answer">Answer</p>
-      <p className="ask-answer">Two renew every year: Loopback and Workset each need 60 days’ written notice. The Allen Avenue lease keeps going unless Worklane gets break notice six months before the break date. Fieldnote couldn’t be checked because the scan is incomplete.</p>
+  return <div className="ask-stage">
+    <div className="ask-card">
+      <p className="ask-bubble">Which of our contracts renew on their own, and how much notice do we need?</p>
+      <p className="ask-card-title">Renewals and notice</p>
+      <ul className="ask-lines" aria-label="Answer, with the clause behind each part">
+        {sources.map((item, index) => <li key={item.contract} data-unread={item.unread || undefined}>
+          {item.line}{" "}
+          <button type="button" className="ask-chip" aria-pressed={active === index} aria-controls={`${id}-source`} aria-label={`Show source: ${item.title}`} onClick={() => setActive(index)}>{item.chip}</button>
+        </li>)}
+      </ul>
     </div>
-    <ol className="ask-rows" aria-label="Where the answer comes from">
-      {rows.map((row, index) => {
-        const isOpen = open === index
-        const panelId = `${id}-source-${index}`
-        return <li className="ask-row" data-open={isOpen} data-unread={row.unread || undefined} key={row.contract}>
-          <button type="button" aria-expanded={isOpen} aria-controls={panelId} onClick={() => setOpen(isOpen ? null : index)}>
-            <span className="ask-row-name"><strong>{row.agreement}</strong><span>{row.party}</span></span>
-            <span className="ask-row-finding">{row.finding}</span>
-            <span className="ask-row-clause">{row.clause}</span>
-            <ChevronDown className="ask-row-chevron" aria-hidden="true" />
-          </button>
-          <div className="ask-row-source" id={panelId} hidden={!isOpen}>
-            {row.quote
-              ? <blockquote>“{row.quote.before}<mark>{row.quote.mark}</mark>{row.quote.after}”</blockquote>
-              : <p className="ask-row-note">{row.note}</p>}
-            <a href={`${appUrl}/contracts/${row.contract}`}>Open {row.agreement} in the demo <ArrowUpRight aria-hidden="true" /></a>
-          </div>
-        </li>
-      })}
-    </ol>
-    <figcaption className="ask-sheet-foot">An example from the demo workspace. The companies and contracts are made up.</figcaption>
-  </figure>
+    <aside className="ask-source" id={`${id}-source`} aria-live="polite" aria-label="Source" data-unread={source.unread || undefined}>
+      <div key={source.contract} className="ask-source-body">
+        <div className="ask-source-head"><span className="ask-source-icon" aria-hidden="true"><Icon /></span><div><strong>{source.title}</strong><span>{source.location}</span></div></div>
+        {source.quote
+          ? <blockquote>“{source.quote.before}<mark>{source.quote.mark}</mark>{source.quote.after}”</blockquote>
+          : <p>{source.note}</p>}
+        <a href={`${appUrl}/contracts/${source.contract}`}>Open in the demo <ArrowUpRight aria-hidden="true" /></a>
+      </div>
+    </aside>
+  </div>
 }
