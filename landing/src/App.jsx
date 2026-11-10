@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react"
 import { ArrowRight, BellRing, CalendarClock, Menu, TriangleAlert, X } from "lucide-react"
 import { Brand, LensMark } from "./components/landing/brand"
-import HowItWorksGrid, { HowItWorksHeading } from "./components/landing/how-it-works"
-import AskDemo from "./components/landing/ask-demo"
+import WorkflowCards from "./components/landing/workflow-cards"
+import AskGrid, { AskHeading } from "./components/landing/ask-demo"
 import PrivacySection from "./components/landing/privacy-section"
 import FaqSection from "./components/landing/faq-section"
 import { RoundLink } from "./components/landing/hero-components"
@@ -76,21 +76,17 @@ function App() {
         </figure>
       </section>
 
-      <section className="how-section" id="workflow" aria-labelledby="how-title">
+      <section className="workflow-section" id="workflow" aria-labelledby="workflow-title">
         <div className="shell">
-          <HowItWorksHeading />
-          <div data-motion="stage"><HowItWorksGrid /></div>
+          <div data-motion="copy-left"><div className="section-heading"><h2 id="workflow-title">From upload<br /><span>to the next decision.</span></h2><p>For the legal, procurement, finance and ops people who are left holding a contract once it’s signed.</p></div></div>
+          <div data-motion="stage"><WorkflowCards /></div>
         </div>
       </section>
 
       <section className="ask-section" id="ask" aria-labelledby="ask-title">
-        <div className="shell ask-grid">
-          <div className="ask-copy" data-motion="copy-left">
-            <h2 id="ask-title">Ask a question.<br /><span>Get the clause back.</span></h2>
-            <p>Ask about one contract or all of them. You get a short answer, and every part of it links to the wording it came from. If a contract doesn’t say, or couldn’t be read, the answer tells you.</p>
-            <a className="outline-link" href={ASK_URL}>Try Ask in the demo <ArrowRight aria-hidden="true" /></a>
-          </div>
-          <div data-motion="visual-right"><AskDemo appUrl={APP_URL} /></div>
+        <div className="shell">
+          <AskHeading />
+          <div data-motion="stage"><AskGrid askUrl={ASK_URL} /></div>
         </div>
       </section>
 

@@ -31,20 +31,16 @@ try {
     check(`${name}: hero visible without entrance animation`, await page.evaluate(() => [".hero-intro", ".workspace-preview"].every((selector) => { const e = document.querySelector(selector); return !e.dataset.motion && !e.getAnimations().length && getComputedStyle(e).opacity === "1" })))
     // Avoid Chromium's >16k-pixel full-page tiling artifact at phone DPR 3.
     await page.screenshot({ path: path.join(evidence, `${name}.png`), fullPage: name === "desktop" })
-    const snapshot = await page.evaluate(() => ({ text: document.body.innerText, links: [...document.querySelectorAll("a")].map((e) => ({ text: e.textContent, href: e.getAttribute("href") })), boxes: [...document.querySelectorAll(".header,.hero-intro,h1,.hero-copy,.workspace-preview,.dashboard-capture,.how-section,.ask-section,.control-section,.privacy-section,.faq-section,.brand")].map((e) => ({ selector: e.className || e.tagName, box: JSON.parse(JSON.stringify(e.getBoundingClientRect())), color: getComputedStyle(e).color, background: getComputedStyle(e).backgroundColor })), fonts: [...document.fonts].map((f) => ({ family: f.family, weight: f.weight, style: f.style, status: f.status })), image: document.querySelector(".dashboard-capture").currentSrc, overflow: document.documentElement.scrollWidth > window.innerWidth }))
+    const snapshot = await page.evaluate(() => ({ text: document.body.innerText, links: [...document.querySelectorAll("a")].map((e) => ({ text: e.textContent, href: e.getAttribute("href") })), boxes: [...document.querySelectorAll(".header,.hero-intro,h1,.hero-copy,.workspace-preview,.dashboard-capture,.workflow-section,.ask-section,.control-section,.privacy-section,.faq-section,.brand")].map((e) => ({ selector: e.className || e.tagName, box: JSON.parse(JSON.stringify(e.getBoundingClientRect())), color: getComputedStyle(e).color, background: getComputedStyle(e).backgroundColor })), fonts: [...document.fonts].map((f) => ({ family: f.family, weight: f.weight, style: f.style, status: f.status })), image: document.querySelector(".dashboard-capture").currentSrc, overflow: document.documentElement.scrollWidth > window.innerWidth }))
     output.captures[name] = snapshot
     check(`${name}: no horizontal overflow`, !snapshot.overflow)
     // The page sells contract review and renewals; frozen dashboard areas stay off it.
     check(`${name}: no agent, SDK, MCP, developer or converter copy`, !/\bagents?\b|\bagentic\b|\bSDK\b|\bMCP\b|developer|converter/i.test(snapshot.text))
     check(`${name}: meta description and title describe contract review`, await page.evaluate(() => /contract review/i.test(document.title) && /renewal/i.test(document.querySelector('meta[name="description"]').content) && !/agent/i.test(document.querySelector('meta[name="description"]').content)))
-    for (const [id, heading] of [["workflow", /every contract/], ["ask", /Ask a question/], ["renewals", /Stop renewing/], ["privacy", /What happens/], ["faq", /Questions about/]]) {
+    for (const [id, heading] of [["workflow", /From upload/], ["ask", /across your contracts/], ["renewals", /Stop renewing/], ["privacy", /What happens/], ["faq", /Questions about/]]) {
       check(`${name}: #${id} section present`, await page.locator(`section#${id} h2`).filter({ hasText: heading }).count() === 1)
     }
-    check(`${name}: How it works has three icon badges and four cards`, await page.locator(".how-heading .how-badge[aria-hidden=true]").count() === 3 && await page.locator(".how-card").count() === 4)
-    check(`${name}: How it works figures are product facts`, JSON.stringify(await page.locator(".how-figure").allTextContents()) === JSON.stringify(["60 days", "4", "3", "90 days"]))
-    await page.locator(".how-card-image").scrollIntoViewIfNeeded()
-    check(`${name}: Renewals calendar image decodes`, await page.locator(".how-card-image img").evaluate(async (e) => { if (!e.complete) await new Promise((r) => e.addEventListener("load", r, { once: true })); return e.naturalWidth === 666 && /renewals-calendar\.(avif|webp)$/.test(e.currentSrc) }))
-    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }))
+    check(`${name}: four workflow steps`, await page.locator(".workflow-card").count() === 4)
     check(`${name}: three renewal cards`, await page.locator("#renewals .control-card").count() === 3)
     check(`${name}: three privacy points with policy links`, await page.locator(".privacy-points li").count() === 3 && await page.locator('#privacy a[href="/privacy"]').count() === 1 && await page.locator('#privacy a[href="/terms"]').count() === 1)
     check(`${name}: grain overlay at 14% opacity`, await page.evaluate(() => getComputedStyle(document.querySelector(".site"), "::after").opacity === "0.14"))
@@ -63,7 +59,7 @@ try {
       output.checks.push(`${name}: layout within 1 CSS pixel; colors unchanged`)
     }
     if (name === "phone") {
-      for (const section of ["how", "ask", "control", "privacy", "faq", "closing"]) {
+      for (const section of ["workflow", "ask", "control", "privacy", "faq", "closing"]) {
         await page.locator(`.${section === "closing" ? "closing" : `${section}-section`}`).scrollIntoViewIfNeeded()
         await page.waitForTimeout(1200)
         await page.screenshot({ path: path.join(evidence, `phone-${section}.png`) })
@@ -90,21 +86,16 @@ try {
         check(`desktop: ${label} anchor`, page.url().endsWith(hash))
       }
     }
-    check(`${name}: later stage motion remains`, await page.locator(".how-section [data-motion=stage]").count() === 1)
-    // Ask: an answer card whose clause chips switch the source card beside it.
-    const chips = page.locator(".ask-chip")
-    const source = page.locator(".ask-source")
-    check(`${name}: Ask answer has four clause chips, first selected`, await chips.count() === 4 && await chips.nth(0).getAttribute("aria-pressed") === "true")
-    check(`${name}: source card quotes the selected clause with the key words marked`, await source.locator("blockquote mark").isVisible() && /Loopback/.test(await source.locator("strong").textContent()))
-    await chips.nth(1).scrollIntoViewIfNeeded()
-    await chips.nth(1).focus()
-    await page.keyboard.press("Enter")
-    check(`${name}: keyboard switches the source and keeps focus on the chip`, await chips.nth(1).getAttribute("aria-pressed") === "true" && await chips.nth(0).getAttribute("aria-pressed") === "false" && /Workset/.test(await source.locator("strong").textContent()) && await chips.nth(1).evaluate((e) => document.activeElement === e))
-    await chips.nth(3).click()
-    check(`${name}: unread contract explains why there is no quote`, await source.getAttribute("data-unread") === "true" && await source.locator("blockquote").count() === 0 && /no text to quote/i.test(await source.textContent()))
-    check(`${name}: source links to its contract in the demo`, /^https:\/\/app\.lenslayer\.online\/contracts\/demo-marketing$/.test(await source.locator("a").getAttribute("href")))
-    await chips.nth(0).click()
-    await page.locator(".ask-stage").screenshot({ path: path.join(evidence, `${name}-ask.png`) })
+    check(`${name}: later stage motion remains`, await page.locator(".workflow-section [data-motion=stage]").count() === 1)
+    // Ask: centred statement with icon badges over four cards built from the demo answer.
+    check(`${name}: Ask has three icon badges and four cards`, await page.locator(".ask-heading .ask-badge[aria-hidden=true]").count() === 3 && await page.locator(".ask-card").count() === 4)
+    check(`${name}: Ask figures come from the demo answer`, JSON.stringify(await page.locator(".ask-figure").allTextContents()) === JSON.stringify(["60 days", "6", "3", "Open Ask "]))
+    await page.locator(".ask-card-image").scrollIntoViewIfNeeded()
+    check(`${name}: Ask screenshot decodes`, await page.locator(".ask-card-image img").evaluate(async (e) => { if (!e.complete) await new Promise((r) => e.addEventListener("load", r, { once: true })); return e.naturalWidth === 960 && /ask-answer\.(avif|webp)$/.test(e.currentSrc) }))
+    const askLink = page.locator("a.ask-card-dark")
+    await askLink.focus()
+    check(`${name}: Open Ask card is a focusable link to Ask in the demo`, await askLink.evaluate((e) => document.activeElement === e) && await askLink.getAttribute("href") === "https://app.lenslayer.online/portfolio")
+    await page.locator(".ask-grid").screenshot({ path: path.join(evidence, `${name}-ask.png`) })
     const faq = page.locator(".faq-item button")
     for (let i = 0; i < await faq.count(); i++) {
       await faq.nth(i).focus()
@@ -128,7 +119,7 @@ try {
   const reduced = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" })
   const page = await reduced.newPage()
   await page.goto("http://127.0.0.1:4180/", { waitUntil: "networkidle" })
-  await page.locator(".ask-stage").scrollIntoViewIfNeeded()
+  await page.locator(".ask-grid").scrollIntoViewIfNeeded()
   check("reduced motion: no reveal animations", await page.evaluate(() => document.getAnimations().length === 0))
   await reduced.close()
   for (const [label, disabled, extension] of [["WebP", ["avif"], "webp"], ["JPEG", ["avif", "webp"], "jpg"]]) {

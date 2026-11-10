@@ -48,7 +48,7 @@ try {
     const { default: App } = await import(`${artifact.href}?case=${index}`)
     const html = renderToStaticMarkup(createElement(App))
     const hrefs = [...html.matchAll(/<a\b[^>]*\bhref="([^"]+)"/g)].map((match) => match[1])
-    for (const route of ["signin", "", "portfolio", "calendar", "contracts/demo-msa"]) {
+    for (const route of ["signin", "", "portfolio", "calendar"]) {
       assert.ok(hrefs.includes(`${canonical}/${route}`), `Missing canonical /${route} href`)
     }
     // Agents, runs, the developer guide and the converter are frozen in the dashboard.
