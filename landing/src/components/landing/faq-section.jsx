@@ -3,28 +3,24 @@ import { Plus } from "lucide-react"
 
 const questions = [
   {
-    question: "What can an agent do today?",
-    answer: "The v1 workflow retrieves retained agreement text by literal phrase and proposes an assigned internal workspace task. A worker verifies task creation by database read-back. General cross-system execution and a live connector catalog are not claimed here.",
+    question: "Is the review legal advice?",
+    answer: "No. Think of it as a careful first read that points your team at what needs attention and where it is. It can miss things and it can be wrong, so check anything important against the clause itself, and talk to a lawyer before you sign or rely on a contract.",
   },
   {
-    question: "Can I bring my own agent?",
-    answer: "Yes. A server-side client uses a scoped bearer credential and the run, evidence, and action API. The SDK is prepared locally, not published on npm. The MCP adapter runs locally over stdio; there is no hosted MCP endpoint or remote OAuth service.",
+    question: "What files can I upload?",
+    answer: "PDF, Word (.docx) and plain text. If a file can’t be read properly, say a scan with pages cut off, the review tells you so you can upload a better copy.",
   },
   {
-    question: "Who gives an agent permission to act?",
-    answer: "A workspace owner or administrator delegates exact tools, documents, and assignees with an expiry and action limit. Human approval is required by default and binds the exact task input. Neither source text nor model output grants permission.",
+    question: "How does LensLayer find renewal and notice dates?",
+    answer: "It reads the term, renewal, notice and termination clauses and lists each date next to the clause it came from. If a date depends on something the contract doesn’t state, like a start date, it says so. Nothing gets a reminder until someone on your team confirms the date.",
   },
   {
-    question: "What happens to the documents I upload?",
-    answer: "Choose retention when uploading or use workspace defaults. Agent evidence retrieval requires retained source text. Evidence receipts store version, hash, and offsets rather than a copied excerpt; removed or expired text cannot be read back.",
+    question: "Who can see our contracts?",
+    answer: "Only people in your workspace. Owners and admins invite them and decide whether each one can view, review or manage the workspace. Every decision shows who made it and why.",
   },
   {
-    question: "Does verified mean the renewal was handled?",
-    answer: "No. It means the follow-up task was created with the expected assignee, due instant, and source reference at completion. It does not certify legal interpretation, send a notice, or prove the person performed the task.",
-  },
-  {
-    question: "Does LensLayer host a planner for me?",
-    answer: "The initial workflow is developer-run. A bounded server-side planner CLI is implemented locally against the same API, but no hosted deployment is offered here. Real product-model use requires a separate opt-in credential and explicit model. Public sample runs are synthetic and read-only.",
+    question: "Are our documents used to train AI models?",
+    answer: "No. The text goes to our AI provider only to produce your review and answers. The privacy policy names every company that handles your data and says how long we keep each kind.",
   },
 ]
 

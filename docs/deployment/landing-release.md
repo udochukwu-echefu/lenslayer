@@ -12,8 +12,8 @@ cd landing
 ../dashboard/node_modules/.bin/wrangler pages deploy dist --project-name lenslayer --branch main --commit-hash "$(git rev-parse HEAD)"
 ```
 
-Record the preceding production deployment ID before upload. Verify the new deployment and both public domains after upload: the current page copy, light-only theme, responsive image variants, locally served fonts, and the actual app-link destinations. Production app links always use `https://app.lenslayer.online`, including when an obsolete `VITE_APP_URL` remains in deployment settings. The CI regression check covers absent, retired-host and localhost overrides.
+Record the preceding production deployment ID before upload. Verify the new deployment and both public domains after upload: the current page copy, light-only theme, locally served fonts, and the actual app-link destinations. Production app links always use `https://app.lenslayer.online`, including when an obsolete `VITE_APP_URL` remains in deployment settings. The CI regression check covers absent, retired-host and localhost overrides.
 
-The old `/sample` tour redirects to the workspace. Anonymous visitors enter the existing read-only fictional workspace; signed-in users retain their own workspace. There is no separate introductory wizard.
+The landing page links only to sign-in, not to the demo workspace. The old `/sample` tour still redirects to the workspace, where anonymous visitors enter the read-only fictional workspace and signed-in users keep their own. There is no separate introductory wizard.
 
 The historical Netlify configuration is not this deployment target. Do not create a new hosting project, change DNS, enable the retired dashboard `workers.dev` address or upload the dashboard artifact to the landing project. A landing rollback uses its recorded previous Pages deployment; dashboard/backend rollback is separate.
