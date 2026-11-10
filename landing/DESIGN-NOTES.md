@@ -22,7 +22,8 @@ The earlier reference research included Refero, Mobbin, beUI, Rare UI, shadcn/ui
 - Existing LensMark/Brand geometry uses unique SVG mask IDs.
 - The workspace preview is a 1728 × 908 capture of the Overview page in the synthetic demo workspace, taken from the dashboard with the five-item contract navigation (Overview, Agreements, Ask, Renewals, Settings). `scripts/generate-hero.mjs` builds the `overview-v2-*` AVIF and WebP variants from `public/lenslayer-overview.jpg`.
 - WorkflowCards shows all four stages and explanations without interaction.
-- PortfolioDemo has three preset questions about the demo agreements (across agreements, one agreement, and a gap the documents don't settle), with source excerpts that link to the agreement in the demo workspace.
+- AskDemo replaced the tilted, auto-rotating card carousel in November 2026. It is one flat answer sheet: the question in Instrument Serif, a short answer, then a ruled list with one row per contract. Each row opens the clause it relied on, with the deciding words highlighted, and links to that contract in the demo. One row is a contract that couldn't be read, to show the answer admits gaps. References: Hebbia's Matrix (agreements as rows, every answer carrying its source), Spellbook's hairline rules and restraint, and a crumpled-receipt find on designeer.xyz (a document treated as a physical object you can read).
+- The page grain sits at 14% opacity, down 30% from 20%.
 - Renewal cards pair a title and icon with one explanation. The privacy card restates the privacy policy in three points and links to `/privacy` and `/terms`.
 - Mobile navigation supports Escape, focus return, and close-on-navigation.
 - CSS and WAAPI respect reduced motion. State transitions are immediate for keyboard interaction.

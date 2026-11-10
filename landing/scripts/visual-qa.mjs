@@ -31,18 +31,19 @@ try {
     check(`${name}: hero visible without entrance animation`, await page.evaluate(() => [".hero-intro", ".workspace-preview"].every((selector) => { const e = document.querySelector(selector); return !e.dataset.motion && !e.getAnimations().length && getComputedStyle(e).opacity === "1" })))
     // Avoid Chromium's >16k-pixel full-page tiling artifact at phone DPR 3.
     await page.screenshot({ path: path.join(evidence, `${name}.png`), fullPage: name === "desktop" })
-    const snapshot = await page.evaluate(() => ({ text: document.body.innerText, links: [...document.querySelectorAll("a")].map((e) => ({ text: e.textContent, href: e.getAttribute("href") })), boxes: [...document.querySelectorAll(".header,.hero-intro,h1,.hero-copy,.workspace-preview,.dashboard-capture,.workflow-section,.portfolio-section,.control-section,.privacy-section,.faq-section,.brand")].map((e) => ({ selector: e.className || e.tagName, box: JSON.parse(JSON.stringify(e.getBoundingClientRect())), color: getComputedStyle(e).color, background: getComputedStyle(e).backgroundColor })), fonts: [...document.fonts].map((f) => ({ family: f.family, weight: f.weight, style: f.style, status: f.status })), image: document.querySelector(".dashboard-capture").currentSrc, overflow: document.documentElement.scrollWidth > window.innerWidth }))
+    const snapshot = await page.evaluate(() => ({ text: document.body.innerText, links: [...document.querySelectorAll("a")].map((e) => ({ text: e.textContent, href: e.getAttribute("href") })), boxes: [...document.querySelectorAll(".header,.hero-intro,h1,.hero-copy,.workspace-preview,.dashboard-capture,.workflow-section,.ask-section,.control-section,.privacy-section,.faq-section,.brand")].map((e) => ({ selector: e.className || e.tagName, box: JSON.parse(JSON.stringify(e.getBoundingClientRect())), color: getComputedStyle(e).color, background: getComputedStyle(e).backgroundColor })), fonts: [...document.fonts].map((f) => ({ family: f.family, weight: f.weight, style: f.style, status: f.status })), image: document.querySelector(".dashboard-capture").currentSrc, overflow: document.documentElement.scrollWidth > window.innerWidth }))
     output.captures[name] = snapshot
     check(`${name}: no horizontal overflow`, !snapshot.overflow)
     // The page sells contract review and renewals; frozen dashboard areas stay off it.
     check(`${name}: no agent, SDK, MCP, developer or converter copy`, !/\bagents?\b|\bagentic\b|\bSDK\b|\bMCP\b|developer|converter/i.test(snapshot.text))
     check(`${name}: meta description and title describe contract review`, await page.evaluate(() => /contract review/i.test(document.title) && /renewal/i.test(document.querySelector('meta[name="description"]').content) && !/agent/i.test(document.querySelector('meta[name="description"]').content)))
-    for (const [id, heading] of [["workflow", /From upload/], ["ask", /Answers that show/], ["renewals", /Nothing renews/], ["privacy", /stay yours/], ["faq", /Questions about/]]) {
+    for (const [id, heading] of [["workflow", /From upload/], ["ask", /Ask a question/], ["renewals", /Stop renewing/], ["privacy", /What happens/], ["faq", /Questions about/]]) {
       check(`${name}: #${id} section present`, await page.locator(`section#${id} h2`).filter({ hasText: heading }).count() === 1)
     }
     check(`${name}: four workflow steps`, await page.locator(".workflow-card").count() === 4)
     check(`${name}: three renewal cards`, await page.locator("#renewals .control-card").count() === 3)
     check(`${name}: three privacy points with policy links`, await page.locator(".privacy-points li").count() === 3 && await page.locator('#privacy a[href="/privacy"]').count() === 1 && await page.locator('#privacy a[href="/terms"]').count() === 1)
+    check(`${name}: grain overlay at 14% opacity`, await page.evaluate(() => getComputedStyle(document.querySelector(".site"), "::after").opacity === "0.14"))
     check(`${name}: responsive high-DPI AVIF selected`, snapshot.image.endsWith(name === "phone" ? "overview-v2-1152.avif" : "overview-v2-1728.avif"))
     if (baseline) {
       const before = baseline[name]
@@ -58,7 +59,7 @@ try {
       output.checks.push(`${name}: layout within 1 CSS pixel; colors unchanged`)
     }
     if (name === "phone") {
-      for (const section of ["workflow", "portfolio", "control", "privacy", "faq", "closing"]) {
+      for (const section of ["workflow", "ask", "control", "privacy", "faq", "closing"]) {
         await page.locator(`.${section === "closing" ? "closing" : `${section}-section`}`).scrollIntoViewIfNeeded()
         await page.waitForTimeout(1200)
         await page.screenshot({ path: path.join(evidence, `phone-${section}.png`) })
@@ -86,23 +87,20 @@ try {
       }
     }
     check(`${name}: later stage motion remains`, await page.locator(".workflow-section [data-motion=stage]").count() === 1)
-    const controls = page.getByRole("group", { name: "Example question cards", exact: true })
-    const evidenceButton = controls.getByRole("button").nth(0)
-    await evidenceButton.scrollIntoViewIfNeeded()
-    await evidenceButton.click()
-    await page.keyboard.press("ArrowRight")
-    check(`${name}: carousel arrow preserves persistent-control focus`, await evidenceButton.evaluate((e) => document.activeElement === e))
-    check(`${name}: carousel arrow changes active slide`, await controls.getByRole("button").nth(1).getAttribute("aria-pressed") === "true")
-    await page.keyboard.press("ArrowLeft")
-    check(`${name}: carousel reverses`, await evidenceButton.getAttribute("aria-pressed") === "true")
-    const source = page.locator('.portfolio-carousel-card[data-position="front"] .answer-source').first()
-    await source.focus()
-    await page.keyboard.press("ArrowRight")
-    check(`${name}: source-link arrows do not change slide or lose focus`, await source.evaluate((e) => document.activeElement === e) && await evidenceButton.getAttribute("aria-pressed") === "true")
-    check(`${name}: background slides remain inert`, await page.locator('.portfolio-carousel-card[aria-hidden="true"][inert]').count() === 2)
-    await page.waitForTimeout(8300)
-    check(`${name}: focused/manual carousel stays paused`, await evidenceButton.getAttribute("aria-pressed") === "true")
-    await page.screenshot({ path: path.join(evidence, `${name}-carousel-focus.png`) })
+    // Ask: one answer sheet whose rows open the clause each part of the answer came from.
+    const rows = page.locator(".ask-row > button")
+    check(`${name}: Ask sheet lists four contracts`, await rows.count() === 4)
+    check(`${name}: first source open with highlighted clause`, await rows.nth(0).getAttribute("aria-expanded") === "true" && await page.locator(".ask-row").nth(0).locator("blockquote mark").isVisible())
+    await rows.nth(1).scrollIntoViewIfNeeded()
+    await rows.nth(1).focus()
+    await page.keyboard.press("Enter")
+    check(`${name}: keyboard opens the next source and closes the first`, await rows.nth(1).getAttribute("aria-expanded") === "true" && await rows.nth(0).getAttribute("aria-expanded") === "false" && await page.locator(".ask-row-source").nth(0).isHidden())
+    await page.keyboard.press("Enter")
+    check(`${name}: Enter closes the open source`, await rows.nth(1).getAttribute("aria-expanded") === "false" && await page.locator(".ask-row-source").nth(1).isHidden())
+    await rows.nth(3).click()
+    check(`${name}: unread contract explains why there is no quote`, await page.locator('.ask-row[data-unread] .ask-row-note').isVisible() && await page.locator('.ask-row[data-unread] blockquote').count() === 0)
+    check(`${name}: every source links to its contract in the demo`, (await page.locator(".ask-row-source a").evaluateAll((links) => links.map((e) => e.getAttribute("href")))).every((href) => /^https:\/\/app\.lenslayer\.online\/contracts\/demo-[a-z]+$/.test(href)))
+    await page.locator(".ask-sheet").screenshot({ path: path.join(evidence, `${name}-ask.png`) })
     const faq = page.locator(".faq-item button")
     for (let i = 0; i < await faq.count(); i++) {
       await faq.nth(i).focus()
@@ -126,8 +124,7 @@ try {
   const reduced = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" })
   const page = await reduced.newPage()
   await page.goto("http://127.0.0.1:4180/", { waitUntil: "networkidle" })
-  await page.locator(".portfolio-carousel").scrollIntoViewIfNeeded()
-  check("reduced motion: no carousel progress animation", await page.locator(".portfolio-slide-progress").count() === 0)
+  await page.locator(".ask-sheet").scrollIntoViewIfNeeded()
   check("reduced motion: no reveal animations", await page.evaluate(() => document.getAnimations().length === 0))
   await reduced.close()
   for (const [label, disabled, extension] of [["WebP", ["avif"], "webp"], ["JPEG", ["avif", "webp"], "jpg"]]) {

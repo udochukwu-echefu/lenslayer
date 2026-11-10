@@ -5,15 +5,15 @@ const steps = [
   },
   {
     label: "Review",
-    copy: "Get a first pass on risks, obligations, payments and dates, each with the clause it relies on. The review also lists what it couldn’t read or confirm.",
+    copy: "You get a first read of the risks, obligations, payments and dates, each pointing at its clause. Anything it couldn’t read or wasn’t sure about is listed too.",
   },
   {
     label: "Decide",
-    copy: "Ask a colleague for a decision. They approve, approve with conditions, request changes or reject, and give a reason. Open decisions wait in the Overview queue.",
+    copy: "Send it to a colleague. They can approve it, approve it with conditions, ask for changes or reject it, and they have to say why. Anything still waiting sits on the Overview page.",
   },
   {
     label: "Follow through",
-    copy: "Turn a finding or a date into a task with an owner and a due date. Renewal and notice dates go on the Renewals calendar with a reminder.",
+    copy: "Turn a finding into a task with an owner and a due date. Renewal and notice dates go on the Renewals calendar, each with a reminder.",
   },
 ]
 
