@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createContext, useContext, useState } from "react";
 import { useWorkspace } from "@/components/workspace-provider";
+import { features } from "@/lib/feature-flags";
 import { settingsSections, type SettingsPatch } from "./sections";
 import "./settings.css";
 
@@ -43,7 +44,8 @@ export function SettingsWorkspace({ children }: { children: React.ReactNode }) {
       {isDemo && <p className="settings-access-note" role="status">Read-only demo. These synthetic settings cannot change a private workspace.</p>}
       <div className="settings-sections-layout">
         <nav className="settings-section-nav" aria-label="Settings sections">
-          {settingsSections.map((item) => <Link key={item.id} href={`/settings/${item.id}`} aria-current={pathname === `/settings/${item.id}` ? "page" : undefined}>{item.label}</Link>)}
+          {settingsSections.filter((item) => item.id !== "developers" || features.agentPlatform || pathname === "/settings/developers").map((item) => <Link key={item.id} href={`/settings/${item.id}`} aria-current={pathname === `/settings/${item.id}` ? "page" : undefined}>{item.label}</Link>)}
+          <Link href="/team">Team</Link>
         </nav>
         <div className="settings-selected-content">{children}</div>
       </div>

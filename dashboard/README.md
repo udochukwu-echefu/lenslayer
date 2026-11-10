@@ -158,3 +158,16 @@ workspace identifiers.
 
 The AI assistant displays complete responses as soon as the API returns.
 Pending indicators reflect the actual request; there is no artificial typing delay.
+
+## Product focus flags
+
+The launch product is contract review and renewal follow-through, so the sidebar has five destinations: Overview, Agreements, Ask, Renewals and Settings. Inbox and Reports open from Overview, the task list from Renewals, and Team from Settings.
+
+Two frozen areas are off unless their build-time flag is set to `true` or `1`. With a flag off, the area has no sidebar entry and its routes return the not-found page; no code or data is removed.
+
+| Flag | Restores |
+|---|---|
+| `NEXT_PUBLIC_LENSLAYER_AGENT_PLATFORM` | Agents, runs, agent tasks, workspace context and the Developer guide link in Settings |
+| `NEXT_PUBLIC_LENSLAYER_DOCUMENT_CONVERTER` | Document converter |
+
+These flags only change the dashboard. Backend routes and the agent worker are unaffected.

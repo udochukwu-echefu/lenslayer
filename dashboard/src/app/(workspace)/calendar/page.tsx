@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, ChevronLeft, ChevronRight, Download, Plus } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Download, ListChecks, Plus } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { PageError, PageLoading } from "@/components/page-states";
@@ -46,7 +46,7 @@ export default function CalendarPage() {
 
   const loading = gridQuery.isLoading;
   const error = gridQuery.error;
-  return <div className="page calendar-page"><div className="page-heading"><div><h1 className="page-title">Calendar</h1><p className="page-description">Human-confirmed tasks, renewals, notice windows, obligations, and payment dates.</p></div><div className="page-heading-actions">{!isDemo && <button className="button secondary" type="button" onClick={() => void api.downloadCalendarExport(organizationId)}><Download size={15} />Export calendar</button>}{canUpload && <Link className="button" href="/tasks?new=1"><Plus size={16} />New task</Link>}</div></div>
+  return <div className="page calendar-page"><div className="page-heading"><div><h1 className="page-title">Renewals</h1><p className="page-description">Human-confirmed tasks, renewals, notice windows, obligations, and payment dates.</p></div><div className="page-heading-actions"><Link className="button secondary" href="/tasks"><ListChecks size={15} />Task list</Link>{!isDemo && <button className="button secondary" type="button" onClick={() => void api.downloadCalendarExport(organizationId)}><Download size={15} />Export calendar</button>}{canUpload && <Link className="button" href="/tasks?new=1"><Plus size={16} />New task</Link>}</div></div>
     <div className="calendar-toolbar"><div><button className="icon-button" type="button" onClick={() => moveMonth(-1)} aria-label="Previous month"><ChevronLeft size={18} /></button><button className="button ghost" type="button" onClick={() => { const value = new Date(); value.setDate(1); setMonth(value); }}>Today</button><button className="icon-button" type="button" onClick={() => moveMonth(1)} aria-label="Next month"><ChevronRight size={18} /></button></div><h2>{new Intl.DateTimeFormat("en", { month: "long", year: "numeric" }).format(month)}</h2><span>{gridQuery.data?.month_total ?? "—"} dated items</span></div>
     <button className="button secondary" type="button" onClick={() => setDescending((value) => !value)}>{descending ? "Latest dates first" : "Earliest dates first"}</button>
     {loading ? <PageLoading rows={7} /> : error ? <PageError error={error} /> : <>

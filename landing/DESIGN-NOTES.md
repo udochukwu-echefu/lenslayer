@@ -2,9 +2,9 @@
 
 ## Final direction
 
-The landing page uses warm cream, charcoal, and soft pastel surfaces. Figtree remains the product typeface; Instrument Serif adds contrast to the hero headline. The page leads with the real workspace, then explains the contract workflow, source questions, and document controls. The workflow section uses a full-width charcoal background with light heading text.
+The landing page uses warm cream, charcoal, and soft pastel surfaces. Figtree remains the product typeface; Instrument Serif adds contrast to the hero headline. The page leads with the headline and calls to action, then covers the review workflow, source-linked questions, renewal dates and reminders, and document privacy. Since November 2026 it no longer pitches agents, the SDK, the developer guide or the document converter, which are frozen in the dashboard. The workflow section uses a full-width charcoal background with light heading text.
 
-The previews use explicitly synthetic agreements and people. No customer endorsements, logos, adoption metrics, or performance claims have been introduced.
+Since November 2026 the page shows no product screenshots, demo workspace data or links into the demo. The hero is text and calls to action only, and every app link goes to sign-in. No customer endorsements, logos, adoption metrics, or performance claims have been introduced.
 
 ## Figma sources and component provenance
 
@@ -20,10 +20,10 @@ The earlier reference research included Refero, Mobbin, beUI, Rare UI, shadcn/ui
 ## Components and behavior
 
 - Existing LensMark/Brand geometry uses unique SVG mask IDs.
-- The workspace preview is a fresh 2560 × 1600 capture of the local synthetic demo, rendered at twice the original resolution. It has no blue frame, caption, or audience strip.
 - WorkflowCards shows all four stages and explanations without interaction.
-- PortfolioDemo has three preset questions, readable answers, and source excerpts in a panel that fits its content.
-- Document-control cards pair a title and icon with one explanation. Decorative microcopy and miniature diagrams were removed.
+- Ask (November 2026) follows a reference the owner supplied: a small centred eyebrow, a large centred statement with round icon badges set into the text and a greyed last line, then a four-card grid. The tall blue card is a drawn contract page (decorative lines and a generic renewal clause, not anyone's contract) under a white "1 click" figure card. The grey card lists the three questions Ask suggests in every workspace, the yellow card the file types it reads, and the dark card links to sign-in. Two earlier versions were dropped in review: an auto-rotating tilted card carousel, and a blue stage with clause chips and a floating source card.
+- The page grain sits at 14% opacity, down 30% from 20%.
+- Renewal cards pair a title and icon with one explanation. The privacy card restates the privacy policy in three points and links to `/privacy` and `/terms`.
 - Mobile navigation supports Escape, focus return, and close-on-navigation.
 - CSS and WAAPI respect reduced motion. State transitions are immediate for keyboard interaction.
 - The hero headline and supporting copy remain. Decorative cards, the pink medallion, and the reassurance line were removed.
@@ -36,4 +36,4 @@ The earlier reference research included Refero, Mobbin, beUI, Rare UI, shadcn/ui
 - Rechecked all three portfolio examples and mobile menu/Escape. All workflow explanations remain visible without selection.
 - Reduced-motion rules were inspected in source, not emulated at OS level.
 - `VITE_APP_URL` still controls application links, defaulting to localhost:3000. Dashboard sample/converter endpoints were not running during first-pass verification; this work does not claim end-to-end verification of those routes.
-- Local previews run at http://127.0.0.1:5173/ and http://127.0.0.1:3000/. The dashboard now shares the landing page's sage-and-graphite palette, and the landing hero uses a current capture of the populated demo workspace.
+- Local previews run at http://127.0.0.1:5173/ and http://127.0.0.1:3000/. The dashboard now shares the landing page's sage-and-graphite palette.

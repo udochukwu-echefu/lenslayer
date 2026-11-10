@@ -1,19 +1,16 @@
 import { useEffect, useRef, useState } from "react"
-import { ArrowDown, ArrowRight, LockKeyhole, Menu, ShieldCheck, UsersRound, X } from "lucide-react"
+import { ArrowDown, ArrowRight, BellRing, CalendarClock, Menu, TriangleAlert, X } from "lucide-react"
 import { Brand, LensMark } from "./components/landing/brand"
 import WorkflowCards from "./components/landing/workflow-cards"
-import PortfolioDemo from "./components/landing/portfolio-demo"
-import AgentCapabilities from "./components/landing/agent-capabilities"
+import AskGrid, { AskHeading } from "./components/landing/ask-section"
+import PrivacySection from "./components/landing/privacy-section"
 import FaqSection from "./components/landing/faq-section"
 import { RoundLink } from "./components/landing/hero-components"
 import { resolveAppUrl } from "./app-url.js"
 
 const APP_URL = resolveAppUrl(import.meta.env.DEV ? import.meta.env.VITE_APP_URL : undefined, import.meta.env.PROD)
-const SAMPLE_URL = `${APP_URL}/runs`
-const REVIEW_URL = `${APP_URL}/`
-const DOCS_URL = `${APP_URL}/developers`
 const SIGN_IN_URL = `${APP_URL}/signin`
-const navigation = [{ label: "The workflow", href: "#workflow" }, { label: "Permissions", href: "#control" }, { label: "Developer guide", href: DOCS_URL }]
+const navigation = [{ label: "How it works", href: "#workflow" }, { label: "Ask", href: "#ask" }, { label: "Renewals", href: "#renewals" }, { label: "Privacy", href: "#privacy" }]
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -54,76 +51,59 @@ function App() {
   return <div className="site" id="top">
     <a className="skip-link" href="#main">Skip to content</a>
     <header className="header">
-      <div className="shell header-inner"><Brand /><nav className="desktop-nav" aria-label="Primary navigation">{navigation.map((item) => <a href={item.href} key={item.href}>{item.label}</a>)}</nav><div className="header-actions"><a className="header-secondary" href={SAMPLE_URL}>Explore sample</a><RoundLink compact href={SIGN_IN_URL}>Sign in</RoundLink><button type="button" className="menu-button" ref={menuButton} aria-label={menuOpen ? "Close navigation" : "Open navigation"} aria-expanded={menuOpen} aria-controls="mobile-navigation" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}</button></div></div>
+      <div className="shell header-inner"><Brand /><nav className="desktop-nav" aria-label="Primary navigation">{navigation.map((item) => <a href={item.href} key={item.href}>{item.label}</a>)}</nav><div className="header-actions"><RoundLink compact href={SIGN_IN_URL}>Sign in</RoundLink><button type="button" className="menu-button" ref={menuButton} aria-label={menuOpen ? "Close navigation" : "Open navigation"} aria-expanded={menuOpen} aria-controls="mobile-navigation" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}</button></div></div>
       <nav id="mobile-navigation" className="mobile-nav" aria-label="Mobile navigation" hidden={!menuOpen}>{navigation.map((item) => <a href={item.href} key={item.href} onClick={() => setMenuOpen(false)}>{item.label}<ArrowRight aria-hidden="true" /></a>)}<a href={SIGN_IN_URL}>Sign in <ArrowRight aria-hidden="true" /></a></nav>
     </header>
     <main id="main">
       <section className="hero" aria-labelledby="hero-title">
         <div className="hero-composition shell">
           <div className="hero-intro">
-             <h1 id="hero-title">Agentic document<br /><span>intelligence for teams.</span></h1>
-              <div className="hero-copy"><p>Understand your documents. Surface risks and obligations, ask questions with source-linked answers, and review decisions together. When it’s time to act, agents can prepare follow-up tasks for your team to approve.</p><div className="hero-ctas"><RoundLink href={SIGN_IN_URL}>Open your workspace</RoundLink><a className="hero-secondary" href={REVIEW_URL}>Explore workspace <ArrowDown aria-hidden="true" /></a></div></div>
+            <h1 id="hero-title">Know what you’ve signed<br /><span>before it renews.</span></h1>
+            <div className="hero-copy"><p>LensLayer reads your contracts first. It flags the risky terms, what you’ve promised to do and the dates that matter, and shows you the clause behind each one. Your team makes the calls, and someone gets a reminder before a notice deadline passes.</p><div className="hero-ctas"><RoundLink href={SIGN_IN_URL}>Open your workspace</RoundLink><a className="hero-secondary" href="#workflow">See how it works <ArrowDown aria-hidden="true" /></a></div></div>
           </div>
         </div>
-        <figure className="workspace-preview shell" id="product">
-          <picture>
-            <source type="image/avif" srcSet="/hero/dashboard-v1-480.avif 480w, /hero/dashboard-v1-768.avif 768w, /hero/dashboard-v1-1152.avif 1152w, /hero/dashboard-v1-1728.avif 1728w" sizes="(max-width: 560px) calc(100vw - 40px), min(91vw, 1240px)" />
-            <source type="image/webp" srcSet="/hero/dashboard-v1-480.webp 480w, /hero/dashboard-v1-768.webp 768w, /hero/dashboard-v1-1152.webp 1152w, /hero/dashboard-v1-1728.webp 1728w" sizes="(max-width: 560px) calc(100vw - 40px), min(91vw, 1240px)" />
-            <img className="dashboard-capture" src="/lenslayer-dashboard@2x.jpg" width="1728" height="908" loading="eager" fetchPriority="high" decoding="async" alt="Relay Software sample workspace with IT support, hardware, office lease, hosting, website design and payroll agreements" />
-          </picture>
-          <figcaption className="workspace-caption">Relay Software's sample contract register. The companies and agreements are fictional; this is a read-only demo.</figcaption>
-        </figure>
       </section>
 
       <section className="workflow-section" id="workflow" aria-labelledby="workflow-title">
         <div className="shell">
-          <div data-motion="copy-left"><div className="section-heading"><h2 id="workflow-title">From retained source<br /><span>to verified task.</span></h2><p>Your client plans. LensLayer enforces scope, pauses for approval, and checks the persisted result. The first workflow creates an internal task; it does not handle the renewal.</p></div></div>
+          <div data-motion="copy-left"><div className="section-heading"><h2 id="workflow-title">From upload<br /><span>to the next decision.</span></h2><p>For the legal, procurement, finance and ops people who are left holding a contract once it’s signed.</p></div></div>
           <div data-motion="stage"><WorkflowCards /></div>
         </div>
       </section>
 
-      <section className="portfolio-section" id="evidence" aria-labelledby="portfolio-title">
-        <div className="shell portfolio-grid">
-          <div className="portfolio-copy" data-motion="copy-left">
-            <h2 id="portfolio-title">A proposal needs<br />more than an answer.</h2>
-            <p>Keep source identity, exact task input, and the completion receipt connected. Supply factual dates and an allowed assignee; missing inputs are not permission to guess.</p>
-            <a className="text-link" href={SAMPLE_URL}>Explore sample runs <ArrowRight aria-hidden="true" /></a>
-          </div>
-          <div data-motion="visual-right"><PortfolioDemo sampleUrl={SAMPLE_URL} /></div>
+      <section className="ask-section" id="ask" aria-labelledby="ask-title">
+        <div className="shell">
+          <AskHeading />
+          <div data-motion="stage"><AskGrid signInUrl={SIGN_IN_URL} /></div>
         </div>
       </section>
 
-      <AgentCapabilities docsUrl={DOCS_URL} sampleUrl={SAMPLE_URL} />
-
-      <section className="control-section shell" id="control" aria-labelledby="control-title">
+      <section className="control-section shell" id="renewals" aria-labelledby="renewals-title">
         <div className="control-heading" data-motion="copy-left">
-          <h2 id="control-title">Permission stays<br />outside the prompt.</h2>
-          <p>Retrieved text is data, not policy. A confident model response cannot expand a delegation or approve its own task.</p>
+          <h2 id="renewals-title">Stop renewing<br />things by accident.</h2>
+          <div><p>Most unwanted renewals happen because nobody saw the notice date coming. LensLayer finds those dates and makes sure a named person hears about them in time.</p></div>
         </div>
         <div className="control-card-grid" data-motion="stage">
           <article className="control-card control-card-retention">
-            <div className="control-card-title"><div className="control-card-icon" aria-hidden="true"><LockKeyhole /></div><h3>Choose what to keep</h3></div>
-            <p>Agent retrieval needs retained source text. Receipts reference its version and hash; deleting or expiring the source makes the evidence unavailable.</p>
+            <div className="control-card-title"><div className="control-card-icon" aria-hidden="true"><CalendarClock /></div><h3>Dates you can check</h3></div>
+            <p>Renewal, notice and termination dates come with the clause they’re from. Someone on your team confirms each one before it goes on the calendar.</p>
           </article>
           <article className="control-card">
-            <div className="control-card-title"><div className="control-card-icon" aria-hidden="true"><UsersRound /></div><h3>Delegate exact scope</h3></div>
-            <p>An owner or administrator selects tools, documents, assignees, expiry, and action limits. Keep the one-time bearer credential on your server.</p>
+            <div className="control-card-title"><div className="control-card-icon" aria-hidden="true"><BellRing /></div><h3>A name on every date</h3></div>
+            <p>Pick who’s responsible and when they hear about it, anywhere from the day itself to 90 days ahead. Quarterly and yearly dates repeat on their own.</p>
           </article>
           <article className="control-card control-card-sage">
-            <div className="control-card-title"><div className="control-card-icon" aria-hidden="true"><ShieldCheck /></div><h3>Approve exact input</h3></div>
-            <p>Human approval binds one immutable proposal. The worker rechecks permission and reads the created task back before recording verified completion.</p>
+            <div className="control-card-title"><div className="control-card-icon" aria-hidden="true"><TriangleAlert /></div><h3>Missed dates get flagged</h3></div>
+            <p>If a date passes and nobody marks it done, the workspace owners and admins are told. The Renewals page keeps every open date in one list.</p>
           </article>
         </div>
       </section>
 
-      <aside className="converter-card shell" data-motion="stage" aria-labelledby="converter-title">
-        <div className="converter-card-copy"><h3 id="converter-title">Convert financial PDFs</h3><p>Review transaction rows and export CSV, Excel, or JSON. Processing stays in your browser.</p></div>
-        <RoundLink compact href={`${APP_URL}/convert`}>Open converter</RoundLink>
-      </aside>
+      <PrivacySection />
 
       <FaqSection />
 
-      <section className="closing" data-motion="closing" aria-labelledby="closing-title"><div className="shell closing-inner"><LensMark className="closing-mark" /><div><h2 id="closing-title">Build the first<br />verified workflow.</h2><p>Retain a source, scope a credential, and run your server-side client. REST, a local SDK, and stdio MCP use the same ledger.</p></div><div className="closing-actions"><RoundLink href={DOCS_URL} light>Developer guide</RoundLink><a className="closing-signin" href={SIGN_IN_URL}>Open your workspace <ArrowRight aria-hidden="true" /></a></div></div></section>
+      <section className="closing" data-motion="closing" aria-labelledby="closing-title"><div className="shell closing-inner"><LensMark className="closing-mark" /><div><h2 id="closing-title">Start with<br />one contract.</h2><p>Upload an agreement and see what LensLayer finds. You can delete it whenever you like.</p></div><div className="closing-actions"><RoundLink href={SIGN_IN_URL} light>Open your workspace</RoundLink><a className="closing-signin" href="/privacy">Read the privacy policy <ArrowRight aria-hidden="true" /></a></div></div></section>
     </main>
     <footer className="footer shell"><div className="footer-top"><Brand /></div><div className="footer-bottom"><span>© {new Date().getFullYear()} LensLayer</span><nav className="footer-legal" aria-label="Legal"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:udo@lenslayer.online">Contact</a></nav><a href="#top">Back to top <ArrowRight aria-hidden="true" /></a></div></footer>
   </div>
