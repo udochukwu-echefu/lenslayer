@@ -1,36 +1,50 @@
 # Release checklist
 
-Updated **2 November 2026**. [Current release status](deployment/current-release-status.md)
+Updated **10 November 2026**. [Current release status](deployment/current-release-status.md)
 has the evidence behind each "done" item. Only the owner merges to `main`, deploys
 to production or publishes to npm.
 
+## Released 2–10 November
+
+With the owner's approval, #27–#34 are merged and deployed from main `d017d66`.
+
+| Part | Live version | Rolled back from |
+|---|---|---|
+| API | `lenslayer-api-00027-jol`, image `platform@sha256:014862c4…` | `lenslayer-api-00012-2kb` |
+| Review worker job, agent worker | same image; agent worker `lenslayer-agent-worker-00006-57g` | image `sha256:6e5cb793…`, `00005-d8d` |
+| Dashboard | Worker version `67176060` | `d560e81b` |
+| Landing | Pages deployment `8985780d` | `e60a6b81` |
+
+The first dashboard deploy (`be553c6a`) returned 500 on every dynamic route and was
+rolled back within minutes. Next.js 16.4 reads `preview-props.json`, which OpenNext
+1.20.11 didn't bundle. [#34](https://github.com/udochukwu-echefu/lenslayer/pull/34)
+moved to OpenNext 1.20.15. CI runs `next build`, not the OpenNext Worker build, so it
+didn't catch this. Run `opennextjs-cloudflare build` and `wrangler dev` before any
+dashboard deploy that changes `next` or `@opennextjs/cloudflare`.
+
+No database migration was part of this release.
+
 ## Waiting on the owner
 
-Merge and deploy in this order. Each PR says what to rebuild.
-
-- [ ] **[#27](https://github.com/udochukwu-echefu/lenslayer/pull/27): dependency patches.** Includes
-  the critical Next.js image-optimizer RCE and about 30 pypdf CVEs reachable through uploads.
-  Rebuild the API image and the dashboard.
-- [ ] **[#28](https://github.com/udochukwu-echefu/lenslayer/pull/28): account deletion, `/privacy`, `/terms`.**
-  Before deploying, create an Auth0 Machine to Machine app with only `delete:users`
-  and set `LENSLAYER_PLATFORM_AUTH0_MANAGEMENT_DOMAIN`, `_CLIENT_ID` and `_CLIENT_SECRET`
-  in Secret Manager. Without them, the privacy page's promise to remove the Auth0
-  login isn't kept automatically. Deploy the landing site, the API and the dashboard.
-- [ ] **[#29](https://github.com/udochukwu-echefu/lenslayer/pull/29): mobile tap spacing.** Stacked on #28.
-- [ ] **[#30](https://github.com/udochukwu-echefu/lenslayer/pull/30): onboarding fixes**, then do its
-  five-minute live sign-up, verification, workspace and password-reset check in a private window.
-- [ ] **[#31](https://github.com/udochukwu-echefu/lenslayer/pull/31): cold-start wake, `--cpu-boost`,
-  Q&A cancel, 92 KB sign-in image.** After deploying, ask a portfolio question on staging,
-  press Stop within a second, and confirm the API log shows the stream cancelled.
+- [ ] **Auth0 account deletion.** Create an Auth0 Machine to Machine app with only `delete:users`
+  and set `LENSLAYER_PLATFORM_AUTH0_MANAGEMENT_DOMAIN`, `_CLIENT_ID` and `_CLIENT_SECRET` in
+  Secret Manager, then bind them to the API (a new revision). Until then, deleting an account
+  erases it in LensLayer but leaves the Auth0 login, so the privacy page's promise isn't kept
+  automatically.
+- [ ] **Live sign-up check** in a private window: sign up, verify the email, create a workspace
+  called "Acme" twice, reset the password.
+- [ ] **Q&A cancel:** ask a portfolio question, press Stop within a second, and confirm the API
+  log shows the stream cancelled.
 - [ ] **Publish `@lenslayer/agent-sdk@0.1.1`.** It's a documentation-only patch, because the 0.1.0 README
   on npm still says "not published to npm". Follow [the distribution procedure](../sdk/DISTRIBUTION.md):
   it needs your GitHub approval and npm sign-in with MFA.
-- [ ] **Staging:** renew its temporary R2 credentials if staging stays in use.
+- [ ] **Staging:** renew its R2 credentials. Staging `/health/ready` returns 503 "Object storage is
+  unavailable" until then. Staging's API runs the same image as production.
 
 ## Decisions for the owner
 
 - **API cold start.** The API takes 10.7s to answer after scaling to zero, measured 2 November.
-  #31 hides most of that behind sign-in for free. `--min-instances=1` removes it entirely but
+  #31, now live, starts the API while people sign in. `--min-instances=1` removes it entirely but
   keeps one instance running all the time.
 - **Legal review.** `/privacy` and `/terms` were written from what the code does, not by a lawyer.
   Get them reviewed before taking payment. Governing law is set to Nigeria.
