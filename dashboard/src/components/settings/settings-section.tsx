@@ -1,5 +1,6 @@
 "use client";
 
+import { features } from "@/lib/feature-flags";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { AppSelect } from "@/components/app-select";
@@ -63,7 +64,7 @@ function SecurityBoundary() {
     <p>Your role: <strong>{titleCase(activeRole ?? "No role")}</strong>. Workspace membership and delegated scopes remain separate. Agent credentials cannot approve their own actions.</p>
     <p>Invitation and role changes are recorded in the audit log. Revocation blocks new work; it does not undo completed effects.</p>
     <Link className="button secondary" href="/team">{canManageTeam && !isDemo ? "Manage team access" : "View team access"}</Link>
-    <Link className="settings-text-link" href="/agents">Inspect agent delegations</Link>
+    {features.agentPlatform && <Link className="settings-text-link" href="/agents">Inspect agent delegations</Link>}
   </div>;
 }
 

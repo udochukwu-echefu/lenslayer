@@ -1,5 +1,6 @@
 "use client";
 
+import { features } from "@/lib/feature-flags";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -55,7 +56,7 @@ export function ApiKeys({ organizationId }: { organizationId: string }) {
   }, onSuccess: () => { setName(""); return client.invalidateQueries({ queryKey: ["api-keys", organizationId] }); }, retry: false, gcTime: 0 });
   const revoke = useMutation({ mutationFn: (id: string) => api.revokeApiKey(organizationId, id), onSuccess: () => client.invalidateQueries({ queryKey: ["api-keys", organizationId] }), retry: false });
   return <section className="settings-tool" aria-labelledby="public-keys-heading"><h3 id="public-keys-heading">Public API keys</h3>
-    <p>Document intake and status access: <code>contracts:write</code> and <code>contracts:read</code>. For agent credentials and exact delegated tools, use <Link href="/agents">Agents</Link>.</p>
+    <p>Document intake and status access: <code>contracts:write</code> and <code>contracts:read</code>.{features.agentPlatform && <> For agent credentials and exact delegated tools, use <Link href="/agents">Agents</Link>.</>}</p>
     <form className="settings-inline-form" onSubmit={(event) => { event.preventDefault(); if (name.trim().length >= 2 && !create.isPending) create.mutate(); }}>
       <div className="settings-field"><label htmlFor="api-key-label">API key label</label><input className="input" id="api-key-label" value={name} maxLength={255} onChange={(event) => setName(event.target.value)} /></div>
       <button className="button secondary" type="submit" disabled={name.trim().length < 2 || create.isPending}>{create.isPending ? "Creating…" : "Create key"}</button>
