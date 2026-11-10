@@ -1,6 +1,7 @@
 "use client";
 
-import { Plus, TriangleAlert, X } from "lucide-react";
+import { CalendarDays, Plus, TriangleAlert, X } from "lucide-react";
+import Link from "next/link";
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { PageError, PageLoading } from "@/components/page-states";
@@ -35,7 +36,7 @@ function TasksContent() {
   const sourceReference = search.get("sourceIndex") ? { finding_index: Number(search.get("sourceIndex")), source: "contract_review" } : {};
 
   return <div className="page tasks-page">
-    <div className="page-heading"><div><h1 className="page-title">Tasks</h1><p className="page-description">Assigned work created from contract findings, deadlines, and negotiation decisions.</p></div>{canUpload && <button className={`button ${composerOpen ? "secondary" : ""}`} type="button" onClick={() => setComposerOpen((value) => !value)}>{composerOpen ? <X size={16} /> : <Plus size={16} />}{composerOpen ? "Close composer" : "New task"}</button>}</div>
+    <div className="page-heading"><div><h1 className="page-title">Tasks</h1><p className="page-description">Assigned work created from contract findings, deadlines, and negotiation decisions.</p></div><div className="page-heading-actions"><Link className="button secondary" href="/calendar"><CalendarDays size={15} />Renewal dates</Link>{canUpload && <button className={`button ${composerOpen ? "secondary" : ""}`} type="button" onClick={() => setComposerOpen((value) => !value)}>{composerOpen ? <X size={16} /> : <Plus size={16} />}{composerOpen ? "Close composer" : "New task"}</button>}</div></div>
 
     {composerOpen && <section className="task-composer-wrap panel"><TaskComposer contractId={search.get("contractId") ?? ""} title={search.get("title") ?? ""} description={search.get("description") ?? ""} category={(search.get("category") as TaskCategory | null) ?? "follow_up"} sourceKind={search.get("sourceKind") ?? "manual"} sourceReference={sourceReference} onCreated={() => setComposerOpen(false)} /></section>}
 

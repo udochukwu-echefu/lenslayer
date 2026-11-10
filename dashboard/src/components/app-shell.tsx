@@ -4,12 +4,13 @@ import * as Avatar from "@radix-ui/react-avatar";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BarChart3, Bell, BookOpen, Bot, CalendarDays, CheckSquare2, ChevronDown, FileOutput, Files, Inbox, LayoutDashboard, LogIn, Menu, Plus, Search, Settings, UsersRound, X } from "lucide-react";
+import { Bell, BookOpen, Bot, CalendarDays, ChevronDown, FileOutput, Files, LayoutDashboard, LogIn, Menu, Plus, Search, Settings, X } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { usePathname } from "next/navigation";
+import { notFound, usePathname } from "next/navigation";
 import { useRef, useState } from "react";
 import { api } from "@/lib/api";
+import { features, isFrozenPath } from "@/lib/feature-flags";
 import { initials } from "@/lib/utils";
 import { BrandMark } from "./brand-mark";
 import { WorkspaceGate } from "./workspace-gate";
@@ -20,36 +21,40 @@ import { WorkspaceSearch } from "./workspace-search";
 
 const AiAssistant = dynamic(() => import("./ai-assistant").then((module) => module.AiAssistant), { ssr: false });
 
-const navigationGroups = [
-  { label: "Work", items: [
-    { href: "/", label: "Overview", icon: LayoutDashboard },
-    { href: "/inbox", label: "Inbox", icon: Inbox },
-    { href: "/tasks", label: "Tasks", icon: CheckSquare2 },
-    { href: "/context", label: "Workspace context", icon: BookOpen },
-    { href: "/calendar", label: "Calendar", icon: CalendarDays },
-    { href: "/agent-tasks", label: "Agent tasks", icon: Bot },
-  ] },
-  { label: "Agreements", items: [
-    { href: "/contracts", label: "Contracts", icon: Files },
-    { href: "/portfolio", label: "Portfolio", icon: Search },
-    { href: "/convert", label: "Document converter", icon: FileOutput },
-  ] },
-  { label: "Governance", items: [
-    { href: "/reports", label: "Reports", icon: BarChart3 },
-  ] },
-  { label: "Administration", items: [
-    { href: "/agents", label: "Agents", icon: Bot },
-    { href: "/team", label: "Team", icon: UsersRound },
-    { href: "/settings", label: "Settings", icon: Settings },
-  ] },
+type NavigationItem = { href: string; label: string; icon: typeof Files; also?: string[] };
+
+// Five destinations for the launch product. `also` lists pages that live under
+// a destination without their own sidebar entry.
+const primaryNavigation: NavigationItem[] = [
+  { href: "/", label: "Overview", icon: LayoutDashboard, also: ["/inbox", "/notifications", "/reports"] },
+  { href: "/contracts", label: "Agreements", icon: Files },
+  { href: "/portfolio", label: "Ask", icon: Search },
+  { href: "/calendar", label: "Renewals", icon: CalendarDays, also: ["/tasks"] },
+  { href: "/settings", label: "Settings", icon: Settings, also: ["/team"] },
 ];
+
+const advancedNavigation: NavigationItem[] = [
+  ...(features.agentPlatform ? [
+    { href: "/agent-tasks", label: "Agent tasks", icon: Bot },
+    { href: "/agents", label: "Agents", icon: Bot, also: ["/runs"] },
+    { href: "/context", label: "Workspace context", icon: BookOpen },
+  ] : []),
+  ...(features.documentConverter ? [{ href: "/convert", label: "Document converter", icon: FileOutput }] : []),
+];
+
+const navigationGroups = [
+  { label: "", items: primaryNavigation },
+  ...(advancedNavigation.length ? [{ label: "Advanced", items: advancedNavigation }] : []),
+];
+
+const under = (pathname: string, href: string) => href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 
 function Navigation({ close }: { close?: () => void }) {
   const pathname = usePathname();
   return (
     <nav className="side-nav" aria-label="Workspace navigation">
-      {navigationGroups.map((group) => <div className="nav-group" key={group.label}><p>{group.label}</p>{group.items.map(({ href, label, icon: Icon }) => {
-        const active = href === "/" ? pathname === "/" : pathname.startsWith(href) || (href === "/agents" && pathname.startsWith("/runs"));
+      {navigationGroups.map((group) => <div className="nav-group" key={group.label || "primary"}>{group.label && <p>{group.label}</p>}{group.items.map(({ href, label, icon: Icon, also = [] }) => {
+        const active = [href, ...also].some((item) => under(pathname, item));
         return <Link key={href} href={href} prefetch={false} className={`nav-link ${active ? "active" : ""}`} aria-current={active ? "page" : undefined} onNavigate={close}><Icon size={17} />{label}</Link>;
       })}</div>)}
     </nav>
@@ -150,6 +155,8 @@ function WorkspaceAppShell({ children }: { children: React.ReactNode }) {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  // Frozen areas keep their code and data but are not part of the launch product.
+  if (isFrozenPath(pathname)) notFound();
   if (pathname.startsWith("/invite/") || pathname.startsWith("/shared/") || pathname.startsWith("/auth/") || pathname === "/calendar/oauth-return" || pathname === "/signin" || pathname === "/login" || pathname === "/signup" || pathname === "/sample") return <>{children}</>;
   return <WorkspaceAppShell>{children}</WorkspaceAppShell>;
 }

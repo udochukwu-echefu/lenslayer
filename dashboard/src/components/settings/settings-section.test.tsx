@@ -57,9 +57,11 @@ describe("focused Settings navigation and access", () => {
     mount("general");
     expect(await screen.findByLabelText("Workspace name")).toHaveValue("Northstar");
     const nav = screen.getByRole("navigation", { name: "Settings sections" });
+    // Six sections plus Team; the developer guide is listed only with the agent platform flag.
     expect(within(nav).getAllByRole("link")).toHaveLength(7);
     expect(within(nav).getByRole("link", { name: "General" })).toHaveAttribute("aria-current", "page");
-    expect(within(nav).getByRole("link", { name: "Developer guide" })).toHaveAttribute("href", "/settings/developers");
+    expect(within(nav).getByRole("link", { name: "Team" })).toHaveAttribute("href", "/team");
+    expect(within(nav).queryByRole("link", { name: "Developer guide" })).toBeNull();
     expect(screen.queryByLabelText("Default retention")).toBeNull();
     expect(screen.queryByRole("heading", { name: "Public API keys" })).toBeNull();
     managementNotRequested();

@@ -21,8 +21,8 @@ export default function TodayPage() {
   return (
     <div className="page today-page">
       <div className="page-heading">
-        <div><h1 className="page-title">Workspace overview</h1><p className="page-description">Reviews, processing issues, and verified dates that need a human next step.</p></div>
-        {canUpload && <Link href="/contracts/new" className="button"><Upload size={16} />Upload contract</Link>}
+        <div><h1 className="page-title">Overview</h1><p className="page-description">Reviews, processing issues, and verified dates that need a human next step.</p></div>
+        <div className="page-heading-actions"><Link href="/reports" className="button secondary">Reports</Link>{canUpload && <Link href="/contracts/new" className="button"><Upload size={16} />Upload contract</Link>}</div>
       </div>
 
       <section className="workspace-stats" aria-label="Workspace statistics">
