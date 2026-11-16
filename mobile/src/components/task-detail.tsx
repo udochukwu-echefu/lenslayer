@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { api } from "@/lib/api";
 import { asText, formatDate, titleCase } from "@/lib/format";
+import { useIsOnline } from "@/lib/online";
 import { invalidateWorkspaceRecords, useMembers } from "@/lib/queries";
 import type { TaskCategory, TaskPriority, TaskStatus, TaskUpdate, WorkflowTask } from "@/lib/shared/types";
 import { useWorkspace } from "@/lib/workspace";
@@ -54,6 +55,7 @@ export function TaskDetail({ task, onClose }: { task: WorkflowTask; onClose: () 
 
 function TaskFields({ task, onSaved }: { task: WorkflowTask; onSaved: () => void }) {
   const { organizationId } = useWorkspace();
+  const online = useIsOnline();
   const queryClient = useQueryClient();
   const members = useMembers(organizationId);
   const [original] = useState(task);
@@ -95,7 +97,8 @@ function TaskFields({ task, onSaved }: { task: WorkflowTask; onSaved: () => void
       <Select label="Priority" value={priority} onChange={setPriority} options={options(PRIORITY)} />
       <Select label="Type" value={category} onChange={setCategory} options={options(CATEGORY)} />
       <FormError error={save.error} />
-      <Button label="Save changes" disabled={!Object.keys(patch).length} loading={save.isPending} onPress={() => save.mutate(patch)} />
+      {!online ? <AppText variant="small" tone="muted">You’re offline. Connect before saving changes.</AppText> : null}
+      <Button label="Save changes" disabled={!online || !Object.keys(patch).length} loading={save.isPending} onPress={() => save.mutate(patch)} />
     </>
   );
 }

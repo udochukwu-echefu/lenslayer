@@ -25,10 +25,10 @@ export function useStackOptions() {
   } as const;
 }
 
-export function HeaderButton({ icon, label, onPress, badge }: { icon: IconName; label: string; onPress: () => void; badge?: number }) {
+export function HeaderButton({ icon, label, onPress, badge, disabled }: { icon: IconName; label: string; onPress: () => void; badge?: number; disabled?: boolean }) {
   const { colors } = useTheme();
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} hitSlop={8} style={{ width: touch, height: touch, alignItems: "center", justifyContent: "center" }}>
+    <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled }} disabled={disabled} onPress={onPress} hitSlop={8} style={{ width: touch, height: touch, alignItems: "center", justifyContent: "center", opacity: disabled ? 0.35 : 1 }}>
       <Icon name={icon} size={21} color={colors.ink} />
       {badge ? (
         <View style={{ position: "absolute", top: 6, right: 4, minWidth: 16, height: 16, borderRadius: 8, paddingHorizontal: 3, backgroundColor: colors.decisions, alignItems: "center", justifyContent: "center" }}>

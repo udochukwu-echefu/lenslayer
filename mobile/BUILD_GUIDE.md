@@ -381,7 +381,7 @@ Universal Login page to match instead (colours and logo are set in the Auth0 das
 | E_Loading | `Loading` | Done |
 | E_Error | `ErrorState` | Done |
 | E_ReadOnly | `Notice` in forms and action lists | Done |
-| E_Offline | not built | Task 4 |
+| E_Offline | `OfflineBanner` in shared screens | Cached lists stay visible, the transport rejects writes, and reconnect resumes reads |
 
 ---
 

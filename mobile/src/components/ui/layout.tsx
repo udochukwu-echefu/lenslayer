@@ -3,6 +3,7 @@ import { createStyles } from "@/theme/create-styles";
 import { useTheme } from "@/theme/theme-provider";
 import { font, gutter, radius, section, space, tabBarClearance, touch } from "@/theme/tokens";
 import { Icon, type IconName } from "./icon";
+import { OfflineBanner } from "./offline-banner";
 import { AppText } from "./text";
 
 /**
@@ -10,7 +11,7 @@ import { AppText } from "./text";
  * 28pt apart. Lists are plain rows split by hairlines (`ListRow`), never boxes.
  * `Card` is the one soft grey container, for the few things that need framing.
  */
-export function Screen({ children, onRefresh, refreshing = false, contentStyle, ...props }: ScrollViewProps & { onRefresh?: () => void; refreshing?: boolean; contentStyle?: StyleProp<ViewStyle> }) {
+export function Screen({ children, onRefresh, refreshing = false, contentStyle, savedAt, ...props }: ScrollViewProps & { onRefresh?: () => void; refreshing?: boolean; contentStyle?: StyleProp<ViewStyle>; savedAt?: number }) {
   const styles = useStyles();
   const { colors } = useTheme();
   return (
@@ -22,6 +23,7 @@ export function Screen({ children, onRefresh, refreshing = false, contentStyle, 
       refreshControl={onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.muted} /> : undefined}
       {...props}
     >
+      <OfflineBanner savedAt={savedAt} />
       {children}
     </ScrollView>
   );

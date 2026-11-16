@@ -6,6 +6,7 @@ import { HeaderButton } from "@/components/header";
 import { LoadMore } from "@/components/load-more";
 import { Button, Chips, EmptyState, ErrorState, Loading, OptionSheet, Screen, SearchField } from "@/components/ui";
 import type { ContractFilters } from "@/lib/api/query-types";
+import { useIsOnline } from "@/lib/online";
 import { flatten, useContractList, useDebouncedValue, useOverview } from "@/lib/queries";
 import { useWorkspace } from "@/lib/workspace";
 
@@ -18,6 +19,7 @@ const sortOptions: { value: Sort; label: string }[] = [
 /** The contract register: search, filter by review state, sort, and page through. */
 export default function AgreementsScreen() {
   const { organizationId, canUpload } = useWorkspace();
+  const online = useIsOnline();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<Status>("all");
   const [sort, setSort] = useState<Sort>("updated_at");
@@ -36,12 +38,12 @@ export default function AgreementsScreen() {
   const filtered = Boolean(q) || status !== "all";
 
   return (
-    <Screen onRefresh={() => void query.refetch()} refreshing={query.isRefetching} contentStyle={{ gap: 16 }}>
+    <Screen onRefresh={() => void query.refetch()} refreshing={query.isRefetching} savedAt={query.dataUpdatedAt} contentStyle={{ gap: 16 }}>
       <Stack.Screen options={{
         headerRight: () => (
           <View style={{ flexDirection: "row" }}>
             <HeaderButton icon="sort" label="Sort agreements" onPress={() => setSortOpen(true)} />
-            {canUpload ? <HeaderButton icon="plus" label="Upload a contract" onPress={() => router.push("/new/contract")} /> : null}
+            {canUpload ? <HeaderButton icon="plus" label="Upload a contract" disabled={!online} onPress={() => router.push("/new/contract")} /> : null}
           </View>
         ),
       }} />
@@ -60,6 +62,8 @@ export default function AgreementsScreen() {
           <ContractList contracts={items} />
           <LoadMore shown={items.length} total={total} noun="agreements" hasNextPage={query.hasNextPage} isFetchingNextPage={query.isFetchingNextPage} fetchNextPage={query.fetchNextPage} />
         </View>
+      ) : !online && !query.data ? (
+        <EmptyState icon="wifiOff" title="Agreements aren’t available offline" message="Connect to load this list." />
       ) : filtered ? (
         <View>
           <EmptyState icon="search" title="No agreements match" message="Search covers titles, counterparties and contract types. To search inside agreements, ask a question instead." />
@@ -70,7 +74,7 @@ export default function AgreementsScreen() {
         </View>
       ) : (
         <EmptyState icon="document" title="No agreements yet" message="Upload a contract to get a source-linked first-pass review."
-          action={canUpload ? { label: "Upload a contract", onPress: () => router.push("/new/contract") } : undefined} />
+          action={canUpload && online ? { label: "Upload a contract", onPress: () => router.push("/new/contract") } : undefined} />
       )}
     </Screen>
   );

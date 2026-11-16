@@ -1,5 +1,5 @@
 import { Figtree_400Regular, Figtree_500Medium, Figtree_600SemiBold, Figtree_700Bold, useFonts } from "@expo-google-fonts/figtree";
-import { focusManager, onlineManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { focusManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { AppState, Platform, View } from "react-native";
 import { ApiError } from "@/lib/api";
 import { AuthProvider, useAuth } from "@/lib/auth";
+import { monitorConnection } from "@/lib/online";
 import { WorkspaceProvider, useWorkspace } from "@/lib/workspace";
 import { AppThemeProvider, useTheme } from "@/theme/theme-provider";
 import { font } from "@/theme/tokens";
@@ -29,7 +30,7 @@ WebBrowser.maybeCompleteAuthSession();
 if (Platform.OS !== "web") {
   AppState.addEventListener("change", (status) => focusManager.setFocused(status === "active"));
 }
-onlineManager.setOnline(true);
+monitorConnection();
 
 export default function RootLayout() {
   const [queryClient] = useState(() => new QueryClient({
@@ -38,6 +39,8 @@ export default function RootLayout() {
         staleTime: 30_000,
         retry: (count, error) => !(error instanceof ApiError && [401, 403, 404].includes(error.status)) && count < 2,
       },
+      // A write tapped offline fails in the transport rather than queuing for later.
+      mutations: { networkMode: "always" },
     },
   }));
   return (
@@ -62,6 +65,8 @@ function Navigator() {
   const [fontsLoaded, fontError] = useFonts({ Figtree_400Regular, Figtree_500Medium, Figtree_600SemiBold, Figtree_700Bold });
   const signedIn = status === "signedIn";
   const ready = isRestored && (fontsLoaded || Boolean(fontError)) && (status === "signedOut" || (signedIn && !isLoading));
+  const [hasStarted, setHasStarted] = useState(false);
+  if (ready && !hasStarted) setHasStarted(true);
   const hasWorkspace = organizations.length > 0;
 
   useEffect(() => {
@@ -79,7 +84,7 @@ function Navigator() {
 
   // Mount the navigator only after session and workspace restoration. Otherwise
   // a protected deep link is redirected before we know the user can open it.
-  if (!ready) return <View style={{ flex: 1, backgroundColor: colors.canvas }} />;
+  if (!ready && !hasStarted) return <View style={{ flex: 1, backgroundColor: colors.canvas }} />;
 
   return (
     <ThemeProvider value={navigationTheme}>

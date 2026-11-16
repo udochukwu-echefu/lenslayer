@@ -1,3 +1,4 @@
+import { onlineManager } from "@tanstack/react-query";
 import { config } from "../config";
 
 /**
@@ -46,6 +47,9 @@ const isPublicPath = (method: string, path: string) => method === "GET" && /^\/(
 export async function buildHeaders(path: string, init?: RequestInit) {
   const headers = new Headers(init?.headers);
   const method = init?.method?.toUpperCase() ?? "GET";
+  if (!onlineManager.isOnline() && !["GET", "HEAD"].includes(method)) {
+    throw new ApiError("You’re offline. Connect before making changes.", 0);
+  }
   if (!isPublicPath(method, path)) {
     const auth = await authHeaders();
     if (!auth) throw new ApiError("Sign in to continue.", 401);

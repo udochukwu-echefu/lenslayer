@@ -2,9 +2,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AppText, Button, ErrorState, FormError, Icon, Notice, TextField } from "@/components/ui";
+import { AppText, Button, ErrorState, FormError, Icon, Loading, Notice, TextField } from "@/components/ui";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { useIsOnline } from "@/lib/online";
 import { useCreateWorkspace, useWorkspace } from "@/lib/workspace";
 import { createStyles } from "@/theme/create-styles";
 import { gutter, space } from "@/theme/tokens";
@@ -17,7 +18,8 @@ import { gutter, space } from "@/theme/tokens";
  */
 export default function WorkspaceSetupScreen() {
   const styles = useStyles();
-  const { error } = useWorkspace();
+  const { error, isLoading } = useWorkspace();
+  const online = useIsOnline();
   const { signOut, reauthenticate } = useAuth();
   const queryClient = useQueryClient();
   const create = useCreateWorkspace();
@@ -27,7 +29,16 @@ export default function WorkspaceSetupScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.page}>
-        {verify ? (
+        {!online ? (
+          <>
+            <View style={styles.body}>
+              <Notice icon="wifiOff" title="You’re offline" message="Connect to load your workspaces." />
+            </View>
+            <Button label="Sign out" variant="ghost" onPress={() => void signOut()} />
+          </>
+        ) : isLoading ? (
+          <View style={styles.body}><Loading rows={3} label="Loading workspaces" /></View>
+        ) : verify ? (
           <>
             <View style={styles.body}>
               <View style={styles.hero}><Icon name="mail" size={26} /></View>

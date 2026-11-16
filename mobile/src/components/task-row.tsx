@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Pressable, View } from "react-native";
 import { api } from "@/lib/api";
 import { daysUntil, formatDate } from "@/lib/format";
+import { useIsOnline } from "@/lib/online";
 import { invalidateWorkspaceRecords } from "@/lib/queries";
 import type { TaskStatus, WorkflowTask } from "@/lib/shared/types";
 import { useWorkspace } from "@/lib/workspace";
@@ -31,6 +32,7 @@ export function TaskRow({ task, last }: { task: WorkflowTask; last?: boolean }) 
   const styles = useStyles();
   const { colors } = useTheme();
   const { organizationId, canUpload } = useWorkspace();
+  const online = useIsOnline();
   const queryClient = useQueryClient();
   const [sheet, setSheet] = useState(false);
   const mutation = useMutation({
@@ -45,9 +47,9 @@ export function TaskRow({ task, last }: { task: WorkflowTask; last?: boolean }) 
     <View style={[styles.row, !last && styles.divider]}>
       <Pressable
         accessibilityRole="checkbox"
-        accessibilityState={{ checked: done, disabled: !canUpload }}
-        accessibilityLabel={!canUpload ? `${task.title} status is read only` : done ? `Reopen ${task.title}` : `Complete ${task.title}`}
-        disabled={!canUpload || mutation.isPending}
+        accessibilityState={{ checked: done, disabled: !canUpload || !online }}
+        accessibilityLabel={!canUpload || !online ? `${task.title} status is read only` : done ? `Reopen ${task.title}` : `Complete ${task.title}`}
+        disabled={!canUpload || !online || mutation.isPending}
         onPress={() => mutation.mutate(done ? "open" : "done")}
         hitSlop={10}
         style={styles.check}

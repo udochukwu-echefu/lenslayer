@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createStyles } from "@/theme/create-styles";
 import { gutter, space } from "@/theme/tokens";
 import { AppText, Button, FormError, Notice } from "./ui";
+import { useIsOnline } from "@/lib/online";
 import { useWorkspace } from "@/lib/workspace";
 
 /**
@@ -20,6 +21,7 @@ export function FormScreen({ children, submitLabel, onSubmit, disabled, loading,
   const styles = useStyles();
   const insets = useSafeAreaInsets();
   const { canUpload } = useWorkspace();
+  const online = useIsOnline();
   const blocked = needsEditor && !canUpload;
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.flex} keyboardVerticalOffset={insets.top + 44}>
@@ -30,7 +32,8 @@ export function FormScreen({ children, submitLabel, onSubmit, disabled, loading,
       {blocked ? null : (
         <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, space.md) }]}>
           <FormError error={error} />
-          <Button label={submitLabel} onPress={onSubmit} disabled={disabled} loading={loading} />
+          {!online ? <AppText variant="small" tone="muted">You’re offline. Connect before saving changes.</AppText> : null}
+          <Button label={submitLabel} onPress={onSubmit} disabled={disabled || !online} loading={loading} />
           {footnote ? <AppText variant="caption" tone="faint" style={styles.footnote}>{footnote}</AppText> : null}
         </View>
       )}

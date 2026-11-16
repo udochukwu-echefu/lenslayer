@@ -60,7 +60,7 @@ export default function OverviewScreen() {
   const shown = items.slice(0, 5);
 
   return (
-    <Screen onRefresh={() => void query.refetch()} refreshing={query.isRefetching}>
+    <Screen onRefresh={() => void query.refetch()} refreshing={query.isRefetching} savedAt={query.dataUpdatedAt}>
       <Stack.Screen options={{
         title: Platform.OS === "ios" ? "Today" : "",
         headerLeft: () => <WorkspaceSwitcher />,
