@@ -1,8 +1,8 @@
 import { router, Stack } from "expo-router";
 import { useState } from "react";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 import { HeaderButton } from "@/components/header";
-import { AppText, EmptyState, ErrorState, ListRow, Loading, Screen, Section, SummaryBox } from "@/components/ui";
+import { EmptyState, ErrorState, ListRow, Loading, PageIntro, Screen, Section, SummaryBox } from "@/components/ui";
 import { WorkspaceSwitcher } from "@/components/workspace-switcher";
 import { daysUntil, formatDate, formatRelativeDate } from "@/lib/format";
 import { useNotifications, useOverview } from "@/lib/queries";
@@ -61,6 +61,7 @@ export default function OverviewScreen() {
   return (
     <Screen onRefresh={() => void query.refetch()} refreshing={query.isRefetching}>
       <Stack.Screen options={{
+        title: Platform.OS === "ios" ? "Today" : "",
         headerLeft: () => <WorkspaceSwitcher />,
         headerRight: () => (
           <View style={{ flexDirection: "row" }}>
@@ -69,7 +70,7 @@ export default function OverviewScreen() {
           </View>
         ),
       }} />
-      <AppText tone="muted" style={{ marginTop: -space.sm, fontSize: 15 }}>{formatDate(new Date().toISOString(), { weekday: "long", day: "numeric", month: "long" })}</AppText>
+      <PageIntro title={Platform.OS === "ios" ? undefined : "Today"} description={formatDate(new Date(now).toISOString(), { weekday: "long", day: "numeric", month: "long" })} />
 
       {query.error ? <ErrorState error={query.error} onRetry={() => void query.refetch()} /> : (
         <View style={{ gap: space.sm }}>

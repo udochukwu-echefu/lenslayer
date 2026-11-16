@@ -396,10 +396,10 @@ Universal Login page to match instead (colours and logo are set in the Auth0 das
   `jurisdiction`, `retention_days`, and `retain_document` / `retain_source_text` only when on).
 - **Streaming answers** (`lib/api/qa-stream.ts`) read NDJSON frames. Partial text is provisional.
   Only a `final` frame with valid citations is an answer. Do not weaken that validation.
-- **Web reload on a deep URL** (`/contracts`) lands on `/` because the session is still restoring
-  when the guard runs. Tapping through works. Fix under task 3.
-- **Large titles** are iOS only. On Android and web the header is a plain bar; the Overview header
-  shows the workspace name and "Today" side by side there. Tidy under task 3.
+- **Deep links:** the root navigator waits for session and workspace restoration before applying
+  route guards, so reload can keep the requested destination.
+- **Large titles** are iOS only. Android and web show "Today" in the Overview content below the
+  workspace switcher and header actions.
 - **Dates** format with the device's locale (`formatDate` passes `undefined`), so UK phones show
   "16 November" and US phones "November 16".
 - The linter ignores `src/lib/shared/` on purpose (it must stay identical to the dashboard file).

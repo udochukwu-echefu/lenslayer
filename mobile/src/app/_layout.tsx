@@ -6,7 +6,7 @@ import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
 import * as WebBrowser from "expo-web-browser";
 import { useEffect, useState } from "react";
-import { AppState, Platform } from "react-native";
+import { AppState, Platform, View } from "react-native";
 import { ApiError } from "@/lib/api";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { WorkspaceProvider, useWorkspace } from "@/lib/workspace";
@@ -77,7 +77,9 @@ function Navigator() {
   const navigationTheme = { ...base, colors: { ...base.colors, background: colors.canvas, card: colors.surface, text: colors.ink, border: colors.line, primary: colors.accent } };
   const form = { presentation: "modal" as const, headerShown: true };
 
-  if (!fontsLoaded && !fontError) return null;
+  // Mount the navigator only after session and workspace restoration. Otherwise
+  // a protected deep link is redirected before we know the user can open it.
+  if (!ready) return <View style={{ flex: 1, backgroundColor: colors.canvas }} />;
 
   return (
     <ThemeProvider value={navigationTheme}>
