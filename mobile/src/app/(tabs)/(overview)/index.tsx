@@ -1,6 +1,7 @@
 import { router, Stack } from "expo-router";
 import { useState } from "react";
 import { Platform, View } from "react-native";
+import { FirstRunChecklist } from "@/components/first-run-checklist";
 import { HeaderButton } from "@/components/header";
 import { EmptyState, ErrorState, ListRow, Loading, PageIntro, Screen, Section, SummaryBox } from "@/components/ui";
 import { WorkspaceSwitcher } from "@/components/workspace-switcher";
@@ -18,7 +19,7 @@ type Item = { key: string; title: string; detail: string; late?: boolean; open: 
  * nearest renewal and notice dates.
  */
 export default function OverviewScreen() {
-  const { organizationId, canUpload } = useWorkspace();
+  const { organizationId, canUpload, canManageTeam } = useWorkspace();
   const query = useOverview(organizationId);
   const notifications = useNotifications(organizationId);
   const unread = (notifications.data ?? []).filter((item) => !item.read_at).length;
@@ -71,6 +72,8 @@ export default function OverviewScreen() {
         ),
       }} />
       <PageIntro title={Platform.OS === "ios" ? undefined : "Today"} description={formatDate(new Date(now).toISOString(), { weekday: "long", day: "numeric", month: "long" })} />
+
+      {counts && canManageTeam ? <FirstRunChecklist key={organizationId} organizationId={organizationId} uploaded={counts.contracts > 0} /> : null}
 
       {query.error ? <ErrorState error={query.error} onRetry={() => void query.refetch()} /> : (
         <View style={{ gap: space.sm }}>

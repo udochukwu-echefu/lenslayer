@@ -288,7 +288,8 @@ T tasks, X settings, E system states.
 | S_VerifyEmail, O_CreateWorkspace | `workspace-setup.tsx` | `organizations`, `createOrganization` | Done |
 | S_SessionExpired | notice on `sign-in.tsx` | none | Done as a notice |
 | S_FaceID | not built | none | Task 5 |
-| O_InviteTeam, O_Notifications, O_FirstRun | not built | `createInvitation` | Task 6 |
+| O_InviteTeam, O_FirstRun | Overview checklist | `members`, `invitations`, `queryOverview`, `createInvitation` | Invite and upload steps use existing forms |
+| O_Notifications | not built | none | Device push needs backend support (task 6) |
 | O_Invite, O_InviteInvalid | `invite/[token].tsx` | `invitation`, `acceptInvitation` | Done |
 
 **Password screens.** The app signs in with OIDC authorization-code + PKCE. The password is typed
