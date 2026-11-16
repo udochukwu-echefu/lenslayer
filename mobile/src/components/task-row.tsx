@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { router } from "expo-router";
 import { useState } from "react";
 import { Pressable, View } from "react-native";
 import { api } from "@/lib/api";
@@ -10,14 +9,8 @@ import { useWorkspace } from "@/lib/workspace";
 import { createStyles } from "@/theme/create-styles";
 import { useTheme } from "@/theme/theme-provider";
 import { space, touch } from "@/theme/tokens";
-import { AppText, EmptyState, FormError, Icon, OptionSheet } from "./ui";
-
-const statusOptions: { value: TaskStatus; label: string; description: string }[] = [
-  { value: "open", label: "Open", description: "Not started" },
-  { value: "in_progress", label: "In progress", description: "Someone is working on it" },
-  { value: "done", label: "Done", description: "Finished and checked" },
-  { value: "cancelled", label: "Cancelled", description: "No longer needed" },
-];
+import { TaskDetail } from "./task-detail";
+import { AppText, EmptyState, FormError, Icon } from "./ui";
 
 /** "5 days late", "Due today", "Sat 21 Nov" — the one fact a person scans a task list for. */
 function dueText(task: WorkflowTask) {
@@ -31,7 +24,7 @@ function dueText(task: WorkflowTask) {
 
 /**
  * A human-owned action. The square completes or reopens it; tapping the row
- * opens the status sheet. Viewers see the same row read-only (the backend
+ * opens the action details. Viewers see the details read-only (the backend
  * enforces this too).
  */
 export function TaskRow({ task, last }: { task: WorkflowTask; last?: boolean }) {
@@ -63,8 +56,7 @@ export function TaskRow({ task, last }: { task: WorkflowTask; last?: boolean }) 
           {done ? <Icon name="check" size={12} color={colors.onPrimary} /> : null}
         </View>
       </Pressable>
-      <Pressable accessibilityRole="button" accessibilityHint="Change status" disabled={!canUpload} onPress={() => setSheet(true)}
-        onLongPress={() => task.contract_id && router.push({ pathname: "/contract/[id]", params: { id: task.contract_id, tab: "actions" } })} style={styles.body}>
+      <Pressable accessibilityRole="button" accessibilityHint="Open action details" onPress={() => setSheet(true)} style={styles.body}>
         <AppText variant="bodyStrong" style={done && styles.doneText} numberOfLines={2}>{task.title}</AppText>
         <AppText variant="small" tone="muted" numberOfLines={1}>
           <AppText variant="small" tone={due.late ? "danger" : "muted"}>{due.text}</AppText>
@@ -72,7 +64,7 @@ export function TaskRow({ task, last }: { task: WorkflowTask; last?: boolean }) 
         </AppText>
         <FormError error={mutation.error} />
       </Pressable>
-      <OptionSheet title="Status" visible={sheet} options={statusOptions} value={task.status} onClose={() => setSheet(false)} onSelect={(status) => { setSheet(false); mutation.mutate(status); }} />
+      {sheet ? <TaskDetail task={task} onClose={() => setSheet(false)} /> : null}
     </View>
   );
 }
@@ -85,7 +77,7 @@ export function TaskList({ tasks, empty = "No actions match this view." }: { tas
 const useStyles = createStyles((c) => ({
   row: { flexDirection: "row", alignItems: "center", gap: space.md, paddingVertical: 13, minHeight: 58 },
   divider: { borderBottomWidth: 1, borderBottomColor: c.line },
-  check: { width: 28, height: touch, alignItems: "flex-start", justifyContent: "center" },
+  check: { width: touch, height: touch, alignItems: "center", justifyContent: "center" },
   box: { width: 22, height: 22, borderRadius: 6, borderWidth: 1.5, borderColor: c.lineStrong, alignItems: "center", justifyContent: "center" },
   body: { flex: 1, gap: space.xxs },
   doneText: { textDecorationLine: "line-through", opacity: 0.55 },

@@ -353,9 +353,9 @@ Universal Login page to match instead (colours and logo are set in the Auth0 das
 | R_AddDate | `new/lifecycle.tsx` | `createLifecycle` | Built |
 | R_Export | header button | `downloadCalendarExport` | Done (.ics only) |
 | T_List | `renewals-view.tsx` (Tasks) | `queryTasks`, `queryTaskCounts` | Done |
-| T_Detail | not built (status sheet only) | `updateTask` | Task 11 |
+| T_Detail | `components/task-detail.tsx` | `updateTask`, `members` | Read-only details and role-aware editing; opens linked agreement evidence |
 | T_New | `new/task.tsx` | `createTask` | Built |
-| T_Status | `OptionSheet` in `task-row.tsx` | `updateTask` | Done |
+| T_Status | Status picker in `task-detail.tsx`, quick check in `task-row.tsx` | `updateTask` | Done |
 
 ### Settings
 
