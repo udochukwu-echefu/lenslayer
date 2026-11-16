@@ -1,5 +1,6 @@
 import { Figtree_400Regular, Figtree_500Medium, Figtree_600SemiBold, Figtree_700Bold, useFonts } from "@expo-google-fonts/figtree";
 import { focusManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { NavigationBar } from "expo-navigation-bar";
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -79,6 +80,7 @@ function Navigator() {
   }, [colors.canvas, isRestored, ready]);
 
   const base = scheme === "dark" ? DarkTheme : DefaultTheme;
+  const systemBarContent = scheme === "dark" ? "light" : "dark";
   const navigationTheme = { ...base, colors: { ...base.colors, background: colors.canvas, card: colors.surface, text: colors.ink, border: colors.line, primary: colors.accent } };
   const form = { presentation: "modal" as const, headerShown: true };
 
@@ -88,7 +90,8 @@ function Navigator() {
 
   return (
     <ThemeProvider value={navigationTheme}>
-      <StatusBar style={scheme === "dark" ? "light" : "dark"} />
+      <StatusBar style={systemBarContent} />
+      {Platform.OS === "android" ? <NavigationBar style={systemBarContent} /> : null}
       <Stack screenOptions={{ headerTintColor: colors.accent, headerTitleStyle: { fontFamily: font.semibold, color: colors.ink }, headerBackTitleStyle: { fontFamily: font.medium }, headerStyle: { backgroundColor: colors.canvas }, contentStyle: { backgroundColor: colors.canvas }, headerShadowVisible: false }}>
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="sign-in" options={{ headerShown: false }} />

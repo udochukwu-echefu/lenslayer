@@ -411,9 +411,9 @@ Universal Login page to match instead (colours and logo are set in the Auth0 das
 
 Do these as separate commits (or pull requests), smallest first. Each has a "done when".
 
-1. **Splash and app chrome.** In `app.json` set the splash `backgroundColor` to `#FFFFFF`
-   (it is still the old cream `#FAF7F0`). Check the status bar and Android navigation bar colours
-   in both themes. *Done when* cold start shows white, then the app, with no colour flash.
+1. **Splash and app chrome.** The light splash is white. Status and Android navigation bar
+   controls follow the app theme. Verify both themes on native release builds.
+   *Done when* cold start shows the matching canvas, then the app, with no colour flash.
 
 2. **Verify every built screen with real data.** Run the backend with the worker and a model key,
    upload two or three contracts, and walk every contract tab, Ask, share sheet and each form.
