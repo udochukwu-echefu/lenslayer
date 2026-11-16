@@ -282,7 +282,7 @@ T tasks, X settings, E system states.
 
 | Design | Route / file | API | State |
 |---|---|---|---|
-| Main, S_SplashDark | native splash (`app.json`) | none | Splash colour still cream, see task 1 |
+| Main, S_SplashDark | native splash (`app.json`) | none | White and near black match the app canvas; release cold start still needs device verification |
 | S_Welcome | `sign-in.tsx` | Auth0 (PKCE) via `lib/auth.tsx` | Done |
 | S_SignIn, S_SignInError, S_CreateAccount, S_SSO, S_Forgot, S_CheckEmail, S_NewPassword, S_PasswordDone | **Auth0's hosted page**, not native | Auth0 | By design, see note below |
 | S_VerifyEmail, O_CreateWorkspace | `workspace-setup.tsx` | `organizations`, `createOrganization` | Done |

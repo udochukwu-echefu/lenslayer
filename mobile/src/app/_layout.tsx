@@ -3,6 +3,7 @@ import { focusManager, onlineManager, QueryClient, QueryClientProvider } from "@
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
+import * as SystemUI from "expo-system-ui";
 import * as WebBrowser from "expo-web-browser";
 import { useEffect, useState } from "react";
 import { AppState, Platform } from "react-native";
@@ -55,15 +56,22 @@ export default function RootLayout() {
 function Navigator() {
   const { status } = useAuth();
   const { organizations, isLoading } = useWorkspace();
-  const { colors, scheme } = useTheme();
+  const { colors, scheme, isRestored } = useTheme();
   // Figtree is the app's typeface. The splash screen stays up until it has loaded,
   // so text never flashes in the system font first.
   const [fontsLoaded, fontError] = useFonts({ Figtree_400Regular, Figtree_500Medium, Figtree_600SemiBold, Figtree_700Bold });
   const signedIn = status === "signedIn";
-  const ready = (fontsLoaded || Boolean(fontError)) && (status === "signedOut" || (signedIn && !isLoading));
+  const ready = isRestored && (fontsLoaded || Boolean(fontError)) && (status === "signedOut" || (signedIn && !isLoading));
   const hasWorkspace = organizations.length > 0;
 
-  useEffect(() => { if (ready) void SplashScreen.hideAsync(); }, [ready]);
+  useEffect(() => {
+    if (!isRestored) return;
+    let active = true;
+    // The native window can show through during the splash and screen transitions.
+    const reveal = () => { if (active && ready) SplashScreen.hide(); };
+    void SystemUI.setBackgroundColorAsync(colors.canvas).then(reveal, reveal);
+    return () => { active = false; };
+  }, [colors.canvas, isRestored, ready]);
 
   const base = scheme === "dark" ? DarkTheme : DefaultTheme;
   const navigationTheme = { ...base, colors: { ...base.colors, background: colors.canvas, card: colors.surface, text: colors.ink, border: colors.line, primary: colors.accent } };
