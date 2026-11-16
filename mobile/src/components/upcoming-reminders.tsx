@@ -4,7 +4,7 @@ import { flatten, useLifecycleList } from "@/lib/queries";
 import type { LifecycleItem } from "@/lib/shared/types";
 import { useWorkspace } from "@/lib/workspace";
 import { LoadMore } from "./load-more";
-import { EmptyState, ErrorState, ListRow, Loading, PageIntro, Section } from "./ui";
+import { AppText, EmptyState, ErrorState, ListRow, Loading, Section } from "./ui";
 
 /** Shows the configured reminder lead time for each upcoming active date. */
 export function UpcomingReminders({ onOpen }: { onOpen: (item: LifecycleItem) => void }) {
@@ -18,7 +18,7 @@ export function UpcomingReminders({ onOpen }: { onOpen: (item: LifecycleItem) =>
   const { items, total } = flatten(query.data);
   return (
     <>
-      <PageIntro title="Reminders" description="See when reminders are set for your workspace’s upcoming dates. Dates use your device’s time zone." />
+      <AppText variant="small" tone="muted">{"When each upcoming date will remind its owner. Times use your phone's time zone."}</AppText>
       <Section title="Upcoming dates">
         {query.isLoading ? <Loading rows={4} /> : query.error ? <ErrorState error={query.error} onRetry={() => void query.refetch()} /> : items.length ? (
           <>
