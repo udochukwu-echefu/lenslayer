@@ -49,6 +49,10 @@ export function useCalendarGrid(organizationId: string, window: CalendarWindow) 
   return useQuery({ queryKey: ["calendar-grid", organizationId, window], queryFn: ({ signal }) => api.queryCalendar(organizationId, window, { signal }), enabled: Boolean(organizationId) });
 }
 
+export function useContractVersions(organizationId: string, contractId: string) {
+  return useQuery({ queryKey: ["versions", organizationId, contractId], queryFn: () => api.versions(organizationId, contractId), enabled: Boolean(organizationId && contractId) });
+}
+
 export function useContractList(organizationId: string, filters: ContractFilters = {}, refreshProcessing = false) {
   const params = { sort: "updated_at" as const, descending: true, ...filters, limit: PAGE_SIZE };
   return useInfiniteQuery({

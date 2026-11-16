@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import { View } from "react-native";
 import { api } from "@/lib/api";
 import { formatDate, formatRelativeDate, titleCase } from "@/lib/format";
+import { useContractVersions } from "@/lib/queries";
 import type { NegotiationItem, NegotiationItemStatus } from "@/lib/shared/types";
 import { useWorkspace } from "@/lib/workspace";
 import { createStyles } from "@/theme/create-styles";
@@ -19,7 +20,7 @@ export function ContractNegotiate({ contractId }: { contractId: string }) {
   const queryClient = useQueryClient();
   const enabled = Boolean(organizationId);
   const items = useQuery({ queryKey: ["negotiation-items", organizationId, contractId], queryFn: () => api.negotiationItems(organizationId, contractId), enabled });
-  const versions = useQuery({ queryKey: ["versions", organizationId, contractId], queryFn: () => api.versions(organizationId, contractId), enabled });
+  const versions = useContractVersions(organizationId, contractId);
   const responses = useQuery({ queryKey: ["counterparty-responses", organizationId, contractId], queryFn: () => api.counterpartyResponses(organizationId, contractId), enabled });
   const update = useMutation({
     mutationFn: ({ id, status }: { id: string; status: NegotiationItemStatus }) => api.updateNegotiationItem(organizationId, contractId, id, { status }),
@@ -33,11 +34,12 @@ export function ContractNegotiate({ contractId }: { contractId: string }) {
   return (
     <View style={{ gap: space.xl }}>
       <Section title="Versions" action={canUpload ? { label: "Upload revision", onPress: () => router.push({ pathname: "/new/version", params }) } : undefined}>
-        {versions.isLoading ? <Loading rows={2} /> : latest.length ? (
+        {versions.isLoading ? <Loading rows={2} /> : versions.error ? <ErrorState error={versions.error} onRetry={() => void versions.refetch()} /> : latest.length ? (
           <View>
             {latest.map((version, index) => (
               <ListRow key={version.id} icon="layers" title={`Version ${version.version_number}${version.label ? ` · ${version.label}` : ""}`}
                 subtitle={version.comparison.compared_to_version_id ? `${version.comparison.added_count} added · ${version.comparison.removed_count} removed · ${formatDate(version.created_at, { day: "numeric", month: "short" })}` : `Original · ${formatDate(version.created_at, { day: "numeric", month: "short" })}`}
+                onPress={() => router.push({ pathname: "/contract/[id]/versions", params: { id: contractId, versionId: version.id } })}
                 last={index === latest.length - 1} />
             ))}
             {latest[0]?.comparison.changed_summary ? <AppText variant="small" tone="muted" style={styles.summary}>{latest[0].comparison.changed_summary}</AppText> : null}

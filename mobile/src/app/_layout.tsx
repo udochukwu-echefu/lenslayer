@@ -96,6 +96,7 @@ function Navigator() {
         <Stack.Protected guard={signedIn && hasWorkspace}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="contract/[id]" options={{ title: "", headerBackTitle: "Back" }} />
+          <Stack.Screen name="contract/[id]/versions" options={{ title: "Versions", headerBackTitle: "Negotiate" }} />
           <Stack.Screen name="notifications" options={{ title: "Notifications", headerBackTitle: "Back" }} />
           <Stack.Screen name="search" options={{ title: "Search", headerBackTitle: "Back" }} />
           <Stack.Screen name="new/contract" options={{ ...form, title: "Upload a contract" }} />

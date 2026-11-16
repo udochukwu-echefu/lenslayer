@@ -327,7 +327,7 @@ Universal Login page to match instead (colours and logo are set in the Auth0 das
 | C_Obligations | `obligations` + `findings.tsx` | `review` | Built, unverified |
 | C_Ask | `question-panel.tsx` | stream `…/contracts/{id}/questions` | Built, unverified |
 | C_Negotiate | `negotiate.tsx` | `negotiationItems`, `versions`, `counterpartyResponses`, `updateNegotiationItem` | Built, unverified |
-| C_Versions | list inside `negotiate.tsx` | `versions` | Diff view missing (task 9) |
+| C_Versions | `contract/[id]/versions.tsx`, list inside `negotiate.tsx` | `versions` | Shows the saved changes, revision notes and version history |
 | C_Discussion | `discussion.tsx` | `comments`, `createComment` | Built, unverified |
 | C_Approvals, C_ApproveSheet | `decisions.tsx` | `approvals`, `decideApproval`, `decisions` | Built, unverified |
 | C_DecisionSheet | `new/decision.tsx` | `createDecision` | Built |
