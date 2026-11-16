@@ -302,7 +302,7 @@ Universal Login page to match instead (colours and logo are set in the Auth0 das
 | Design | Route / file | API | State |
 |---|---|---|---|
 | H_Overview(+Dark) | `(tabs)/(overview)/index.tsx` | `queryOverview`, `notifications` | Done |
-| H_Switcher | `components/workspace-switcher.tsx` | `organizations` | Done, "Create a workspace" missing (task 7) |
+| H_Switcher | `components/workspace-switcher.tsx`, `new/workspace.tsx` | `organizations`, `createOrganization` | Can switch workspaces or create and enter a new one |
 | H_Search | `search.tsx` | `searchWorkspace` | Done, recent searches missing |
 | H_Inbox | `(tabs)/(overview)/inbox.tsx` | `queryContracts`, `queryTasks` | Done |
 | H_Notifications(+Empty) | `notifications.tsx` | `notifications`, `markNotificationRead`, `markAllNotificationsRead` | Done |
@@ -313,7 +313,7 @@ Universal Login page to match instead (colours and logo are set in the Auth0 das
 | Design | Route / file | API | State |
 |---|---|---|---|
 | A_List, A_Empty | `(tabs)/contracts/index.tsx` | `queryContracts` | Done |
-| A_Filter | sort sheet only | same | Type filter missing (task 8) |
+| A_Filter | sort sheet only | same | Type filter pending a server-side filter; `contract_type` is currently a sort field |
 | A_UploadSource, A_UploadDetails, A_UploadData | `new/contract.tsx` (one form) | `createContract`, `organizationSettings` | Built as one scrolling form, verify on device |
 | A_Processing, A_Failed | inside `contract/[id].tsx` | `contract` (polls while moving) | Built, unverified |
 

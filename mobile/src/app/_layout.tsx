@@ -99,6 +99,7 @@ function Navigator() {
           <Stack.Screen name="notifications" options={{ title: "Notifications", headerBackTitle: "Back" }} />
           <Stack.Screen name="search" options={{ title: "Search", headerBackTitle: "Back" }} />
           <Stack.Screen name="new/contract" options={{ ...form, title: "Upload a contract" }} />
+          <Stack.Screen name="new/workspace" options={{ ...form, title: "Create a workspace" }} />
           <Stack.Screen name="new/task" options={{ ...form, title: "New action" }} />
           <Stack.Screen name="new/lifecycle" options={{ ...form, title: "Add a date" }} />
           <Stack.Screen name="new/approval" options={{ ...form, title: "Request approval" }} />

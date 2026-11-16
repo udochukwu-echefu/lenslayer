@@ -55,7 +55,6 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       isLoading: signedIn && (!selectionReady || organizationsQuery.isLoading || userQuery.isLoading),
       error: (organizationsQuery.error ?? userQuery.error) as Error | null,
       selectOrganization: (id) => {
-        if (!organizations.some((item) => item.id === id)) return;
         setActiveId(id);
         void storage.set(storageKeys.activeOrganization, id);
       },
@@ -84,10 +83,14 @@ export function workspaceSlug(name: string) {
 
 export function useCreateWorkspace() {
   const queryClient = useQueryClient();
+  const { selectOrganization } = useWorkspace();
   return useMutation({
     mutationFn: (name: string) => api.createOrganization({ name: name.trim(), slug: workspaceSlug(name) }),
     onSuccess: async (organization) => {
-      await storage.set(storageKeys.activeOrganization, organization.id);
+      queryClient.setQueryData<Organization[]>(["organizations"], (current) => [
+        ...(current ?? []).filter((item) => item.id !== organization.id), organization,
+      ]);
+      selectOrganization(organization.id);
       await queryClient.invalidateQueries({ queryKey: ["organizations"] });
     },
   });

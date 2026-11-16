@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import { useState } from "react";
 import { Pressable, View } from "react-native";
 import { titleCase } from "@/lib/format";
@@ -5,7 +6,7 @@ import { useWorkspace } from "@/lib/workspace";
 import { createStyles } from "@/theme/create-styles";
 import { useTheme } from "@/theme/theme-provider";
 import { font, radius, space, touch } from "@/theme/tokens";
-import { AppText, Icon, Sheet } from "./ui";
+import { AppText, Button, Icon, Sheet } from "./ui";
 
 /**
  * The workspace name in the Overview header. Tapping it opens a sheet listing
@@ -41,6 +42,7 @@ export function WorkspaceSwitcher() {
           })}
         </View>
         <AppText variant="caption" tone="faint">Your role can differ in each workspace. Switching never widens it.</AppText>
+        <Button label="Create a workspace" icon="plus" variant="secondary" onPress={() => { setOpen(false); router.push("/new/workspace"); }} />
       </Sheet>
     </>
   );
