@@ -54,7 +54,9 @@ export function RenewalsMonth() {
               <View key={dateKey(week[0])} style={styles.week}>
                 {week.map((date) => {
                   const key = dateKey(date);
-                  const count = byDay.get(key)?.total ?? 0;
+                  const dayData = byDay.get(key);
+                  const count = dayData?.total ?? 0;
+                  const escalated = dayData?.items.some((item) => item.escalated);
                   const active = key === dateKey(selected);
                   const current = key === dateKey(today);
                   const outside = date.getMonth() !== month.getMonth();
@@ -62,9 +64,9 @@ export function RenewalsMonth() {
                   return (
                     <Pressable key={key} accessibilityRole="button" accessibilityState={{ selected: active }}
                       accessibilityLabel={`${label}${current ? ", today" : ""}, ${count} ${count === 1 ? "item" : "items"}`}
-                      onPress={() => setSelected(date)} style={[styles.day, active && styles.selected, current && styles.today]}>
-                      <AppText variant="smallStrong" tone={outside ? "muted" : "ink"}>{date.getDate()}</AppText>
-                      {count > 0 ? <View style={styles.dot} /> : null}
+                      onPress={() => setSelected(date)} style={[styles.day, active && styles.selected]}>
+                      <AppText variant="smallStrong" tone={current ? "accent" : outside ? "muted" : "ink"} style={active && styles.selectedText}>{date.getDate()}</AppText>
+                      {count > 0 ? <View style={[styles.dot, active ? styles.selectedDot : escalated && styles.escalatedDot]} /> : null}
                     </Pressable>
                   );
                 })}
@@ -93,8 +95,10 @@ const useStyles = createStyles((c) => ({
   title: { flex: 1 },
   week: { flexDirection: "row" },
   weekday: { flex: 1, textAlign: "center", paddingBottom: space.sm },
-  day: { flex: 1, minHeight: touch, gap: space.xxs, alignItems: "center", justifyContent: "center", borderRadius: radius.md, borderWidth: 1, borderColor: "transparent" },
-  selected: { backgroundColor: c.accentSoft },
-  today: { borderColor: c.accent },
-  dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: c.accent },
+  day: { flex: 1, minHeight: touch, gap: space.xxs, alignItems: "center", justifyContent: "center", borderRadius: radius.md },
+  selected: { backgroundColor: c.primary },
+  selectedText: { color: c.onPrimary },
+  dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: c.ink },
+  selectedDot: { backgroundColor: c.onPrimary },
+  escalatedDot: { backgroundColor: c.danger },
 }));
