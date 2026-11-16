@@ -1,4 +1,4 @@
-import { router, Stack, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams, useNavigation } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
 import { HeaderButton } from "@/components/header";
@@ -15,6 +15,7 @@ type ViewMode = "changes" | "notes" | "versions";
 /** Shows the evidence returned for a revision alongside its notes and history. */
 export default function VersionsScreen() {
   const { id, versionId } = useLocalSearchParams<{ id: string; versionId?: string }>();
+  const navigation = useNavigation();
   const { organizationId, canUpload } = useWorkspace();
   const query = useContractVersions(organizationId, id);
   const [mode, setMode] = useState<ViewMode>("changes");
@@ -24,9 +25,14 @@ export default function VersionsScreen() {
 
   return (
     <Screen onRefresh={() => void query.refetch()} refreshing={query.isRefetching}>
-      <Stack.Screen options={{ headerRight: canUpload ? () => (
+      <Stack.Screen options={{
+        headerLeft: navigation.canGoBack() ? undefined : () => (
+          <HeaderButton icon="chevronLeft" label="Back to negotiation" onPress={() => router.replace({ pathname: "/contract/[id]", params: { id, tab: "negotiate" } })} />
+        ),
+        headerRight: canUpload ? () => (
         <HeaderButton icon="upload" label="Upload revision" onPress={() => router.push({ pathname: "/new/version", params: { contractId: id } })} />
-      ) : undefined }} />
+        ) : undefined,
+      }} />
       {query.isLoading ? <Loading rows={4} /> : query.error ? <ErrorState error={query.error} onRetry={() => void query.refetch()} />
         : !versions.length ? <EmptyState icon="layers" title="No versions yet" message="Revisions appear here when they’re uploaded." />
         : (
