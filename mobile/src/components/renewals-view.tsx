@@ -27,6 +27,14 @@ type DateView = "agenda" | "month" | "reminders";
 export function RenewalsView({ initial }: { initial: Mode }) {
   const [mode, setMode] = useState<Mode>(initial);
   const { organizationId, canUpload } = useWorkspace();
+  const [dateSubview, setDateSubview] = useState<{ organizationId: string; view: DateView }>({ organizationId, view: "agenda" });
+  if (dateSubview.organizationId !== organizationId) setDateSubview({ organizationId, view: "agenda" });
+  const dateView = dateSubview.organizationId === organizationId ? dateSubview.view : "agenda";
+
+  function toggleDateView(view: "month" | "reminders") {
+    setDateSubview({ organizationId, view: dateView === view ? "agenda" : view });
+  }
+
   const exportCalendar = useMutation({ mutationFn: () => api.downloadCalendarExport(organizationId) });
   return (
     <Screen contentStyle={{ gap: space.xl - 4 }}>
@@ -34,26 +42,28 @@ export function RenewalsView({ initial }: { initial: Mode }) {
         title: "Renewals",
         headerRight: () => (
           <View style={{ flexDirection: "row" }}>
-            {mode === "dates" ? <HeaderButton icon="share" label="Add these dates to your calendar" onPress={() => exportCalendar.mutate()} /> : null}
+            {mode === "dates" ? (
+              <>
+                <HeaderButton icon="renewals" label="Month view" selected={dateView === "month"} onPress={() => toggleDateView("month")} />
+                <HeaderButton icon="clock" label="Scheduled reminders" selected={dateView === "reminders"} onPress={() => toggleDateView("reminders")} />
+                <HeaderButton icon="share" label="Add these dates to your calendar" onPress={() => exportCalendar.mutate()} />
+              </>
+            ) : null}
             {canUpload ? <HeaderButton icon="plus" label={mode === "dates" ? "Add a date" : "New action"} onPress={() => router.push(mode === "dates" ? "/new/lifecycle" : "/new/task")} /> : null}
           </View>
         ),
       }} />
-      <Segmented label="Renewals view" value={mode} onChange={setMode} options={[{ value: "dates", label: "Dates" }, { value: "tasks", label: "Tasks" }]} />
+      <Segmented label="Renewals view" value={mode} onChange={(next) => { if (next !== mode) setDateSubview({ organizationId, view: "agenda" }); setMode(next); }} options={[{ value: "dates", label: "Dates" }, { value: "tasks", label: "Tasks" }]} />
       <FormError error={exportCalendar.error} />
-      {mode === "dates" ? <DateViews key={organizationId} /> : <Tasks />}
+      {mode === "dates" ? <DateViews key={organizationId} view={dateView} /> : <Tasks />}
     </Screen>
   );
 }
 
-function DateViews() {
-  const [view, setView] = useState<DateView>("agenda");
+function DateViews({ view }: { view: DateView }) {
   const [open, setOpen] = useState<LifecycleItem | null>(null);
   return (
     <>
-      <Segmented label="Date view" value={view} onChange={setView} options={[
-        { value: "agenda", label: "Agenda" }, { value: "month", label: "Month" }, { value: "reminders", label: "Reminders" },
-      ]} />
       {view === "month" ? <RenewalsMonth /> : view === "reminders" ? <UpcomingReminders onOpen={setOpen} /> : <Dates onOpen={setOpen} />}
       <DateSheet item={open} onClose={() => setOpen(null)} />
     </>

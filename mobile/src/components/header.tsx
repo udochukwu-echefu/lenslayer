@@ -25,11 +25,11 @@ export function useStackOptions() {
   } as const;
 }
 
-export function HeaderButton({ icon, label, onPress, badge, disabled }: { icon: IconName; label: string; onPress: () => void; badge?: number; disabled?: boolean }) {
+export function HeaderButton({ icon, label, onPress, badge, disabled, selected }: { icon: IconName; label: string; onPress: () => void; badge?: number; disabled?: boolean; selected?: boolean }) {
   const { colors } = useTheme();
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled }} disabled={disabled} onPress={onPress} hitSlop={8} style={{ width: touch, height: touch, alignItems: "center", justifyContent: "center", opacity: disabled ? 0.35 : 1 }}>
-      <Icon name={icon} size={21} color={colors.ink} />
+    <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled, selected }} disabled={disabled} onPress={onPress} hitSlop={8} style={{ width: touch, height: touch, alignItems: "center", justifyContent: "center", opacity: disabled ? 0.35 : 1 }}>
+      <Icon name={icon} size={21} color={selected ? colors.accent : colors.ink} />
       {badge ? (
         <View style={{ position: "absolute", top: 6, right: 4, minWidth: 16, height: 16, borderRadius: 8, paddingHorizontal: 3, backgroundColor: colors.decisions, alignItems: "center", justifyContent: "center" }}>
           <AppText variant="caption" style={{ fontSize: 10, lineHeight: 12, color: colors.onCategory }}>{badge > 9 ? "9+" : String(badge)}</AppText>
