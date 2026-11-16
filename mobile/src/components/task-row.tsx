@@ -79,7 +79,7 @@ export function TaskList({ tasks, empty = "No actions match this view." }: { tas
 const useStyles = createStyles((c) => ({
   row: { flexDirection: "row", alignItems: "center", gap: space.md, paddingVertical: 13, minHeight: 58 },
   divider: { borderBottomWidth: 1, borderBottomColor: c.line },
-  check: { width: touch, height: touch, alignItems: "center", justifyContent: "center" },
+  check: { width: touch, height: touch, alignItems: "flex-start", justifyContent: "center" },
   box: { width: 22, height: 22, borderRadius: 6, borderWidth: 1.5, borderColor: c.lineStrong, alignItems: "center", justifyContent: "center" },
   body: { flex: 1, gap: space.xxs },
   doneText: { textDecorationLine: "line-through", opacity: 0.55 },
