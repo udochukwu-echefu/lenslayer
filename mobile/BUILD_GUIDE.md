@@ -29,7 +29,7 @@ seen working with an empty workspace).
 | Settings (8 sections + Team) | Done |
 | 11 create/upload forms | Built, **only one path exercised by hand** |
 | Native iOS / Android run | **Not done.** Only the web preview has been run |
-| Automated tests | **None yet** (`npm test` finds 0 tests) |
+| Automated tests | Date formatting, notification routes and Ask frame validation covered by `npm test` |
 
 What "not yet seen with real data" means: the test backend had no worker and no model key, so no
 contract ever finished review. Those screens compile against the real API types, but nobody has
