@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Profile and identity</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.row{min-height:50px}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="back" href="X_Home.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>Settings</a></header>
+  <section class="body" style="gap: 16px; padding-top: 0">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px"><span class="av" style="width: 76px; height: 76px; font-size: 26px; background: var(--pink)">AO</span><h1 class="h2">Ada Okafor</h1><span class="m">Owner · Harbor &amp; Finch Legal</span></div>
+    <div class="grp">
+      <div class="row"><span class="tx"><span class="m">Name</span></span><span class="t" style="font-size: 15px">Ada Okafor</span></div>
+      <div class="row"><span class="tx"><span class="m">Email</span></span><span class="t" style="font-size: 15px">ada@harborfinch.example</span></div>
+      <div class="row"><span class="tx"><span class="m">User ID</span></span><span class="c" style="font-family: ui-monospace, Menlo, monospace">auth0|64f…a91</span><button class="ib" aria-label="Copy user ID" style="width: 34px; height: 34px"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg></button></div>
+    </div>
+    <p class="c" style="margin-top: -8px">Name and email come from your sign-in account.</p>
+    <div class="grp">
+      <a class="row" href="S_Forgot.dc.html"><span class="tx"><span class="t" style="font-size: 16px; font-weight: 500">Change password</span></span><svg class="i s chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
+      <div class="row"><span class="tx"><span class="t" style="font-size: 16px; font-weight: 500">Signed in with</span></span><span class="val">Email and password</span></div>
+    </div>
+    <p class="c">Actions you take are recorded with your name and active workspace. Switching workspaces never widens your role.</p>
+    <div style="flex: 1"></div>
+    <a class="btn g" href="X_DeleteAccount.dc.html" style="color: var(--bad); min-height: 44px">Delete account…</a>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

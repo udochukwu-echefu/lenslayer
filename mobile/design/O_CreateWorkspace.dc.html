@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Name your workspace</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.steps{display:flex;gap:6px;padding:0 20px}.steps i{flex:1;height:4px;border-radius:2px;background:var(--well)}.steps i.on{background:var(--primary)}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><span class="sp"></span><a class="btn g sm" href="S_Welcome.dc.html">Sign out</a></header>
+  <div class="steps" aria-label="Step 1 of 3"><i class="on"></i><i></i><i></i></div>
+  <p class="c" style="margin: 10px 20px 6px">Step 1 of 3</p>
+  <h1 class="lt">Name your workspace</h1>
+  <p class="sub">A workspace holds your team’s agreements, reviews and renewal dates. Most teams use their company or department name.</p>
+  <form class="body" style="gap: 16px">
+    <label class="field"><span class="lbl">Workspace name</span><span class="inp focus">Harbor &amp; Finch Legal</span><span class="help">You can change this later in Settings.</span></label>
+    <div style="flex: 1"></div>
+    <a class="btn p" href="O_InviteTeam.dc.html">Continue</a>
+    <p class="m" style="text-align: center">Joining a team? Open the invitation link from your email.</p>
+  </form>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

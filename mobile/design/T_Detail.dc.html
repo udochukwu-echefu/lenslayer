@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Task detail</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.up{display:flex;gap:10px}.up .bd{flex:1;display:flex;flex-direction:column;gap:2px}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="back" href="T_List.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>Tasks</a><span class="sp"></span><a class="ib" href="T_List.dc.html" aria-label="Mark as done"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg></a><button class="ib" aria-label="More options"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg></button></header>
+  <div class="tint bad" style="border-radius: 0; padding: 9px 16px; align-items: center" role="status"><svg class="i s" viewBox="0 0 24 24" style="color: var(--bad)" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span class="m" style="color: var(--bad); font-weight: 650">5 days overdue</span></div>
+  <section class="body" style="gap: 14px; padding-top: 14px">
+    <div class="stack" style="gap: 6px"><a class="row-h c" href="C_Overview.dc.html" style="gap: 6px"><svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8l4 4v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg><span class="link" style="font-size: 13px">Brightline staffing SOW</span></a><h1 class="h2" style="font-size: 24px; line-height: 30px">Send notice of non-renewal</h1></div>
+    <div class="grp">
+      <a class="prop" href="X_Member.dc.html"><span>Owner</span><span class="pill"><span class="av" style="width: 20px; height: 20px; font-size: 9px; background: var(--pink)">AO</span>Ada Okafor</span></a>
+      <div class="prop"><span>Due</span><span class="pill bad">Tue 10 Nov</span></div>
+      <a class="prop" href="T_Status.dc.html"><span>Status</span><span class="pill warn">In progress</span></a>
+      <div class="prop"><span>Priority</span><span class="pill bad">High</span></div>
+      <div class="prop"><span>Type</span><span class="pill">Deadline</span></div>
+    </div>
+    <div class="stack" style="gap: 4px"><p class="eb">Details</p><p class="p" style="color: var(--ink)">Send by recorded delivery to Brightline’s registered office. Keep the receipt.</p></div>
+    <div class="quote"><span class="c"><svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h4v4c0 3-1 5-4 6M14 7h4v4c0 3-1 5-4 6"/></svg>Created from · Clause 2.3</span><span class="m">“…either party may terminate on 60 days’ notice before the anniversary…”</span></div>
+    <div class="stack" style="gap: 10px"><p class="eb">Updates</p>
+      <div class="up"><span class="av" style="width: 28px; height: 28px; font-size: 11px; background: var(--pink)">AO</span><div class="bd"><span class="c"><b style="color: var(--ink)">Ada</b> · 9 Nov</span><span class="m" style="color: var(--ink)">Letter drafted, waiting on Jun’s signature.</span></div></div>
+    </div>
+  </section>
+  <form class="composer"><label style="flex: 1"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden">Post an update</span><span class="inp ph">Post an update…</span></label><button class="send" aria-label="Post update"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></form>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

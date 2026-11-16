@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Notifications and reminders</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.row{min-height:48px;padding:6px 0}.row .t{font-size:15px;font-weight:500}</style>
+</helmet>
+<main class="scr">
+  <header class="nav" style="min-height: 88px"><a class="back" href="X_Home.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>Settings</a></header>
+  <h1 class="lt" style="font-size: 28px; line-height: 34px">Notifications</h1>
+  <section class="body" style="gap: 12px; padding-top: 10px">
+    <div class="tint ok" style="align-items: center; padding: 10px 14px"><svg class="i s" viewBox="0 0 24 24" style="color: var(--good)" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span class="m" style="color: var(--ink); flex: 1">Allowed on this phone</span><a class="link" style="font-size: 14px" href="X_Notifications.dc.html">Phone settings</a></div>
+    <p class="eb">Tell me about</p>
+    <div class="grp">
+      <div class="row"><span class="tx"><span class="t">Renewal and notice dates I own</span></span><span class="tg on" role="switch" aria-checked="true" aria-label="Renewal and notice dates"></span></div>
+      <div class="row"><span class="tx"><span class="t">Overdue actions</span></span><span class="tg on" role="switch" aria-checked="true" aria-label="Overdue actions"></span></div>
+      <div class="row"><span class="tx"><span class="t">Approvals waiting on me</span></span><span class="tg on" role="switch" aria-checked="true" aria-label="Approvals waiting on me"></span></div>
+      <div class="row"><span class="tx"><span class="t">Mentions and comments</span></span><span class="tg on" role="switch" aria-checked="true" aria-label="Mentions and comments"></span></div>
+      <div class="row"><span class="tx"><span class="t">Reviews ready or failed</span></span><span class="tg" role="switch" aria-checked="false" aria-label="Reviews ready or failed"></span></div>
+    </div>
+    <p class="eb">How</p>
+    <div class="seg" role="radiogroup" aria-label="Frequency"><span class="on">As they happen</span><span>Daily digest</span></div>
+    <div class="grp">
+      <div class="row"><span class="tx"><span class="t">Reminder time</span></span><span class="val">8:00</span></div>
+      <div class="row"><span class="tx"><span class="t">Quiet hours</span><span class="m">19:00 to 7:00</span></span><span class="tg on" role="switch" aria-checked="true" aria-label="Quiet hours"></span></div>
+      <div class="row"><span class="tx"><span class="t">Also send by email</span></span><span class="tg on" role="switch" aria-checked="true" aria-label="Also send by email"></span></div>
+    </div>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

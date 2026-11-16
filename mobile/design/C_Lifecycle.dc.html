@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Contract: lifecycle</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="back" href="A_List.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></a><span class="ttl">Northwind logistics MSA</span><span class="sp"></span><a class="ib" href="R_AddDate.dc.html" aria-label="Add a date"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></a></header>
+  <section class="body" style="gap: 14px; padding-top: 6px">
+    <nav class="chips" aria-label="Contract sections"><a class="chip" href="C_Actions.dc.html">Actions 3</a><a class="chip on" href="C_Lifecycle.dc.html" aria-current="page">Lifecycle 4</a><a class="chip" href="C_Activity.dc.html">Activity</a></nav>
+    <p class="p" style="font-size: 14px; line-height: 20px">Renewals, notice windows, payments and recurring obligations after signing.</p>
+    <div class="grp">
+      <a class="row" href="R_Detail.dc.html"><span class="date urgent"><b>2</b><span>Dec</span></span><span class="tx"><span class="t" style="font-size: 15px">Last day to give notice</span><span class="m">Notice · reminder 30 days before · Ada O.</span></span><span class="badge warn">17 days</span></a>
+      <a class="row" href="R_Detail.dc.html"><span class="date"><b>1</b><span>Mar</span></span><span class="tx"><span class="t" style="font-size: 15px">Renews for 12 months</span><span class="m">Renewal · Unassigned</span></span></a>
+      <a class="row" href="R_Detail.dc.html"><span class="date"><b>31</b><span>Dec</span></span><span class="tx"><span class="t" style="font-size: 15px">Quarterly service fee</span><span class="m">Payment · £42,000 · repeats quarterly</span></span></a>
+      <a class="row" href="R_Detail.dc.html"><span class="date" style="background: var(--olive-s); color: var(--good)"><b>✓</b><span>Done</span></span><span class="tx"><span class="t" style="font-size: 15px; color: var(--faint)">Insurance certificate sent</span><span class="m">Obligation · completed 4 Nov</span></span></a>
+    </div>
+    <a class="btn s" href="R_Export.dc.html"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Add these dates to my calendar</a>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

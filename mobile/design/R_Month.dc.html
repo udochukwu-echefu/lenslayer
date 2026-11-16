@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Renewals: month</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));row-gap:4px;text-align:center}.cal .h{font-size:11px;font-weight:700;color:var(--faint);padding:4px 0}.cal .d{height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:15px;border-radius:12px}.cal .o{color:var(--line2)}.cal .t{font-weight:800;color:var(--accent)}.cal .s{background:var(--primary);color:var(--on-primary)}.dots{display:flex;gap:2px;height:5px}.dots i{width:5px;height:5px;border-radius:50%;background:var(--blue)}.dots i.r{background:var(--bad)}.dots i.o{background:var(--olive)}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="back" href="R_Agenda.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>Agenda</a><span class="sp"></span><a class="ib" href="R_AddDate.dc.html" aria-label="Add a date"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></a></header>
+  <div class="spread" style="padding: 0 8px 0 16px"><h1 class="lt" style="padding: 0; font-size: 28px">November 2026</h1><div class="row-h" style="gap: 0"><button class="ib" aria-label="Previous month"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button><button class="ib" aria-label="Next month"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button></div></div>
+  <section class="body" style="gap: 14px; padding-top: 8px">
+    <div class="cal" role="grid" aria-label="November 2026">
+      <span class="h">M</span><span class="h">T</span><span class="h">W</span><span class="h">T</span><span class="h">F</span><span class="h">S</span><span class="h">S</span>
+      <span class="d o">26</span><span class="d o">27</span><span class="d o">28</span><span class="d o">29</span><span class="d o">30</span><span class="d o">31</span><span class="d">1</span>
+      <span class="d">2</span><span class="d">3</span><span class="d">4<span class="dots"><i class="o"></i></span></span><span class="d">5</span><span class="d">6</span><span class="d">7</span><span class="d">8</span>
+      <span class="d">9</span><span class="d">10<span class="dots"><i class="r"></i></span></span><span class="d">11</span><span class="d">12</span><span class="d">13</span><span class="d">14</span><span class="d t">15</span>
+      <span class="d">16</span><span class="d">17</span><span class="d">18<span class="dots"><i></i></span></span><span class="d">19</span><span class="d">20</span><span class="d">21<span class="dots"><i class="o"></i></span></span><span class="d">22</span>
+      <span class="d">23</span><span class="d s">24<span class="dots"><i class="r"></i><i></i></span></span><span class="d">25</span><span class="d">26</span><span class="d">27</span><span class="d">28<span class="dots"><i></i></span></span><span class="d">29</span>
+      <span class="d">30</span><span class="d o">1</span><span class="d o">2</span><span class="d o">3</span><span class="d o">4</span><span class="d o">5</span><span class="d o">6</span>
+    </div>
+    <div class="row-h" style="gap: 14px"><span class="c row-h" style="gap: 5px"><i style="width: 7px; height: 7px; border-radius: 50%; background: var(--blue)"></i>Date</span><span class="c row-h" style="gap: 5px"><i style="width: 7px; height: 7px; border-radius: 50%; background: var(--olive)"></i>Action</span><span class="c row-h" style="gap: 5px"><i style="width: 7px; height: 7px; border-radius: 50%; background: var(--bad)"></i>Overdue or urgent</span></div>
+    <div class="stack"><p class="eb">Tuesday 24 November</p>
+      <div class="grp">
+        <a class="row" href="R_Detail.dc.html"><span class="tx"><span class="t" style="font-size: 15px">Give notice of non-renewal</span><span class="m">Harbor Lane office lease · Notice</span></span><span class="badge warn">9 days</span></a>
+        <a class="row" href="T_Detail.dc.html"><span class="tx"><span class="t" style="font-size: 15px">Draft notice letter</span><span class="m">Action · Tomi A.</span></span></a>
+      </div>
+    </div>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

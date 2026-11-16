@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Share and export</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<main class="scr">
+  <div class="ghost-page" aria-hidden="true"></div>
+  <a class="scrim" href="C_Overview.dc.html" aria-label="Close"></a>
+  <section class="sheet" role="dialog" aria-label="Share and export">
+    <span class="grab" aria-hidden="true"></span>
+    <h2 class="h2">Share Northwind logistics MSA</h2>
+    <div class="grp">
+      <a class="row" href="C_ShareLink.dc.html"><span class="ic p"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></span><span class="tx"><span class="t" style="font-size: 15px">Secure review link</span><span class="m">For outside counsel. Expires, can be revoked.</span></span><svg class="i s chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
+      <div class="row"><span class="ic n"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8l4 4v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg></span><span class="tx"><span class="t" style="font-size: 15px">Counsel handoff package</span><span class="m">Word file: evidence, open risks, decisions</span></span></div>
+      <div class="row"><span class="ic n"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L20 8l-4-4L4 16z"/></svg></span><span class="tx"><span class="t" style="font-size: 15px">Word redline</span><span class="m">Suggested wording as tracked changes</span></span></div>
+    </div>
+    <p class="eb">Export the review</p>
+    <div class="row-h" style="gap: 8px; flex-wrap: wrap"><button class="btn s sm">PDF</button><button class="btn s sm">Word</button><button class="btn s sm">CSV</button><button class="btn s sm">Markdown</button><button class="btn s sm">JSON</button></div>
+    <p class="c">Exports open the share sheet: save to Files, AirDrop or email.</p>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

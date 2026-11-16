@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>New API key</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.row{min-height:52px}</style>
+</helmet>
+<main class="scr" style="background: #0E0E10">
+  <section class="page-sheet" role="dialog" aria-label="New API key">
+    <header class="mhead" style="padding: 4px 12px"><a href="X_Security.dc.html">Cancel</a><b>New API key</b><span style="width: 60px"></span></header>
+    <form style="padding: 8px 20px 20px; display: flex; flex-direction: column; gap: 14px; flex: 1">
+      <label class="field"><span class="lbl">Name</span><span class="inp focus">Board pack export</span><span class="help">Say where it’s used, so you know what breaks if you revoke it.</span></label>
+      <p class="eb">It can</p>
+      <div class="grp">
+        <div class="row"><span class="cb on"><svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span><span class="tx"><span class="t" style="font-size: 15px">Read contracts and reviews</span></span></div>
+        <div class="row"><span class="cb"></span><span class="tx"><span class="t" style="font-size: 15px">Upload contracts</span></span></div>
+      </div>
+      <div style="flex: 1"></div>
+      <a class="btn p" href="X_ApiKeyCreated.dc.html">Create key</a>
+    </form>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

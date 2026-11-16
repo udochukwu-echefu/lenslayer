@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Record a decision</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<main class="scr">
+  <div class="ghost-page" aria-hidden="true"></div>
+  <a class="scrim" href="C_Approvals.dc.html" aria-label="Close"></a>
+  <section class="sheet" role="dialog" aria-label="Record a decision">
+    <span class="grab" aria-hidden="true"></span>
+    <h2 class="h2">Record a decision</h2>
+    <div class="seg" role="radiogroup" aria-label="Decision"><span>Accept</span><span class="on">Change</span><span>Escalate</span><span>Resolve</span></div>
+    <label class="field"><span class="lbl">About</span><span class="inp">Indemnity clause</span></label>
+    <div class="row-h" style="gap: 8px"><span class="c">Linked evidence</span><span class="badge n"><svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h4v4c0 3-1 5-4 6M14 7h4v4c0 3-1 5-4 6"/></svg>Clause 14.2</span></div>
+    <label class="field"><span class="lbl">Why</span><span class="inp focus" style="min-height: 96px; align-items: flex-start; padding-top: 12px">Counter v2’s 24-month cap with 12 months. Supplier accepted mutuality on the 12 Nov call.</span><span class="help">At least 5 characters. Recorded with your name and the time.</span></label>
+    <a class="btn p" href="C_Approvals.dc.html">Save decision</a>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

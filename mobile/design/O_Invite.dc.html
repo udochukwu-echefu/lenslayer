@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Accept an invitation</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<main class="scr" style="padding: 0 24px 40px">
+  <section style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px">
+    <span class="ic y" style="width: 64px; height: 64px; border-radius: 20px; font-size: 22px; font-weight: 800">H&amp;F</span>
+    <p class="eb">You’re invited</p>
+    <h1 class="lt" style="padding: 0">Join Harbor &amp; Finch Legal</h1>
+    <p class="p" style="font-size: 16px; line-height: 24px">Jun Li invited you as a <b style="color: var(--ink)">Reviewer</b>. You’ll be able to upload agreements, review findings and assign actions.</p>
+    <div class="grp">
+      <div class="row"><span class="tx"><span class="c">Signed in as</span><span class="t" style="font-size: 15px">tomi@harborfinch.example</span></span><span class="badge ok">Matches</span></div>
+      <div class="row"><span class="tx"><span class="c">Invitation expires</span><span class="t" style="font-size: 15px">21 Nov 2026</span></span></div>
+    </div>
+  </section>
+  <div class="stack" style="gap: 10px">
+    <a class="btn p" href="H_Overview.dc.html">Accept and join</a>
+    <a class="btn g" href="S_Welcome.dc.html" style="min-height: 44px">Not now</a>
+  </div>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

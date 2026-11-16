@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Reminder and repeat</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.row{min-height:46px;padding:4px 0}</style>
+</helmet>
+<main class="scr">
+  <div class="ghost-page" aria-hidden="true"></div>
+  <a class="scrim" href="R_AddDate.dc.html" aria-label="Close"></a>
+  <section class="sheet" role="dialog" aria-label="Reminder and repeat" style="gap: 12px">
+    <span class="grab" aria-hidden="true"></span>
+    <div class="spread"><h2 class="h2">Reminders</h2><a class="link" href="R_AddDate.dc.html">Done</a></div>
+    <p class="eb">Remind the owner</p>
+    <div class="grp">
+      <div class="row"><span class="tx"><span class="t" style="font-size: 15px">On the day</span></span><span class="radio"></span></div>
+      <div class="row"><span class="tx"><span class="t" style="font-size: 15px">7 days before</span></span><span class="radio"></span></div>
+      <div class="row"><span class="tx"><span class="t" style="font-size: 15px">14 days before</span></span><span class="radio on"></span></div>
+      <div class="row"><span class="tx"><span class="t" style="font-size: 15px">30 days before</span></span><span class="radio"></span></div>
+      <div class="row"><span class="tx"><span class="t" style="font-size: 15px">90 days before</span><span class="m">Good for long notice periods</span></span><span class="radio"></span></div>
+    </div>
+    <p class="eb">Repeat</p>
+    <div class="seg"><span class="on">Never</span><span>Monthly</span><span>Quarterly</span><span>Yearly</span></div>
+    <div class="tint n"><svg class="i s" viewBox="0 0 24 24" style="margin-top: 2px" aria-hidden="true"><path d="M5 21V4h11l-2 4 2 4H5"/></svg><span class="m" style="color: var(--ink)">Still open on the day? Admins are told so it never slips quietly.</span></div>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

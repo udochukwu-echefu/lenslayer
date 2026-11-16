@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Version comparison</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.ln{display:flex;gap:10px;padding:10px 12px;border-radius:10px;font-size:14px;line-height:20px}.ln b{flex:none;width:14px;font-weight:800}.add{background:var(--olive-s)}.add b{color:var(--good)}.del{background:var(--bad-s)}.del b{color:var(--bad)}.del span{text-decoration:line-through;text-decoration-color:rgba(161,60,54,.5)}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="back" href="C_Negotiate.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>Negotiate</a><span class="sp"></span><a class="btn g sm" href="A_UploadSource.dc.html">Upload revision</a></header>
+  <h1 class="lt" style="font-size: 28px; line-height: 34px">v1 to v2</h1>
+  <p class="sub">Received 14 Nov from Northwind Freight · 8 added, 6 removed</p>
+  <section class="body" style="gap: 12px">
+    <div class="seg" role="tablist"><span class="on">Changes</span><span>v2 notes</span><span>All versions 2</span></div>
+    <p class="eb">Clause 14.2 · Indemnity</p>
+    <div class="ln del"><b aria-label="Removed">−</b><span>The Customer shall indemnify the Supplier against all losses, howsoever arising.</span></div>
+    <div class="ln add"><b aria-label="Added">+</b><span>Each party’s liability under this clause is capped at the fees paid in the 24 months before the claim.</span></div>
+    <p class="eb" style="margin-top: 6px">Clause 19.4 · Data location</p>
+    <div class="ln add"><b aria-label="Added">+</b><span>Customer Data shall be stored and processed only in the United Kingdom.</span></div>
+    <p class="eb" style="margin-top: 6px">Clause 3.2 · Renewal</p>
+    <div class="tint n"><svg class="i s" viewBox="0 0 24 24" style="margin-top: 2px" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span class="m" style="color: var(--ink)">Unchanged. The 90-day notice period you asked to shorten is still there.</span></div>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

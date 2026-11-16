@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Design system</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.ds{width:1200px;min-height:1760px;background:var(--canvas);color:var(--ink);font-family:Figtree,system-ui,sans-serif;padding:56px;display:flex;flex-direction:column;gap:44px}
+.ds h1{margin:0;font-size:44px;line-height:50px;letter-spacing:-1px}
+.ds h2{margin:0 0 16px;font-size:13px;letter-spacing:.8px;text-transform:uppercase;color:var(--faint)}
+.sw{display:flex;flex-direction:column;gap:6px;width:120px}
+.sw span{height:64px;border-radius:14px;border:1px solid var(--line)}
+.sw b{font-size:13px}.sw small{font-size:12px;color:var(--faint)}
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px}
+.demo{display:flex;flex-direction:column;gap:12px}
+</style>
+</helmet>
+<div class="ds">
+  <div style="display: flex; align-items: center; gap: 20px">
+    <span class="mark" aria-hidden="true"><i></i><i></i><b></b></span>
+    <div><h1>LensLayer mobile</h1><p class="p">Design system for iOS and Android. Calm, rigorous, direct. White page, plain rows, one idea per line.</p></div>
+  </div>
+
+  <section>
+    <h2>Colour · light</h2>
+    <div style="display: flex; flex-wrap: wrap; gap: 16px">
+      <div class="sw"><span style="background: #FFFFFF"></span><b>Canvas</b><small>#FFFFFF</small></div>
+      <div class="sw"><span style="background: #F6F5F2"></span><b>Raised</b><small>#F6F5F2</small></div>
+      <div class="sw"><span style="background: #EDEBE5"></span><b>Hairline</b><small>#EDEBE5</small></div>
+      <div class="sw"><span style="background: #191A17"></span><b>Ink · primary</b><small>#191A17</small></div>
+      <div class="sw"><span style="background: #834965"></span><b>Rose · links</b><small>#834965</small></div>
+      <div class="sw"><span style="background: #F6D868"></span><b>Butter · contracts</b><small>#F6D868</small></div>
+      <div class="sw"><span style="background: #F5B8DA"></span><b>Pink · decisions</b><small>#F5B8DA</small></div>
+      <div class="sw"><span style="background: #9AA963"></span><b>Olive · actions</b><small>#9AA963</small></div>
+      <div class="sw"><span style="background: #B5C9E8"></span><b>Blue · dates</b><small>#B5C9E8</small></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Colour · dark and status</h2>
+    <div style="display: flex; flex-wrap: wrap; gap: 16px">
+      <div class="sw"><span style="background: #0E0E10"></span><b>Canvas</b><small>#0E0E10</small></div>
+      <div class="sw"><span style="background: #1C1B18"></span><b>Surface</b><small>#1C1B18</small></div>
+      <div class="sw"><span style="background: #FAF4E6"></span><b>Ink</b><small>#FAF4E6</small></div>
+      <div class="sw"><span style="background: #F5B8DA"></span><b>Pink · primary</b><small>#F5B8DA</small></div>
+      <div class="sw"><span style="background: #48602F"></span><b>Good</b><small>#48602F</small></div>
+      <div class="sw"><span style="background: #805C15"></span><b>Warning</b><small>#805C15</small></div>
+      <div class="sw"><span style="background: #A13C36"></span><b>Danger</b><small>#A13C36</small></div>
+      <div class="sw"><span style="background: #3D5A86"></span><b>Info</b><small>#3D5A86</small></div>
+    </div>
+  </section>
+
+  <div class="cols">
+    <section class="demo">
+      <h2>Type · Figtree</h2>
+      <span style="font-size: 32px; line-height: 38px; font-weight: 700; letter-spacing: -.6px">Large title 32</span>
+      <span style="font-size: 20px; line-height: 26px; font-weight: 700">Section 20</span>
+      <span style="font-size: 17px; line-height: 23px; font-weight: 650">Headline 17</span>
+      <span style="font-size: 16px; line-height: 22px; font-weight: 600">Row title 16</span>
+      <span style="font-size: 15px; line-height: 22px; color: var(--muted)">Body 15, muted, for explanations</span>
+      <span class="c">Caption 12 · 2 Dec 2026 · £18,400</span>
+      <p class="eb">Eyebrow 12</p>
+    </section>
+    <section class="demo">
+      <h2>Spacing, radius, touch</h2>
+      <p class="p">4pt grid: 4 · 8 · 12 · 16 · 20 · 24 · 32 · 48. Screen gutter 20. Sections 28 apart.</p>
+      <div style="display: flex; gap: 12px; align-items: flex-end">
+        <span style="width: 44px; height: 44px; border: 2px dashed var(--accent); border-radius: 12px"></span>
+        <span class="c">44pt minimum target</span>
+      </div>
+      <p class="p">Lists are plain rows split by hairlines, never boxes. One soft grey fill for the few things that need a container.</p>
+      <p class="p">Motion: 150 to 250 ms, ease-out. Sheets slide up; nothing bounces. Reduced motion swaps slides for fades.</p>
+    </section>
+    <section class="demo">
+      <h2>Icons</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 14px; color: var(--ink)">
+        <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>
+        <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4h7l4 4v11a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM4 8v11a2 2 0 0 0 2 2"/></svg>
+        <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5M8 10h6M8 13h3"/></svg>
+        <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+        <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
+        <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 0 0 4 0"/></svg>
+        <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>
+        <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 20h20zM12 10v4M12 17h.01"/></svg>
+        <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h4v4c0 3-1 5-4 6M14 7h4v4c0 3-1 5-4 6"/></svg>
+        <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 2l3 3-3 3M4 11V9a4 4 0 0 1 4-4h12M7 22l-3-3 3-3M20 13v2a4 4 0 0 1-4 4H4"/></svg>
+      </div>
+      <p class="p">One stroke family at 1.9. Filled only for the active tab.</p>
+    </section>
+  </div>
+
+  <div class="cols">
+    <section class="demo">
+      <h2>Buttons</h2>
+      <button class="btn p">Start review</button>
+      <button class="btn s">Create an account</button>
+      <button class="btn g">Forgot password?</button>
+      <button class="btn d">Delete contract</button>
+      <button class="btn p" disabled>Saving…</button>
+      <p class="c">One primary action per screen. Labels say what happens.</p>
+    </section>
+    <section class="demo">
+      <h2>Fields</h2>
+      <label class="field"><span class="lbl">Work email</span><span class="inp ph">name@company.com</span></label>
+      <label class="field"><span class="lbl">Password</span><span class="inp focus">••••••••••<span style="flex: 1"></span><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span></label>
+      <label class="field"><span class="lbl">Contract title</span><span class="inp err">N</span><span class="errt">Use at least 2 characters.</span></label>
+    </section>
+    <section class="demo">
+      <h2>Status</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <span class="badge info">Ready for decision</span><span class="badge ok">Reviewed</span><span class="badge warn">Processing</span><span class="badge bad">Failed</span><span class="badge n">Cancelled</span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <span class="badge bad">High risk</span><span class="badge warn">Medium risk</span><span class="badge ok">Low risk</span>
+      </div>
+      <p class="c">Severity, confidence and review status are separate signals, always with words.</p>
+      <div class="chips" style="margin: 0; padding: 0"><span class="chip on">All</span><span class="chip">Ready</span><span class="chip">Failed</span></div>
+      <div class="seg"><span class="on">Dates</span><span>Tasks</span></div>
+      <div class="row-h"><span class="tg on"></span><span class="tg"></span><span class="cb on"><svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span><span class="cb"></span><span class="radio on"></span><span class="radio"></span></div>
+    </section>
+  </div>
+
+  <div class="cols">
+    <section class="demo">
+      <h2>List group</h2>
+      <div class="grp">
+        <div class="row"><span class="ic y"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8l4 4v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg></span><span class="tx"><span class="t">Northwind logistics MSA</span><span class="m">Northwind Freight · Services</span></span><svg class="i s chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></div>
+        <div class="row"><span class="date"><b>18</b><span>Nov</span></span><span class="tx"><span class="t">Notice window opens</span><span class="m">Harbor Lane office lease</span></span></div>
+      </div>
+    </section>
+    <section class="demo">
+      <h2>Evidence</h2>
+      <div class="quote"><span class="c"><svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h4v4c0 3-1 5-4 6M14 7h4v4c0 3-1 5-4 6"/></svg>Clause 3.2 · Page 4</span><span class="m">“…not less than ninety (90) days’ written notice…”</span></div>
+      <p class="c">Every material claim points to a quoted clause and its location.</p>
+    </section>
+    <section class="demo">
+      <h2>Notices</h2>
+      <div class="tint warn"><svg class="i s" viewBox="0 0 24 24" style="color: var(--warn)" aria-hidden="true"><path d="M12 3 2 20h20zM12 10v4M12 17h.01"/></svg><span class="m" style="color: var(--ink)">Schedule C is referenced but wasn’t found.</span></div>
+      <div class="tint bad"><svg class="i s" viewBox="0 0 24 24" style="color: var(--bad)" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/></svg><span class="m" style="color: var(--ink)">The document couldn’t be read.</span></div>
+      <p class="c">Notices are quiet grey blocks. The icon carries the colour.</p>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":1760}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

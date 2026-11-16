@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Switch workspace</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<main class="scr">
+  <div class="ghost-page" aria-hidden="true"><p class="lt" style="padding-top: 100px">Overview</p></div>
+  <a class="scrim" href="H_Overview.dc.html" aria-label="Close"></a>
+  <section class="sheet" role="dialog" aria-label="Switch workspace">
+    <span class="grab" aria-hidden="true"></span>
+    <h2 class="h2">Switch workspace</h2>
+    <div class="grp">
+      <a class="row" href="H_Overview.dc.html"><span class="ic y" style="font-size: 12px; font-weight: 800">H&amp;F</span><span class="tx"><span class="t">Harbor &amp; Finch Legal</span><span class="m">Owner · 24 agreements</span></span><span class="radio on" aria-label="Current"></span></a>
+      <a class="row" href="H_Overview.dc.html"><span class="ic b" style="font-size: 12px; font-weight: 800">NP</span><span class="tx"><span class="t">Northpoint Procurement</span><span class="m">Reviewer · 61 agreements</span></span><span class="radio"></span></a>
+      <a class="row" href="H_Overview.dc.html"><span class="ic o" style="font-size: 12px; font-weight: 800">KF</span><span class="tx"><span class="t">Kite Finance Ops</span><span class="m">Viewer · 9 agreements</span></span><span class="radio"></span></a>
+    </div>
+    <p class="c">Your role can differ in each workspace. Switching never widens it.</p>
+    <a class="btn s" href="O_CreateWorkspace.dc.html"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Create a workspace</a>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Scheduled reminders</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.when{width:58px;flex:none;font-size:13px;font-weight:700;line-height:17px}.when span{display:block;font-weight:500;color:var(--faint)}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="back" href="R_Agenda.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>Renewals</a></header>
+  <h1 class="lt">Reminders</h1>
+  <p class="sub">What you’ll be reminded about, and when. Times are in your time zone (London).</p>
+  <section class="body" style="gap: 14px">
+    <div class="seg" role="tablist"><span class="on">Mine</span><span>Everyone’s</span></div>
+    <div class="grp">
+      <a class="row" href="R_Detail.dc.html"><span class="when">Tomorrow<span>8:00</span></span><span class="tx"><span class="t" style="font-size: 15px">Harbor Lane notice</span><span class="m">8 days left · email and app</span></span></a>
+      <a class="row" href="R_Detail.dc.html"><span class="when">18 Nov<span>8:00</span></span><span class="tx"><span class="t" style="font-size: 15px">Northwind notice window</span><span class="m">14 days left · email and app</span></span></a>
+      <a class="row" href="T_Detail.dc.html"><span class="when">21 Nov<span>8:00</span></span><span class="tx"><span class="t" style="font-size: 15px">Chase Schedule C</span><span class="m">Action due · app</span></span></a>
+      <a class="row" href="R_Detail.dc.html"><span class="when">24 Nov<span>8:00</span></span><span class="tx"><span class="t" style="font-size: 15px">Harbor Lane notice due today</span><span class="m">Escalates to admins if still open</span></span></a>
+    </div>
+    <a class="tint n" href="X_Notifications.dc.html" style="align-items: center"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><span class="m" style="flex: 1; color: var(--ink)">Change delivery time, channels and quiet hours</span><svg class="i s chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

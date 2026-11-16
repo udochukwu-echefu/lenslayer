@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Decide an approval</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.row{min-height:46px;padding:6px 0}</style>
+</helmet>
+<main class="scr" style="background: #0E0E10">
+  <section class="page-sheet" role="dialog" aria-label="Approval request">
+    <header class="mhead" style="padding: 4px 12px"><a href="C_Approvals.dc.html">Close</a><b>Approval request</b><span style="width: 52px"></span></header>
+    <div style="padding: 8px 20px 0; display: flex; flex-direction: column; gap: 14px; flex: 1">
+      <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 6px 12px 2px">
+        <span class="ic p" style="width: 52px; height: 52px; border-radius: 16px"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/></svg></span>
+        <h2 class="h2" style="font-size: 22px; line-height: 28px; text-wrap: balance">Approve signing with the liability change?</h2>
+        <span class="badge warn">Due Friday 20 Nov</span>
+      </div>
+      <div class="grp">
+        <div class="row"><span class="tx"><span class="m">Agreement</span></span><a class="link" href="C_Overview.dc.html" style="font-size: 15px">Northwind logistics MSA</a></div>
+        <div class="row"><span class="tx"><span class="m">Asked by</span></span><span class="t" style="font-size: 15px">Jun Li · yesterday</span></div>
+        <div class="row"><span class="tx"><span class="m">Open risks</span></span><span class="t" style="font-size: 15px">2 high · 1 medium</span></div>
+      </div>
+      <div class="stack" style="gap: 6px"><p class="eb">Conditions · 1 of 2 met</p>
+        <div class="grp">
+          <div class="row"><span class="cb on"><svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span><span class="tx"><span class="m" style="color: var(--ink)">Liability cap at 12 months’ fees</span></span></div>
+          <div class="row"><span class="cb"></span><span class="tx"><span class="m" style="color: var(--ink)">Schedule C attached and reviewed</span></span></div>
+        </div>
+      </div>
+      <label class="field"><span class="lbl">Reason</span><span class="inp focus" style="min-height: 60px; align-items: flex-start; padding-top: 12px">Fine to sign once Schedule C is in.</span><span class="help">Saved with your name and the time.</span></label>
+      <a class="btn g" href="C_Approvals.dc.html" style="min-height: 40px">Approve with conditions, or ask for changes</a>
+    </div>
+    <div class="dock duo"><a class="btn d" href="C_Approvals.dc.html"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>Reject</a><a class="btn p" href="C_Approvals.dc.html"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Approve</a></div>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

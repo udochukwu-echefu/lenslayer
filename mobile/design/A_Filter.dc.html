@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sort and filter</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.row{min-height:48px;padding:6px 0}</style>
+</helmet>
+<main class="scr">
+  <div class="ghost-page" aria-hidden="true"><p class="lt" style="padding-top: 100px">Agreements</p></div>
+  <a class="scrim" href="A_List.dc.html" aria-label="Close"></a>
+  <section class="sheet" role="dialog" aria-label="Sort and filter" style="gap: 12px">
+    <span class="grab" aria-hidden="true"></span>
+    <div class="spread"><h2 class="h2">Sort &amp; filter</h2><a class="link" href="A_List.dc.html">Reset</a></div>
+    <p class="eb">Sort by</p>
+    <div class="grp">
+      <div class="row"><span class="tx"><span class="t" style="font-size: 15px">Last updated</span></span><span class="radio on"></span></div>
+      <div class="row"><span class="tx"><span class="t" style="font-size: 15px">Date added</span></span><span class="radio"></span></div>
+      <div class="row"><span class="tx"><span class="t" style="font-size: 15px">Title A to Z</span></span><span class="radio"></span></div>
+      <div class="row"><span class="tx"><span class="t" style="font-size: 15px">Counterparty</span></span><span class="radio"></span></div>
+    </div>
+    <p class="eb">Review state</p>
+    <div class="row-h" style="flex-wrap: wrap; gap: 8px"><span class="chip on">Ready</span><span class="chip on">Reviewed</span><span class="chip">Reviewing</span><span class="chip">Failed</span></div>
+    <p class="eb">Type</p>
+    <div class="row-h" style="flex-wrap: wrap; gap: 8px"><span class="chip">Services</span><span class="chip on">Lease</span><span class="chip">NDA</span><span class="chip">Supplier</span><span class="chip">Employment</span></div>
+    <a class="btn p" href="A_List.dc.html" style="margin-top: 4px">Show 7 agreements</a>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

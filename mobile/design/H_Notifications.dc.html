@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Notifications</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.dot{width:8px;height:8px;border-radius:4px;background:var(--accent);flex:none}.row{align-items:flex-start}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="back" href="H_Overview.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>Overview</a><span class="sp"></span><a class="btn g sm" href="H_NotificationsEmpty.dc.html">Mark all read</a></header>
+  <h1 class="lt">Notifications</h1>
+  <section class="body" style="gap: 18px">
+    <div class="stack">
+      <p class="eb">New</p>
+      <div class="grp">
+        <a class="row" href="C_Overview.dc.html"><span class="ic o sm"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg></span><span class="tx"><span class="t">Review ready</span><span class="m">Northwind logistics MSA is ready for a decision.</span><span class="c">2h ago</span></span><span class="dot" aria-label="Unread" style="margin-top: 8px"></span></a>
+        <a class="row" href="R_Detail.dc.html"><span class="ic b sm"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span><span class="tx"><span class="t">Notice window in 9 days</span><span class="m">Harbor Lane office lease. You own this date.</span><span class="c">Today, 8:00</span></span><span class="dot" aria-label="Unread" style="margin-top: 8px"></span></a>
+        <a class="row" href="C_Discussion.dc.html"><span class="ic p sm"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M16 12v1.5a2.5 2.5 0 0 0 5 0V12a9 9 0 1 0-4 7.5"/></svg></span><span class="tx"><span class="t">Jun mentioned you</span><span class="m">“Ada, can you confirm the cap before Friday?”</span><span class="c">Yesterday</span></span><span class="dot" aria-label="Unread" style="margin-top: 8px"></span></a>
+      </div>
+    </div>
+    <div class="stack">
+      <p class="eb">Earlier</p>
+      <div class="grp">
+        <a class="row" href="T_Detail.dc.html"><span class="ic r sm"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 20h20zM12 10v4M12 17h.01"/></svg></span><span class="tx"><span class="t">Action overdue</span><span class="m">Send notice of non-renewal was due 10 Nov.</span><span class="c">10 Nov</span></span></a>
+        <a class="row" href="A_Failed.dc.html"><span class="ic r sm"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/></svg></span><span class="tx"><span class="t">Review failed</span><span class="m">Copperleaf NDA couldn’t be read.</span><span class="c">5 Nov</span></span></a>
+      </div>
+    </div>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

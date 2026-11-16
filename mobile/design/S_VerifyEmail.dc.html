@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Verify your email</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<main class="scr" style="padding: 0 24px 40px">
+  <section style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px">
+    <p class="eb">One more step</p>
+    <span class="ic p" style="width: 64px; height: 64px; border-radius: 20px"><svg class="i l" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
+    <h1 class="lt" style="padding: 0">Verify your email</h1>
+    <p class="p" style="font-size: 16px; line-height: 24px">We sent a link to <b style="color: var(--ink)">ada@harborfinch.example</b>. Open it on any device, then come back here. Your workspace stays locked until you do, so nobody can use your address without you.</p>
+  </section>
+  <div class="stack" style="gap: 10px">
+    <a class="btn p" href="O_CreateWorkspace.dc.html">I’ve verified my email</a>
+    <button class="btn s">Resend verification email</button>
+    <a class="btn g" href="S_SignIn.dc.html" style="min-height: 44px">Use a different account</a>
+  </div>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

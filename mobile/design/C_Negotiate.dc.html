@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Contract: negotiate</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.row{align-items:flex-start;padding:14px 0}.pos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:6px}.pos div{background:var(--raised);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:2px}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="back" href="A_List.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></a><span class="ttl">Northwind logistics MSA</span><span class="sp"></span><a class="ib" href="T_New.dc.html" aria-label="Add a negotiation point"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></a></header>
+  <section class="body" style="gap: 14px; padding-top: 6px">
+    <nav class="chips" aria-label="Contract sections"><a class="chip" href="C_Ask.dc.html">Ask</a><a class="chip on" href="C_Negotiate.dc.html" aria-current="page">Negotiate</a><a class="chip" href="C_Discussion.dc.html">Discussion</a><a class="chip" href="C_Approvals.dc.html">Decisions</a></nav>
+    <a class="grp" href="C_Versions.dc.html" style="display: block"><span class="row" style="align-items: center; padding: 10px 0"><span class="ic y sm"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3v12M18 9v12"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="6" r="3"/></svg></span><span class="tx"><span class="t" style="font-size: 15px">Version 2 received</span><span class="m">14 lines changed since v1</span></span><svg class="i s chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span></a>
+    <div class="spread"><p class="eb">Checklist · 7 points</p><span class="c">4 accepted · 1 rejected · 2 open</span></div>
+    <div class="grp">
+      <div class="row"><span class="tx"><span class="spread"><span class="t" style="font-size: 15px">Mutual liability cap</span><span class="badge warn">Open</span></span><div class="pos"><div><span class="c">We want</span><span class="m" style="color: var(--ink)">12 months’ fees</span></div><div><span class="c">They offer</span><span class="m" style="color: var(--ink)">24 months’ fees</span></div></div><div class="row-h" style="gap: 8px; margin-top: 8px"><button class="btn s sm" style="min-height: 34px">Accept</button><button class="btn s sm" style="min-height: 34px">Reject</button></div></span></div>
+      <div class="row"><span class="tx"><span class="spread"><span class="t" style="font-size: 15px">UK-only data hosting</span><span class="badge ok">Accepted</span></span><span class="m">Agreed on call, 12 Nov · Ada O.</span></span></div>
+      <div class="row"><span class="tx"><span class="spread"><span class="t" style="font-size: 15px">60-day notice period</span><span class="badge bad">Rejected</span></span><span class="m">Supplier holds at 90 days</span></span></div>
+    </div>
+    <a class="btn s" href="C_DecisionSheet.dc.html">Log a counterparty response</a>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

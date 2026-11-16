@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sign in: wrong password</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="ib" href="S_Welcome.dc.html" aria-label="Back"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></a></header>
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 4px 24px 0">
+    <span class="mark" aria-hidden="true"><i></i><i></i><b></b></span>
+    <h1 class="h2" style="font-size: 26px; line-height: 32px">Welcome back</h1>
+  </div>
+  <form class="body" style="gap: 14px; padding: 24px 24px 28px">
+    <label class="field"><span class="lbl">Work email</span><span class="inp">ada@harborfinch.example</span></label>
+    <label class="field"><span class="spread"><span class="lbl">Password</span><a class="link" href="S_Forgot.dc.html" style="font-size: 14px">Forgot password?</a></span><span class="inp err">••••••••<span style="flex: 1"></span><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="errt" role="alert"><svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 20h20zM12 10v4M12 17h.01"/></svg>That email and password don’t match.</span></label>
+    <a class="btn p" href="H_Overview.dc.html" style="margin-top: 4px">Sign in</a>
+    <div class="tint n"><svg class="i s" viewBox="0 0 24 24" style="margin-top: 2px" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span class="m" style="color: var(--ink)">3 attempts left, then sign-in pauses for 15 minutes. <a class="link" href="S_Forgot.dc.html">Reset your password</a> instead.</span></div>
+    <div style="flex: 1"></div>
+    <p class="m" style="text-align: center">New to LensLayer? <a class="link" href="S_CreateAccount.dc.html">Create an account</a></p>
+  </form>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

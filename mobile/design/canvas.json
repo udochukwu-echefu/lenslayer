@@ -1,0 +1,1252 @@
+{
+ "v": 3,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-11-15T14:30:00Z"
+ },
+ "title": "LensLayer Mobile",
+ "launch": {
+  "view": "canvas",
+  "page": "splash"
+ },
+ "pages": [
+  {
+   "id": "foundations",
+   "name": "Foundations"
+  },
+  {
+   "id": "splash",
+   "name": "Splash & sign in"
+  },
+  {
+   "id": "onboarding",
+   "name": "Onboarding"
+  },
+  {
+   "id": "home",
+   "name": "Home"
+  },
+  {
+   "id": "agreements",
+   "name": "Agreements"
+  },
+  {
+   "id": "contract",
+   "name": "Contract review"
+  },
+  {
+   "id": "ask",
+   "name": "Ask"
+  },
+  {
+   "id": "renewals",
+   "name": "Renewals & reminders"
+  },
+  {
+   "id": "tasks",
+   "name": "Tasks"
+  },
+  {
+   "id": "settings",
+   "name": "Settings"
+  },
+  {
+   "id": "states",
+   "name": "System states"
+  }
+ ],
+ "boards": {
+  "F_System.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1200,
+   "h": 1760,
+   "title": "Design system",
+   "page": "foundations"
+  },
+  "Main.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Splash",
+   "page": "splash",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "S_SplashDark.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Splash · dark",
+   "page": "splash",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "S_Welcome.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Welcome",
+   "page": "splash",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "S_SignIn.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Sign in",
+   "page": "splash",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "S_SignInError.dc.html": {
+   "x": 1880,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Sign in · wrong password",
+   "page": "splash",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "S_CreateAccount.dc.html": {
+   "x": 2350,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Create account",
+   "page": "splash",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "S_SSO.dc.html": {
+   "x": 2820,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Single sign-on",
+   "page": "splash",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "S_Forgot.dc.html": {
+   "x": 0,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Forgot password",
+   "page": "splash",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "S_CheckEmail.dc.html": {
+   "x": 470,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Check your email",
+   "page": "splash",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "S_NewPassword.dc.html": {
+   "x": 940,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Set a new password",
+   "page": "splash",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "S_PasswordDone.dc.html": {
+   "x": 1410,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Password changed",
+   "page": "splash",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "S_VerifyEmail.dc.html": {
+   "x": 1880,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Verify your email",
+   "page": "splash",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "S_FaceID.dc.html": {
+   "x": 2350,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Unlock with Face ID",
+   "page": "splash",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "S_SessionExpired.dc.html": {
+   "x": 2820,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Session ended",
+   "page": "splash",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "O_CreateWorkspace.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Name your workspace",
+   "page": "onboarding",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "O_InviteTeam.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Invite your team",
+   "page": "onboarding",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "O_Notifications.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Turn on reminders",
+   "page": "onboarding",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "O_FirstRun.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "First run · empty Overview",
+   "page": "onboarding",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "O_Invite.dc.html": {
+   "x": 0,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Accept an invitation",
+   "page": "onboarding",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "O_InviteInvalid.dc.html": {
+   "x": 470,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Invitation can’t be used",
+   "page": "onboarding",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "H_Overview.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Overview",
+   "page": "home",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "H_OverviewDark.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Overview · dark",
+   "page": "home",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "H_Switcher.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Switch workspace (sheet)",
+   "page": "home",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "H_Search.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Search",
+   "page": "home",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "H_Inbox.dc.html": {
+   "x": 1880,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Inbox",
+   "page": "home",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "H_Notifications.dc.html": {
+   "x": 0,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Notifications",
+   "page": "home",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "H_NotificationsEmpty.dc.html": {
+   "x": 470,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Notifications · all caught up",
+   "page": "home",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "H_Reports.dc.html": {
+   "x": 940,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Reports",
+   "page": "home",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "A_List.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Agreements",
+   "page": "agreements",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "A_Empty.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Agreements · no results",
+   "page": "agreements",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "A_Filter.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Sort & filter (sheet)",
+   "page": "agreements",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "A_UploadSource.dc.html": {
+   "x": 0,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Upload · choose source",
+   "page": "agreements",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "A_UploadDetails.dc.html": {
+   "x": 470,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Upload · deal & context",
+   "page": "agreements",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "A_UploadData.dc.html": {
+   "x": 940,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Upload · data handling",
+   "page": "agreements",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "A_Processing.dc.html": {
+   "x": 1410,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Review in progress",
+   "page": "agreements",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "A_Failed.dc.html": {
+   "x": 1880,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Review failed",
+   "page": "agreements",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "C_Overview.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Overview",
+   "page": "contract",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "C_Passport.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Deal passport",
+   "page": "contract",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "C_Risks.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Risks",
+   "page": "contract",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "C_Finding.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Finding detail",
+   "page": "contract",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "C_Obligations.dc.html": {
+   "x": 1880,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Obligations & dates",
+   "page": "contract",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "C_Ask.dc.html": {
+   "x": 2350,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Ask this contract",
+   "page": "contract",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "C_Negotiate.dc.html": {
+   "x": 0,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Negotiate",
+   "page": "contract",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "C_Versions.dc.html": {
+   "x": 470,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Version comparison",
+   "page": "contract",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "C_Discussion.dc.html": {
+   "x": 940,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Discussion",
+   "page": "contract",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "C_Approvals.dc.html": {
+   "x": 1410,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Decisions & approvals",
+   "page": "contract",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "C_ApproveSheet.dc.html": {
+   "x": 1880,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Decide an approval (sheet)",
+   "page": "contract",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "C_DecisionSheet.dc.html": {
+   "x": 2350,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Record a decision (sheet)",
+   "page": "contract",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "C_Actions.dc.html": {
+   "x": 0,
+   "y": 2528,
+   "w": 390,
+   "h": 844,
+   "title": "Actions",
+   "page": "contract",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "C_Lifecycle.dc.html": {
+   "x": 470,
+   "y": 2528,
+   "w": 390,
+   "h": 844,
+   "title": "Lifecycle",
+   "page": "contract",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "C_Activity.dc.html": {
+   "x": 940,
+   "y": 2528,
+   "w": 390,
+   "h": 844,
+   "title": "Activity & deletion",
+   "page": "contract",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "C_ShareSheet.dc.html": {
+   "x": 1410,
+   "y": 2528,
+   "w": 390,
+   "h": 844,
+   "title": "Share & export (sheet)",
+   "page": "contract",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "C_ShareLink.dc.html": {
+   "x": 1880,
+   "y": 2528,
+   "w": 390,
+   "h": 844,
+   "title": "Secure review link",
+   "page": "contract",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "Q_Home.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Ask",
+   "page": "ask",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "Q_Streaming.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Answering (provisional)",
+   "page": "ask",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "Q_Answer.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Answer with sources",
+   "page": "ask",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "Q_NoEvidence.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "No supporting evidence",
+   "page": "ask",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "R_Agenda.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Renewals · agenda",
+   "page": "renewals",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "R_Month.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Renewals · month",
+   "page": "renewals",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "R_Detail.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Date detail",
+   "page": "renewals",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "R_Upcoming.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Scheduled reminders",
+   "page": "renewals",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "R_AddDate.dc.html": {
+   "x": 0,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Add a date",
+   "page": "renewals",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "R_ReminderSheet.dc.html": {
+   "x": 470,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Reminder & repeat (sheet)",
+   "page": "renewals",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "R_Export.dc.html": {
+   "x": 940,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Add to calendar (sheet)",
+   "page": "renewals",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "T_List.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Tasks",
+   "page": "tasks",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "T_Detail.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Task detail",
+   "page": "tasks",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "T_New.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "New action",
+   "page": "tasks",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "T_Status.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Change status (sheet)",
+   "page": "tasks",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "X_Home.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Settings",
+   "page": "settings",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "X_Profile.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Profile & identity",
+   "page": "settings",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "X_Appearance.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Appearance",
+   "page": "settings",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "X_About.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "About & legal",
+   "page": "settings",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "X_SignOut.dc.html": {
+   "x": 1880,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Sign out (confirm)",
+   "page": "settings",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "X_DeleteAccount.dc.html": {
+   "x": 2350,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Delete account",
+   "page": "settings",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "X_General.dc.html": {
+   "x": 0,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Workspace",
+   "page": "settings",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "X_Team.dc.html": {
+   "x": 470,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Team",
+   "page": "settings",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "X_Invite.dc.html": {
+   "x": 940,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Invite a teammate",
+   "page": "settings",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "X_InviteLink.dc.html": {
+   "x": 1410,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Invitation ready",
+   "page": "settings",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "X_Member.dc.html": {
+   "x": 1880,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Member & role",
+   "page": "settings",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "X_Data.dc.html": {
+   "x": 2350,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Data & retention",
+   "page": "settings",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "X_Notifications.dc.html": {
+   "x": 0,
+   "y": 2528,
+   "w": 390,
+   "h": 844,
+   "title": "Notifications & reminders",
+   "page": "settings",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "X_Security.dc.html": {
+   "x": 470,
+   "y": 2528,
+   "w": 390,
+   "h": 844,
+   "title": "Security & access",
+   "page": "settings",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "X_ApiKey.dc.html": {
+   "x": 940,
+   "y": 2528,
+   "w": 390,
+   "h": 844,
+   "title": "New API key",
+   "page": "settings",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "X_ApiKeyCreated.dc.html": {
+   "x": 1410,
+   "y": 2528,
+   "w": 390,
+   "h": 844,
+   "title": "API key created",
+   "page": "settings",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "X_Integrations.dc.html": {
+   "x": 1880,
+   "y": 2528,
+   "w": 390,
+   "h": 844,
+   "title": "Integrations",
+   "page": "settings",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "X_Webhook.dc.html": {
+   "x": 2350,
+   "y": 2528,
+   "w": 390,
+   "h": 844,
+   "title": "Add a webhook",
+   "page": "settings",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "E_Offline.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Offline",
+   "page": "states",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "E_Error.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Couldn’t load",
+   "page": "states",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "E_Loading.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Loading (skeleton)",
+   "page": "states",
+   "is_interactive": true,
+   "radius": 32
+  },
+  "E_ReadOnly.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Viewer · read only",
+   "page": "states",
+   "is_interactive": true,
+   "radius": 32
+  }
+ },
+ "order": [
+  "F_System.dc.html",
+  "Main.dc.html",
+  "S_SplashDark.dc.html",
+  "S_Welcome.dc.html",
+  "S_SignIn.dc.html",
+  "S_SignInError.dc.html",
+  "S_CreateAccount.dc.html",
+  "S_SSO.dc.html",
+  "S_Forgot.dc.html",
+  "S_CheckEmail.dc.html",
+  "S_NewPassword.dc.html",
+  "S_PasswordDone.dc.html",
+  "S_VerifyEmail.dc.html",
+  "S_FaceID.dc.html",
+  "S_SessionExpired.dc.html",
+  "O_CreateWorkspace.dc.html",
+  "O_InviteTeam.dc.html",
+  "O_Notifications.dc.html",
+  "O_FirstRun.dc.html",
+  "O_Invite.dc.html",
+  "O_InviteInvalid.dc.html",
+  "H_Overview.dc.html",
+  "H_OverviewDark.dc.html",
+  "H_Switcher.dc.html",
+  "H_Search.dc.html",
+  "H_Inbox.dc.html",
+  "H_Notifications.dc.html",
+  "H_NotificationsEmpty.dc.html",
+  "H_Reports.dc.html",
+  "A_List.dc.html",
+  "A_Empty.dc.html",
+  "A_Filter.dc.html",
+  "A_UploadSource.dc.html",
+  "A_UploadDetails.dc.html",
+  "A_UploadData.dc.html",
+  "A_Processing.dc.html",
+  "A_Failed.dc.html",
+  "C_Overview.dc.html",
+  "C_Passport.dc.html",
+  "C_Risks.dc.html",
+  "C_Finding.dc.html",
+  "C_Obligations.dc.html",
+  "C_Ask.dc.html",
+  "C_Negotiate.dc.html",
+  "C_Versions.dc.html",
+  "C_Discussion.dc.html",
+  "C_Approvals.dc.html",
+  "C_ApproveSheet.dc.html",
+  "C_DecisionSheet.dc.html",
+  "C_Actions.dc.html",
+  "C_Lifecycle.dc.html",
+  "C_Activity.dc.html",
+  "C_ShareSheet.dc.html",
+  "C_ShareLink.dc.html",
+  "Q_Home.dc.html",
+  "Q_Streaming.dc.html",
+  "Q_Answer.dc.html",
+  "Q_NoEvidence.dc.html",
+  "R_Agenda.dc.html",
+  "R_Month.dc.html",
+  "R_Detail.dc.html",
+  "R_Upcoming.dc.html",
+  "R_AddDate.dc.html",
+  "R_ReminderSheet.dc.html",
+  "R_Export.dc.html",
+  "T_List.dc.html",
+  "T_Detail.dc.html",
+  "T_New.dc.html",
+  "T_Status.dc.html",
+  "X_Home.dc.html",
+  "X_Profile.dc.html",
+  "X_Appearance.dc.html",
+  "X_About.dc.html",
+  "X_SignOut.dc.html",
+  "X_DeleteAccount.dc.html",
+  "X_General.dc.html",
+  "X_Team.dc.html",
+  "X_Invite.dc.html",
+  "X_InviteLink.dc.html",
+  "X_Member.dc.html",
+  "X_Data.dc.html",
+  "X_Notifications.dc.html",
+  "X_Security.dc.html",
+  "X_ApiKey.dc.html",
+  "X_ApiKeyCreated.dc.html",
+  "X_Integrations.dc.html",
+  "X_Webhook.dc.html",
+  "E_Offline.dc.html",
+  "E_Error.dc.html",
+  "E_Loading.dc.html",
+  "E_ReadOnly.dc.html"
+ ],
+ "notes": {
+  "fAbout": {
+   "x": 1280,
+   "y": 0,
+   "w": 460,
+   "fill": "pink",
+   "size": "m",
+   "page": "foundations",
+   "text": "LensLayer mobile · design system\n\nScene: a procurement or legal lead checking a renewal deadline on their phone between meetings, in daylight, needing to confirm a date and assign an owner in under a minute. Light by default; dark follows the phone.\n\nColour: restrained. Warm paper neutrals, charcoal for primary actions, deep rose for links and the active tab. The four pastels mark destinations only (butter contracts, pink decisions, olive actions, blue dates). Risk uses red/amber/green badges with words, never colour alone.\n\nType: Figtree, the same family as the web workspace. Tabular figures for dates and money.\n\nAnchors: Apple Settings (grouped lists), Things 3 (agenda and completion), Linear mobile (calm density).\n\nAll companies, people and contracts on this canvas are fictional."
+  },
+  "sRow1": {
+   "x": 0,
+   "y": -300,
+   "text": "Launch & sign in",
+   "kind": "title1",
+   "maxW": 3210,
+   "page": "splash"
+  },
+  "sRow2": {
+   "x": 0,
+   "y": 964,
+   "text": "Recovery, verification & sessions",
+   "kind": "title1",
+   "maxW": 3210,
+   "page": "splash"
+  },
+  "sNote": {
+   "x": 3300,
+   "y": 0,
+   "w": 420,
+   "fill": "blue",
+   "size": "m",
+   "page": "splash",
+   "text": "Engineering note\n\nLensLayer signs in through Auth0. These screens are the target look for Auth0’s hosted Universal Login (branded to match), shown inside a secure in-app browser sheet, so the app never handles the password itself. Face ID unlock and Session ended are native app screens."
+  },
+  "oRow1": {
+   "x": 0,
+   "y": -300,
+   "text": "New workspace",
+   "kind": "title1",
+   "maxW": 1800,
+   "page": "onboarding"
+  },
+  "oRow2": {
+   "x": 0,
+   "y": 964,
+   "text": "Joining by invitation",
+   "kind": "title1",
+   "maxW": 1800,
+   "page": "onboarding"
+  },
+  "oNote": {
+   "x": 1900,
+   "y": 0,
+   "w": 400,
+   "fill": "blue",
+   "size": "m",
+   "page": "onboarding",
+   "text": "Engineering note\n\nPush reminders need new backend work (device tokens and a push sender). Today reminders arrive as email and in-app notifications. The permission screen is only shown once push exists."
+  },
+  "hRow1": {
+   "x": 0,
+   "y": -300,
+   "text": "Overview & navigation",
+   "kind": "title1",
+   "maxW": 2270,
+   "page": "home"
+  },
+  "hRow2": {
+   "x": 0,
+   "y": 964,
+   "text": "Notifications & reports",
+   "kind": "title1",
+   "maxW": 2270,
+   "page": "home"
+  },
+  "aRow1": {
+   "x": 0,
+   "y": -300,
+   "text": "Register",
+   "kind": "title1",
+   "maxW": 2270,
+   "page": "agreements"
+  },
+  "aRow2": {
+   "x": 0,
+   "y": 964,
+   "text": "Upload & review progress",
+   "kind": "title1",
+   "maxW": 2270,
+   "page": "agreements"
+  },
+  "cRow1": {
+   "x": 0,
+   "y": -300,
+   "text": "Review",
+   "kind": "title1",
+   "maxW": 2740,
+   "page": "contract"
+  },
+  "cRow2": {
+   "x": 0,
+   "y": 964,
+   "text": "Negotiate & decide",
+   "kind": "title1",
+   "maxW": 2740,
+   "page": "contract"
+  },
+  "cRow3": {
+   "x": 0,
+   "y": 2228,
+   "text": "Follow-through & sharing",
+   "kind": "title1",
+   "maxW": 2740,
+   "page": "contract"
+  },
+  "qRow1": {
+   "x": 0,
+   "y": -300,
+   "text": "Ask across agreements",
+   "kind": "title1",
+   "maxW": 1800,
+   "page": "ask"
+  },
+  "rRow1": {
+   "x": 0,
+   "y": -300,
+   "text": "Dates & reminders",
+   "kind": "title1",
+   "maxW": 1800,
+   "page": "renewals"
+  },
+  "rRow2": {
+   "x": 0,
+   "y": 964,
+   "text": "Add, repeat & export",
+   "kind": "title1",
+   "maxW": 1800,
+   "page": "renewals"
+  },
+  "tRow1": {
+   "x": 0,
+   "y": -300,
+   "text": "Actions",
+   "kind": "title1",
+   "maxW": 1800,
+   "page": "tasks"
+  },
+  "xRow1": {
+   "x": 0,
+   "y": -300,
+   "text": "You & this device",
+   "kind": "title1",
+   "maxW": 2740,
+   "page": "settings"
+  },
+  "xRow2": {
+   "x": 0,
+   "y": 964,
+   "text": "Workspace & team",
+   "kind": "title1",
+   "maxW": 2740,
+   "page": "settings"
+  },
+  "xRow3": {
+   "x": 0,
+   "y": 2228,
+   "text": "Notifications, security & integrations",
+   "kind": "title1",
+   "maxW": 2740,
+   "page": "settings"
+  },
+  "xNote": {
+   "x": 3210,
+   "y": 2528,
+   "w": 420,
+   "fill": "blue",
+   "size": "m",
+   "page": "settings",
+   "text": "Engineering note\n\nToday the backend stores two notification switches per workspace (review ready, review failed). The personal choices on Notifications & reminders (which events, digest, reminder time, quiet hours, email) need a small per-user preferences API before they can work.\n\nFace ID unlock is device-only and needs no backend."
+  },
+  "eRow1": {
+   "x": 0,
+   "y": -300,
+   "text": "Offline, errors, loading & permissions",
+   "kind": "title1",
+   "maxW": 1800,
+   "page": "states"
+  }
+ },
+ "designSystems": []
+}

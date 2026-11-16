@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Team</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.row{min-height:58px}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="back" href="X_Home.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>Settings</a><span class="sp"></span><a class="ib" href="X_Invite.dc.html" aria-label="Invite a teammate"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></a></header>
+  <h1 class="lt">Team</h1>
+  <section class="body" style="gap: 14px">
+    <label style="display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px; border-radius: 12px; background: var(--well)"><svg class="i s" viewBox="0 0 24 24" style="color: var(--faint)" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="m" style="color: var(--faint); font-size: 16px">Search 6 members</span></label>
+    <div class="grp">
+      <div class="row"><span class="av" style="background: var(--pink)">AO</span><span class="tx"><span class="t" style="font-size: 15px">Ada Okafor · You</span><span class="m">ada@harborfinch.example</span></span><span class="val" style="font-size: 14px">Owner</span></div>
+      <a class="row" href="X_Member.dc.html"><span class="av" style="background: var(--olive)">JL</span><span class="tx"><span class="t" style="font-size: 15px">Jun Li</span><span class="m">jun@harborfinch.example</span></span><span class="val" style="font-size: 14px">Admin</span><svg class="i xs chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
+      <a class="row" href="X_Member.dc.html"><span class="av" style="background: var(--blue)">TA</span><span class="tx"><span class="t" style="font-size: 15px">Tomi Adeyemi</span><span class="m">tomi@harborfinch.example</span></span><span class="val" style="font-size: 14px">Reviewer</span><svg class="i xs chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
+      <a class="row" href="X_Member.dc.html"><span class="av" style="background: var(--butter)">MR</span><span class="tx"><span class="t" style="font-size: 15px">Mara Ruiz</span><span class="m">mara@harborfinch.example</span></span><span class="val" style="font-size: 14px">Viewer</span><svg class="i xs chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
+    </div>
+    <div class="stack" style="gap: 6px"><p class="eb">Pending · 1</p>
+      <div class="grp"><div class="row"><span class="av" style="background: var(--raised); color: var(--faint)"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span><span class="tx"><span class="t" style="font-size: 15px">sam@harborfinch.example</span><span class="m">Reviewer · expires 21 Nov</span></span><button class="btn g sm" style="color: var(--bad)">Revoke</button></div></div>
+    </div>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

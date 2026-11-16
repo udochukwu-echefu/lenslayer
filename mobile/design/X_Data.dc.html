@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Data and retention</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="back" href="X_Home.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>Settings</a><span class="sp"></span><a class="btn g sm" href="X_Home.dc.html" style="font-weight: 650">Save</a></header>
+  <h1 class="lt">Data &amp; retention</h1>
+  <p class="sub">Defaults for new uploads. People can choose stricter handling for each contract.</p>
+  <section class="body" style="gap: 16px">
+    <div class="field"><span class="lbl">Delete source files after</span><div class="seg"><span>7 days</span><span>30 days</span><span class="on">90 days</span><span>1 year</span></div></div>
+    <div class="grp">
+      <div class="row"><span class="tx"><span class="t" style="font-size: 15px">Keep original files</span><span class="m">For downloads and reprocessing</span></span><span class="tg on" role="switch" aria-checked="true" aria-label="Keep original files"></span></div>
+      <div class="row"><span class="tx"><span class="t" style="font-size: 15px">Keep extracted text</span><span class="m">Needed for Ask and contract questions</span></span><span class="tg on" role="switch" aria-checked="true" aria-label="Keep extracted text"></span></div>
+    </div>
+    <div class="tint n"><svg class="i s" viewBox="0 0 24 24" style="margin-top: 2px" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span class="m" style="color: var(--ink)">Changing defaults doesn’t extend anything already uploaded. Review reports stay until someone deletes them.</span></div>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

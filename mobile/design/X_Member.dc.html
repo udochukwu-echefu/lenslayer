@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Member and role</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.row{align-items:flex-start;padding:12px 0}.radio{margin-top:2px}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="back" href="X_Team.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>Team</a></header>
+  <section class="body" style="gap: 16px; padding-top: 0">
+    <div class="row-h" style="gap: 14px"><span class="av" style="width: 60px; height: 60px; font-size: 20px; background: var(--blue)">TA</span><div class="stack" style="gap: 2px"><h1 class="h2">Tomi Adeyemi</h1><span class="m">tomi@harborfinch.example · joined 4 Sep</span></div></div>
+    <p class="eb">Role</p>
+    <div class="grp">
+      <div class="row"><span class="radio"></span><span class="tx"><span class="t" style="font-size: 15px">Owner</span><span class="m">Full control, including ownership and billing</span></span></div>
+      <div class="row"><span class="radio"></span><span class="tx"><span class="t" style="font-size: 15px">Admin</span><span class="m">Manages people and settings</span></span></div>
+      <div class="row"><span class="radio on"></span><span class="tx"><span class="t" style="font-size: 15px">Reviewer</span><span class="m">Uploads, reviews and assigns actions</span></span></div>
+      <div class="row"><span class="radio"></span><span class="tx"><span class="t" style="font-size: 15px">Viewer</span><span class="m">Read only</span></span></div>
+    </div>
+    <p class="c">Role changes take effect immediately and are recorded in the audit log.</p>
+    <div class="grp"><div class="row" style="align-items: center"><span class="tx"><span class="t" style="font-size: 15px">Open actions</span><span class="m">3 assigned · 1 overdue</span></span><svg class="i s chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></div></div>
+    <div style="flex: 1"></div>
+    <button class="btn d">Remove from workspace…</button>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

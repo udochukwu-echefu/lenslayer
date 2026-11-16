@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Add to calendar</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<main class="scr">
+  <div class="ghost-page" aria-hidden="true"></div>
+  <a class="scrim" href="R_Agenda.dc.html" aria-label="Close"></a>
+  <section class="sheet" role="dialog" aria-label="Add to calendar">
+    <span class="grab" aria-hidden="true"></span>
+    <h2 class="h2">Add dates to your calendar</h2>
+    <div class="grp">
+      <div class="row"><span class="ic b"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg></span><span class="tx"><span class="t" style="font-size: 15px">Export a calendar file</span><span class="m">All active dates as .ics. Open it in Calendar, Outlook or Google.</span></span></div>
+      <div class="row"><span class="ic o"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span><span class="tx"><span class="t" style="font-size: 15px">Google Calendar</span><span class="m">Connected · Legal team calendar</span></span><span class="badge ok">On</span></div>
+    </div>
+    <p class="c">Connect another calendar from Settings in the web workspace; it needs your company’s consent screen.</p>
+    <a class="btn p" href="R_Agenda.dc.html">Export .ics file</a>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

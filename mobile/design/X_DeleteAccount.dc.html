@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Delete account</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}li{margin-bottom:8px}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="back" href="X_Profile.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>Profile</a></header>
+  <h1 class="lt">Delete your account</h1>
+  <section class="body" style="gap: 14px">
+    <ul class="p" style="margin: 0; padding-left: 20px; color: var(--ink)">
+      <li>Workspaces where you’re the only member are deleted, with their contracts, reviews and files.</li>
+      <li>In shared workspaces you’re removed, and your past activity shows as “Deleted user”.</li>
+      <li>Your API keys stop working immediately.</li>
+    </ul>
+    <div class="tint warn" role="alert"><svg class="i s" viewBox="0 0 24 24" style="color: var(--warn); margin-top: 2px" aria-hidden="true"><path d="M12 3 2 20h20zM12 10v4M12 17h.01"/></svg><div class="stack" style="gap: 4px"><span class="t" style="font-size: 15px">First, hand over Harbor &amp; Finch Legal</span><span class="m" style="color: var(--ink)">You’re its only owner. Make another member an owner, then come back.</span><a class="link" href="X_Member.dc.html" style="font-size: 14px">Choose a new owner</a></div></div>
+    <label class="field"><span class="lbl">Type DELETE to confirm</span><span class="inp ph" style="opacity: .5">DELETE</span></label>
+    <div style="flex: 1"></div>
+    <button class="btn d" disabled>Permanently delete account</button>
+    <p class="c" style="text-align: center">This can’t be undone.</p>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

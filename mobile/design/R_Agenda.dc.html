@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Renewals: agenda</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.ev{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}.ev:last-child{border-bottom:0}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><span class="sp"></span>
+    <a class="ib" href="R_Month.dc.html" aria-label="Month view"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg></a>
+    <a class="ib" href="R_Upcoming.dc.html" aria-label="Scheduled reminders"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M5 3 2 6M22 6l-3-3"/></svg></a>
+    <a class="ib" href="R_AddDate.dc.html" aria-label="Add a date"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></a>
+  </header>
+  <h1 class="lt">Renewals</h1>
+  <p class="sub">Nothing due today. Next date in 3 days.</p>
+  <section class="body" style="gap: 24px">
+    <div class="seg" role="tablist"><a class="on" href="R_Agenda.dc.html" role="tab" aria-selected="true">Dates</a><a href="T_List.dc.html" role="tab">Tasks</a></div>
+    <div class="wk" aria-label="This week">
+      <span class="on">Sun<b>15</b><i></i></span><span>Mon<b>16</b><i></i></span><span>Tue<b>17</b><i></i></span><span>Wed<b>18</b><i class="d"></i></span><span>Thu<b>19</b><i></i></span><span>Fri<b>20</b><i class="d"></i></span><span>Sat<b>21</b><i class="r"></i></span>
+    </div>
+    <div class="stack" style="gap: 2px">
+      <p class="eb" style="margin-bottom: 6px">Coming up</p>
+      <a class="ev" href="R_Detail.dc.html"><span class="date"><b>18</b><span>Wed</span></span><span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span class="t" style="font-size: 15px">Notice window opens</span><span class="m">Northwind logistics MSA</span></span></a>
+      <a class="ev" href="R_Detail.dc.html"><span class="date urgent"><b>24</b><span>Tue</span></span><span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span class="t" style="font-size: 15px">Give notice of non-renewal</span><span class="m">Harbor Lane office lease · 9 days left</span></span></a>
+      <a class="ev" href="R_Detail.dc.html"><span class="date"><b>28</b><span>Sat</span></span><span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span class="t" style="font-size: 15px">Quarterly service fee · £18,400</span><span class="m">Brightline staffing SOW</span></span></a>
+      <a class="ev" href="R_Detail.dc.html"><span class="date urgent"><b>9</b><span>Dec</span></span><span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span class="t" style="font-size: 15px">Lease renewal decision</span><span class="m"><span style="color: var(--bad); font-weight: 650">No owner</span> · Harbor Lane office lease</span></span></a>
+    </div>
+  </section>
+  <nav class="tabs" aria-label="Tabs">
+    <a class="tab" href="H_Overview.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>Overview</a>
+    <a class="tab" href="A_List.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4h7l4 4v11a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM4 8v11a2 2 0 0 0 2 2"/></svg>Agreements</a>
+    <a class="tab" href="Q_Home.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5M8 10h6M8 13h3"/></svg>Ask</a>
+    <a class="tab on" href="R_Agenda.dc.html"><svg class="i" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Renewals<span class="ct">2</span></a>
+    <a class="tab" href="X_Home.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Settings</a>
+  </nav>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

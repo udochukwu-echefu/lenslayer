@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sign in</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.idp{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--line2);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="ib" href="S_Welcome.dc.html" aria-label="Back"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></a></header>
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 4px 24px 0">
+    <span class="mark" aria-hidden="true"><i></i><i></i><b></b></span>
+    <h1 class="h2" style="font-size: 26px; line-height: 32px">Welcome back</h1>
+  </div>
+  <form class="body" style="gap: 14px; padding: 24px 24px 28px">
+    <label class="field"><span class="lbl">Work email</span><span class="inp">ada@harborfinch.example</span></label>
+    <label class="field"><span class="spread"><span class="lbl">Password</span><a class="link" href="S_Forgot.dc.html" style="font-size: 14px">Forgot password?</a></span><span class="inp focus">••••••••••••<span style="flex: 1"></span><button type="button" class="ib" aria-label="Show password" style="width: 36px; height: 36px; margin-right: -8px"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></span></label>
+    <a class="btn p" href="H_Overview.dc.html" style="margin-top: 4px">Sign in</a>
+    <div class="row-h" style="gap: 12px; margin: 6px 0"><span style="flex: 1; height: 1px; background: var(--line)"></span><span class="c">or continue with</span><span style="flex: 1; height: 1px; background: var(--line)"></span></div>
+    <div class="duo">
+      <a class="btn s" href="H_Overview.dc.html"><span class="idp" style="border-radius: 50%">G</span>Google</a>
+      <a class="btn s" href="H_Overview.dc.html"><span class="idp">M</span>Microsoft</a>
+    </div>
+    <a class="btn s" href="S_SSO.dc.html"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16M6 16V9l6-4 6 4v7"/></svg>Company single sign-on</a>
+    <div style="flex: 1"></div>
+    <p class="m" style="text-align: center">New to LensLayer? <a class="link" href="S_CreateAccount.dc.html">Create an account</a></p>
+  </form>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

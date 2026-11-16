@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Contract: discussion</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.msg{display:flex;gap:10px}.msg .bd{flex:1;display:flex;flex-direction:column;gap:3px}.at{color:var(--accent);font-weight:650}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="back" href="A_List.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></a><span class="ttl">Northwind logistics MSA</span></header>
+  <section class="body" style="gap: 18px; padding-top: 6px">
+    <nav class="chips" aria-label="Contract sections"><a class="chip" href="C_Negotiate.dc.html">Negotiate</a><a class="chip on" href="C_Discussion.dc.html" aria-current="page">Discussion 3</a><a class="chip" href="C_Approvals.dc.html">Decisions</a><a class="chip" href="C_Actions.dc.html">Actions</a></nav>
+    <div class="msg"><span class="av" style="background: var(--blue)">JL</span><div class="bd"><span class="row-h"><b style="font-size: 15px">Jun Li</b><span class="c">Yesterday, 16:20</span></span><p class="p" style="color: var(--ink)"><span class="at">@Ada</span> can you confirm the cap before Friday? Their v2 offers 24 months.</p></div></div>
+    <div class="msg"><span class="av" style="background: var(--pink)">AO</span><div class="bd"><span class="row-h"><b style="font-size: 15px">Ada Okafor</b><span class="c">Today, 9:05</span></span><p class="p" style="color: var(--ink)">We’ll hold at 12. I’ve logged it as a change decision on clause 14.2.</p><a class="row-h c" href="C_Finding.dc.html" style="gap: 6px; margin-top: 2px"><svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h4v4c0 3-1 5-4 6M14 7h4v4c0 3-1 5-4 6"/></svg><span class="link" style="font-size: 13px">Clause 14.2</span></a></div></div>
+    <div class="msg"><span class="av" style="background: var(--olive)">TA</span><div class="bd"><span class="row-h"><b style="font-size: 15px">Tomi Adeyemi</b><span class="c">Today, 9:30</span></span><p class="p" style="color: var(--ink)">Agreed. I’ll chase Schedule C as well.</p></div></div>
+  </section>
+  <form style="padding: 10px 12px 32px; background: var(--surface); border-top: 1px solid var(--line); display: flex; gap: 8px; align-items: center">
+    <button class="ib" aria-label="Mention someone" style="width: 40px; height: 40px"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M16 12v1.5a2.5 2.5 0 0 0 5 0V12a9 9 0 1 0-4 7.5"/></svg></button>
+    <label style="flex: 1"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden">Add a comment</span><span class="inp ph" style="border-radius: 22px; min-height: 44px; background: var(--canvas)">Add context or a handoff note…</span></label>
+    <button class="ib" aria-label="Post comment" style="background: var(--primary); color: var(--on-primary); border-radius: 22px"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+  </form>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

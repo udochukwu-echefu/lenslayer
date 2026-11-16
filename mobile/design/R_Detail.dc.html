@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Date detail</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="back" href="R_Agenda.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>Renewals</a><span class="sp"></span><a class="btn g sm" href="R_AddDate.dc.html">Edit</a></header>
+  <section class="body" style="gap: 16px; padding-top: 4px">
+    <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 14px 20px 18px; border-radius: 20px; background: var(--butter-s)">
+      <span class="eb" style="color: var(--warn)">Notice window</span>
+      <span style="font-size: 56px; line-height: 60px; font-weight: 750; letter-spacing: -2px">9</span>
+      <span class="t">days left</span>
+      <span class="m" style="color: var(--ink)">Tuesday 24 November 2026</span>
+    </div>
+    <div class="stack" style="gap: 6px"><a class="row-h c" href="C_Lifecycle.dc.html" style="gap: 6px"><svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8l4 4v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg><span class="link" style="font-size: 13px">Harbor Lane office lease</span></a><h1 class="h2" style="font-size: 24px; line-height: 30px">Give notice of non-renewal</h1></div>
+    <div class="grp">
+      <a class="prop" href="X_Member.dc.html"><span>Owner</span><span class="pill"><span class="av" style="width: 20px; height: 20px; font-size: 9px; background: var(--pink)">AO</span>Ada Okafor (you)</span></a>
+      <a class="prop" href="R_ReminderSheet.dc.html"><span>Remind</span><span class="pill">14 days before</span></a>
+      <a class="prop" href="R_ReminderSheet.dc.html"><span>Repeat</span><span class="pill">Never</span></a>
+      <div class="prop"><span>If missed</span><span class="pill warn">Admins are told</span></div>
+    </div>
+    <div class="quote"><span class="c"><svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h4v4c0 3-1 5-4 6M14 7h4v4c0 3-1 5-4 6"/></svg>Clause 5.1 · Page 3</span><span class="m">“…unless the Tenant gives not less than three months’ written notice…”</span></div>
+  </section>
+  <div class="dock"><a class="btn s" href="T_New.dc.html">Create action</a><a class="btn p" href="R_Agenda.dc.html"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Mark done</a></div>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

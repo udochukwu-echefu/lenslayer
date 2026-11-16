@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Viewer: read only</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.row{align-items:flex-start;padding:12px 0}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="back" href="A_List.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></a><span class="ttl">Northwind logistics MSA</span></header>
+  <section class="body" style="gap: 14px; padding-top: 6px">
+    <nav class="chips" aria-label="Contract sections"><a class="chip" href="C_Approvals.dc.html">Decisions</a><a class="chip on" href="E_ReadOnly.dc.html" aria-current="page">Actions 3</a><a class="chip" href="C_Lifecycle.dc.html">Lifecycle</a></nav>
+    <div class="tint info"><svg class="i s" viewBox="0 0 24 24" style="color: var(--info); margin-top: 2px" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><div class="stack" style="gap: 2px"><span class="t" style="font-size: 15px">You can view, not edit</span><span class="m" style="color: var(--ink)">You’re a Viewer in Kite Finance Ops. Ask an owner or admin if you need to assign or complete actions.</span></div></div>
+    <div class="grp">
+      <div class="row"><span class="cb" style="opacity: .4"></span><span class="tx"><span class="t" style="font-size: 15px">Counter the indemnity with a 12-month cap</span><span class="c">Due 28 Nov · Ada O.</span></span></div>
+      <div class="row"><span class="cb" style="opacity: .4"></span><span class="tx"><span class="t" style="font-size: 15px">Chase Schedule C from supplier</span><span class="c">Due 21 Nov · Tomi A.</span></span></div>
+    </div>
+    <a class="btn s" href="X_Team.dc.html">See who can change roles</a>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

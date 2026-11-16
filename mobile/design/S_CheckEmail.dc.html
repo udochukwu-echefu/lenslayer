@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Check your email</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="back" href="S_Forgot.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>Back</a></header>
+  <section class="body" style="padding-top: 24px; gap: 18px">
+    <span class="ic b" style="width: 64px; height: 64px; border-radius: 20px"><svg class="i l" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
+    <h1 class="lt" style="padding: 0">Check your email</h1>
+    <p class="p" style="font-size: 16px; line-height: 24px">If an account exists for <b style="color: var(--ink)">a•••@harborfinch.example</b>, a reset link is on its way. It works once and expires in 30 minutes.</p>
+    <div class="tint n">
+      <svg class="i s" viewBox="0 0 24 24" style="margin-top: 2px" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+      <span class="m" style="color: var(--ink)">Opening the link on this phone brings you straight back to LensLayer. Nothing yet? Check spam or junk.</span>
+    </div>
+    <div style="flex: 1"></div>
+    <div class="stack" style="gap: 10px">
+      <a class="btn p" href="S_NewPassword.dc.html">Open mail app</a>
+      <button class="btn s" disabled>Resend link in 0:42</button>
+      <a class="btn g" href="S_Forgot.dc.html" style="min-height: 44px">Use a different email</a>
+    </div>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

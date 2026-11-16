@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Invitation can’t be used</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<main class="scr" style="padding: 0 24px 40px">
+  <section style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px">
+    <span class="ic r" style="width: 64px; height: 64px; border-radius: 20px"><svg class="i l" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
+    <h1 class="lt" style="padding: 0">This invitation is for someone else</h1>
+    <p class="p" style="font-size: 16px; line-height: 24px">It was sent to <b style="color: var(--ink)">s•••@harborfinch.example</b>, but you’re signed in as tomi@harborfinch.example. Invitations only work for the address they were sent to.</p>
+    <div class="tint n"><svg class="i s" viewBox="0 0 24 24" style="margin-top: 2px" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span class="m" style="color: var(--ink)">Expired invitations show here too. Ask the person who invited you to send a new one.</span></div>
+  </section>
+  <div class="stack" style="gap: 10px">
+    <a class="btn p" href="S_SignIn.dc.html">Switch account</a>
+    <a class="btn s" href="H_Overview.dc.html">Go to my workspaces</a>
+  </div>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

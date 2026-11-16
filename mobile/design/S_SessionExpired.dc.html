@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Session ended</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<main class="scr" style="padding: 0 24px 40px">
+  <section style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px">
+    <span class="ic n" style="width: 64px; height: 64px; border-radius: 20px"><svg class="i l" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+    <h1 class="lt" style="padding: 0">Your session ended</h1>
+    <p class="p" style="font-size: 16px; line-height: 24px">For security, LensLayer signs you out after a long break. Sign in again and you’ll land back on <b style="color: var(--ink)">Northwind logistics MSA</b>.</p>
+    <p class="c">Nothing you saved was lost.</p>
+  </section>
+  <div class="stack" style="gap: 10px">
+    <a class="btn p" href="S_SignIn.dc.html">Sign in again</a>
+    <a class="btn g" href="S_Welcome.dc.html" style="min-height: 44px">Sign out completely</a>
+  </div>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

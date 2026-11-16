@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Offline</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><span class="sp"></span><button class="ib" aria-label="Upload a contract (needs a connection)" disabled style="opacity: .35"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></header>
+  <h1 class="lt">Agreements</h1>
+  <section class="body" style="gap: 14px">
+    <div class="tint n" role="status" style="background: var(--ink); color: var(--canvas); align-items: center">
+      <svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 8.5a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0M8.5 15.5a5 5 0 0 1 7 0M12 19h.01M3 3l18 18"/></svg>
+      <span style="flex: 1; font-size: 14px; line-height: 19px">You’re offline. Showing what was saved at 9:41. Changes need a connection.</span>
+    </div>
+    <div class="grp" style="opacity: .85">
+      <a class="row" href="C_Overview.dc.html"><span class="ic y"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8l4 4v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg></span><span class="tx"><span class="t">Northwind logistics MSA</span><span class="m">Ready for decision</span></span></a>
+      <a class="row" href="C_Overview.dc.html"><span class="ic y"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8l4 4v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg></span><span class="tx"><span class="t">Kestrel Analytics DPA</span><span class="m">Ready for decision</span></span></a>
+      <a class="row" href="C_Overview.dc.html"><span class="ic y"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8l4 4v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg></span><span class="tx"><span class="t">Brightline staffing SOW</span><span class="m">Reviewed</span></span></a>
+    </div>
+    <button class="btn s">Try again</button>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

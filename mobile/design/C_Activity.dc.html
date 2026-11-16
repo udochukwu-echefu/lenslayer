@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Contract: activity and deletion</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.tl{display:flex;gap:12px;padding:8px 0}.tl i{width:10px;height:10px;border-radius:50%;background:var(--line2);margin-top:6px;flex:none}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="back" href="A_List.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></a><span class="ttl">Northwind logistics MSA</span></header>
+  <section class="body" style="gap: 14px; padding-top: 6px">
+    <nav class="chips" aria-label="Contract sections"><a class="chip" href="C_Actions.dc.html">Actions 3</a><a class="chip" href="C_Lifecycle.dc.html">Lifecycle 4</a><a class="chip on" href="C_Activity.dc.html" aria-current="page">Activity</a></nav>
+    <div class="card" style="gap: 0; padding: 8px 20px">
+      <div class="tl"><i style="background: var(--pink)"></i><div class="stack" style="gap: 1px"><span class="t" style="font-size: 15px">Decision recorded · Change</span><span class="c">Ada Okafor · today 9:04</span></div></div>
+      <div class="tl"><i style="background: var(--butter)"></i><div class="stack" style="gap: 1px"><span class="t" style="font-size: 15px">Version 2 uploaded</span><span class="c">Jun Li · 14 Nov</span></div></div>
+      <div class="tl"><i style="background: var(--olive)"></i><div class="stack" style="gap: 1px"><span class="t" style="font-size: 15px">Review ready</span><span class="c">System · 12 Nov 10:12 · took 58 s</span></div></div>
+      <div class="tl"><i></i><div class="stack" style="gap: 1px"><span class="t" style="font-size: 15px">Contract uploaded</span><span class="c">Ada Okafor · 12 Nov 10:11</span></div></div>
+    </div>
+    <div style="flex: 1"></div>
+    <div class="card" style="border-color: var(--bad-s)">
+      <span class="t" style="color: var(--bad)">Delete this contract</span>
+      <p class="m">Removes the review, versions, discussion and retained files for everyone in the workspace. This can’t be undone.</p>
+      <button class="btn d">Delete permanently…</button>
+      <p class="c">Owners and admins only.</p>
+    </div>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Upload: data handling</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.steps{display:flex;gap:6px}.steps i{flex:1;height:4px;border-radius:2px;background:var(--well)}.steps i.on{background:var(--primary)}</style>
+</helmet>
+<main class="scr" style="background: #0E0E10">
+  <section class="page-sheet" role="dialog" aria-label="Upload a contract">
+    <header class="mhead" style="padding: 4px 12px"><a href="A_UploadDetails.dc.html">Back</a><b>Upload a contract</b><a href="A_List.dc.html">Cancel</a></header>
+    <form style="padding: 8px 20px 20px; display: flex; flex-direction: column; gap: 14px; flex: 1">
+      <div class="steps" aria-label="Step 3 of 3"><i class="on"></i><i class="on"></i><i class="on"></i></div>
+      <h2 class="h2" style="font-size: 24px; line-height: 30px">Keep only what you need</h2>
+      <div class="grp">
+        <div class="row"><span class="tx"><span class="t" style="font-size: 15px">Keep the original file</span><span class="m">For downloads and reprocessing later</span></span><span class="tg on" role="switch" aria-checked="true" aria-label="Keep the original file"></span></div>
+        <div class="row"><span class="tx"><span class="t" style="font-size: 15px">Keep the extracted text</span><span class="m">Needed to ask questions about this contract</span></span><span class="tg on" role="switch" aria-checked="true" aria-label="Keep the extracted text"></span></div>
+      </div>
+      <div class="field"><span class="lbl">Delete automatically after</span><div class="seg"><span>7 days</span><span>30 days</span><span class="on">90 days</span><span>1 year</span></div><span class="help">The review report stays until you delete it. Workspace default: 90 days.</span></div>
+      <div style="flex: 1"></div>
+      <label class="row-h" style="gap: 12px; align-items: flex-start; min-height: 44px"><span class="cb on" style="margin-top: 1px"><svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span><span class="m" style="color: var(--ink)">I’m authorised to process this document.</span></label>
+      <a class="btn p" href="A_Processing.dc.html">Start review</a>
+    </form>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

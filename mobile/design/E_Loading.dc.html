@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Loading</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<main class="scr" aria-busy="true" aria-label="Loading Overview">
+  <header class="nav"><span class="skel" style="width: 150px; height: 28px; margin-left: 8px"></span><span class="sp"></span></header>
+  <h1 class="lt">Overview</h1>
+  <div style="padding: 8px 20px 0; display: flex; flex-direction: column; gap: 8px"><span class="skel" style="height: 18px"></span><span class="skel" style="height: 18px; width: 70%"></span></div>
+  <section class="body">
+    <div class="grp">
+      <div class="row"><span class="skel" style="width: 34px; height: 34px; border-radius: 10px"></span><span class="tx"><span class="skel" style="height: 14px; width: 60%"></span></span><span class="skel" style="width: 22px; height: 20px"></span></div>
+      <div class="row"><span class="skel" style="width: 34px; height: 34px; border-radius: 10px"></span><span class="tx"><span class="skel" style="height: 14px; width: 50%"></span><span class="skel" style="height: 11px; width: 35%; margin-top: 6px"></span></span><span class="skel" style="width: 22px; height: 20px"></span></div>
+      <div class="row"><span class="skel" style="width: 34px; height: 34px; border-radius: 10px"></span><span class="tx"><span class="skel" style="height: 14px; width: 65%"></span></span><span class="skel" style="width: 22px; height: 20px"></span></div>
+      <div class="row"><span class="skel" style="width: 34px; height: 34px; border-radius: 10px"></span><span class="tx"><span class="skel" style="height: 14px; width: 45%"></span></span><span class="skel" style="width: 22px; height: 20px"></span></div>
+    </div>
+    <span class="skel" style="height: 22px; width: 40%"></span>
+    <span class="skel" style="height: 72px; border-radius: 16px"></span>
+    <p class="c" style="text-align: center">Skeletons match the real layout, so nothing jumps when data arrives. The shimmer stops under Reduce Motion.</p>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

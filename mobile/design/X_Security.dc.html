@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Security and access</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.row{min-height:54px}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="back" href="X_Home.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>Settings</a></header>
+  <h1 class="lt">Security &amp; access</h1>
+  <section class="body" style="gap: 14px">
+    <div class="grp">
+      <div class="row"><span class="tx"><span class="m">Your role</span></span><span class="t" style="font-size: 15px">Owner</span></div>
+      <a class="row" href="X_Team.dc.html"><span class="tx"><span class="t" style="font-size: 15px">Who has access</span><span class="m">6 members · 1 pending</span></span><svg class="i s chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
+      <a class="row" href="C_Activity.dc.html"><span class="tx"><span class="t" style="font-size: 15px">Audit log</span><span class="m">Every invitation, role change and deletion</span></span><svg class="i s chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
+    </div>
+    <div class="spread"><p class="eb">API keys</p><a class="link" href="X_ApiKey.dc.html" style="font-size: 14px">New key</a></div>
+    <div class="grp">
+      <div class="row"><span class="ic n sm"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3"/></svg></span><span class="tx"><span class="t" style="font-size: 15px">Procurement sync</span><span class="m" style="font-family: ui-monospace, Menlo, monospace; font-size: 12px">ll_live_7Hq2…</span><span class="c">Read only · used 2h ago</span></span><button class="btn g sm" style="color: var(--bad)">Revoke</button></div>
+      <div class="row"><span class="ic n sm"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3"/></svg></span><span class="tx"><span class="t" style="font-size: 15px; color: var(--faint)">Old intranet import</span><span class="c">Revoked 1 Nov by Jun Li</span></span></div>
+    </div>
+    <p class="c">Keys act for the workspace, not for you. Revoking stops new requests; it doesn’t undo past ones.</p>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

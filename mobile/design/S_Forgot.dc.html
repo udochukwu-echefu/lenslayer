@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Forgot password</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="ib" href="S_SignIn.dc.html" aria-label="Back to sign in"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></a></header>
+  <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 4px 28px 0">
+    <span class="ic n" style="width: 56px; height: 56px; border-radius: 18px"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3"/></svg></span>
+    <h1 class="h2" style="font-size: 26px; line-height: 32px">Reset your password</h1>
+    <p class="p">Enter your work email. If it matches an account, we’ll send a link to set a new password.</p>
+  </div>
+  <form class="body" style="gap: 14px; padding: 24px 24px 28px">
+    <label class="field"><span class="lbl">Work email</span><span class="inp focus">ada@harborfinch.example</span></label>
+    <a class="btn p" href="S_CheckEmail.dc.html">Send reset link</a>
+    <div style="flex: 1"></div>
+    <p class="m" style="text-align: center">Company single sign-on? <a class="link" href="S_SSO.dc.html">Sign in with SSO</a></p>
+  </form>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

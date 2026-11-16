@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Reports</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.bars{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;align-items:end;height:104px;border-bottom:1px solid var(--line)}.bars span{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;height:100%}.bars b{font-size:13px;line-height:16px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}.bars i{display:block;width:100%;max-width:44px;border-radius:8px 8px 0 0;background:var(--well)}.bars .now b{color:var(--ink)}.bars .now i{background:var(--ink)}.wks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:8px}.wks span{text-align:center;font-size:12px;line-height:16px;color:var(--faint)}.wks .now{color:var(--ink);font-weight:600}.mix{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:16px}.mix span{display:flex;flex-direction:column;gap:2px}.mix b{font-size:18px;line-height:24px;font-weight:650;font-variant-numeric:tabular-nums}.mix small{display:flex;align-items:center;gap:6px;font-size:13px;line-height:18px;color:var(--muted)}.row{min-height:54px;padding:10px 0}.mix small i{width:8px;height:8px;border-radius:50%;flex:none}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="back" href="H_Overview.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>Overview</a><span class="sp"></span><button class="ib" aria-label="Export report as CSV"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button></header>
+  <h1 class="lt">Reports</h1>
+  <section class="body" style="gap: 18px; padding-top: 16px">
+    <div class="seg" role="tablist" aria-label="Report period"><span class="on">30 days</span><span>90 days</span><span>12 months</span><span>All</span></div>
+    <div>
+      <div class="spread" style="align-items: baseline"><p class="eb">Activity</p><span class="c">Updated 9:41</span></div>
+      <p style="margin: 6px 0 2px; font-size: 34px; line-height: 40px; font-weight: 650; letter-spacing: -.6px">48 <span style="font-size: 15px; font-weight: 500; letter-spacing: 0; color: var(--muted)">events</span></p>
+      <p class="m" style="margin: 0 0 14px">6 more than the 30 days before</p>
+      <div class="bars" role="img" aria-label="Events per week: 9, 14, 11, then 14 this week">
+        <span><b>9</b><i style="height: 44px"></i></span>
+        <span><b>14</b><i style="height: 68px"></i></span>
+        <span><b>11</b><i style="height: 54px"></i></span>
+        <span class="now"><b>14</b><i style="height: 68px"></i></span>
+      </div>
+      <div class="wks" aria-hidden="true"><span>19 Oct</span><span>26 Oct</span><span>2 Nov</span><span class="now">This week</span></div>
+      <div class="mix"><span><b>17</b><small><i style="background: var(--butter)"></i>Contracts</small></span><span><b>21</b><small><i style="background: var(--olive)"></i>Actions</small></span><span><b>10</b><small><i style="background: var(--pink)"></i>Decisions</small></span></div>
+    </div>
+    <div class="grp">
+      <div class="row"><span class="tx"><span class="t">Evidence coverage</span><span class="m">22 of 24 material findings quote a clause</span></span><span class="num" style="font-size: 20px">92%</span></div>
+      <div class="row"><span class="tx"><span class="t">Action completion</span><span class="m">34 done · 11 active · 2 overdue</span></span><span class="num" style="font-size: 20px">72%</span></div>
+      <div class="row"><span class="tx"><span class="t">Average review time</span><span class="m">Upload to ready</span></span><span class="num" style="font-size: 20px">4h</span></div>
+      <a class="row" href="X_Team.dc.html"><span class="tx"><span class="t">Reviewer workload</span><span class="m">Ada has the most open actions (5)</span></span><svg class="i s chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
+    </div>
+    <p class="c">Automated findings and human decisions are counted separately.</p>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Create account</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.rule{display:flex;gap:6px;align-items:center;font-size:13px;line-height:18px}.idp{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--line2);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="ib" href="S_Welcome.dc.html" aria-label="Back"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></a></header>
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0 24px">
+    <span class="mark" aria-hidden="true"><i></i><i></i><b></b></span>
+    <h1 class="h2" style="font-size: 26px; line-height: 32px">Create your account</h1>
+    <p class="m">Free to start. Invite your team once you’re in.</p>
+  </div>
+  <form class="body" style="gap: 12px; padding: 20px 24px 28px">
+    <div class="duo">
+      <a class="btn s" href="O_CreateWorkspace.dc.html"><span class="idp" style="border-radius: 50%">G</span>Google</a>
+      <a class="btn s" href="O_CreateWorkspace.dc.html"><span class="idp">M</span>Microsoft</a>
+    </div>
+    <div class="row-h" style="gap: 12px; margin: 2px 0"><span style="flex: 1; height: 1px; background: var(--line)"></span><span class="c">or with email</span><span style="flex: 1; height: 1px; background: var(--line)"></span></div>
+    <label class="field"><span class="lbl">Full name</span><span class="inp">Ada Okafor</span></label>
+    <label class="field"><span class="lbl">Work email</span><span class="inp">ada@harborfinch.example</span></label>
+    <label class="field"><span class="lbl">Password</span><span class="inp focus">••••••••••<span style="flex: 1"></span><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span>
+      <span class="row-h" style="gap: 12px; flex-wrap: wrap" aria-live="polite"><span class="rule" style="color: var(--good)"><svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>10+ characters</span><span class="rule" style="color: var(--good)"><svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Not a breached password</span></span></label>
+    <a class="btn p" href="S_VerifyEmail.dc.html" style="margin-top: 4px">Create account</a>
+    <p class="c" style="text-align: center">By continuing you agree to the <a class="link" href="X_About.dc.html">Terms</a> and <a class="link" href="X_About.dc.html">Privacy Policy</a>.</p>
+    <div style="flex: 1"></div>
+    <p class="m" style="text-align: center">Already have an account? <a class="link" href="S_SignIn.dc.html">Sign in</a></p>
+  </form>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Change status</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<main class="scr">
+  <div class="ghost-page" aria-hidden="true"></div>
+  <a class="scrim" href="T_Detail.dc.html" aria-label="Close"></a>
+  <section class="sheet" role="dialog" aria-label="Change status">
+    <span class="grab" aria-hidden="true"></span>
+    <h2 class="h2">Status</h2>
+    <div class="grp">
+      <a class="row" href="T_Detail.dc.html"><span class="tx"><span class="t" style="font-size: 15px">Open</span><span class="m">Not started</span></span><span class="radio"></span></a>
+      <a class="row" href="T_Detail.dc.html"><span class="tx"><span class="t" style="font-size: 15px">In progress</span><span class="m">Someone is working on it</span></span><span class="radio on"></span></a>
+      <a class="row" href="T_List.dc.html"><span class="tx"><span class="t" style="font-size: 15px">Done</span><span class="m">Finished and checked</span></span><span class="radio"></span></a>
+      <a class="row" href="T_List.dc.html"><span class="tx"><span class="t" style="font-size: 15px">Cancelled</span><span class="m">No longer needed</span></span><span class="radio"></span></a>
+    </div>
+    <p class="c">Everyone in the workspace sees who changed it and when.</p>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

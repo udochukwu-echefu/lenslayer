@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>New action</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.row{min-height:50px}</style>
+</helmet>
+<main class="scr" style="background: #0E0E10">
+  <section class="page-sheet" role="dialog" aria-label="New action">
+    <header class="mhead" style="padding: 4px 12px"><a href="C_Finding.dc.html">Cancel</a><b>New action</b><a href="T_List.dc.html" style="font-weight: 650">Create</a></header>
+    <form style="padding: 8px 20px 20px; display: flex; flex-direction: column; gap: 14px">
+      <div class="tint n" style="align-items: center"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h4v4c0 3-1 5-4 6M14 7h4v4c0 3-1 5-4 6"/></svg><span class="m" style="color: var(--ink); flex: 1">From risk 01 · Uncapped indemnity</span></div>
+      <label class="field"><span class="lbl">Action</span><span class="inp focus">Counter the indemnity with a 12-month cap</span></label>
+      <label class="field"><span class="lbl">Context <span style="font-weight: 400; color: var(--faint)">Optional</span></span><span class="inp" style="min-height: 72px; align-items: flex-start; padding-top: 12px">Mutual cap at 12 months’ fees; exclude indirect loss.</span></label>
+      <div class="grp">
+        <div class="row"><span class="tx"><span class="m">Assign to</span></span><span class="t" style="font-size: 15px">Ada Okafor</span><svg class="i xs chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></div>
+        <div class="row"><span class="tx"><span class="m">Due</span></span><span class="badge n" style="font-size: 14px; padding: 6px 10px">Sat 28 Nov</span></div>
+        <div class="row"><span class="tx"><span class="m">Type</span></span><span class="t" style="font-size: 15px">Risk response</span><svg class="i xs chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></div>
+        <div class="row"><span class="tx"><span class="m">Agreement</span></span><span class="t" style="font-size: 15px">Northwind logistics MSA</span></div>
+      </div>
+      <div class="field"><span class="lbl">Priority</span><div class="seg" role="radiogroup"><span>Low</span><span>Normal</span><span class="on">High</span></div></div>
+      <p class="c">LensLayer never creates or completes actions on its own. A person owns every step.</p>
+    </form>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

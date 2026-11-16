@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Upload: deal and context</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.steps{display:flex;gap:6px}.steps i{flex:1;height:4px;border-radius:2px;background:var(--well)}.steps i.on{background:var(--primary)}.pick{justify-content:space-between}</style>
+</helmet>
+<main class="scr" style="background: #0E0E10">
+  <section class="page-sheet" role="dialog" aria-label="Upload a contract">
+    <header class="mhead" style="padding: 4px 12px"><a href="A_UploadSource.dc.html">Back</a><b>Upload a contract</b><a href="A_List.dc.html">Cancel</a></header>
+    <form style="padding: 8px 20px 20px; display: flex; flex-direction: column; gap: 12px; flex: 1">
+      <div class="steps" aria-label="Step 2 of 3"><i class="on"></i><i class="on"></i><i></i></div>
+      <div class="row-h" style="gap: 12px; padding: 10px 12px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line)"><span class="ic y sm"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8l4 4v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg></span><span class="tx" style="flex: 1; display: flex; flex-direction: column"><span class="t" style="font-size: 15px">northwind-msa-final.pdf</span><span class="c">2.4 MB</span></span><a class="link" href="A_UploadSource.dc.html" style="font-size: 14px">Change</a></div>
+      <label class="field"><span class="lbl">Contract title</span><span class="inp">Northwind logistics MSA</span></label>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <label class="field"><span class="lbl">Counterparty</span><span class="inp">Northwind Freight</span></label>
+        <label class="field"><span class="lbl">Type</span><span class="inp pick">Services<svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span></label>
+      </div>
+      <p class="eb" style="margin-top: 6px">Review it for</p>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <label class="field"><span class="lbl">Your side</span><span class="inp pick">Customer<svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span></label>
+        <label class="field"><span class="lbl">Risk posture</span><span class="inp pick">Balanced<svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span></label>
+      </div>
+      <label class="field"><span class="lbl">Goal</span><span class="inp pick">Prepare to negotiate<svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span></label>
+      <label class="field"><span class="lbl">Governing law <span style="font-weight: 400; color: var(--faint)">Optional</span></span><span class="inp ph">e.g. England and Wales</span></label>
+      <div style="flex: 1"></div>
+      <a class="btn p" href="A_UploadData.dc.html">Continue</a>
+    </form>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

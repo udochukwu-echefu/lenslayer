@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Add a webhook</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.row{min-height:48px;padding:6px 0}.mono{font-family:ui-monospace,Menlo,monospace;font-size:13px}</style>
+</helmet>
+<main class="scr" style="background: #0E0E10">
+  <section class="page-sheet" role="dialog" aria-label="Add a webhook">
+    <header class="mhead" style="padding: 4px 12px"><a href="X_Integrations.dc.html">Cancel</a><b>Add a webhook</b><a href="X_Integrations.dc.html" style="font-weight: 650">Add</a></header>
+    <form style="padding: 8px 20px 20px; display: flex; flex-direction: column; gap: 14px">
+      <label class="field"><span class="lbl">Endpoint URL</span><span class="inp focus mono">https://hooks.harborfinch.example/lenslayer</span><span class="help">Must use HTTPS.</span></label>
+      <label class="field"><span class="lbl">Description <span style="font-weight: 400; color: var(--faint)">Optional</span></span><span class="inp">Matter management sync</span></label>
+      <p class="eb">Send when</p>
+      <div class="grp">
+        <div class="row"><span class="cb on"><svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span><span class="tx"><span class="t mono" style="font-size: 14px">contract.created</span></span></div>
+        <div class="row"><span class="cb on"><svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span><span class="tx"><span class="t mono" style="font-size: 14px">contract.review_ready</span></span></div>
+        <div class="row"><span class="cb"></span><span class="tx"><span class="t mono" style="font-size: 14px">contract.review_failed</span></span></div>
+      </div>
+      <p class="c">After you add it, you’ll see a signing secret once. Use it to verify each delivery came from LensLayer.</p>
+      <p class="eb">Recent deliveries · existing endpoint</p>
+      <div class="grp">
+        <div class="row"><span class="tx"><span class="t mono" style="font-size: 13px">contract.review_ready</span><span class="c">Today 10:12</span></span><span class="badge ok">200</span></div>
+        <div class="row"><span class="tx"><span class="t mono" style="font-size: 13px">contract.created</span><span class="c">Today 10:11 · retried twice</span></span><span class="badge warn">503 then 200</span></div>
+      </div>
+    </form>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

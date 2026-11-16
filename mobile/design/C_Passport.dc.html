@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Contract: deal passport</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="back" href="A_List.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></a><span class="ttl">Northwind logistics MSA</span><span class="sp"></span><a class="ib" href="C_ShareSheet.dc.html" aria-label="Share and export"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></a></header>
+  <section class="body" style="gap: 16px; padding-top: 6px">
+    <nav class="chips" aria-label="Contract sections"><a class="chip" href="C_Overview.dc.html">Overview</a><a class="chip on" href="C_Passport.dc.html" aria-current="page">Passport</a><a class="chip" href="C_Risks.dc.html">Risks 5</a><a class="chip" href="C_Obligations.dc.html">Obligations</a><a class="chip" href="C_Ask.dc.html">Ask</a></nav>
+    <div class="tint warn">
+      <svg class="i s" viewBox="0 0 24 24" style="color: var(--warn); margin-top: 3px" aria-hidden="true"><path d="M12 3 2 20h20zM12 10v4M12 17h.01"/></svg>
+      <div class="stack" style="gap: 4px"><span class="eb" style="color: var(--warn)">Signing readiness</span><span class="h3">Needs attention</span><span class="m" style="color: var(--ink)">1 approval pending · 2 unresolved points · Schedule C missing</span></div>
+    </div>
+    <div class="stack">
+      <div class="spread"><p class="eb">Top risks</p><a class="link" href="C_Risks.dc.html" style="font-size: 14px">All 5</a></div>
+      <div class="grp">
+        <a class="row" href="C_Finding.dc.html"><span class="tx"><span class="t" style="font-size: 15px">Uncapped indemnity</span><span class="m">Clause 14.2</span></span><span class="badge bad">High</span></a>
+        <a class="row" href="C_Finding.dc.html"><span class="tx"><span class="t" style="font-size: 15px">Data transfers outside the UK</span><span class="m">Clause 19.4</span></span><span class="badge bad">High</span></a>
+      </div>
+    </div>
+    <div class="stack">
+      <p class="eb">Negotiation</p>
+      <div class="grp">
+        <a class="row" href="C_Negotiate.dc.html"><span class="tx"><span class="t" style="font-size: 15px">4 accepted · 1 rejected · 2 open</span><span class="m">Supplier agreed to a mutual cap in principle</span></span><svg class="i s chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
+      </div>
+    </div>
+    <div class="stack">
+      <p class="eb">Key dates</p>
+      <div class="grp">
+        <a class="row" href="R_Detail.dc.html"><span class="date"><b>2</b><span>Dec</span></span><span class="tx"><span class="t" style="font-size: 15px">Last day to give notice</span><span class="m">Ada O.</span></span></a>
+        <a class="row" href="R_Detail.dc.html"><span class="date"><b>1</b><span>Mar</span></span><span class="tx"><span class="t" style="font-size: 15px">Renews for 12 months</span><span class="m">Unassigned</span></span></a>
+      </div>
+    </div>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Single sign-on</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<main class="scr">
+  <header class="nav"><a class="back" href="S_SignIn.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>Sign in</a></header>
+  <h1 class="lt">Sign in with your company</h1>
+  <p class="sub">We’ll send you to your organisation’s sign-in page, then straight back here.</p>
+  <form class="body" style="gap: 16px">
+    <label class="field"><span class="lbl">Work email</span><span class="inp focus">ada@harborfinch.example</span><span class="help">Your company must have SSO set up with LensLayer.</span></label>
+    <a class="btn p" href="H_Overview.dc.html">Continue</a>
+    <div class="tint n">
+      <svg class="i s" viewBox="0 0 24 24" style="margin-top: 2px" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+      <span class="m" style="color: var(--ink)">Not sure? Ask your IT team, or <a class="link" href="S_SignIn.dc.html">sign in with a password</a>.</span>
+    </div>
+  </form>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

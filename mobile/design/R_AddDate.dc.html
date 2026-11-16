@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Add a date</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.row{min-height:52px}</style>
+</helmet>
+<main class="scr" style="background: #0E0E10">
+  <section class="page-sheet" role="dialog" aria-label="Add a date">
+    <header class="mhead" style="padding: 4px 12px"><a href="R_Agenda.dc.html">Cancel</a><b>Add a date</b><a href="R_Agenda.dc.html" style="font-weight: 650">Save</a></header>
+    <form style="padding: 8px 20px 20px; display: flex; flex-direction: column; gap: 14px">
+      <div class="chips" style="flex-wrap: wrap; overflow: visible; margin: 0; padding: 0" role="radiogroup" aria-label="Type"><span class="chip">Renewal</span><span class="chip on">Notice</span><span class="chip">Payment</span><span class="chip">Obligation</span><span class="chip">Other</span></div>
+      <label class="field"><span class="lbl">What must happen?</span><span class="inp focus">Give notice of non-renewal</span></label>
+      <div class="grp">
+        <a class="row" href="C_Overview.dc.html"><span class="tx"><span class="m">Agreement</span></span><span class="t" style="font-size: 15px">Harbor Lane office lease</span><svg class="i xs chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
+        <div class="row"><span class="tx"><span class="m">Date</span></span><span class="badge n" style="font-size: 14px; padding: 6px 10px">24 Nov 2026</span></div>
+        <div class="row"><span class="tx"><span class="m">Owner</span></span><span class="t" style="font-size: 15px">Ada Okafor</span><svg class="i xs chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></div>
+        <a class="row" href="R_ReminderSheet.dc.html"><span class="tx"><span class="m">Remind</span></span><span class="t" style="font-size: 15px">14 days before</span><svg class="i xs chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
+        <a class="row" href="R_ReminderSheet.dc.html"><span class="tx"><span class="m">Repeat</span></span><span class="t" style="font-size: 15px">Never</span><svg class="i xs chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
+      </div>
+      <label class="field"><span class="lbl">Notes <span style="font-weight: 400; color: var(--faint)">Optional</span></span><span class="inp ph" style="min-height: 72px; align-items: flex-start; padding-top: 12px">Recorded delivery to the landlord’s registered office…</span></label>
+      <p class="c">Add only dates someone has checked against the agreement.</p>
+    </form>
+  </section>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
