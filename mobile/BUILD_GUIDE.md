@@ -348,8 +348,8 @@ Universal Login page to match instead (colours and logo are set in the Auth0 das
 |---|---|---|---|
 | R_Agenda | `components/renewals-view.tsx` (Dates) | `queryLifecycle` | Done |
 | R_Detail, R_ReminderSheet | `DateSheet` in `renewals-view.tsx` | `updateLifecycle` | Built as a sheet, editing reminder missing |
-| R_Month | not built | `queryCalendar` | Task 10 |
-| R_Upcoming | not built | `queryLifecycle` | Task 10 |
+| R_Month | `components/renewals-month.tsx` | `queryCalendar` | Month navigation and selected-day records |
+| R_Upcoming | `components/upcoming-reminders.tsx` | `queryLifecycle` | Active upcoming dates with configured reminder lead times |
 | R_AddDate | `new/lifecycle.tsx` | `createLifecycle` | Built |
 | R_Export | header button | `downloadCalendarExport` | Done (.ics only) |
 | T_List | `renewals-view.tsx` (Tasks) | `queryTasks`, `queryTaskCounts` | Done |

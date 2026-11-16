@@ -11,10 +11,13 @@ import { createStyles } from "@/theme/create-styles";
 import { font, radius, space } from "@/theme/tokens";
 import { HeaderButton } from "./header";
 import { LoadMore } from "./load-more";
+import { RenewalsMonth } from "./renewals-month";
 import { TaskRow } from "./task-row";
+import { UpcomingReminders } from "./upcoming-reminders";
 import { AppText, Button, Chips, DateBlock, EmptyState, ErrorState, Facts, FormError, Loading, Screen, Section, Segmented, Sheet } from "./ui";
 
 type Mode = "dates" | "tasks";
+type DateView = "agenda" | "month" | "reminders";
 
 /**
  * The Renewals tab: one screen with two views. "Dates" is the calendar side
@@ -38,18 +41,31 @@ export function RenewalsView({ initial }: { initial: Mode }) {
       }} />
       <Segmented label="Renewals view" value={mode} onChange={setMode} options={[{ value: "dates", label: "Dates" }, { value: "tasks", label: "Tasks" }]} />
       <FormError error={exportCalendar.error} />
-      {mode === "dates" ? <Dates /> : <Tasks />}
+      {mode === "dates" ? <DateViews key={organizationId} /> : <Tasks />}
     </Screen>
   );
 }
 
-function Dates() {
+function DateViews() {
+  const [view, setView] = useState<DateView>("agenda");
+  const [open, setOpen] = useState<LifecycleItem | null>(null);
+  return (
+    <>
+      <Segmented label="Date view" value={view} onChange={setView} options={[
+        { value: "agenda", label: "Agenda" }, { value: "month", label: "Month" }, { value: "reminders", label: "Reminders" },
+      ]} />
+      {view === "month" ? <RenewalsMonth /> : view === "reminders" ? <UpcomingReminders onOpen={setOpen} /> : <Dates onOpen={setOpen} />}
+      <DateSheet item={open} onClose={() => setOpen(null)} />
+    </>
+  );
+}
+
+function Dates({ onOpen }: { onOpen: (item: LifecycleItem) => void }) {
   const styles = useStyles();
   const { organizationId, canUpload } = useWorkspace();
   const [window] = useState(() => overviewWindow());
   const query = useLifecycleList(organizationId, { status: "active", sort: "due_at" });
   const { items, total } = flatten(query.data);
-  const [open, setOpen] = useState<LifecycleItem | null>(null);
   const today = new Date(window.day_start);
   const week = Array.from({ length: 7 }, (_, index) => { const day = new Date(today); day.setDate(today.getDate() + index); return day; });
   const byDay = new Map<string, LifecycleItem[]>();
@@ -78,7 +94,7 @@ function Dates() {
       <Section title="Coming up">
         {query.isLoading ? <Loading rows={4} /> : query.error ? <ErrorState error={query.error} onRetry={() => void query.refetch()} /> : items.length ? (
           <View>
-            {items.map((item, index) => <DateRow key={item.id} item={item} last={index === items.length - 1} onPress={() => setOpen(item)} />)}
+            {items.map((item, index) => <DateRow key={item.id} item={item} last={index === items.length - 1} onPress={() => onOpen(item)} />)}
             <LoadMore shown={items.length} total={total} noun="dates" hasNextPage={query.hasNextPage} isFetchingNextPage={query.isFetchingNextPage} fetchNextPage={query.fetchNextPage} />
           </View>
         ) : (
@@ -86,7 +102,6 @@ function Dates() {
             action={canUpload ? { label: "Add a date", onPress: () => router.push("/new/lifecycle") } : undefined} />
         )}
       </Section>
-      <DateSheet item={open} onClose={() => setOpen(null)} />
     </>
   );
 }
