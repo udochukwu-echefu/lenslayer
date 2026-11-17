@@ -227,5 +227,5 @@ const useStyles = createStyles((c) => ({
   searchInput: { flex: 1, color: c.ink, fontSize: 16, fontFamily: font.regular, paddingVertical: space.sm },
   seg: { flexDirection: "row", padding: 3, borderRadius: radius.md, backgroundColor: c.raised },
   segItem: { flex: 1, minHeight: 36, alignItems: "center", justifyContent: "center", borderRadius: radius.md - 3, paddingHorizontal: space.xs },
-  segOn: { backgroundColor: c.surface },
+  segOn: { backgroundColor: c.segmentOn },
 }));

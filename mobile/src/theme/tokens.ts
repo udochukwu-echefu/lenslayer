@@ -51,6 +51,10 @@ export type ColorTokens = {
   dates: string;
   onCategory: string;
   tabBar: string;
+  /** Pill behind the selected tab. In dark mode it must be lighter than the bar, not darker. */
+  tabActive: string;
+  /** The selected half of a segmented control: always lighter than its track. */
+  segmentOn: string;
   shadow: string;
 };
 
@@ -84,6 +88,8 @@ export const lightColors: ColorTokens = {
   dates: palette.blue,
   onCategory: palette.charcoal,
   tabBar: palette.white,
+  tabActive: "#F6F5F2",
+  segmentOn: palette.white,
   shadow: "rgba(25,26,23,0.14)",
 };
 
@@ -117,6 +123,8 @@ export const darkColors: ColorTokens = {
   dates: palette.blue,
   onCategory: palette.charcoal,
   tabBar: "#1A1A1C",
+  tabActive: "#33322C",
+  segmentOn: "#3A3933",
   shadow: "rgba(0,0,0,0.5)",
 };
 
