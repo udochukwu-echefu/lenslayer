@@ -30,4 +30,7 @@ export const storageKeys = {
   localIdentity: "lenslayer.auth.localIdentity",
   activeOrganization: "lenslayer.activeOrganization",
   themePreference: "lenslayer.themePreference",
+  /** Followed by the workspace id, so one workspace never shows another's searches. */
+  recentSearches: "lenslayer.recentSearches.",
+  biometricLock: "lenslayer.biometricLock",
 } as const;

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { formatDate } from "@/lib/format";
+import { formatDate, reminderLabel } from "@/lib/format";
 import { flatten, useLifecycleList } from "@/lib/queries";
 import type { LifecycleItem } from "@/lib/shared/types";
 import { useWorkspace } from "@/lib/workspace";
@@ -24,7 +24,7 @@ export function UpcomingReminders({ onOpen }: { onOpen: (item: LifecycleItem) =>
           <>
             {items.map((item, index) => (
               <ListRow key={item.id} icon="bell" title={item.title} onPress={() => onOpen(item)}
-                subtitle={item.last_notified_at ? `Last reminded ${formatDate(item.last_notified_at)}` : item.reminder_days === 0 ? "Reminder on the due date" : `Reminder ${item.reminder_days} ${item.reminder_days === 1 ? "day" : "days"} before`}
+                subtitle={item.last_notified_at ? `Last reminded ${formatDate(item.last_notified_at)}` : `Reminder ${reminderLabel(item.reminder_days).toLowerCase()}`}
                 value={formatDate(item.due_at, { day: "numeric", month: "short" })} last={index === items.length - 1} />
             ))}
             <LoadMore shown={items.length} total={total} noun="dates" hasNextPage={query.hasNextPage} isFetchingNextPage={query.isFetchingNextPage} fetchNextPage={query.fetchNextPage} />

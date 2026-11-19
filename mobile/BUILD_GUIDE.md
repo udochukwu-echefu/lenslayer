@@ -287,7 +287,7 @@ T tasks, X settings, E system states.
 | S_SignIn, S_SignInError, S_CreateAccount, S_SSO, S_Forgot, S_CheckEmail, S_NewPassword, S_PasswordDone | **Auth0's hosted page**, not native | Auth0 | By design, see note below |
 | S_VerifyEmail, O_CreateWorkspace | `workspace-setup.tsx` | `organizations`, `createOrganization` | Done |
 | S_SessionExpired | notice on `sign-in.tsx` | none | Done as a notice |
-| S_FaceID | not built | none | Task 5 |
+| S_FaceID | `lock-screen.tsx`, `lib/app-lock.tsx`, toggle in Settings | none (on the phone) | Done. Passcode fallback instead of "Use password" (Auth0 holds passwords) |
 | O_InviteTeam, O_FirstRun | Overview checklist | `members`, `invitations`, `queryOverview`, `createInvitation` | Invite and upload steps use existing forms |
 | O_Notifications | not built | none | Device push needs backend support (task 6) |
 | O_Invite, O_InviteInvalid | `invite/[token].tsx` | `invitation`, `acceptInvitation` | Done |
@@ -303,7 +303,7 @@ Universal Login page to match instead (colours and logo are set in the Auth0 das
 |---|---|---|---|
 | H_Overview(+Dark) | `(tabs)/(overview)/index.tsx` | `queryOverview`, `notifications` | Done |
 | H_Switcher | `components/workspace-switcher.tsx`, `new/workspace.tsx` | `organizations`, `createOrganization` | Can switch workspaces or create and enter a new one |
-| H_Search | `search.tsx` | `searchWorkspace` | Done, recent searches missing |
+| H_Search | `search.tsx`, `lib/recent-searches.ts` | `searchWorkspace` | Done, recent searches kept per workspace on the phone |
 | H_Inbox | `(tabs)/(overview)/inbox.tsx` | `queryContracts`, `queryTasks` | Done |
 | H_Notifications(+Empty) | `notifications.tsx` | `notifications`, `markNotificationRead`, `markAllNotificationsRead` | Done |
 | H_Reports | `(tabs)/(overview)/reports.tsx` | `reportOverview`, `downloadReportExport` | Done |
@@ -347,7 +347,7 @@ Universal Login page to match instead (colours and logo are set in the Auth0 das
 | Design | Route / file | API | State |
 |---|---|---|---|
 | R_Agenda | `components/renewals-view.tsx` (Dates) | `queryLifecycle` | Default Dates view; header buttons toggle Month and Scheduled reminders |
-| R_Detail, R_ReminderSheet | `DateSheet` in `renewals-view.tsx` | `updateLifecycle` | Built as a sheet, editing reminder missing |
+| R_Detail, R_ReminderSheet | `DateSheet` + `ReminderEditor` in `renewals-view.tsx` | `updateLifecycle` | Done as a sheet; each tap on a reminder or repeat saves |
 | R_Month | `components/renewals-month.tsx` | `queryCalendar` | Month navigation and selected-day records |
 | R_Upcoming | `components/upcoming-reminders.tsx` | `queryLifecycle` | Scheduled reminders header view with a muted introduction and upcoming lead times |
 | R_AddDate | `new/lifecycle.tsx` | `createLifecycle` | Built |

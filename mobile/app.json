@@ -44,6 +44,7 @@
       ],
       ["expo-navigation-bar", { "enforceContrast": false }],
       "expo-secure-store",
+      ["expo-local-authentication", { "faceIDPermission": "LensLayer uses Face ID to unlock the app, so only you can open your workspace on this phone." }],
       "expo-sharing",
       "@react-native-community/datetimepicker"
     ],

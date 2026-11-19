@@ -8,7 +8,9 @@ import * as SystemUI from "expo-system-ui";
 import * as WebBrowser from "expo-web-browser";
 import { useEffect, useState } from "react";
 import { AppState, Platform, View } from "react-native";
+import { LockScreen } from "@/components/lock-screen";
 import { ApiError } from "@/lib/api";
+import { AppLockProvider, useAppLock } from "@/lib/app-lock";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { monitorConnection } from "@/lib/online";
 import { WorkspaceProvider, useWorkspace } from "@/lib/workspace";
@@ -48,9 +50,11 @@ export default function RootLayout() {
     <AppThemeProvider>
       <QueryClientProvider client={queryClient}>
         <AuthProvider queryClient={queryClient}>
-          <WorkspaceProvider>
-            <Navigator />
-          </WorkspaceProvider>
+          <AppLockProvider>
+            <WorkspaceProvider>
+              <Navigator />
+            </WorkspaceProvider>
+          </AppLockProvider>
         </AuthProvider>
       </QueryClientProvider>
     </AppThemeProvider>
@@ -60,7 +64,9 @@ export default function RootLayout() {
 function Navigator() {
   const { status } = useAuth();
   const { organizations, isLoading } = useWorkspace();
-  const { colors, scheme, isRestored } = useTheme();
+  const { colors, scheme, isRestored: themeRestored } = useTheme();
+  const lock = useAppLock();
+  const isRestored = themeRestored && lock.isRestored;
   // Figtree is the app's typeface. The splash screen stays up until it has loaded,
   // so text never flashes in the system font first.
   const [fontsLoaded, fontError] = useFonts({ Figtree_400Regular, Figtree_500Medium, Figtree_600SemiBold, Figtree_700Bold });
@@ -123,6 +129,7 @@ function Navigator() {
 
         <Stack.Screen name="invite/[token]" options={{ title: "Invitation", presentation: "modal" }} />
       </Stack>
+      {lock.locked ? <LockScreen /> : null}
     </ThemeProvider>
   );
 }

@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { Pressable, View } from "react-native";
 import { api } from "@/lib/api";
-import { daysUntil, titleCase } from "@/lib/format";
+import { daysUntil, reminderLabel, titleCase } from "@/lib/format";
 import { flatten, invalidateWorkspaceRecords, useLifecycleList } from "@/lib/queries";
 import type { LifecycleItem } from "@/lib/shared/types";
 import { useWorkspace } from "@/lib/workspace";
@@ -22,7 +22,7 @@ export function LifecycleRow({ item, canEdit, last }: { item: LifecycleItem; can
   });
   const days = daysUntil(item.due_at);
   const active = item.status === "active";
-  const detail = [titleCase(item.kind), item.amount || null, `reminder ${item.reminder_days} days before`, item.recurrence !== "none" ? `repeats ${item.recurrence}` : null, item.owner_name || "Unassigned"].filter(Boolean).join(" · ");
+  const detail = [titleCase(item.kind), item.amount || null, `reminder ${reminderLabel(item.reminder_days).toLowerCase()}`, item.recurrence !== "none" ? `repeats ${item.recurrence}` : null, item.owner_name || "Unassigned"].filter(Boolean).join(" · ");
   return (
     <View style={[styles.row, !last && styles.divider, !active && styles.closed]}>
       <DateBlock date={new Date(item.due_at)} urgent={active && days <= 14} />

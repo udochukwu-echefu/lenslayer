@@ -150,3 +150,12 @@ export function daysUntil(value: string, now = Date.now()) {
   const day = (time: number) => { const date = new Date(time); date.setHours(0, 0, 0, 0); return date.getTime(); };
   return Math.round((day(new Date(value).getTime()) - day(now)) / 86_400_000);
 }
+
+/** "On the day", "1 day before", "14 days before". */
+export function reminderLabel(days: number) {
+  if (days <= 0) return "On the day";
+  return `${days} ${days === 1 ? "day" : "days"} before`;
+}
+
+/** The lead times the app offers. A date set elsewhere to another value keeps it and shows it too. */
+export const reminderChoices = [0, 7, 14, 30, 90] as const;

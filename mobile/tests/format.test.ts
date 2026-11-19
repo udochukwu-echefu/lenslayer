@@ -24,3 +24,10 @@ test("review failures use public copy without displaying raw error details", () 
   assert.equal(reviewJobMessage({ error_code: "private provider details" }), "We couldn’t complete this review. Contact support if you still need it.");
   assert.equal(reviewJobMessage({ error_code: "__proto__" }), reviewJobMessage(undefined));
 });
+
+test("reminder lead times read the way the design writes them", async () => {
+  const { reminderLabel } = await import("../src/lib/format.ts");
+  assert.equal(reminderLabel(0), "On the day");
+  assert.equal(reminderLabel(1), "1 day before");
+  assert.equal(reminderLabel(14), "14 days before");
+});

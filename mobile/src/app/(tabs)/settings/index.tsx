@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import Constants from "expo-constants";
 import { router } from "expo-router";
-import { Pressable, View } from "react-native";
+import { Pressable, Switch, View } from "react-native";
 import { AppText, Avatar, Badge, Button, confirm, Icon, ListRow, Screen } from "@/components/ui";
 import { api } from "@/lib/api";
+import { useAppLock } from "@/lib/app-lock";
 import { useAuth } from "@/lib/auth";
 import { titleCase } from "@/lib/format";
 import { useMembers } from "@/lib/queries";
@@ -21,6 +22,7 @@ export default function SettingsScreen() {
   const styles = useStyles();
   const { colors, preference } = useTheme();
   const { signOut } = useAuth();
+  const lock = useAppLock();
   const { user, activeOrganization, organizationId, activeRole, canManageTeam } = useWorkspace();
   const members = useMembers(organizationId);
   const settings = useQuery({ queryKey: ["organization-settings", organizationId], queryFn: () => api.organizationSettings(organizationId), enabled: Boolean(organizationId) });
@@ -54,6 +56,10 @@ export default function SettingsScreen() {
         <AppText variant="eyebrow" tone="muted" style={styles.label}>You, on this phone</AppText>
         <ListRow icon="bell" title="Notifications" onPress={() => open("notifications")} />
         <ListRow icon="appearance" title="Appearance" value={titleCase(preference)} onPress={() => open("appearance")} />
+        {lock.method ? (
+          <ListRow icon="faceId" title={`Unlock with ${lock.method}`} subtitle="Asks when you open the app" onPress={() => void lock.setEnabled(!lock.enabled)}
+            trailing={<Switch accessibilityLabel={`Unlock with ${lock.method}`} value={lock.enabled} onValueChange={(on) => void lock.setEnabled(on)} trackColor={{ true: colors.actions, false: colors.line }} thumbColor={colors.surface} />} />
+        ) : null}
         <ListRow icon="info" title="About & legal" value={Constants.expoConfig?.version} onPress={() => open("about")} last />
       </View>
 

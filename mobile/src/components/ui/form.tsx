@@ -152,14 +152,15 @@ export function Chips<T extends string>({ options, value, onChange, label }: { o
 }
 
 /** Search box: a soft grey field with a magnifier, used at the top of lists. */
-export function SearchField({ value, onChangeText, placeholder, label }: { value: string; onChangeText: (value: string) => void; placeholder: string; label: string }) {
+export function SearchField({ value, onChangeText, placeholder, label, onSubmit, autoFocus }: { value: string; onChangeText: (value: string) => void; placeholder: string; label: string; onSubmit?: () => void; autoFocus?: boolean }) {
   const styles = useStyles();
   const { colors } = useTheme();
   return (
     <View style={styles.search}>
       <Icon name="search" size={17} color={colors.faint} />
       <TextInput accessibilityLabel={label} value={value} onChangeText={onChangeText} placeholder={placeholder} placeholderTextColor={colors.faint}
-        returnKeyType="search" clearButtonMode="while-editing" autoCorrect={false} autoCapitalize="none" maxLength={200} style={styles.searchInput} />
+        returnKeyType="search" clearButtonMode="while-editing" autoCorrect={false} autoCapitalize="none" maxLength={200} style={styles.searchInput}
+        onSubmitEditing={onSubmit} autoFocus={autoFocus} />
     </View>
   );
 }

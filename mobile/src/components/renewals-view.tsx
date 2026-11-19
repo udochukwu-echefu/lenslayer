@@ -3,18 +3,19 @@ import { router, Stack } from "expo-router";
 import { useState } from "react";
 import { Pressable, View } from "react-native";
 import { api } from "@/lib/api";
-import { dateKey, daysUntil, formatDate, titleCase } from "@/lib/format";
+import { dateKey, daysUntil, formatDate, reminderChoices, reminderLabel, titleCase } from "@/lib/format";
 import { flatten, invalidateWorkspaceRecords, overviewWindow, useLifecycleList, useTaskCounts, useTaskList } from "@/lib/queries";
-import type { LifecycleItem, WorkflowTask } from "@/lib/shared/types";
+import type { LifecycleItem, Recurrence, WorkflowTask } from "@/lib/shared/types";
 import { useWorkspace } from "@/lib/workspace";
 import { createStyles } from "@/theme/create-styles";
+import { useTheme } from "@/theme/theme-provider";
 import { font, radius, space } from "@/theme/tokens";
 import { HeaderButton } from "./header";
 import { LoadMore } from "./load-more";
 import { RenewalsMonth } from "./renewals-month";
 import { TaskRow } from "./task-row";
 import { UpcomingReminders } from "./upcoming-reminders";
-import { AppText, Button, Chips, DateBlock, EmptyState, ErrorState, Facts, FormError, Loading, Screen, Section, Segmented, Sheet } from "./ui";
+import { AppText, Button, Chips, DateBlock, EmptyState, ErrorState, Facts, FormError, Icon, ListRow, Loading, Screen, Section, Segmented, Sheet } from "./ui";
 
 type Mode = "dates" | "tasks";
 type DateView = "agenda" | "month" | "reminders";
@@ -65,7 +66,7 @@ function DateViews({ view }: { view: DateView }) {
   return (
     <>
       {view === "month" ? <RenewalsMonth /> : view === "reminders" ? <UpcomingReminders onOpen={setOpen} /> : <Dates onOpen={setOpen} />}
-      <DateSheet item={open} onClose={() => setOpen(null)} />
+      <DateSheet key={open?.id ?? "none"} item={open} onClose={() => setOpen(null)} />
     </>
   );
 }
@@ -135,17 +136,33 @@ function DateRow({ item, last, onPress }: { item: LifecycleItem; last: boolean; 
   );
 }
 
-/** Detail for one date: the countdown, who owns it, and the two things you can do about it. */
-function DateSheet({ item, onClose }: { item: LifecycleItem | null; onClose: () => void }) {
+/** Detail for one date: the countdown, who owns it, its reminder, and the two things you can do about it. */
+function DateSheet({ item: initial, onClose }: { item: LifecycleItem | null; onClose: () => void }) {
   const styles = useStyles();
   const { organizationId, canUpload } = useWorkspace();
   const queryClient = useQueryClient();
+  // The sheet keeps its own copy so a saved reminder shows straight away.
+  const [item, setItem] = useState(initial);
+  const [editing, setEditing] = useState(false);
   const update = useMutation({
     mutationFn: (status: "completed" | "cancelled") => api.updateLifecycle(organizationId, item!.id, { status }),
     onSuccess: async () => { await invalidateWorkspaceRecords(queryClient, organizationId, "lifecycle"); onClose(); },
   });
+  const schedule = useMutation({
+    mutationFn: (change: { reminder_days?: number; recurrence?: Recurrence }) => api.updateLifecycle(organizationId, item!.id, change),
+    onSuccess: (saved) => { setItem(saved); void invalidateWorkspaceRecords(queryClient, organizationId, "lifecycle"); },
+  });
   if (!item) return null;
+  if (editing) {
+    return (
+      <Sheet title="Reminder and repeat" visible onClose={onClose} action={{ label: "Done", onPress: () => setEditing(false) }}>
+        <ReminderEditor item={item} saving={schedule.isPending} onChange={(change) => schedule.mutate(change)} />
+        <FormError error={schedule.error} />
+      </Sheet>
+    );
+  }
   const days = daysUntil(item.due_at);
+  const repeat = item.recurrence === "none" ? "Never repeats" : `Repeats ${item.recurrence}`;
   return (
     <Sheet title={item.title} visible onClose={onClose} action={{ label: "Done", onPress: onClose }}>
       <View style={styles.hero}>
@@ -157,10 +174,10 @@ function DateSheet({ item, onClose }: { item: LifecycleItem | null; onClose: () 
       <Facts items={[
         ["Agreement", item.contract_title || "–"],
         ["Owner", item.owner_name || "Unassigned"],
-        ["Remind", `${item.reminder_days} days before`],
-        ["Repeat", item.recurrence === "none" ? "Never" : titleCase(item.recurrence)],
         ...(item.amount ? [["Amount", item.amount] as [string, string]] : []),
       ]} />
+      <ListRow icon="bell" title={reminderLabel(item.reminder_days)} subtitle={repeat}
+        onPress={canUpload && item.status === "active" ? () => setEditing(true) : undefined} last />
       {item.description ? <AppText variant="small" tone="muted">{item.description}</AppText> : null}
       <FormError error={update.error} />
       <View style={styles.actions}>
@@ -168,6 +185,52 @@ function DateSheet({ item, onClose }: { item: LifecycleItem | null; onClose: () 
         {canUpload ? <Button label="Mark done" icon="check" style={styles.flex} loading={update.isPending} onPress={() => update.mutate("completed")} /> : null}
       </View>
     </Sheet>
+  );
+}
+
+const repeatChoices: { value: Recurrence; label: string }[] = [
+  { value: "none", label: "Never" },
+  { value: "monthly", label: "Monthly" },
+  { value: "quarterly", label: "Quarterly" },
+  { value: "yearly", label: "Yearly" },
+];
+
+/**
+ * When the owner hears about a date, and whether it comes back. Each tap saves,
+ * the way iOS settings do, so there is no separate Save button to miss.
+ */
+function ReminderEditor({ item, saving, onChange }: { item: LifecycleItem; saving: boolean; onChange: (change: { reminder_days?: number; recurrence?: Recurrence }) => void }) {
+  const styles = useStyles();
+  const { colors } = useTheme();
+  const leads: number[] = [...reminderChoices];
+  if (!leads.includes(item.reminder_days)) leads.push(item.reminder_days);
+  leads.sort((a, b) => a - b);
+  const repeats = item.recurrence === "weekly" ? [...repeatChoices, { value: "weekly" as const, label: "Weekly" }] : repeatChoices;
+  return (
+    <>
+      <View>
+        <AppText variant="eyebrow" tone="muted">Remind the owner</AppText>
+        {leads.map((days, index) => {
+          const selected = days === item.reminder_days;
+          return (
+            <Pressable key={days} accessibilityRole="radio" accessibilityState={{ selected, disabled: saving }} disabled={saving}
+              onPress={() => { if (!selected) onChange({ reminder_days: days }); }}
+              style={({ pressed }) => [styles.choice, index < leads.length - 1 && styles.choiceDivider, pressed && styles.pressed]}>
+              <View style={styles.flex}>
+                <AppText variant="bodyStrong">{reminderLabel(days)}</AppText>
+                {days === 90 ? <AppText variant="small" tone="muted">Good for long notice periods</AppText> : null}
+              </View>
+              {selected ? <Icon name="check" size={16} color={colors.accent} /> : null}
+            </Pressable>
+          );
+        })}
+      </View>
+      <View style={styles.repeat}>
+        <AppText variant="eyebrow" tone="muted">Repeat</AppText>
+        <Segmented label="Repeat" options={repeats} value={item.recurrence} onChange={(recurrence) => { if (!saving && recurrence !== item.recurrence) onChange({ recurrence }); }} />
+      </View>
+      <AppText variant="small" tone="muted">Still open on the day? Admins are told, so it never slips quietly.</AppText>
+    </>
   );
 }
 
@@ -236,4 +299,7 @@ const useStyles = createStyles((c) => ({
   hero: { alignItems: "center", gap: 2, paddingVertical: 18, borderRadius: 20, backgroundColor: c.warningSoft },
   heroNumber: { fontFamily: font.bold, fontSize: 48, lineHeight: 52, letterSpacing: -1 },
   actions: { flexDirection: "row", gap: space.md },
+  choice: { flexDirection: "row", alignItems: "center", gap: space.md, minHeight: 50, paddingVertical: space.xs },
+  choiceDivider: { borderBottomWidth: 1, borderBottomColor: c.line },
+  repeat: { gap: space.sm },
 }));
