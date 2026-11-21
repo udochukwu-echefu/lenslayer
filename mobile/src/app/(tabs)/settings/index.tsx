@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import Constants from "expo-constants";
 import { router } from "expo-router";
-import { Pressable, Switch, View } from "react-native";
-import { AppText, Avatar, Badge, Button, confirm, Icon, ListRow, Screen } from "@/components/ui";
+import { Pressable, View } from "react-native";
+import { AppSwitch, AppText, Avatar, Badge, Button, confirm, Icon, ListRow, Screen } from "@/components/ui";
 import { api } from "@/lib/api";
 import { useAppLock } from "@/lib/app-lock";
 import { useAuth } from "@/lib/auth";
@@ -58,7 +58,7 @@ export default function SettingsScreen() {
         <ListRow icon="appearance" title="Appearance" value={titleCase(preference)} onPress={() => open("appearance")} />
         {lock.method ? (
           <ListRow icon="faceId" title={`Unlock with ${lock.method}`} subtitle="Asks when you open the app" onPress={() => void lock.setEnabled(!lock.enabled)}
-            trailing={<Switch accessibilityLabel={`Unlock with ${lock.method}`} value={lock.enabled} onValueChange={(on) => void lock.setEnabled(on)} trackColor={{ true: colors.actions, false: colors.line }} thumbColor={colors.surface} />} />
+            trailing={<AppSwitch label={`Unlock with ${lock.method}`} value={lock.enabled} onChange={(on) => void lock.setEnabled(on)} />} />
         ) : null}
         <ListRow icon="info" title="About & legal" value={Constants.expoConfig?.version} onPress={() => open("about")} last />
       </View>

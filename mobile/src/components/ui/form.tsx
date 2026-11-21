@@ -3,7 +3,7 @@ import { Modal, Pressable, ScrollView, Switch, TextInput, View, type TextInputPr
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createStyles } from "@/theme/create-styles";
 import { useTheme } from "@/theme/theme-provider";
-import { font, gutter, radius, space, touch } from "@/theme/tokens";
+import { font, gutter, palette, radius, space, touch } from "@/theme/tokens";
 import { Icon } from "./icon";
 import { AppText } from "./text";
 
@@ -101,15 +101,27 @@ export function OptionSheet<T extends string>({ title, visible, options, value, 
 
 export function ToggleRow({ label, help, value, onChange, disabled }: { label: string; help?: string; value: boolean; onChange: (value: boolean) => void; disabled?: boolean }) {
   const styles = useStyles();
-  const { colors } = useTheme();
   return (
     <View style={styles.toggle}>
       <View style={styles.flex}>
         <AppText variant="bodyStrong">{label}</AppText>
         {help ? <AppText variant="small" tone="muted">{help}</AppText> : null}
       </View>
-      <Switch accessibilityLabel={label} value={value} disabled={disabled} onValueChange={onChange} trackColor={{ true: colors.actions, false: colors.line }} thumbColor={colors.surface} />
+      <AppSwitch label={label} value={value} disabled={disabled} onChange={onChange} />
     </View>
+  );
+}
+
+/**
+ * The app's on/off switch. The off track uses the strong line colour: the
+ * hairline colour nearly vanished on the dark page. iOS paints the off fill
+ * from `ios_backgroundColor`, not from `trackColor.false`, so both are set.
+ */
+export function AppSwitch({ label, value, onChange, disabled }: { label: string; value: boolean; onChange: (value: boolean) => void; disabled?: boolean }) {
+  const { colors } = useTheme();
+  return (
+    <Switch accessibilityLabel={label} value={value} disabled={disabled} onValueChange={onChange}
+      trackColor={{ true: colors.actions, false: colors.lineStrong }} ios_backgroundColor={colors.lineStrong} thumbColor={palette.white} />
   );
 }
 

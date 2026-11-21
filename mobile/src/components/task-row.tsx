@@ -51,7 +51,8 @@ export function TaskRow({ task, last }: { task: WorkflowTask; last?: boolean }) 
         accessibilityLabel={!canUpload || !online ? `${task.title} status is read only` : done ? `Reopen ${task.title}` : `Complete ${task.title}`}
         disabled={!canUpload || !online || mutation.isPending}
         onPress={() => mutation.mutate(done ? "open" : "done")}
-        hitSlop={10}
+        // The box is 22pt; the slop keeps the tap target at 44pt without pushing the title right.
+        hitSlop={{ top: 11, bottom: 11, left: 12, right: 10 }}
         style={styles.check}
       >
         <View style={[styles.box, done && { backgroundColor: colors.primary, borderColor: colors.primary }]}>
@@ -79,7 +80,7 @@ export function TaskList({ tasks, empty = "No actions match this view." }: { tas
 const useStyles = createStyles((c) => ({
   row: { flexDirection: "row", alignItems: "center", gap: space.md, paddingVertical: 13, minHeight: 58 },
   divider: { borderBottomWidth: 1, borderBottomColor: c.line },
-  check: { width: touch, height: touch, alignItems: "flex-start", justifyContent: "center" },
+  check: { width: 22, height: touch, justifyContent: "center" },
   box: { width: 22, height: 22, borderRadius: 6, borderWidth: 1.5, borderColor: c.lineStrong, alignItems: "center", justifyContent: "center" },
   body: { flex: 1, gap: space.xxs },
   doneText: { textDecorationLine: "line-through", opacity: 0.55 },

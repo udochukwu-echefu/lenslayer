@@ -37,8 +37,15 @@ export function RenewalsView({ initial }: { initial: Mode }) {
   }
 
   const exportCalendar = useMutation({ mutationFn: () => api.downloadCalendarExport(organizationId) });
+  // Pull to refresh reloads every list this tab can show (dates, month, reminders, tasks).
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
+  async function refresh() {
+    setRefreshing(true);
+    try { await invalidateWorkspaceRecords(queryClient, organizationId, "lifecycle", "tasks"); } finally { setRefreshing(false); }
+  }
   return (
-    <Screen contentStyle={{ gap: space.xl - 4 }}>
+    <Screen contentStyle={{ gap: space.xl - 4 }} onRefresh={() => void refresh()} refreshing={refreshing}>
       <Stack.Screen options={{
         title: "Renewals",
         headerRight: () => (
